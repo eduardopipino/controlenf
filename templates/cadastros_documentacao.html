@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Tipos de Documento</h2>
+    <div class="button-toolbar">
+        <a href="{{ url_for('novo_tipo_documento') }}" class="button">Novo</a>
+    </div>
+    <br>
+    <table border="1" id="tabelaTiposDocumento">
+        <thead>
+            <tr>
+                <th>Nome do Documento</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doc in documentos %}
+            <tr>
+                <td>{{ doc.nome }}</td>
+                <td>
+                    <form id="formExcluirDoc-{{ doc._id }}" method="POST" action="{{ url_for('excluir_tipo_documento', doc_id=doc._id) }}" style="display: none;"></form>
+                    
+                    <button type="button" class="button-danger btn-excluir-doc" 
+                            data-doc-id="{{ doc._id }}" 
+                            data-doc-nome="{{ doc.nome }}">
+                        Excluir
+                    </button>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="2">Nenhum tipo de documento cadastrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Encontra todos os botões de exclusão da página
+    const btnsExcluir = document.querySelectorAll('.btn-excluir-doc');
+
+    // Adiciona a lógica de clique a cada um deles
+    btnsExcluir.forEach(button => {
+        button.addEventListener('click', function() {
+            // Pega os dados do botão que foi clicado
+            const docId = this.dataset.docId;
+            const docNome = this.dataset.docNome;
+            
+            // Encontra o formulário correspondente usando o ID
+            const formParaSubmeter = document.getElementById(`formExcluirDoc-${docId}`);
+
+            // Chama o nosso modal customizado
+            showCustomConfirm(
+                'Confirmar Exclusão',
+                `Tem certeza que deseja excluir o tipo de documento "${docNome}"? Esta ação não pode ser desfeita.`,
+                (confirmed) => {
+                    // Se o usuário clicar em 'Confirmar', submete o formulário
+                    if (confirmed) {
+                        formParaSubmeter.submit();
+                    }
+                },
+                'Excluir Permanentemente'
+            );
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>{{ 'Nova Situação' if novo else 'Editar Situação' }}</h2>
+    <form id="formSituacao" method="POST">
+        <div>
+            <label for="situacao">Nome da Situação:</label>
+            <input type="text" id="situacao" name="situacao" value="{{ situacao.situacao if situacao else '' }}" required>
+        </div>
+        <div>
+            <label for="arquiva_registro">
+                <input type="checkbox" id="arquiva_registro" name="arquiva_registro" {% if situacao.arquiva_registro %}checked{% endif %}>
+                Arquiva o registro de controle?
+            </label>
+            <small>Marque esta opção se esta situação significa que o controle foi concluído/finalizado (ex: FINANCEIRO, CANCELADO).</small>
+        </div>
+        <div>
+            <label for="cor_situacao">Cor da Situação:</label>
+            <input type="color" id="cor_situacao" name="cor_situacao" value="{{ situacao.cor or '#e0e0e0' }}">
+        </div>
+
+        <br>
+        <div>
+            <button type="submit" id="btnSalvar" disabled>Salvar</button>
+            <button type="button" id="btnCancelar">Cancelar</button>
+        </div>
+    </form>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const inputSituacao = document.getElementById('situacao');
+    const btnSalvar = document.getElementById('btnSalvar');
+    const btnCancelar = document.getElementById('btnCancelar');
+
+    function checkInput() {
+        btnSalvar.disabled = inputSituacao.value.trim() === '';
+    }
+
+    inputSituacao.addEventListener('input', checkInput);
+    checkInput(); 
+
+    btnCancelar.addEventListener('click', () => {
+        showCustomConfirm('Cancelar Alterações?', 'Os dados não salvos serão perdidos.',
+            (confirmed) => {
+                if (confirmed) {
+                    window.location.href = "{{ url_for('cadastros_situacao') }}";
+                }
+            }, 'Sim');
+    });
+});
+</script>
+{% endblock %}

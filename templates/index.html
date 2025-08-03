@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Dashboard (v0.15)</h2>
+    <p>Bem-vindo(a) de volta, <strong>{{ current_user.username }}</strong>!</p>
+
+    <div class="summary-container">
+        <a href="{{ url_for('controle_pendentes') }}" class="summary-card">
+            <h3>Controles Pendentes</h3>
+            <div class="summary-value">{{ summary.pendentes }}</div>
+            <div class="summary-link">Ver Detalhes &rarr;</div>
+        </a>
+
+        <a href="{{ url_for('instrumentos_contratuais') }}" class="summary-card">
+            <h3>Instrumentos Contratuais</h3>
+            <div class="summary-value">{{ summary.vigentes }}</div>
+            <div class="summary-description">vigentes de {{ summary.total_instrumentos }} instrumentos contratuais</div>
+            <div class="summary-link">Ver Detalhes &rarr;</div>
+        </a>
+        
+        <div class="summary-card">
+            <h3>Itens para pagamento - por Frequência</h3>
+            <ul class="summary-list">
+                {% for item in summary.frequencias %}
+                    <li>
+                        <span>{{ item._id }}</span>
+                        <strong>{{ item.count }}</strong>
+                    </li>
+                {% else %}
+                    <li>Nenhum Instrumento Contratual vigente encontrado.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endblock %}

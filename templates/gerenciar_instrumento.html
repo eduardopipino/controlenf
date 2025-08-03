@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Consulta Instrumento Contratual</h2>
+
+    <div class="container" style="border-left: 5px solid var(--primary-color); margin-bottom: 30px;">
+        <h3>Dados Gerais do Instrumento</h3>
+        <form id="formInstrumento" method="POST" action="{{ url_for('gerenciar_instrumento', instrumento_id=instrumento._id) }}">
+            <input type="hidden" name="update_instrumento" value="1">
+            <div>
+                <label>Nº do Instrumento Contratual:</label>
+                <input type="text" value="{{ instrumento.n_instrumento }}" readonly class="readonly-field">
+            </div>
+            <div>
+                <label>Tipo do Documento:</label>
+                <input type="text" value="{{ instrumento.tipo_documento }}" readonly class="readonly-field">
+            </div>
+            <div>
+                <label for="contratada">Contratada/Fornecedora:</label>
+                <input type="text" id="contratada" name="contratada" value="{{ instrumento.contratada }}" required disabled>
+            </div>
+            <div>
+                <label for="objeto_resumido">Objeto Resumido:</label>
+                <input type="text" id="objeto_resumido" name="objeto_resumido" value="{{ instrumento.objeto_resumido }}" required disabled>
+            </div>
+            <div>
+                <label for="vigente">Vigente:</label>
+                <input type="checkbox" id="vigente" name="vigente" {{ 'checked' if instrumento.vigente else '' }} disabled>
+            </div>
+            <br>
+            
+            <div class="button-toolbar">
+                <div class="toolbar-group-left">
+                    <button type="button" id="btnEditar">Editar</button>
+                    <button type="button" id="btnExcluir">Excluir Instrumento Contratual</button>
+                </div>
+
+                <div class="toolbar-group-right">
+                    <button type="submit" id="btnSalvar" disabled>Salvar</button>
+                    <button type="button" id="btnCancelar">Fechar</button>
+                </div>
+            </div>
+        </form>
+        <form id="formExcluirInstrumento" method="POST" action="{{ url_for('excluir_instrumento_contratual', instrumento_id=instrumento._id) }}" style="display:none;"></form>
+    </div>
+
+    <div class="container">
+        <h3>Itens de Faturamento</h3>
+        <table border="1" id="tabelaItens">
+            <thead>
+                <tr>
+                    <th>Descrição do Item</th>
+                    <th>Tipo/Frequência</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in itens %}
+                <tr>
+                    <td>{{ item.descricao_item }}</td>
+                    <td>{{ item.tipo_frequencia }}</td>
+                    <td>
+                        <a href="{{ url_for('editar_item_instrumento', item_id=item._id) }}" class="button">Editar</a>
+                        <form id="formExcluirItem-{{ item._id }}" method="POST" action="{{ url_for('excluir_item_instrumento', item_id=item._id) }}" style="display: none;"></form>
+                        <button type="button" class="button-danger btn-excluir-item" data-item-id="{{ item._id }}" data-item-descricao="{{ item.descricao_item }}">Excluir</button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3">Nenhum item cadastrado para este instrumento.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <br>
+        
+        <div class="button-toolbar">
+             <a href="{{ url_for('adicionar_item_instrumento', instrumento_id=instrumento._id) }}" class="button">Adicionar Item</a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Referências aos elementos do formulário principal
+    const formFields = [
+        document.getElementById('contratada'),
+        document.getElementById('objeto_resumido'),
+        document.getElementById('vigente')
+    ];
+    const btnEditar = document.getElementById('btnEditar');
+    const btnSalvar = document.getElementById('btnSalvar');
+    const btnCancelar = document.getElementById('btnCancelar');
+    const btnExcluir = document.getElementById('btnExcluir');
+    const formExcluirInstrumento = document.getElementById('formExcluirInstrumento');
+
+    // ======================================================================
+    // 2. LÓGICA JAVASCRIPT ATUALIZADA PARA O BOTÃO FECHAR/CANCELAR
+    // ======================================================================
+    
+    // Define a função para o comportamento de "Cancelar Edição"
+    const acaoCancelarEdicao = () => {
+        showCustomConfirm('Cancelar Edição?', 'As alterações não salvas serão perdidas. Deseja continuar?',
+            (confirmed) => { if (confirmed) { location.reload(); } }, 'Sim, Cancelar');
+    };
+
+    // Define a função para o comportamento de "Fechar"
+    const acaoFechar = () => {
+        window.location.href = "{{ url_for('instrumentos_contratuais') }}";
+    };
+
+    // ----- ESTADO INICIAL DA PÁGINA -----
+    // Ao carregar, o botão funciona como "Fechar"
+    btnCancelar.onclick = acaoFechar;
+
+
+    // ----- LÓGICA AO CLICAR EM "EDITAR" -----
+    if(btnEditar) {
+        btnEditar.addEventListener('click', () => {
+            // Habilita os campos para edição
+            formFields.forEach(field => field.disabled = false);
+            
+            // Ajusta a visibilidade e estado dos botões
+            btnEditar.disabled = true;
+            btnExcluir.disabled = true;
+            btnSalvar.disabled = false;
+            
+            // Transforma o botão "Fechar" em "Cancelar"
+            btnCancelar.textContent = 'Cancelar'; // Muda o texto
+            btnCancelar.onclick = acaoCancelarEdicao; // Muda a função do clique
+        });
+
+        // A lógica do botão de exclusão permanece a mesma
+        btnExcluir.addEventListener('click', () => {
+            showCustomConfirm(
+                'Confirmar Exclusão', 
+                `Excluir o instrumento "{{ instrumento.n_instrumento }}" e TODOS os seus itens?`, 
+                (confirmed) => {
+                    if (confirmed) { formExcluirInstrumento.submit(); }
+                }, 
+                'Excluir Permanentemente'
+            );
+        });
+    }
+
+    // Lógica para os botões de exclusão de cada item (sem alterações)
+    const btnsExcluirItem = document.querySelectorAll('.btn-excluir-item');
+    btnsExcluirItem.forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.dataset.itemId;
+            const itemDescricao = this.dataset.itemDescricao;
+            const formParaSubmeter = document.getElementById(`formExcluirItem-${itemId}`);
+
+            showCustomConfirm(
+                'Confirmar Exclusão do Item',
+                `Tem certeza que deseja excluir o item "${itemDescricao}"?`,
+                (confirmed) => {
+                    if (confirmed) {
+                        formParaSubmeter.submit();
+                    }
+                },
+                'Excluir Item'
+            );
+        });
+    });
+});
+</script>
+{% endblock %}

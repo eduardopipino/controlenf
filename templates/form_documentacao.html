@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>{{ 'Novo Tipo de Documento' if novo else 'Editar Tipo de Documento' }}</h2>
+    <form method="POST">
+        <div>
+            <label for="nome_documento">Nome do Documento:</label>
+            <input type="text" id="nome_documento" name="nome_documento" value="{{ documento.nome or '' }}" required>
+        </div>
+        <br>
+        <div class="button-toolbar">
+            <button type="submit">Salvar</button>
+            <a href="{{ url_for('cadastros_documentacao') }}" class="button">Cancelar</a>
+        </div>
+    </form>
+{% endblock %}

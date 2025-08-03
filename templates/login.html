@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Controle de Notas Fiscais - Login</h2> {# Título alterado #}
+    <form method="POST">
+        <div>
+            <label for="username">Nome de Usuário:</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div>
+            <label for="password">Senha:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <br>
+        <div>
+            <button type="submit">Entrar</button>
+        </div>
+        {# Frase "Ainda não tem uma conta?" eliminada, texto do link alterado #}
+        <p><a href="{{ url_for('register') }}">Nova conta</a>.</p>
+    </form>
+{% endblock %}

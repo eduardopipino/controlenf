@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Cadastro de Situações</h2>
+    <div class="button-toolbar">
+        <button onclick="location.href='{{ url_for('nova_situacao') }}'">Novo</button>
+        <button id="btnEditar" disabled>Editar</button>
+        <button id="btnExcluir" disabled>Excluir</button>
+    </div>
+    <br>
+    <table border="1" id="tabelaSituacoes">
+        <thead>
+            <tr>
+                <th></th> 
+                <th>Nome da Situação</th>
+                <th>Arquiva Registro?</th>
+                <th>Cor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for situacao in situacoes %}
+            <tr class="clickable-row">
+                <td><input type="radio" name="selected_situacao" value="{{ situacao._id }}"></td>
+                <td>{{ situacao.situacao }}</td>
+                <td>{{ 'Sim' if situacao.arquiva_registro else 'Não' }}</td>
+                <td>
+                    <span class="color-preview" style="background-color: {{ situacao.cor or '#ffffff' }};"></span>
+                    {{ situacao.cor }}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4">Nenhuma situação cadastrada.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnEditar = document.getElementById('btnEditar');
+    const btnExcluir = document.getElementById('btnExcluir');
+    const radioButtons = document.querySelectorAll('input[name="selected_situacao"]');
+    const tableRows = document.querySelectorAll('#tabelaSituacoes tbody tr.clickable-row');
+    tableRows.forEach(row => {
+        row.addEventListener('click', () => {
+            const radioButton = row.querySelector('input[type="radio"]');
+            if (radioButton) {
+                radioButton.checked = true;
+                const event = new Event('change');
+                radioButton.dispatchEvent(event);
+            }
+        });
+    });
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', () => {
+            if (radio.checked) {
+                const selectedId = radio.value;
+                const situacaoNome = radio.closest('tr').children[1].textContent;
+                btnEditar.disabled = false;
+                btnEditar.onclick = () => {
+                    window.location.href = `{{ url_for('editar_situacao', situacao_id='REPLACE_ID') }}`.replace('REPLACE_ID', selectedId);
+                };
+                btnExcluir.disabled = false;
+                btnExcluir.onclick = () => {
+                    showCustomConfirm('Confirmar Exclusão', `Tem certeza que deseja excluir a situação "${situacaoNome}"?`,
+                        (confirmed) => {
+                            if (confirmed) {
+                                const deleteForm = document.createElement('form');
+                                deleteForm.method = 'POST';
+                                deleteForm.action = `{{ url_for('excluir_situacao', situacao_id='REPLACE_ID') }}`.replace('REPLACE_ID', selectedId);
+                                document.body.appendChild(deleteForm);
+                                deleteForm.submit();
+                            }
+                        }, 'Excluir Permanentemente');
+                };
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

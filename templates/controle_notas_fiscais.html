@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Controle de Notas Fiscais {% if filter_mode == 'pendentes' %}- Pendentes{% elif filter_mode == 'concluidas' %}- Concluídas{% endif %}</h2>
+    
+    <div class="button-toolbar">
+        <div class="toolbar-group-left">
+            <button id="btnFiltro" class="{{ 'filtro-ativo' if filtro_ativo else '' }}">Filtro...</button>
+            <button id="btnColorCode">Identificar por cores</button>
+            <button id="btnConfigurarColunas">Configurar colunas</button>
+            <a href="{{ url_for('exportar_csv', filter_mode=filter_mode) }}" class="button">Exportar</a>
+        </div>
+        
+        {% if filter_mode == 'pendentes' %}
+        <div class="toolbar-group-center">
+                <button id="btnDetalhes" disabled>Detalhes...</button>
+            </div>
+            {% endif %}
+            
+            <div class="toolbar-group-right">
+                <button onclick="location.href='{{ url_for('novo_controle') }}'">Novo</button>
+                <button id="btnNovoRecorrente">Novo - Recorrente</button>
+        </div>
+    </div>
+    
+    <br>
+    <table border="1" id="tabelaControle">
+        <thead>
+            <tr>
+                <th></th>
+                {% for col_id, col_nome in todas_as_colunas %}
+                    {% if col_id in colunas_visiveis %}
+                        <th class="{{ 'coluna-observacoes' if col_id == 'observacoes' else '' }}">
+                            <a href="{{ url_for(request.endpoint, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc') }}">
+                                {{ col_nome }}
+                                {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}
+                            </a>
+                        </th>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for controle in controles %}
+            <tr class="clickable-row" id="controle-row-{{ controle._id }}">
+                <td><input type="radio" name="selected_controle" value="{{ controle._id }}"></td>
+                
+                {% for col_id, col_nome in todas_as_colunas %}
+                    {% if col_id in colunas_visiveis %}
+                        {% if col_id == 'situacao' %}
+                            <td class="celula-situacao">
+                                <select class="situacao-dropdown" data-id="{{ controle._id }}">
+                                    <option value="">-- Nenhuma --</option>
+                                    {% for sit in situacoes_para_filtro %}
+                                        <option value="{{ sit.situacao }}" {% if sit.situacao == controle.situacao %}selected{% endif %}>
+                                            {{ sit.situacao }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                        {% elif col_id == 'documentacao' %}
+                            <td class="coluna-documentacao">{{ controle.documentacao | join(', ') }}</td>
+                        {% else %}
+                            <td class="{{ 'coluna-observacoes' if col_id == 'observacoes' else '' }}">{{ controle[col_id] }}</td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="{{ colunas_visiveis|length + 1 }}">Nenhum registro de controle encontrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div id="filterModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Filtrar Registros</h3>
+            <form method="POST" action="{{ url_for('controle_filtrar') }}">
+                <input type="hidden" name="original_filter_mode" value="{{ filter_mode }}">
+                
+                <div>
+                    <label for="filter_n_instrumento">Nº Instrumento:</label>
+                    <input type="text" name="filter_n_instrumento" id="filter_n_instrumento" value="{{ filter_values.get('filter_n_instrumento', '') }}">
+                </div>
+                <div>
+                    <label for="filter_contratada">Contratada:</label>
+                    <input type="text" name="filter_contratada" id="filter_contratada" value="{{ filter_values.get('filter_contratada', '') }}">
+                </div>
+                <div>
+                    <label for="filter_objeto">Objeto:</label>
+                    <input type="text" name="filter_objeto" id="filter_objeto" value="{{ filter_values.get('filter_objeto', '') }}">
+                </div>
+                <div>
+                    <label for="filter_referencia">Referência:</label>
+                    <input type="text" name="filter_referencia" id="filter_referencia" value="{{ filter_values.get('filter_referencia', '') }}">
+                </div>
+                 <div>
+                    <label for="filter_situacao">Situação:</label>
+                    <select name="filter_situacao" id="filter_situacao">
+                        <option value="">Todas</option>
+                        {% for sit in situacoes_para_filtro %}
+                            <option value="{{ sit.situacao }}" {% if filter_values.get('filter_situacao') == sit.situacao %}selected{% endif %}>
+                                {{ sit.situacao }}
+                            </option>
+                        {% endfor %}
+                         <option value="Sem Situação" {% if filter_values.get('filter_situacao') == 'Sem Situação' %}selected{% endif %}>-- Sem Situação --</option>
+                    </select>
+                </div>
+
+                <div class="button-toolbar">
+                    <button type="submit">Aplicar Filtro</button>
+                    <button type="button" class="btn-cancel-modal">Cancelar</button>
+                    <button type="button" id="btnLimparFiltro" class="button">Limpar Filtro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="recorrenteModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Gerar Registros Recorrentes</h3>
+            <form method="POST" action="{{ url_for('novo_controle_recorrente') }}">
+                <div>
+                    <label for="referencia_recorrente">Referência (Ex: "MM/AAAA" ou "MM"):</label>
+                    <input type="text" id="referencia_recorrente" name="referencia_recorrente" placeholder="Ex: 07/2025 ou 7" required>
+                    <small>Se o ano for omitido, o ano atual será usado.</small>
+                </div>
+                <div class="button-toolbar">
+                    <button type="submit">Gerar</button>
+                    <button type="button" class="btn-cancel-modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<div id="configColunasModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Selecione as colunas para exibir</h3>
+        <div id="colunas-checklist" class="modal-colunas-list">
+            </div>
+        <div class="button-toolbar">
+            <button id="btnSalvarColunas">Salvar</button>
+            <button type="button" class="btn-cancel-modal">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initializeClickableTable(
+        'tabelaControle',
+        'selected_controle',
+        'btnDetalhes',
+        "{{ url_for('detalhes_controle', controle_id='REPLACE_ID') }}"
+    );
+
+    const btnFiltro = document.getElementById('btnFiltro');
+    const filterModal = document.getElementById('filterModal');
+    const btnNovoRecorrente = document.getElementById('btnNovoRecorrente');
+    const recorrenteModal = document.getElementById('recorrenteModal');
+
+    const situacoesArquivadoras = JSON.parse('{{ arquivadores_json | default("[]") | safe }}');
+
+    // <<< ADICIONE ESTE BLOCO NOVO >>>
+    const btnLimparFiltro = document.getElementById('btnLimparFiltro');
+    if (btnLimparFiltro) {
+        btnLimparFiltro.addEventListener('click', function() {
+            // Redireciona para a página correta, limpando os filtros
+            window.location.href = "{{ url_for('controle_pendentes' if filter_mode == 'pendentes' else 'controle_concluidas') }}";
+        });
+    }
+    // <<< FIM DO BLOCO NOVO >>>
+
+    if (btnFiltro) {
+        btnFiltro.addEventListener('click', () => filterModal.classList.add('active'));
+    }
+
+    if (btnNovoRecorrente) {
+        btnNovoRecorrente.addEventListener('click', () => recorrenteModal.classList.add('active'));
+    }
+
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+    });
+    
+    document.querySelectorAll('.btn-cancel-modal').forEach(button => {
+        button.addEventListener('click', () => {
+            button.closest('.modal-overlay').classList.remove('active');
+        });
+    });
+
+
+
+// LÓGICA DO BOTÃO DE IDENTIFICAR POR CORES (CORRIGIDA)
+const btnColorCode = document.getElementById('btnColorCode');
+const colorMap = JSON.parse('{{ color_map_json | default("{}") | safe }}');
+let colorsActive = false;
+
+btnColorCode.addEventListener('click', function() {
+    colorsActive = !colorsActive; // Inverte o estado liga/desliga
+    
+    const tableRows = document.querySelectorAll('#tabelaControle tbody tr');
+    
+    tableRows.forEach(row => {
+        // Encontra o <select> DENTRO da célula da situação
+        const situacaoSelect = row.querySelector('.situacao-dropdown'); 
+        if (!situacaoSelect) return;
+
+        // Pega o valor SELECIONADO do dropdown, não o texto da célula inteira
+        const situacaoText = situacaoSelect.value;
+
+        if (colorsActive) {
+            // Se o modo de cores está ativo, aplica a cor
+            const cor = colorMap[situacaoText] || 'transparent';
+            // Aplica a cor de fundo AO PRÓPRIO DROPDOWN
+            situacaoSelect.style.backgroundColor = cor;
+        } else {
+            // Remove a cor de fundo do dropdown, voltando ao normal
+            situacaoSelect.style.backgroundColor = '';
+        }
+    });
+
+    // Atualiza o texto do botão principal
+    btnColorCode.textContent = colorsActive ? 'Remover Cores' : 'Identificar por cores';
+});
+        // LÓGICA PARA A ATUALIZAÇÃO RÁPIDA DE SITUAÇÃO
+    const dropdowns = document.querySelectorAll('.situacao-dropdown');
+
+    dropdowns.forEach(dropdown => {
+        // Impede que clicar no dropdown acione o clique na linha inteira
+        dropdown.addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+
+        // Adiciona o "ouvinte" para a ação de mudança
+        dropdown.addEventListener('change', function(event) {
+            const controleId = this.dataset.id;
+            const novaSituacao = this.value;
+            const linhaDaTabela = document.getElementById(`controle-row-${controleId}`);
+
+            fetch("{{ url_for('update_situacao_inline') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    controle_id: controleId,
+                    nova_situacao: novaSituacao
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Feedback visual de sucesso
+                    linhaDaTabela.classList.add('update-success');
+                    setTimeout(() => {
+                        linhaDaTabela.classList.remove('update-success');
+                    }, 1500);
+
+                    // Se a situação mudou para "FINANCEIRO" na tela de pendentes, remove a linha com animação
+                    if (situacoesArquivadoras.includes(novaSituacao) && "{{ filter_mode }}" === "pendentes") {
+                        setTimeout(() => {
+                            linhaDaTabela.style.opacity = '0';
+                            setTimeout(() => linhaDaTabela.remove(), 500);
+                        }, 500);
+                    }
+                } else {
+                    // Feedback visual de erro
+                    linhaDaTabela.classList.add('update-error');
+                    setTimeout(() => {
+                        linhaDaTabela.classList.remove('update-error');
+                    }, 2000);
+                    // Opcional: recarregar o valor antigo em caso de erro
+                    // this.value = /* valor antigo */;
+                }
+            })
+            .catch(error => {
+                console.error('Erro de rede:', error);
+                alert('Ocorreu um erro de comunicação. Tente novamente.');
+            });
+        });
+    });
+
+    // --- LÓGICA PARA CONFIGURAÇÃO DE COLUNAS ---
+    const btnConfigurarColunas = document.getElementById('btnConfigurarColunas');
+    const configColunasModal = document.getElementById('configColunasModal');
+    const checklistContainer = document.getElementById('colunas-checklist');
+    const btnSalvarColunas = document.getElementById('btnSalvarColunas');
+
+    // Pega as variáveis enviadas pelo Python
+    const todasAsColunas = {{ todas_as_colunas | tojson | safe }};
+    const colunasVisiveis = {{ colunas_visiveis | tojson | safe }};
+
+// Popula o modal com os checkboxes
+todasAsColunas.forEach(coluna => {
+    const col_id = coluna[0];
+    const col_nome = coluna[1];
+    const isChecked = colunasVisiveis.includes(col_id);
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = `
+        <label>
+            <input type="checkbox" name="coluna_pref" value="${col_id}" ${isChecked ? 'checked' : ''}>
+            ${col_nome}
+        </label>
+    `;
+    checklistContainer.appendChild(wrapper);
+});
+    btnConfigurarColunas.addEventListener('click', () => {
+        configColunasModal.classList.add('active');
+    });
+
+    btnSalvarColunas.addEventListener('click', () => {
+        const checkboxes = document.querySelectorAll('#colunas-checklist input[type="checkbox"]:checked');
+        const colunasSelecionadas = Array.from(checkboxes).map(cb => cb.value);
+
+        fetch("{{ url_for('save_column_prefs') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ colunas: colunasSelecionadas })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Recarrega a página para exibir a nova configuração de colunas
+                location.reload();
+            } else {
+                alert('Erro ao salvar as preferências.');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>{{ 'Novo Instrumento Contratual' if novo else 'Consulta Instrumento Contratual' }}</h2>
+    <form id="formInstrumento" method="POST">
+        <div>
+            <label for="tipo_documento">Tipo do Documento:</label>
+            <input type="text" id="tipo_documento" name="tipo_documento" value="{{ instrumento.tipo_documento if instrumento else '' }}" {{ 'disabled' if not novo else '' }} required>
+        </div>
+        <div>
+            <label for="n_instrumento">Nº do Instrumento Contratual:</label>
+            <input type="text" id="n_instrumento" name="n_instrumento" value="{{ instrumento.n_instrumento if instrumento else '' }}" {{ 'disabled' if not novo else '' }} required>
+        </div>
+        <div>
+            <label for="contratada">Contratada/Fornecedora:</label>
+            <input type="text" id="contratada" name="contratada" value="{{ instrumento.contratada if instrumento else '' }}" {{ 'disabled' if not novo else '' }} required>
+        </div>
+        <div>
+            <label for="objeto_resumido">Objeto Resumido:</label>
+            <textarea id="objeto_resumido" name="objeto_resumido" {{ 'disabled' if not novo else '' }} required>{{ instrumento.objeto_resumido if instrumento else '' }}</textarea>
+        </div>
+        <div>
+            <label for="tipo_frequencia">Tipo/Frequência:</label>
+            <input type="text" id="tipo_frequencia" name="tipo_frequencia" value="{{ instrumento.tipo_frequencia if instrumento else '' }}" {{ 'disabled' if not novo else '' }} required>
+        </div>
+        <div>
+            <label for="vigente">Vigente:</label>
+            <input type="checkbox" id="vigente" name="vigente" {{ 'checked' if (instrumento and instrumento.vigente) or (novo and not instrumento) else '' }} {{ 'disabled' if not novo else '' }}>
+        </div>
+        <br>
+        <div>
+            {% if not novo %}
+                <button type="button" id="btnEditar">Editar</button>
+                <button type="submit" id="btnSalvar" disabled>Salvar</button>
+                <button type="button" id="btnCancelar" disabled>Cancelar</button>
+                <button type="button" id="btnExcluir">Excluir</button>
+            {% else %}
+                <button type="submit" id="btnSalvarNovo" disabled>Salvar</button>
+                <button type="button" id="btnCancelarNovo">Cancelar</button>
+            {% endif %}
+        </div>
+    </form>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('formInstrumento');
+    const requiredInputs = form.querySelectorAll('input[required], textarea[required]');
+    const allFields = form.querySelectorAll('input, textarea');
+    const btnEditar = document.getElementById('btnEditar');
+    const btnSalvar = document.getElementById('btnSalvar');
+    const btnCancelar = document.getElementById('btnCancelar');
+    const btnExcluir = document.getElementById('btnExcluir');
+    const btnSalvarNovo = document.getElementById('btnSalvarNovo');
+    const btnCancelarNovo = document.getElementById('btnCancelarNovo');
+    const isNewRecord = {{ 'true' if novo else 'false' }};
+
+    // *** FUNÇÃO CORRIGIDA ***
+    function toggleFields(enable) {
+        allFields.forEach(input => {
+            const isKeyField = !isNewRecord && (input.id === 'n_instrumento' || input.id === 'tipo_documento');
+
+            if (enable) { // Habilitando o formulário para edição
+                if (isKeyField) {
+                    input.readOnly = true;  // Campos-chave tornam-se somente leitura
+                    input.disabled = false; // E DEVEM ser habilitados para serem enviados
+                } else {
+                    input.readOnly = false; // Outros campos não são somente leitura
+                    input.disabled = false; // E são habilitados
+                }
+            } else { // Desabilitando o formulário para visualização
+                // No modo de visualização, tudo pode ser desabilitado
+                input.disabled = true;
+            }
+        });
+    }
+
+    function checkFormValidity() {
+        let allFilled = true;
+        requiredInputs.forEach(input => {
+            if (input.value.trim() === '') {
+                allFilled = false;
+            }
+        });
+
+        if (btnSalvarNovo) {
+            btnSalvarNovo.disabled = !allFilled;
+        }
+        if (btnSalvar) {
+            if (!btnEditar.disabled) {
+                 btnSalvar.disabled = true;
+            } else {
+                 btnSalvar.disabled = !allFilled;
+            }
+        }
+    }
+
+    if (isNewRecord) {
+        toggleFields(true);
+        checkFormValidity();
+        requiredInputs.forEach(input => {
+            input.addEventListener('input', checkFormValidity);
+        });
+    } else {
+        toggleFields(false);
+    }
+
+    if (btnEditar) {
+        btnEditar.addEventListener('click', () => {
+            toggleFields(true); // Ativa o modo de edição (com campos-chave readonly)
+            btnCancelar.disabled = false;
+            btnEditar.disabled = true;
+            btnExcluir.disabled = true;
+            requiredInputs.forEach(input => {
+                input.addEventListener('input', checkFormValidity);
+            });
+            checkFormValidity();
+        });
+    }
+
+    // O restante do script (lógica de cancelar, excluir, etc.) permanece o mesmo...
+    if (btnCancelar) {
+        btnCancelar.addEventListener('click', () => {
+            showCustomConfirm('Cancelar Edição?', 'As alterações não salvas serão perdidas. Deseja continuar?',
+                (confirmed) => { if (confirmed) { location.reload(); } }, 'Sim');
+        });
+    }
+    if (btnCancelarNovo) {
+        btnCancelarNovo.addEventListener('click', () => {
+            showCustomConfirm('Cancelar Cadastro?', 'Tem certeza que deseja cancelar? Os dados inseridos serão perdidos.',
+                (confirmed) => { if (confirmed) { window.location.href = "{{ url_for('instrumentos_contratuais') }}"; } }, 'Sim');
+        });
+    }
+    if (btnExcluir) {
+        btnExcluir.addEventListener('click', () => {
+            const instrumentoId = "{{ instrumento._id if instrumento else '' }}";
+            const nInstrumento = "{{ instrumento.n_instrumento if instrumento else '' }}";
+            showCustomConfirm('Confirmar Exclusão', `Tem certeza que deseja excluir o instrumento "${nInstrumento}"? Esta ação não pode ser desfeita.`,
+                (confirmed) => {
+                    if (confirmed) {
+                        const deleteForm = document.createElement('form');
+                        deleteForm.method = 'POST';
+                        deleteForm.action = `{{ url_for('excluir_instrumento_contratual', instrumento_id='REPLACE_ID') }}`.replace('REPLACE_ID', instrumentoId);
+                        document.body.appendChild(deleteForm);
+                        deleteForm.submit();
+                    }
+                }, 'Excluir Permanentemente');
+        });
+    }
+});
+</script>
+{% endblock %}

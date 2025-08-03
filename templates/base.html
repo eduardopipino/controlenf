@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Notas Fiscais</title>
+    
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+    
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="{{ current_user.theme if current_user.is_authenticated else 'theme-blue' }}">
+    <nav>
+        <ul id="main-nav-menu">
+            {% if current_user.is_authenticated %}
+                <li class="nav-item">
+                    <span class="nav-brand-container">
+                        <img src="{{ url_for('static', filename='images/favicon.png') }}" class="nav-icon">
+                    </span>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('index') }}" class="nav-link">Início</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a href="#" class="nav-link dropbtn">Controle de Notas Fiscais</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{{ url_for('controle_pendentes') }}" class="dropdown-item">Pendentes</a></li>
+                        <li><a href="{{ url_for('controle_concluidas') }}" class="dropdown-item">Concluídas</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a href="#" class="nav-link dropbtn">Cadastros</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{{ url_for('instrumentos_contratuais') }}" class="dropdown-item">Instrumentos Contratuais</a></li>
+                        <li><a href="{{ url_for('cadastros_documentacao') }}" class="dropdown-item">Documentação</a></li>
+                        <li><a href="{{ url_for('cadastros_situacao') }}" class="dropdown-item">Situação</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown" style="margin-left: auto;">
+                    <a href="#" class="nav-link dropbtn">Temas</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" class="dropdown-item" data-theme="theme-light">Claro</a></li>
+                        <li><a href="#" class="dropdown-item" data-theme="theme-blue">Azul</a></li>
+                        <li><a href="#" class="dropdown-item" data-theme="theme-green">Verde</a></li>
+                        <li><a href="#" class="dropdown-item" data-theme="theme-pink">Rosa</a></li>
+                        <li><a href="#" class="dropdown-item" data-theme="theme-dark">Escuro</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('logout') }}" class="nav-link dropbtn">Logout ({{ current_user.username }})</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages-content">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <div id="customConfirmModal" class="custom-confirm-modal-overlay">
+        <div class="custom-confirm-modal-content">
+            <h3 id="modalTitle"></h3>
+            <p id="modalMessage"></p>
+            <div class="custom-confirm-modal-actions">
+                <button id="modalCancelBtn" class="btn-cancel">Cancelar</button>
+                <button id="modalConfirmBtn" class="btn-confirm-danger">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        function showCustomConfirm(title, message, onConfirmCallback, confirmButtonText = 'Confirmar') {
+            const modalOverlay = document.getElementById('customConfirmModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+            const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+            const modalCancelBtn = document.getElementById('modalCancelBtn');
+
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            modalConfirmBtn.textContent = confirmButtonText;
+            modalConfirmBtn.className = 'btn-confirm-danger';
+            modalOverlay.classList.add('active');
+            modalConfirmBtn.onclick = null;
+            modalCancelBtn.onclick = null;
+
+            modalConfirmBtn.onclick = () => {
+                modalOverlay.classList.remove('active');
+                onConfirmCallback(true);
+            };
+
+            modalCancelBtn.onclick = () => {
+                modalOverlay.classList.remove('active');
+                onConfirmCallback(false);
+            };
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeLinks = document.querySelectorAll('[data-theme]');
+            if (themeLinks.length > 0) {
+                const body = document.body;
+                themeLinks.forEach(link => {
+                    link.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        const selectedTheme = link.dataset.theme;
+                        try {
+                            const response = await fetch('{{ url_for("set_theme") }}', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({ theme: selectedTheme })
+                            });
+                            const data = await response.json();
+                            if (data.status === 'success') {
+                                body.className = '';
+                                body.classList.add(selectedTheme);
+                            } else {
+                                alert('Erro ao mudar o tema.');
+                            }
+                        } catch (error) {
+                            alert('Não foi possível conectar ao servidor para mudar o tema.');
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+    {% block page_scripts %}{% endblock %}
+</body>
+</html>

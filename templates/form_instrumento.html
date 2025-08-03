@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Novo Instrumento Contratual</h2>
+    <p>Preencha os dados gerais do instrumento. Após salvar, você será direcionado para adicionar os itens de faturamento (mensal, avulso, etc).</p>
+    <form method="POST">
+        <div>
+            <label for="tipo_documento">Tipo do Documento:</label>
+            <input type="text" id="tipo_documento" name="tipo_documento" value="{{ instrumento.tipo_documento if instrumento else '' }}" required>
+        </div>
+        <div>
+            <label for="n_instrumento">Nº do Instrumento Contratual:</label>
+            <input type="text" id="n_instrumento" name="n_instrumento" value="{{ instrumento.n_instrumento if instrumento else '' }}" required>
+        </div>
+        <div>
+            <label for="contratada">Contratada/Fornecedora:</label>
+            <input type="text" id="contratada" name="contratada" value="{{ instrumento.contratada if instrumento else '' }}" required>
+        </div>
+        <div>
+            <label for="objeto_resumido">Objeto Resumido:</label>
+            <input type="text" id="objeto_resumido" name="objeto_resumido" value="{{ instrumento.objeto_resumido if instrumento else '' }}" required>
+        </div>
+        <div>
+            <label for="vigente">Vigente:</label>
+            <input type="checkbox" id="vigente" name="vigente" checked>
+        </div>
+        <br>
+        <div>
+            <button type="submit">Salvar e Adicionar Itens</button>
+            <a href="{{ url_for('instrumentos_contratuais') }}" class="button">Cancelar</a>
+        </div>
+    </form>
+{% endblock %}

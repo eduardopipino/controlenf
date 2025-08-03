@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Registrar Nova Conta</h2>
+    <form method="POST">
+        <div>
+            <label for="username">Nome de Usuário:</label>
+            <input type="text" id="username" name="username" value="{{ form_data.username if form_data else '' }}" required>
+        </div>
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="{{ form_data.email if form_data else '' }}" required>
+        </div>
+        <div>
+            <label for="password">Senha:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <div>
+            <label for="confirm_password">Confirme a Senha:</label>
+            <input type="password" id="confirm_password" name="confirm_password" required>
+        </div>
+        <br>
+        <div>
+            <button type="submit">Registrar</button>
+        </div>
+        {# Ajustado para ser consistente com a tela de login #}
+        <p><a href="{{ url_for('login') }}">Fazer Login</a>.</p>
+    </form>
+{% endblock %}

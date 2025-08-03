@@ -1,0 +1,1035 @@
+/* static/style.css */
+
+/* Cores Padrão (Tema Azul Padrão / Fallback) */
+:root {
+    /* Cores Primárias */
+    --primary-color: #3498db;      /* Azul médio para botões, destaques */
+    --secondary-color: #aed6f1;    /* Azul claro para fundos secundários (ex: hover tabela, dropdowns) */
+    --tertiary-color: #2874a6;     /* Azul escuro para navegação, títulos */
+    --accent-color: #5dade2;       /* Azul de destaque para hover de botões */
+
+    /* Cores de Texto */
+    --text-primary: #333;          /* Texto principal escuro (para fundos claros) */
+    --text-secondary: #f4f4f4;     /* Texto claro (para fundos escuros, ex: nav, botões) */
+
+    /* Cores de Fundo */
+    --background-primary: #f4f4f4; /* Fundo geral claro */
+    --background-secondary: #ffffff; /* Fundo de containers/cards, modais */
+
+    /* Cores de Borda e Sombra */
+    --border-base: #ccc;
+    --shadow-base: rgba(0, 0, 0, 0.2);
+
+    /* Cores de Hover/Interação */
+    --hover-bg: #e0e0e0;           /* Hover genérico */
+    --table-stripe: #f2f2f2;       /* Cor para linhas pares da tabela */
+    --table-hover: var(--secondary-color); /* Cor de hover da tabela */
+
+    /* Cores de Mensagens Flash */
+    --flash-success-bg: var(--secondary-color);
+    --flash-success-text: var(--tertiary-color);
+    --flash-success-border: var(--primary-color);
+    --flash-error-bg: #f8d7da;
+    --flash-error-text: #721c24;
+    --flash-error-border: #f5c6cb;
+    --flash-info-bg: #d1ecf1;
+    --flash-info-text: #0c5460;
+    --flash-info-border: #bee5eb;
+    --flash-warning-bg: #fff3cd;
+    --flash-warning-text: #856404;
+    --flash-warning-border: #ffeeba;
+
+    /* Cores de Modal */
+    --modal-bg: var(--background-secondary);
+    --modal-border: var(--border-base);
+    --modal-shadow: var(--shadow-base);
+    --modal-h3-border: var(--secondary-color);
+    --modal-text: var(--text-primary);
+}
+
+/* --- Tema Claro --- */
+body.theme-light {
+    --primary-color: #b0b0b0;
+    --secondary-color: #e0e0e0;
+    --tertiary-color: #505050;
+    --accent-color: #c0c0c0;
+    --text-primary: #444;
+    --text-secondary: #ffffff;
+    --background-primary: #f9f9f9;
+    --background-secondary: #ffffff;
+    --border-base: #ddd;
+    --shadow-base: rgba(0, 0, 0, 0.1);
+    --hover-bg: #eeeeee;
+    --table-stripe: #f8f8f8;
+    --table-hover: #e5e5e5;
+    --flash-success-bg: #d4edda;
+    --flash-success-text: #155724;
+    --flash-success-border: #c3e6cb;
+    --flash-info-bg: #cfe2ff;
+    --flash-info-text: #052c65;
+    --flash-info-border: #b6d4fe;
+    --modal-h3-border: var(--border-base);
+}
+
+/* --- Tema Azul (Mantém o padrão) --- */
+body.theme-blue {
+    /* As variáveis padrão do :root já definem o tema azul */
+}
+
+/* --- Tema Verde --- */
+body.theme-green {
+    --primary-color: #28a745;
+    --secondary-color: #d4edda;
+    --tertiary-color: #1d6e35;
+    --accent-color: #218838;
+    --text-primary: #222;
+    --text-secondary: #f8f8f8;
+    --background-primary: #f0fdf4;
+    --background-secondary: #ffffff;
+    --border-base: #c3e6cb;
+    --shadow-base: rgba(0, 0, 0, 0.2);
+    --hover-bg: #e6ffe6;
+    --table-stripe: #e9f5ed;
+    --table-hover: #c8e6c9;
+    --flash-success-bg: var(--secondary-color);
+    --flash-success-text: var(--tertiary-color);
+    --flash-success-border: var(--primary-color);
+}
+
+/* --- Tema Rosa --- */
+body.theme-pink {
+    --primary-color: #d63384;   /* Rosa principal para botões e destaques */
+    --secondary-color: #fce4ec; /* Rosa bem claro para fundos e hovers de tabela */
+    --tertiary-color: #ab2769;  /* Rosa escuro para navegação e títulos */
+    --accent-color: #e664a7;    /* Rosa um pouco mais claro para hover de botões */
+
+    /* Cores de Texto */
+    --text-primary: #3c1027;      /* Um cinza escuro com um toque de púrpura */
+    --text-secondary: #ffffff;    /* Texto claro para botões e navegação */
+    
+    /* Cores de Fundo */
+    --background-primary: #fff5f7; /* Fundo geral quase branco, com toque rosado */
+    --background-secondary: #ffffff; /* Fundo branco para os containers */
+
+    /* Cores de Mensagem Flash de Sucesso (para combinar com o tema) */
+    --flash-success-bg: var(--secondary-color);
+    --flash-success-text: var(--tertiary-color);
+    --flash-success-border: var(--primary-color);
+}
+
+/* --- Tema Escuro (Simplificado) --- */
+body.theme-dark {
+    --primary-color: #505050;
+    --secondary-color: #404040;
+    --tertiary-color: #b0b0b0;
+    --accent-color: #606060;
+    --text-primary: #f9f9f9;
+    /* *** CORREÇÃO APLICADA AQUI *** */
+    /* Garante que o texto dos botões seja claro no tema escuro */
+    --text-secondary: #f9f9f9;
+    --background-primary: #222222;
+    --background-secondary: #2c2c2c;
+    --border-base: #555;
+    --shadow-base: rgba(0, 0, 0, 0.7);
+    --hover-bg: #444444;
+    --table-stripe: #2b2b2b;
+    --table-hover: #3d3d3d;
+    --flash-success-bg: #155724;
+    --flash-success-text: #d4edda;
+    --flash-success-border: #c3e6cb;
+    --flash-error-bg: #721c24;
+    --flash-error-text: #f8d7da;
+    --flash-error-border: #f5c6cb;
+    --flash-info-bg: #0c5460;
+    --flash-info-text: #d1ecf1;
+    --flash-info-border: #bee5eb;
+    --flash-warning-bg: #856404;
+    --flash-warning-text: #fff3cd;
+    --flash-warning-border: #ffeeba;
+    --modal-h3-border: var(--border-base);
+}
+
+/* --- ESTILOS GERAIS PARA COMPONENTES (APLICADOS SEMPRE) --- */
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--background-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+nav {
+    background-color: var(--tertiary-color);
+    box-shadow: 0 4px 8px var(--shadow-base);
+    padding: 0;
+    position: relative;
+    z-index: 20;
+}
+
+#main-nav-menu {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    height: 50px;
+}
+
+#main-nav-menu > li {
+    position: relative;
+    list-style-type: none;
+    display: inline-block;
+    height: 100%;
+}
+
+#main-nav-menu > li > a {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    color: var(--text-secondary);
+    padding: 0 20px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+}
+
+#main-nav-menu > li > a:hover {
+    background-color: var(--accent-color);
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: var(--secondary-color);
+    min-width: 200px;
+    box-shadow: 0 8px 16px var(--shadow-base);
+    z-index: 10;
+    border-radius: 0 0 5px 5px;
+    overflow: hidden;
+    top: 100%;
+    left: 0;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#main-nav-menu > li:hover > .dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu > li {
+    position: relative;
+    list-style-type: none;
+    display: block;
+    width: 100%;
+}
+
+.dropdown-item {
+    color: var(--text-primary);
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+    white-space: nowrap;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dropdown-item:hover {
+    background-color: var(--primary-color);
+    color: var(--text-secondary);
+}
+
+/* Flash Messages */
+.flash-messages {
+    max-width: 96%;
+    margin: 20px auto 0 auto;
+    padding: 0;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+.flash-message {
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.flash-message.success {
+    background-color: var(--flash-success-bg);
+    color: var(--flash-success-text);
+    border: 1px solid var(--flash-success-border);
+}
+
+.flash-message.error {
+    background-color: var(--flash-error-bg);
+    color: var(--flash-error-text);
+    border: 1px solid var(--flash-error-border);
+}
+
+.flash-message.info {
+    background-color: var(--flash-info-bg);
+    color: var(--flash-info-text);
+    border: 1px solid var(--flash-info-border);
+}
+
+.flash-message.warning {
+    background-color: var(--flash-warning-bg);
+    color: var(--flash-warning-text);
+    border: 1px solid var(--flash-warning-border);
+}
+
+/* Main Content and Container */
+.container {
+    max-width: 96%;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: var(--background-secondary);
+    border-radius: 8px;
+    box-shadow: 0 4px 10px var(--shadow-base);
+    overflow-x: auto;
+    box-sizing: border-box;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+h1, h2 {
+    color: var(--tertiary-color);
+    border-bottom: 2px solid var(--secondary-color);
+    padding-bottom: 10px;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.button-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+/* Buttons */
+/* Buttons (e links estilizados como botões) */
+button, a.button {
+    background-color: var(--primary-color);
+    color: var(--text-secondary);
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 4px var(--shadow-base);
+    text-decoration: none; /* Garante que o link não tenha sublinhado */
+    display: inline-block; /* Alinha corretamente o link */
+    text-align: center;
+}
+
+/* *** ALTERAÇÃO APLICADA AQUI *** */
+button:hover:not([disabled]), a.button:hover {
+    background-color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px var(--shadow-base);
+    color: var(--text-secondary); /* Garante que a cor do texto se mantenha no hover */
+}
+
+button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* Forms */
+form div {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--tertiary-color);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+    width: calc(100% - 22px);
+    padding: 10px;
+    border: 1px solid var(--border-base);
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 16px;
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+    resize: none;
+}
+
+input[readonly],
+textarea[readonly] {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--secondary-color), inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    outline: none;
+}
+
+input[type="checkbox"] {
+    margin-top: 10px;
+    transform: scale(1.2);
+}
+
+input[type="checkbox"] + label {
+    display: inline-block;
+    margin-left: 5px;
+    font-weight: normal;
+}
+
+/* Tables */
+table {
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: var(--background-secondary);
+    box-shadow: 0 2px 8px var(--shadow-base);
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+th, td {
+    border: 1px solid var(--border-base);
+    padding: 12px 15px;
+    text-align: left;
+    white-space: nowrap;
+    vertical-align: top;
+}
+
+#tabelaControle th:nth-child(2),
+#tabelaControle td:nth-child(2),
+#tabelaControle th:nth-child(3),
+#tabelaControle td:nth-child(3),
+#tabelaControle th:nth-child(4),
+#tabelaControle td:nth-child(4) {
+    max-width: 150px;
+    min-width: 50px;
+}
+
+#tabelaControle th:nth-child(5),
+#tabelaControle td:nth-child(5),
+#tabelaControle th:nth-child(6),
+#tabelaControle td:nth-child(6) {
+    max-width: 200px;
+    min-width: 100px;
+    white-space: normal;
+}
+
+#tabelaControle th:nth-child(8),
+#tabelaControle td:nth-child(8) {
+    max-width: 200px;
+    min-width: 100px;
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
+}
+
+th {
+    background-color: var(--primary-color);
+    color: var(--text-secondary);
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+tr:nth-child(even) {
+    background-color: var(--table-stripe);
+}
+
+tr:hover.clickable-row {
+    background-color: var(--table-hover);
+    cursor: pointer;
+}
+
+td input[type="radio"] {
+    margin-right: 5px;
+}
+
+/* Charts */
+.charts-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 20px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-base);
+}
+
+.chart-box {
+    background-color: var(--background-secondary);
+    border-radius: 8px;
+    box-shadow: 0 4px 10px var(--shadow-base);
+    padding: 20px;
+    width: 100%;
+    max-width: 450px;
+    box-sizing: border-box;
+    text-align: center;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.chart-box h3 {
+    color: var(--tertiary-color);
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+/* Modals (Filter and Recurrent) */
+.modal-overlay {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.3s ease-in-out;
+}
+
+.modal-overlay.active {
+    visibility: visible;
+    opacity: 1;
+}
+
+.modal-content {
+    border: 1px solid var(--modal-border);
+    border-radius: 8px;
+    box-shadow: 0 8px 20px var(--modal-shadow);
+    background-color: var(--modal-bg);
+    padding: 30px;
+    min-width: 400px;
+    max-width: 90%;
+    box-sizing: border-box;
+    transform: scale(0.9);
+    transition: transform 0.3s ease-in-out, background-color 0.3s ease;
+}
+
+.modal-overlay.active .modal-content {
+    transform: scale(1);
+}
+
+.modal-content h3 {
+    color: var(--modal-text);
+    margin-top: 0;
+    border-bottom: 1px solid var(--modal-h3-border);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.modal-content button {
+    margin-top: 20px;
+}
+
+.modal-content input[type="text"],
+.modal-content select {
+    width: calc(100% - 22px);
+    padding: 10px;
+    border: 1px solid var(--border-base);
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 16px;
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom Confirmation Modal */
+.custom-confirm-modal-overlay {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1002;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.3s ease-in-out;
+}
+
+.custom-confirm-modal-overlay.active {
+    visibility: visible;
+    opacity: 1;
+}
+
+.custom-confirm-modal-content {
+    background-color: var(--modal-bg);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px var(--modal-shadow);
+    max-width: 450px;
+    width: 90%;
+    box-sizing: border-box;
+    text-align: center;
+    transform: scale(0.9);
+    transition: transform 0.3s ease-in-out, background-color 0.3s ease;
+}
+
+.custom-confirm-modal-overlay.active .custom-confirm-modal-content {
+    transform: scale(1);
+}
+
+.custom-confirm-modal-content h3 {
+    color: var(--modal-text);
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.4em;
+    border-bottom: none;
+}
+
+.custom-confirm-modal-content p {
+    color: var(--modal-text);
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+.custom-confirm-modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.custom-confirm-modal-actions button {
+    padding: 12px 25px;
+    font-size: 1em;
+    box-shadow: none;
+    /* *** CORREÇÃO APLICADA AQUI *** */
+    color: #ffffff; /* Garante que o texto dos botões do modal seja sempre branco */
+}
+
+.custom-confirm-modal-actions .btn-cancel {
+    background-color: #7f8c8d;
+}
+.custom-confirm-modal-actions .btn-cancel:hover {
+    background-color: #6c7a89;
+}
+
+.custom-confirm-modal-actions .btn-confirm-danger {
+    background-color: #e74c3c;
+}
+.custom-confirm-modal-actions .btn-confirm-danger:hover {
+    background-color: #c0392b;
+}
+
+.custom-confirm-modal-actions .btn-confirm-success {
+    background-color: var(--primary-color);
+}
+.custom-confirm-modal-actions .btn-confirm-success:hover {
+    background-color: var(--accent-color);
+}
+
+/* --- ESTILOS ESPECÍFICOS PARA TEMAS --- */
+
+body.theme-dark {
+    input[readonly],
+    textarea[readonly] {
+        background-color: var(--secondary-color);
+        color: var(--text-primary);
+        opacity: 0.6;
+    }
+    .dropdown-item:hover {
+        color: var(--text-primary);
+    }
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    textarea:focus,
+    select:focus {
+        box-shadow: 0 0 0 2px var(--secondary-color), inset 0 1px 3px rgba(0, 0, 0, 0.4);
+    }
+}
+
+/* Estilos para o Dashboard (Página Inicial) */
+.summary-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Layout de grid responsivo */
+    gap: 25px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-base);
+}
+
+.summary-card {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background-secondary);
+    border-radius: 8px;
+    padding: 25px;
+    text-align: center;
+    text-decoration: none;
+    color: var(--text-primary);
+    border-left: 5px solid var(--primary-color);
+    box-shadow: 0 2px 5px var(--shadow-base);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+a.summary-card:hover { /* Efeito de hover apenas para cards que são links */
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px var(--shadow-base);
+}
+
+.summary-card h3 {
+    margin-top: 0;
+    font-size: 1.1em;
+    color: var(--tertiary-color);
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.summary-value {
+    font-size: 3.5em;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 15px 0;
+}
+
+.summary-description {
+    font-size: 0.9em;
+    opacity: 0.8;
+    margin-top: -15px;
+    margin-bottom: 15px;
+}
+
+.summary-link {
+    font-weight: bold;
+    color: var(--accent-color);
+    margin-top: auto;
+}
+
+/* Estilos para a lista dentro do card de frequência */
+.summary-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 15px 0;
+    text-align: left;
+    flex-grow: 1; /* Faz a lista ocupar o espaço disponível */
+}
+
+.summary-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 5px;
+    border-bottom: 1px dashed var(--border-base);
+    font-size: 0.95em;
+}
+
+.summary-list li:last-child {
+    border-bottom: none;
+}
+
+.summary-list li strong {
+    font-size: 1.1em;
+    font-weight: 700;
+    color: var(--primary-color);
+    background-color: var(--background-primary);
+    padding: 2px 8px;
+    border-radius: 5px;
+}
+
+/* Container para o ícone/logo fixo na barra de navegação */
+.nav-brand-container {
+    display: flex;         /* Essencial para usar align-items */
+    align-items: center; /* Centraliza o ícone verticalmente */
+    height: 100%;          /* Faz o container ter a mesma altura da barra */
+    padding: 0 15px;       /* Adiciona um espaçamento lateral */
+}
+
+.nav-icon {
+    height: 40px;
+    width: auto;
+    vertical-align: middle;
+}
+
+/* ====================================================================== */
+/* BLOCO DE INFORMAÇÕES DE REFERÊNCIA NO FORMULÁRIO DE CONTROLE           */
+/* ====================================================================== */
+.info-display-box {
+    background-color: var(--background-primary);
+    border: 1px solid var(--border-base);
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 25px;
+}
+
+.info-display-box p {
+    margin: 5px 0;
+    font-size: 1em;
+    line-height: 1.5;
+}
+
+.info-display-box strong {
+    color: var(--tertiary-color);
+}
+
+.color-preview {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--border-base);
+    border-radius: 3px;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+/* ====================================================================== */
+/* AJUSTES DE ESTILO PARA A BIBLIOTECA SELECT2                            */
+/* ====================================================================== */
+
+/* Container principal do Select2 */
+.select2-container--default .select2-selection--single {
+    height: 40px; /* Mesma altura dos outros inputs */
+    border: 1px solid var(--border-base);
+    border-radius: 5px;
+    background-color: var(--background-secondary);
+}
+
+/* Texto e seta dentro do campo */
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: var(--text-primary);
+    line-height: 40px; /* Centraliza o texto verticalmente */
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-color: var(--tertiary-color) transparent transparent transparent;
+    margin-top: 4px;
+}
+
+/* Estilo do dropdown que abre com os resultados */
+.select2-dropdown {
+    background-color: var(--background-secondary);
+    border: 1px solid var(--border-base);
+    border-radius: 5px;
+}
+
+/* Campo de busca dentro do dropdown */
+.select2-container--default .select2-search--dropdown .select2-search__field {
+    background-color: var(--background-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-base);
+    font-size: 16px; /* Garante que a fonte não seja muito pequena */
+    padding: 8px 10px; /* Adiciona espaçamento interno, aumentando a altura efetiva */
+
+}
+
+/* Estilo dos resultados da busca */
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* ====================================================================== */
+/* AJUSTE DE LARGURA PARA A TABELA DE CADASTRO DE SITUAÇÕES                */
+/* ====================================================================== */
+
+#tabelaSituacoes {
+    /* Faz com que a largura total da tabela se ajuste ao seu conteúdo, 
+       em vez de ocupar 100% do espaço disponível. */
+    width: auto;
+    
+    /* Opcional: define uma largura mínima para a tabela inteira. */
+    min-width: 500px; 
+}
+
+/* ====================================================================== */
+/* ESTILO ELEGANTE PARA OS CABEÇALHOS DE TABELA ORDENÁVEIS                */
+/* ====================================================================== */
+
+/* Estilo base para o link dentro do cabeçalho */
+th a {
+    /* Remove o sublinhado e garante que a cor seja a mesma do texto do cabeçalho */
+    text-decoration: none;
+    color: inherit; /* 'inherit' faz o link herdar a cor do seu elemento pai (o <th>) */
+
+    /* Bônus de usabilidade: faz a área do link ocupar toda a célula */
+    display: block;
+    width: 100%;
+    height: 100%;
+    
+    /* Garante que o padding da célula não seja perdido (opcional, mas bom) */
+    padding: 12px 15px;
+    margin: -12px -15px; /* Compensa o padding para preencher a célula toda */
+}
+
+/* Efeito ao passar o mouse sobre o link do cabeçalho */
+th a:hover {
+    /* O sublinhado reaparece sutilmente para indicar que é clicável */
+    text-decoration: underline;
+}
+
+/* ====================================================================== */
+/* LAYOUT ESQUERDA-CENTRO-DIREITA PARA A BARRA DE BOTÕES                  */
+/* ====================================================================== */
+
+/* Modifica o comportamento do container principal */
+.button-toolbar {
+    display: flex;
+    justify-content: flex-start; /* Alinha o primeiro grupo à esquerda e o último à direita */
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+/* Garante que os grupos internos também usem flexbox para alinhar seus botões */
+.toolbar-group-left,
+.toolbar-group-center,
+.toolbar-group-right {
+    display: flex;
+    gap: 10px; /* Mantém o espaçamento entre os botões dentro de um grupo */
+}
+
+/* A mágica para centralizar o grupo do meio */
+.toolbar-group-center {
+    /* As margens automáticas nos dois lados forçam o elemento
+       a ocupar o centro do espaço vazio restante. */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Garante que o grupo da direita fique no final (embora o justify-content já ajude) */
+.toolbar-group-right {
+    margin-left: auto;
+}
+
+/* Sobrescreve a regra acima para que o grupo central funcione */
+.toolbar-group-center + .toolbar-group-right {
+    margin-left: 0;
+}
+
+/* ====================================================================== */
+/* ESTILO PARA O BOTÃO DE FILTRO QUANDO ESTIVER ATIVO                     */
+/* ====================================================================== */
+
+button.filtro-ativo {
+    /* Usa uma cor de destaque do tema para o fundo */
+    background-color: var(--accent-color); 
+    
+    /* Adiciona uma borda mais forte para chamar a atenção */
+    border: 2px solid var(--tertiary-color);
+    
+    /* Deixa o texto em negrito */
+    font-weight: bold;
+    
+    /* Garante que o texto do botão permaneça claro */
+    color: var(--text-secondary);
+}
+
+/* Efeito sutil ao passar o mouse sobre o botão ativo */
+button.filtro-ativo:hover {
+    filter: brightness(110%);
+}
+
+/* ESTILOS PARA FEEDBACK DA ATUALIZAÇÃO RÁPIDA DE SITUAÇÃO */
+
+/* Efeito de transição suave para a linha da tabela */
+#tabelaControle tbody tr {
+    transition: background-color 0.3s ease-in-out, opacity 0.5s ease;
+}
+
+/* Cor de fundo para sucesso */
+#tabelaControle tbody tr.update-success {
+    background-color: #d4edda; /* Verde claro */
+}
+
+/* Cor de fundo para erro */
+#tabelaControle tbody tr.update-error {
+    background-color: #f8d7da; /* Vermelho claro */
+}
+
+/* Estilo para o dropdown dentro da célula da tabela */
+.situacao-dropdown {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid var(--border-base);
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    border-radius: 4px;
+    cursor: pointer; /* Indica que é um elemento interativo */
+}
+
+/* ====================================================================== */
+/* AJUSTE DE LARGURA PARA A TABELA DE TIPOS DE DOCUMENTO                  */
+/* ====================================================================== */
+
+/* Faz com que a tabela se ajuste ao conteúdo, em vez de ocupar 100% */
+#tabelaTiposDocumento {
+    width: auto;
+}
+
+/* Define uma largura mínima para a primeira coluna (Nome do Documento) */
+#tabelaTiposDocumento th:nth-child(1),
+#tabelaTiposDocumento td:nth-child(1) {
+    min-width: 100px;
+}
+
+/* Opcional: Centraliza o conteúdo da segunda coluna (Ações) */
+#tabelaTiposDocumento th:nth-child(2),
+#tabelaTiposDocumento td:nth-child(2) {
+    text-align: center;
+}
+
+/* Estilos para o modal de configuração de colunas */
+.modal-colunas-list {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr); /* <-- Altere o 2 para 1 */
+    gap: 10px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.modal-colunas-list label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: normal;
+}
+
+/* ====================================================================== */
+/* ESTILO PARA COLUNAS COM TEXTO LONGO E QUEBRA DE LINHA                  */
+/* ====================================================================== */
+
+.coluna-observacoes {
+    /* Define uma largura máxima para a coluna */
+    max-width: 300px; /* Você pode ajustar este valor */
+    
+    /* Permite que o texto quebre a linha, substituindo o 'nowrap' geral da tabela */
+    white-space: normal;
+    
+    /* Força a quebra de palavras muito longas que não caberiam na célula */
+    overflow-wrap: break-word;
+}
+

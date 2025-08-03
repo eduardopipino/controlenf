@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Instrumentos Contratuais</h2>
+
+    <div class="button-toolbar">
+        <div class="toolbar-group-left">
+            <button class="{{ 'filtro-ativo' if filtro_ic_ativo == 'todos' else '' }}" onclick="location.href='{{ url_for('instrumentos_contratuais') }}'">Todos</button>
+            <button class="{{ 'filtro-ativo' if filtro_ic_ativo == 'vigentes' else '' }}" onclick="location.href='{{ url_for('instrumentos_contratuais_vigentes') }}'">Vigentes</button>
+            <button class="{{ 'filtro-ativo' if filtro_ic_ativo == 'extintos' else '' }}" onclick="location.href='{{ url_for('instrumentos_contratuais_extintos') }}'">Extintos</button>
+        </div>
+
+        <div class="toolbar-group-center">
+            <button id="btnDetalhes" disabled>Detalhes...</button>
+        </div>
+
+        <div class="toolbar-group-right">
+            <button onclick="location.href='{{ url_for('novo_instrumento_contratual') }}'">Novo</button>
+        </div>
+    </div>
+    
+    <br>
+
+    <table border="1" id="tabelaInstrumentos">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Nº Instrumento</th>
+                <th>Tipo Documento</th>
+                <th>Contratada</th>
+                <th>Objeto Resumido</th>
+                <th>Vigente</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for instrumento in instrumentos %}
+            <tr class="clickable-row">
+                <td><input type="radio" name="selected_instrumento" value="{{ instrumento._id }}"></td>
+                <td>{{ instrumento.n_instrumento }}</td>
+                <td>{{ instrumento.tipo_documento }}</td>
+                <td>{{ instrumento.contratada }}</td>
+                <td>{{ instrumento.objeto_resumido }}</td>
+                <td>{{ 'Sim' if instrumento.vigente else 'Não' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6">Nenhum instrumento contratual encontrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // A lógica de inicialização da tabela não precisa de alterações
+        initializeClickableTable(
+            'tabelaInstrumentos',
+            'selected_instrumento',
+            'btnDetalhes',
+            "{{ url_for('gerenciar_instrumento', instrumento_id='REPLACE_ID') }}"
+        );
+    });
+</script>
+{% endblock %}
