@@ -29,7 +29,7 @@ app.config['JSON_SORT_KEYS'] = False
 app.secret_key = os.urandom(24)
 
 # Configuração do MongoDB local
-#CONEXAO_ATLAS = "mongodb+srv://app_user:gTRwnUOXUqFD8jjH@clustercontrolenf.mdlkk34.mongodb.net/?retryWrites=true&w=majority&appName=ClusterControleNF"
+#CONEXAO_ATLAS = "mongodb+srv://<usuario>:<senha>@clustercontrolenf.mdlkk34.mongodb.net/?retryWrites=true&w=majority&appName=ClusterControleNF"
 #client = MongoClient(CONEXAO_ATLAS)
 
 # PYTHONANYWHERE
@@ -39,9 +39,29 @@ app.secret_key = os.urandom(24)
 # Cria o objeto de certificado
 ca = certifi.where()
 # Passa o certificado na string de conexão
-client = MongoClient(config.MONGO_URI, tlsCAFile=ca)
+#client = MongoClient(config.MONGO_URI, tlsCAFile=ca)
 
-db = client.get_database('bd') 
+#MONGO_URI = os.environ.get('MONGO_URI')
+#client = MongoClient(MONGO_URI)
+#db = client.get_database('bd') 
+
+# --- CONFIGURAÇÃO DA CONEXÃO COM O BANCO DE DADOS ---
+MONGO_URI = os.environ.get('MONGO_URI')
+client = None
+db = None
+
+if not MONGO_URI:
+    print("AVISO: Variável de ambiente MONGO_URI não encontrada. O aplicativo não poderá se conectar ao banco de dados.")
+else:
+    try:
+        ca = certifi.where()
+        client = MongoClient(MONGO_URI, tlsCAFile=ca)
+        # Testa a conexão para falhar rapidamente se algo estiver errado
+        client.admin.command('ping')
+        db = client.get_database('bd')
+        print(">>> Conexão com MongoDB Atlas estabelecida com sucesso! <<<")
+    except Exception as e:
+        print(f"ERRO: Falha na conexão com MongoDB Atlas. Erro: {e}")
 
 # Coleções
 instrumentos_collection = db['INSTRUMENTOCONTRATUAL']
