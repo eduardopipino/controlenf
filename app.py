@@ -26,7 +26,9 @@ limiter = Limiter(
 )
 
 app.config['JSON_SORT_KEYS'] = False
-app.secret_key = os.urandom(24)
+
+#app.secret_key = os.urandom(24)
+app.secret_key = os.environ.get('SECRET_KEY', 'uma_chave_padrao_para_desenvolvimento_local')
 
 # Configuração do MongoDB local
 #CONEXAO_ATLAS = "mongodb+srv://<usuario>:<senha>@clustercontrolenf.mdlkk34.mongodb.net/?retryWrites=true&w=majority&appName=ClusterControleNF"
