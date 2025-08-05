@@ -73,7 +73,21 @@ app.secret_key = os.environ.get('SECRET_KEY', 'uma_chave_padrao_para_desenvolvim
 # ======================================================================
 # LÓGICA DE CONEXÃO FLEXÍVEL (HEROKU / LOCAL)
 # ======================================================================
+
+# --- CONFIGURAÇÃO DA CONEXÃO COM O BANCO DE DADOS (VERSÃO CORRIGIDA) ---
 MONGO_URI = os.environ.get('MONGO_URI')
+
+# Se a variável de ambiente não for encontrada (estamos rodando localmente)
+if not MONGO_URI:
+    print("AVISO: MONGO_URI não encontrado no ambiente. Tentando importar de config.py...")
+    try:
+        import config
+        MONGO_URI = config.MONGO_URI
+        print(">>> Usando MONGO_URI do arquivo config.py local.")
+    except (ImportError, AttributeError):
+        print("ERRO CRÍTICO: config.py não encontrado ou não contém MONGO_URI. A aplicação não pode conectar ao banco.")
+        MONGO_URI = None
+
 client = None
 db = None
 
