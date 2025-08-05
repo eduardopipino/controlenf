@@ -13,7 +13,7 @@ import os
 import re
 import io
 import csv
-import config
+#import config
 import certifi
 
 app = Flask(__name__)
