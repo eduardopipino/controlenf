@@ -13,7 +13,7 @@ import os
 import re
 import io
 import csv
-#import config
+import config
 import certifi
 
 app = Flask(__name__)
@@ -39,7 +39,9 @@ app.secret_key = os.environ.get('SECRET_KEY', 'uma_chave_padrao_para_desenvolvim
 
 # UTILIZANDO CERTIFI
 # Cria o objeto de certificado
-ca = certifi.where()
+
+#ca = certifi.where()
+
 # Passa o certificado na string de conexão
 #client = MongoClient(config.MONGO_URI, tlsCAFile=ca)
 
@@ -47,23 +49,58 @@ ca = certifi.where()
 #client = MongoClient(MONGO_URI)
 #db = client.get_database('bd') 
 
+#EXECUTAR LOCALMENTE
+#MONGO_URI = config.MONGO_URI
+
 # --- CONFIGURAÇÃO DA CONEXÃO COM O BANCO DE DADOS ---
+#MONGO_URI = os.environ.get('MONGO_URI')
+#client = None
+#db = None
+
+# if not MONGO_URI:
+#     print("AVISO: Variável de ambiente MONGO_URI não encontrada. O aplicativo não poderá se conectar ao banco de dados.")
+# else:
+#     try:
+#         ca = certifi.where()
+#         client = MongoClient(MONGO_URI, tlsCAFile=ca)
+#         # Testa a conexão para falhar rapidamente se algo estiver errado
+#         client.admin.command('ping')
+#         db = client.get_database('bd')
+#         print(">>> Conexão com MongoDB Atlas estabelecida com sucesso! <<<")
+#     except Exception as e:
+#         print(f"ERRO: Falha na conexão com MongoDB Atlas. Erro: {e}")
+
+# ======================================================================
+# LÓGICA DE CONEXÃO FLEXÍVEL (HEROKU / LOCAL)
+# ======================================================================
 MONGO_URI = os.environ.get('MONGO_URI')
 client = None
 db = None
 
+# Se a variável de ambiente não for encontrada (provavelmente estamos rodando localmente)
 if not MONGO_URI:
-    print("AVISO: Variável de ambiente MONGO_URI não encontrada. O aplicativo não poderá se conectar ao banco de dados.")
-else:
+    print("AVISO: Variável de ambiente MONGO_URI não encontrada. Tentando importar de config.py...")
+    try:
+        import config
+        MONGO_URI = config.MONGO_URI
+        print(">>> Usando MONGO_URI do arquivo config.py local.")
+    except (ImportError, AttributeError):
+        print("ERRO: Falha ao carregar MONGO_URI do config.py. A aplicação não pode conectar ao banco.")
+        # A variável MONGO_URI continua None
+
+# Tenta conectar ao banco de dados se uma URI foi encontrada
+if MONGO_URI:
     try:
         ca = certifi.where()
         client = MongoClient(MONGO_URI, tlsCAFile=ca)
-        # Testa a conexão para falhar rapidamente se algo estiver errado
-        client.admin.command('ping')
+        client.admin.command('ping') # Testa a conexão
         db = client.get_database('bd')
         print(">>> Conexão com MongoDB Atlas estabelecida com sucesso! <<<")
     except Exception as e:
         print(f"ERRO: Falha na conexão com MongoDB Atlas. Erro: {e}")
+        db = None # Garante que 'db' seja None se a conexão falhar
+else:
+    print("ERRO CRÍTICO: Nenhuma MONGO_URI encontrada. A aplicação não funcionará.")
 
 # Coleções
 instrumentos_collection = db['INSTRUMENTOCONTRATUAL']

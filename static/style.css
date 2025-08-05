@@ -1022,9 +1022,12 @@ button.filtro-ativo:hover {
 /* ESTILO PARA COLUNAS COM TEXTO LONGO E QUEBRA DE LINHA                  */
 /* ====================================================================== */
 
-.coluna-observacoes {
-    /* Define uma largura máxima para a coluna */
-    max-width: 300px; /* Você pode ajustar este valor */
+.coluna-texto-longo {
+    /* Define uma largura máxima para a coluna. Ajuste conforme precisar. */
+    max-width: 250px;
+    
+    /* Garante que a coluna não fique espremida demais */
+    min-width: 150px;
     
     /* Permite que o texto quebre a linha, substituindo o 'nowrap' geral da tabela */
     white-space: normal;

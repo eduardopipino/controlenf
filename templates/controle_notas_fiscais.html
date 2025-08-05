@@ -30,7 +30,7 @@
                 <th></th>
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
-                        <th class="{{ 'coluna-observacoes' if col_id == 'observacoes' else '' }}">
+                        <th class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }}">
                             <a href="{{ url_for(request.endpoint, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc') }}">
                                 {{ col_nome }}
                                 {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}
@@ -40,38 +40,47 @@
                 {% endfor %}
             </tr>
         </thead>
-        <tbody>
-            {% for controle in controles %}
-            <tr class="clickable-row" id="controle-row-{{ controle._id }}">
-                <td><input type="radio" name="selected_controle" value="{{ controle._id }}"></td>
+<tbody>
+    {% for controle in controles %}
+    <tr class="clickable-row" id="controle-row-{{ controle._id }}">
+        <td><input type="radio" name="selected_controle" value="{{ controle._id }}"></td>
+        
+        {% set colunas_longas = ['objeto', 'item_descricao', 'documentacao', 'observacoes'] %}
+
+        {% for col_id, col_nome in todas_as_colunas %}
+            {% if col_id in colunas_visiveis %}
+
+                {% if col_id == 'situacao' %}
+                    <td class="celula-situacao">
+                        <select class="situacao-dropdown" data-id="{{ controle._id }}">
+                            <option value="">-- Nenhuma --</option>
+                            {% for sit in situacoes_para_filtro %}
+                                <option value="{{ sit.situacao }}" {% if sit.situacao == controle.situacao %}selected{% endif %}>
+                                    {{ sit.situacao }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </td>
                 
-                {% for col_id, col_nome in todas_as_colunas %}
-                    {% if col_id in colunas_visiveis %}
-                        {% if col_id == 'situacao' %}
-                            <td class="celula-situacao">
-                                <select class="situacao-dropdown" data-id="{{ controle._id }}">
-                                    <option value="">-- Nenhuma --</option>
-                                    {% for sit in situacoes_para_filtro %}
-                                        <option value="{{ sit.situacao }}" {% if sit.situacao == controle.situacao %}selected{% endif %}>
-                                            {{ sit.situacao }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </td>
-                        {% elif col_id == 'documentacao' %}
-                            <td class="coluna-documentacao">{{ controle.documentacao | join(', ') }}</td>
+                {% else %}
+                    <td class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }}">
+                        {% if col_id == 'documentacao' %}
+                            {{ controle.documentacao | join(', ') }}
                         {% else %}
-                            <td class="{{ 'coluna-observacoes' if col_id == 'observacoes' else '' }}">{{ controle[col_id] }}</td>
+                            {{ controle[col_id] }}
                         {% endif %}
-                    {% endif %}
-                {% endfor %}
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="{{ colunas_visiveis|length + 1 }}">Nenhum registro de controle encontrado.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+                    </td>
+                {% endif %}
+
+            {% endif %}
+        {% endfor %}
+    </tr>
+    {% else %}
+    <tr>
+        <td colspan="{{ colunas_visiveis|length + 1 }}">Nenhum registro de controle encontrado.</td>
+    </tr>
+    {% endfor %}
+</tbody>
     </table>
 
     <div id="filterModal" class="modal-overlay">
