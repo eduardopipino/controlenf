@@ -79,42 +79,29 @@ MONGO_URI = os.environ.get('MONGO_URI')
 
 # Se a variável de ambiente não for encontrada (estamos rodando localmente)
 if not MONGO_URI:
-    print("AVISO: MONGO_URI não encontrado no ambiente. Tentando importar de config.py...")
-    try:
-        import config
-        MONGO_URI = config.MONGO_URI
-        print(">>> Usando MONGO_URI do arquivo config.py local.")
-    except (ImportError, AttributeError):
-        print("ERRO CRÍTICO: config.py não encontrado ou não contém MONGO_URI. A aplicação não pode conectar ao banco.")
-        MONGO_URI = None
-
-client = None
-db = None
-
-# Se a variável de ambiente não for encontrada (provavelmente estamos rodando localmente)
-if not MONGO_URI:
     print("AVISO: Variável de ambiente MONGO_URI não encontrada. Tentando importar de config.py...")
     try:
         import config
         MONGO_URI = config.MONGO_URI
         print(">>> Usando MONGO_URI do arquivo config.py local.")
     except (ImportError, AttributeError):
-        print("ERRO: Falha ao carregar MONGO_URI do config.py. A aplicação não pode conectar ao banco.")
-        # A variável MONGO_URI continua None
+        print("ERRO CRÍTICO: config.py não encontrado ou não contém MONGO_URI.")
+        MONGO_URI = None
 
 # Tenta conectar ao banco de dados se uma URI foi encontrada
+client = None
+db = None
 if MONGO_URI:
     try:
         ca = certifi.where()
         client = MongoClient(MONGO_URI, tlsCAFile=ca)
-        client.admin.command('ping') # Testa a conexão
+        # Testa a conexão para falhar rapidamente se algo estiver errado
+        client.admin.command('ping')
         db = client.get_database('bd')
         print(">>> Conexão com MongoDB Atlas estabelecida com sucesso! <<<")
     except Exception as e:
         print(f"ERRO: Falha na conexão com MongoDB Atlas. Erro: {e}")
-        db = None # Garante que 'db' seja None se a conexão falhar
-else:
-    print("ERRO CRÍTICO: Nenhuma MONGO_URI encontrada. A aplicação não funcionará.")
+
 
 # Coleções
 instrumentos_collection = db['INSTRUMENTOCONTRATUAL']
