@@ -1,0 +1,28 @@
+# Nome do workflow que aparecerá na aba "Actions" do GitHub
+name: Manter Serviço do Render Ativo
+
+on:
+  # O gatilho principal: a programação (schedule)
+  schedule:
+    # Executa a cada 14 minutos. O Render dorme após 15 minutos de inatividade,
+    # então este intervalo é seguro para mantê-lo sempre acordado.
+    - cron: '*/14 * * * *'
+  
+  # Gatilho opcional: permite que você rode este workflow manualmente
+  # a partir da aba "Actions" do GitHub para testar.
+  workflow_dispatch:
+
+jobs:
+  # Nome do nosso "trabalho"
+  ping:
+    # Usa a versão mais recente do Ubuntu como ambiente de execução
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Nome do nosso "passo"
+      - name: Enviar requisição para a URL do Render
+        # Comando que será executado. Ele faz um "ping" HTTP.
+        # O '${{ secrets.RENDER_URL }}' pega o segredo que criamos no Passo 2.
+        # A opção '-s' (silent) e '-f' (fail) garantem que ele não polua o log
+        # e falhe se o site estiver com erro.
+        run: curl -s -f ${{ secrets.RENDER_URL }} || exit 0
