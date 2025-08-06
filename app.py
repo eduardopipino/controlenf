@@ -13,7 +13,6 @@ import os
 import re
 import io
 import csv
-#import config
 import certifi
 
 app = Flask(__name__)
@@ -30,48 +29,8 @@ app.config['JSON_SORT_KEYS'] = False
 #app.secret_key = os.urandom(24)
 app.secret_key = os.environ.get('SECRET_KEY', 'uma_chave_padrao_para_desenvolvimento_local')
 
-# Configuração do MongoDB local
-#CONEXAO_ATLAS = "mongodb+srv://<usuario>:<senha>@clustercontrolenf.mdlkk34.mongodb.net/?retryWrites=true&w=majority&appName=ClusterControleNF"
-#client = MongoClient(CONEXAO_ATLAS)
-
-# PYTHONANYWHERE
-#client = MongoClient(config.MONGO_URI)
-
-# UTILIZANDO CERTIFI
-# Cria o objeto de certificado
-
-#ca = certifi.where()
-
-# Passa o certificado na string de conexão
-#client = MongoClient(config.MONGO_URI, tlsCAFile=ca)
-
-#MONGO_URI = os.environ.get('MONGO_URI')
-#client = MongoClient(MONGO_URI)
-#db = client.get_database('bd') 
-
-#EXECUTAR LOCALMENTE
-#MONGO_URI = config.MONGO_URI
-
-# --- CONFIGURAÇÃO DA CONEXÃO COM O BANCO DE DADOS ---
-#MONGO_URI = os.environ.get('MONGO_URI')
-#client = None
-#db = None
-
-# if not MONGO_URI:
-#     print("AVISO: Variável de ambiente MONGO_URI não encontrada. O aplicativo não poderá se conectar ao banco de dados.")
-# else:
-#     try:
-#         ca = certifi.where()
-#         client = MongoClient(MONGO_URI, tlsCAFile=ca)
-#         # Testa a conexão para falhar rapidamente se algo estiver errado
-#         client.admin.command('ping')
-#         db = client.get_database('bd')
-#         print(">>> Conexão com MongoDB Atlas estabelecida com sucesso! <<<")
-#     except Exception as e:
-#         print(f"ERRO: Falha na conexão com MongoDB Atlas. Erro: {e}")
-
 # ======================================================================
-# LÓGICA DE CONEXÃO FLEXÍVEL (HEROKU / LOCAL)
+# LÓGICA DE CONEXÃO FLEXÍVEL (HOSPEDAGEM ONLINE / LOCAL)
 # ======================================================================
 
 # --- CONFIGURAÇÃO DA CONEXÃO COM O BANCO DE DADOS (VERSÃO CORRIGIDA) ---
@@ -1145,7 +1104,7 @@ def editar_item_instrumento(item_id):
 #    app.run(debug=True)
 
 if __name__ == '__main__':
-    # O Heroku define a porta através de uma variável de ambiente PORT
+    # O site de hospedagem define a porta através de uma variável de ambiente PORT
     port = int(os.environ.get("PORT", 5000))
-    # O host '0.0.0.0' é necessário para que o app seja acessível de fora do container Heroku
-    app.run(host='0.0.0.0', port=port)
+    # O host '0.0.0.0' é necessário para que o app seja acessível de fora do container online
+    app.run(host='0.0.0.0', port=port, debug=True)
