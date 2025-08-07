@@ -3,7 +3,7 @@
 {% block content %}
     <h2>Consulta Instrumento Contratual</h2>
 
-    <div class="container" style="border-left: 5px solid var(--primary-color); margin-bottom: 30px;">
+    <div class="container container-darker" style="border-left: 5px solid var(--primary-color); margin-bottom: 30px;">
         <h3>Dados Gerais do Instrumento</h3>
         <form id="formInstrumento" method="POST" action="{{ url_for('gerenciar_instrumento', instrumento_id=instrumento._id) }}">
             <input type="hidden" name="update_instrumento" value="1">
@@ -44,7 +44,7 @@
         <form id="formExcluirInstrumento" method="POST" action="{{ url_for('excluir_instrumento_contratual', instrumento_id=instrumento._id) }}" style="display:none;"></form>
     </div>
 
-    <div class="container">
+    <div class="container container-darker">
         <h3>Itens de Faturamento</h3>
         <table border="1" id="tabelaItens">
             <thead>

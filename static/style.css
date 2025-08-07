@@ -6,6 +6,7 @@
     --primary-color: #3498db;      /* Azul médio para botões, destaques */
     --secondary-color: #aed6f1;    /* Azul claro para fundos secundários (ex: hover tabela, dropdowns) */
     --tertiary-color: #2874a6;     /* Azul escuro para navegação, títulos */
+	--nav-bg-color: var(--tertiary-color);
     --accent-color: #5dade2;       /* Azul de destaque para hover de botões */
 
     /* Cores de Texto */
@@ -122,13 +123,16 @@ body.theme-dark {
     --primary-color: #505050;
     --secondary-color: #404040;
     --tertiary-color: #b0b0b0;
+	--nav-bg-color: #1c1c1c;   /* <<< Nova variável SÓ para a barra de navegação */
     --accent-color: #606060;
     --text-primary: #f9f9f9;
     /* *** CORREÇÃO APLICADA AQUI *** */
     /* Garante que o texto dos botões seja claro no tema escuro */
     --text-secondary: #f9f9f9;
-    --background-primary: #222222;
-    --background-secondary: #2c2c2c;
+    /* Fundo geral do app, agora quase preto como solicitado */
+    --background-primary: #121212;
+    /* Fundo dos containers principais (os "quadros de fora"), um cinza bem escuro */
+    --background-secondary: #222222;
     --border-base: #555;
     --shadow-base: rgba(0, 0, 0, 0.7);
     --hover-bg: #444444;
@@ -161,7 +165,7 @@ body {
 }
 
 nav {
-    background-color: var(--tertiary-color);
+    background-color: var(--nav-bg-color);
     box-shadow: 0 4px 8px var(--shadow-base);
     padding: 0;
     position: relative;
@@ -296,12 +300,18 @@ nav {
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-h1, h2 {
-    color: var(--tertiary-color);
+/* Regra geral para os títulos (agora com uma cor de texto primária) */
+h1, h2, h3 {
+    color: var(--text-primary); /* <<< ALTERADO AQUI */
     border-bottom: 2px solid var(--secondary-color);
     padding-bottom: 10px;
     margin-top: 0;
     margin-bottom: 20px;
+}
+
+/* Regra específica para o tema escuro, garantindo que o título fique claro */
+body.theme-dark h1, body.theme-dark h2, body.theme-dark h3 {
+    color: var(--tertiary-color);
 }
 
 .button-toolbar {
@@ -1036,3 +1046,52 @@ button.filtro-ativo:hover {
     overflow-wrap: break-word;
 }
 
+/* Adiciona contraste ao botão desabilitado especificamente no tema escuro */
+body.theme-dark button:disabled {
+    background-color: #3a3a3a; /* Fundo cinza escuro */
+    color: #888888;          /* Texto cinza um pouco mais claro, mas legível */
+    opacity: 0.7;
+}
+
+/* No tema escuro, tabelas e quadros internos ficam um tom mais escuro que o container */
+body.theme-dark table,
+body.theme-dark .chart-box,
+body.theme-dark .info-display-box {
+    background-color: #181818; 
+}
+
+/* Estilo para os "quadros internos" */
+.inner-container {
+    padding: 20px;
+    background-color: var(--background-secondary); /* Usa a cor de fundo secundária do tema */
+    border-radius: 8px;
+    box-shadow: 0 4px 10px var(--shadow-base);
+    overflow-x: auto;
+    box-sizing: border-box;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* No tema escuro, o quadro interno fica mais escuro que o externo */
+body.theme-dark .inner-container {
+    background-color: #181818;
+}
+
+/* Classe modificadora para escurecer o fundo de um container no tema escuro */
+body.theme-dark .container-darker {
+    background-color: #181818;
+}
+
+/* ====================================================================== */
+/* FUNDO PRETO PARA INPUTS NO TEMA ESCURO                                 */
+/* ====================================================================== */
+
+/* Esta regra se aplica a todos os campos de formulário apenas no tema escuro */
+body.theme-dark input[type="text"],
+body.theme-dark input[type="email"],
+body.theme-dark input[type="password"],
+body.theme-dark textarea,
+body.theme-dark select {
+    background-color: #000000;
+    /* Opcional: ajusta a cor da borda para dar um leve contorno contra o fundo */
+    border-color: #333333;
+}
