@@ -344,7 +344,16 @@ def index():
         flash(f"Não foi possível carregar os dados do resumo: {e}", "error")
         summary_data = {'pendentes': 0, 'vigentes': 0, 'total_instrumentos': 0, 'frequencias': []}
 
-    return render_template('index.html', summary=summary_data)
+    try:
+        with open('changelog.json', 'r', encoding='utf-8') as f:
+            changelog_data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        changelog_data = [] # Se o arquivo não existir ou for inválido, envia uma lista vazia
+
+    # Adiciona o 'changelog' ao render_template
+    return render_template('index.html', summary=summary_data, changelog=changelog_data)
+
+    #return render_template('index.html', summary=summary_data)
 
 # --- CADASTROS DE INSTRUMENTOS ---
 

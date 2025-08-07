@@ -32,4 +32,18 @@
             </ul>
         </div>
     </div>
+<hr style="margin: 40px 0;">
+
+<div class="changelog-container">
+    <h2>Histórico de Versões</h2>
+    {% for versao in changelog %}
+        <div class="changelog-entry">
+            <h4>Versão {{ versao.versao }} <span class="changelog-date">({{ versao.data }})</span></h4>
+            <p>{{ versao.descricao }}</p>
+        </div>
+    {% else %}
+        <p>Nenhum histórico de versão para exibir.</p>
+    {% endfor %}
+</div>
+
 {% endblock %}

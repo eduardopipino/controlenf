@@ -1095,3 +1095,35 @@ body.theme-dark select {
     /* Opcional: ajusta a cor da borda para dar um leve contorno contra o fundo */
     border-color: #333333;
 }
+
+/* ====================================================================== */
+/* ESTILOS PARA O QUADRO DE HISTÓRICO DE VERSÕES (CHANGELOG)              */
+/* ====================================================================== */
+.changelog-container {
+    margin-top: 30px;
+}
+
+.changelog-entry {
+    background-color: var(--background-primary);
+    border-left: 4px solid var(--primary-color);
+    padding: 10px 20px;
+    margin-bottom: 15px;
+    border-radius: 0 5px 5px 0;
+}
+
+.changelog-entry h4 {
+    margin-top: 0;
+    margin-bottom: 5px;
+    color: var(--tertiary-color);
+}
+
+.changelog-entry p {
+    margin-bottom: 0;
+}
+
+.changelog-date {
+    font-size: 0.8em;
+    font-weight: normal;
+    color: var(--text-primary);
+    opacity: 0.7;
+}
