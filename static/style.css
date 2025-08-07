@@ -53,6 +53,7 @@ body.theme-light {
     --primary-color: #b0b0b0;
     --secondary-color: #e0e0e0;
     --tertiary-color: #505050;
+	--nav-bg-color: var(--tertiary-color);
     --accent-color: #c0c0c0;
     --text-primary: #444;
     --text-secondary: #ffffff;
@@ -82,6 +83,7 @@ body.theme-green {
     --primary-color: #28a745;
     --secondary-color: #d4edda;
     --tertiary-color: #1d6e35;
+	--nav-bg-color: var(--tertiary-color);
     --accent-color: #218838;
     --text-primary: #222;
     --text-secondary: #f8f8f8;
@@ -102,6 +104,7 @@ body.theme-pink {
     --primary-color: #d63384;   /* Rosa principal para botões e destaques */
     --secondary-color: #fce4ec; /* Rosa bem claro para fundos e hovers de tabela */
     --tertiary-color: #ab2769;  /* Rosa escuro para navegação e títulos */
+	--nav-bg-color: var(--tertiary-color);
     --accent-color: #e664a7;    /* Rosa um pouco mais claro para hover de botões */
 
     /* Cores de Texto */
