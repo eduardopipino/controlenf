@@ -714,9 +714,10 @@ def nova_pendencia():
         }
         pendencias_collection.insert_one(nova)
         flash('Nova pendência criada com sucesso!', 'success')
-        # Redireciona para a lista correta dependendo se foi vinculada ou não
-        if instrumento_id:
-            return redirect(url_for('pendencias_por_instrumento')) # (Criaremos esta rota depois)
+        # <<< LÓGICA DE REDIRECIONAMENTO CORRIGIDA >>>
+        origem = request.form.get('origem')
+        if origem and 'por_instrumento' in origem:
+            return redirect(url_for('pendencias_por_instrumento'))
         else:
             return redirect(url_for('pendencias_diversos'))
 
@@ -793,42 +794,67 @@ def pendencias_filtrar():
 @login_required
 def pendencias_por_instrumento():
     user_id_obj = ObjectId(current_user.id)
+    
+    # Pega o filtro opcional da URL (para o dropdown de instrumentos)
+    instrumento_filtro_id = request.args.get('instrumento_id')
 
+    # --- Lógica de Filtro e Busca ---
+    match_filter = {
+        'user_id': user_id_obj,
+        'status': 'Pendente',
+        'instrumento_id': {'$exists': True, '$ne': None}
+    }
+    # Se um instrumento específico foi selecionado, adiciona ao filtro
+    if instrumento_filtro_id:
+        match_filter['instrumento_id'] = ObjectId(instrumento_filtro_id)
+        
     pipeline = [
-        {'$match': {
-            'user_id': user_id_obj,
-            'status': 'Pendente',
-            'instrumento_id': {'$exists': True}
-        }},
+        {'$match': match_filter},
+        {'$sort': {'prazo': 1}},
         {'$lookup': {
             'from': 'INSTRUMENTOCONTRATUAL',
             'localField': 'instrumento_id',
             'foreignField': '_id',
             'as': 'instrumento_info'
         }},
-        # <<< CORREÇÃO APLICADA AQUI >>>
         {'$unwind': {'path': '$instrumento_info', 'preserveNullAndEmptyArrays': True}},
         {'$group': {
             '_id': '$instrumento_id',
             'detalhes_instrumento': {'$first': '$instrumento_info'},
-            'pendencias': {'$push': '$$ROOT'}
+            'pendencias': {'$push': {
+                '_id': '$_id', 'pendencia': '$pendencia', 'prazo': '$prazo',
+                'responsavel': '$responsavel', 'situacao': '$situacao'
+            }}
         }},
-        {'$sort': {
-            'detalhes_instrumento.n_instrumento': 1
-        }}
+        {'$sort': {'detalhes_instrumento.n_instrumento': 1}}
     ]
-
     grupos_de_pendencias = list(pendencias_collection.aggregate(pipeline))
 
+    # --- Lógica de Preparação dos Dados (separar por prazo) ---
     hoje = datetime.now()
     for grupo in grupos_de_pendencias:
+        if not grupo.get('detalhes_instrumento'):
+            grupo['detalhes_instrumento'] = {'n_instrumento': 'Inválido', 'tipo_documento': 'Instrumento', 'contratada': 'Não encontrado', 'objeto_resumido': 'Link quebrado.'}
+        
         pendencias_com_prazo = [p for p in grupo['pendencias'] if p.get('prazo')]
         grupo['pendencias_sem_prazo'] = [p for p in grupo['pendencias'] if not p.get('prazo')]
         
-        grupo['pendencias_vencidas'] = [p for p in pendencias_com_prazo if p['prazo'] < hoje]
-        grupo['pendencias_a_vencer'] = [p for p in pendencias_com_prazo if p['prazo'] >= hoje]
+        if pendencias_com_prazo:
+            grupo['pendencias_vencidas'] = [p for p in pendencias_com_prazo if p['prazo'] < hoje]
+            grupo['pendencias_a_vencer'] = [p for p in pendencias_com_prazo if p['prazo'] >= hoje]
+        else:
+            grupo['pendencias_vencidas'] = []
+            grupo['pendencias_a_vencer'] = []
+    
+    # Busca todos os instrumentos para popular o dropdown de filtro da página
+    instrumentos_para_filtro = get_instrumentos_para_dropdown()
 
-    return render_template('pendencias_por_instrumento.html', grupos=grupos_de_pendencias)
+    return render_template(
+        'pendencias_por_instrumento.html', 
+        grupos=grupos_de_pendencias, 
+        instrumentos_para_filtro=instrumentos_para_filtro,
+        instrumento_filtro_id=instrumento_filtro_id
+    )
 
 @app.route('/controle/concluidas')
 @login_required

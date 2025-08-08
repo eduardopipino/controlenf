@@ -4,54 +4,64 @@
     <h2>Pendências por Instrumento Contratual</h2>
 
     <div class="button-toolbar">
-        <a href="{{ url_for('nova_pendencia') }}" class="button">Nova Pendência</a>
+        <div class="toolbar-group-left">
+            </div>
+        <div class="toolbar-group-center">
+            <button id="btnDetalhes" disabled>Detalhes...</button>
+        </div>
+        <div class="toolbar-group-right">
+            <a href="{{ url_for('nova_pendencia') }}" class="button">Nova</a>
+        </div>
     </div>
     <br>
 
+    <div class="container container-darker" style="margin-bottom: 20px; padding: 15px;">
+        <form method="GET" action="{{ url_for('pendencias_por_instrumento') }}">
+            <label for="instrumento_id_filtro">Filtrar por Instrumento Contratual:</label>
+            <select name="instrumento_id" id="instrumento_id_filtro" onchange="this.form.submit()">
+                <option value="">-- Todos os Instrumentos --</option>
+                {% for inst in instrumentos_para_filtro %}
+                    <option value="{{ inst._id }}" {% if inst._id|string == instrumento_filtro_id %}selected{% endif %}>
+                        {{ inst.n_instrumento }} / {{ inst.tipo_documento }} / {{ inst.contratada }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+
     {% if not grupos %}
         <div class="container">
-            <p>Nenhuma pendência vinculada a instrumentos contratuais foi encontrada.</p>
+            <p>Nenhuma pendência vinculada a instrumentos contratuais foi encontrada para o filtro selecionado.</p>
         </div>
     {% else %}
         {% for grupo in grupos %}
             <div class="container container-darker" style="margin-bottom: 20px;">
-                <h4>
-                    {{ grupo.detalhes_instrumento.tipo_documento }} Nº {{ grupo.detalhes_instrumento.n_instrumento }}
-                    -
-                    <small>{{ grupo.detalhes_instrumento.contratada }}</small>
-                </h4>
-                <p><strong>Objeto:</strong> {{ grupo.detalhes_instrumento.objeto_resumido }}</p>
+                <div class="info-display-box" style="margin-bottom: 20px; padding: 10px;">
+                    <p><strong>Nº Instrumento Contratual:</strong> {{ grupo.detalhes_instrumento.tipo_documento }} Nº {{ grupo.detalhes_instrumento.n_instrumento }}</p>
+                    <p><strong>Contratada/Fornecedora:</strong> {{ grupo.detalhes_instrumento.contratada }}</p>
+                    <p><strong>Objeto:</strong> {{ grupo.detalhes_instrumento.objeto_resumido }}</p>
+                </div>
 
                 {% if grupo.pendencias_vencidas or grupo.pendencias_a_vencer %}
-                    <h5>Pendências com Prazo</h5>
+                    <h4>Pendências com Prazo</h4>
                     <table border="1" style="width: 100%;">
                         <thead>
                             <tr>
-                                <th>Pendência</th>
-                                <th>Prazo</th>
-                                <th>Responsável</th>
-                                <th>Situação</th>
-                                <th>Ações</th>
+                                <th></th><th>Pendência</th><th>Prazo</th><th>Responsável</th><th>Situação</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for p in grupo.pendencias_vencidas %}
-                            <tr class="pendencia-vencida">
-                                <td>{{ p.pendencia }}</td>
-                                <td>{{ p.prazo.strftime('%d/%m/%Y') }}</td>
-                                <td>{{ p.responsavel }}</td>
-                                <td>{{ p.situacao }}</td>
-                                <td><a href="{{ url_for('detalhes_pendencia', pendencia_id=p._id) }}" class="button-small">Detalhes</a></td>
+                            <tr class="clickable-row pendencia-vencida">
+                                <td><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
+                                <td>{{ p.pendencia }}</td><td>{{ p.prazo.strftime('%d/%m/%Y') }}</td><td>{{ p.responsavel }}</td><td>{{ p.situacao }}</td>
                             </tr>
                             {% endfor %}
-
                             {% for p in grupo.pendencias_a_vencer %}
-                            <tr>
-                                <td>{{ p.pendencia }}</td>
-                                <td>{{ p.prazo.strftime('%d/%m/%Y') }}</td>
-                                <td>{{ p.responsavel }}</td>
-                                <td>{{ p.situacao }}</td>
-                                <td><a href="{{ url_for('detalhes_pendencia', pendencia_id=p._id) }}" class="button-small">Detalhes</a></td>
+                            <tr class="clickable-row">
+                                <td><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
+                                <td>{{ p.pendencia }}</td><td>{{ p.prazo.strftime('%d/%m/%Y') }}</td><td>{{ p.responsavel }}</td><td>{{ p.situacao }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -59,23 +69,18 @@
                 {% endif %}
 
                 {% if grupo.pendencias_sem_prazo %}
-                    <h5 style="margin-top: 15px;">Pendências Sem Prazo (Lembretes)</h5>
+                    <h4 style="margin-top: 15px;">Pendências Sem Prazo (Lembretes)</h4>
                     <table border="1" style="width: 100%;">
                         <thead>
                             <tr>
-                                <th>Pendência</th>
-                                <th>Responsável</th>
-                                <th>Situação</th>
-                                <th>Ações</th>
+                                <th></th><th>Pendência</th><th>Responsável</th><th>Situação</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for p in grupo.pendencias_sem_prazo %}
-                            <tr>
-                                <td>{{ p.pendencia }}</td>
-                                <td>{{ p.responsavel }}</td>
-                                <td>{{ p.situacao }}</td>
-                                <td><a href="{{ url_for('detalhes_pendencia', pendencia_id=p._id) }}" class="button-small">Detalhes</a></td>
+                            <tr class="clickable-row">
+                                <td><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
+                                <td>{{ p.pendencia }}</td><td>{{ p.responsavel }}</td><td>{{ p.situacao }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -84,4 +89,46 @@
             </div>
         {% endfor %}
     {% endif %}
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // SCRIPT COMPLETO PARA HABILITAR SELEÇÃO E BOTÃO DE DETALHES
+    const btnDetalhes = document.getElementById('btnDetalhes');
+    
+    // Desmarca todos os outros radios quando um é clicado
+    function uncheckOthers(clickedRadio) {
+        document.querySelectorAll('input[name="selected_pendencia"]').forEach(radio => {
+            if (radio !== clickedRadio) {
+                radio.checked = false;
+            }
+        });
+    }
+
+    document.querySelectorAll('input[name="selected_pendencia"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.checked) {
+                uncheckOthers(this); // Garante que só um fique marcado na página inteira
+                btnDetalhes.disabled = false;
+                btnDetalhes.onclick = () => {
+                    const selectedId = this.value;
+                    window.location.href = "{{ url_for('detalhes_pendencia', pendencia_id='REPLACE_ID') }}".replace('REPLACE_ID', selectedId);
+                };
+            }
+        });
+    });
+
+    document.querySelectorAll('.clickable-row').forEach(row => {
+        row.addEventListener('click', () => {
+            const radioButton = row.querySelector('input[type="radio"]');
+            if (radioButton) {
+                radioButton.checked = true;
+                const event = new Event('change', { 'bubbles': true });
+                radioButton.dispatchEvent(event);
+            }
+        });
+    });
+});
+</script>
 {% endblock %}
