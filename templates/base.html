@@ -31,6 +31,15 @@
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
+                    <a href="#" class="nav-link dropbtn">Controle de Pendências</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" class="dropdown-item">Visualização Geral</a></li>
+                        <li><a href="#" class="dropdown-item">Por instrumento contratual</a></li>
+                        <li><a href="{{ url_for('pendencias_diversos') }}" class="dropdown-item">Diversos</a></li>
+                        <li><a href="#" class="dropdown-item">Prazos</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
                     <a href="#" class="nav-link dropbtn">Cadastros</a>
                     <ul class="dropdown-menu">
                         <li><a href="{{ url_for('instrumentos_contratuais') }}" class="dropdown-item">Instrumentos Contratuais</a></li>

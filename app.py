@@ -69,6 +69,7 @@ situacao_collection = db['SITUACAO']
 controle_collection = db['CONTROLE']
 users_collection = db['users']
 documentacao_tipos_collection = db['DOCUMENTACAO']
+pendencias_collection = db['PENDENCIAS']
 
 # Logo após a definição das coleções
 TODAS_AS_COLUNAS_CONTROLE = [
@@ -221,6 +222,21 @@ def get_situacoes_que_arquivam():
         {'_id': 0, 'situacao': 1}
     )
     return [s['situacao'] for s in situacoes]
+
+def get_instrumentos_para_dropdown():
+    # Busca os instrumentos
+    instrumentos = list(instrumentos_collection.find(
+        {'user_id': ObjectId(current_user.id)},
+        {'n_instrumento': 1, 'tipo_documento': 1, 'contratada': 1, 'objeto_resumido': 1}
+    ))
+    
+    # <<< INÍCIO DA CORREÇÃO >>>
+    # Converte o ObjectId de cada instrumento para uma string
+    for inst in instrumentos:
+        inst['_id'] = str(inst['_id'])
+    # <<< FIM DA CORREÇÃO >>>
+        
+    return instrumentos
 
 # --- Rotas de Autenticação ---
 @app.route('/login', methods=['GET', 'POST'])
@@ -652,6 +668,128 @@ def controle_pendentes():
         todas_as_colunas=TODAS_AS_COLUNAS_CONTROLE,
         colunas_visiveis=current_user.colunas_visiveis
     )
+
+# --- CONTROLE DE PENDÊNCIAS ---
+
+@app.route('/pendencias/diversos')
+@login_required
+def pendencias_diversos():
+    # <<< INÍCIO DA LÓGICA DE ORDENAÇÃO >>>
+    sort_by = request.args.get('sort_by', 'data_criacao')
+    order = request.args.get('order', 'asc')
+    sort_order_mongo = -1 if order == 'desc' else 1
+    sort_document = [(sort_by, sort_order_mongo)]
+    # <<< FIM DA LÓGICA DE ORDENAÇÃO >>>
+
+    lista_pendencias = pendencias_collection.find({
+        'user_id': ObjectId(current_user.id),
+        'status': 'Pendente',
+        'instrumento_id': {'$exists': False}
+    }).sort(sort_document) # <<< ADICIONADO O .sort() >>>
+
+    return render_template(
+        'pendencias_diversos.html', 
+        pendencias=list(lista_pendencias),
+        sort_by=sort_by,
+        order=order,
+        filter_values={}
+    )
+
+@app.route('/pendencias/novo', methods=['GET', 'POST'])
+@login_required
+def nova_pendencia():
+    if request.method == 'POST':
+        instrumento_id = request.form.get('instrumento_id') # <<< Pega o ID do instrumento
+        nova = {
+            'pendencia': request.form.get('pendencia'),
+            'prazo': datetime.strptime(request.form.get('prazo'), '%Y-%m-%d') if request.form.get('prazo') else None,
+            'responsavel': request.form.get('responsavel'),
+            'situacao': request.form.get('situacao'),
+            'observacoes': request.form.get('observacoes'),
+            'status': 'Pendente',
+            'user_id': ObjectId(current_user.id),
+            'data_criacao': datetime.now(),
+            # <<< Salva o ID se ele for selecionado >>>
+            'instrumento_id': ObjectId(instrumento_id) if instrumento_id else None
+        }
+        pendencias_collection.insert_one(nova)
+        flash('Nova pendência criada com sucesso!', 'success')
+        # Redireciona para a lista correta dependendo se foi vinculada ou não
+        if instrumento_id:
+            return redirect(url_for('pendencias_por_instrumento')) # (Criaremos esta rota depois)
+        else:
+            return redirect(url_for('pendencias_diversos'))
+
+    # <<< Busca os instrumentos para popular o dropdown >>>
+    instrumentos = get_instrumentos_para_dropdown()
+    return render_template('form_pendencia.html', pendencia={}, novo=True, instrumentos=instrumentos)
+
+@app.route('/pendencias/detalhes/<string:pendencia_id>', methods=['GET', 'POST'])
+@login_required
+def detalhes_pendencia(pendencia_id):
+    pendencia = pendencias_collection.find_one({'_id': ObjectId(pendencia_id), 'user_id': ObjectId(current_user.id)})
+    if not pendencia:
+        flash('Pendência não encontrada.', 'error')
+        return redirect(url_for('pendencias_diversos'))
+
+    if request.method == 'POST':
+        instrumento_id = request.form.get('instrumento_id') # <<< Pega o ID do instrumento
+        update = {
+            'pendencia': request.form.get('pendencia'),
+            'prazo': datetime.strptime(request.form.get('prazo'), '%Y-%m-%d') if request.form.get('prazo') else None,
+            'responsavel': request.form.get('responsavel'),
+            'situacao': request.form.get('situacao'),
+            'observacoes': request.form.get('observacoes'),
+            'status': request.form.get('status'),
+            # <<< Salva o ID se ele for selecionado >>>
+            'instrumento_id': ObjectId(instrumento_id) if instrumento_id else None
+        }
+        pendencias_collection.update_one({'_id': ObjectId(pendencia_id)}, {'$set': update})
+        flash('Pendência atualizada com sucesso!', 'success')
+        return redirect(url_for('detalhes_pendencia', pendencia_id=pendencia_id))
+    
+    # <<< Busca os instrumentos para popular o dropdown >>>
+    instrumentos = get_instrumentos_para_dropdown()
+    return render_template('form_pendencia.html', pendencia=pendencia, novo=False, instrumentos=instrumentos)
+
+@app.route('/pendencias/excluir/<string:pendencia_id>', methods=['POST'])
+@login_required
+def excluir_pendencia(pendencia_id):
+    pendencias_collection.delete_one({'_id': ObjectId(pendencia_id), 'user_id': ObjectId(current_user.id)})
+    flash('Pendência excluída com sucesso!', 'success')
+    return redirect(url_for('pendencias_diversos'))
+
+@app.route('/pendencias/filtrar', methods=['POST'])
+@login_required
+def pendencias_filtrar():
+    filter_values = {key.replace('filter_', ''): val.strip() for key, val in request.form.items() if key.startswith('filter_')}
+    
+    query_filter = {
+        'user_id': ObjectId(current_user.id),
+        'status': 'Pendente',
+        'instrumento_id': {'$exists': False} # Mantém o filtro de pendências diversas
+    }
+
+    for key, value in filter_values.items():
+        if value:
+            query_filter[key] = {'$regex': value, '$options': 'i'}
+            
+    sort_by = request.args.get('sort_by', 'data_criacao')
+    order = request.args.get('order', 'asc')
+    sort_order_mongo = -1 if order == 'desc' else 1
+    sort_document = [(sort_by, sort_order_mongo)]
+
+    lista_pendencias = pendencias_collection.find(query_filter).sort(sort_document)
+
+    return render_template(
+        'pendencias_diversos.html', 
+        pendencias=list(lista_pendencias), 
+        sort_by=sort_by,
+        order=order,
+        filter_values=request.form
+    )
+
+
 
 @app.route('/controle/concluidas')
 @login_required

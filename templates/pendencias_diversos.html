@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Pendências Diversas</h2>
+    <div class="button-toolbar">
+        <div class="toolbar-group-left">
+            <button id="btnFiltro">Filtro...</button>
+        <div class="toolbar-group-center">
+            <button id="btnDetalhes" disabled>Detalhes...</button>
+        </div>
+        </div>
+        <div class="toolbar-group-right">
+            <a href="{{ url_for('nova_pendencia') }}" class="button">Novo</a>
+        </div>
+    </div>
+    <br>
+    <table border="1" id="tabelaPendencias">
+        <thead>
+            <tr>
+                <th></th>
+                <th><a href="{{ url_for('pendencias_diversos', sort_by='pendencia', order='desc' if sort_by == 'pendencia' and order == 'asc' else 'asc') }}">Pendência {% if sort_by == 'pendencia' %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}</a></th>
+                <th><a href="{{ url_for('pendencias_diversos', sort_by='prazo', order='desc' if sort_by == 'prazo' and order == 'asc' else 'asc') }}">Prazo {% if sort_by == 'prazo' %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}</a></th>
+                <th><a href="{{ url_for('pendencias_diversos', sort_by='responsavel', order='desc' if sort_by == 'responsavel' and order == 'asc' else 'asc') }}">Responsável {% if sort_by == 'responsavel' %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}</a></th>
+                <th><a href="{{ url_for('pendencias_diversos', sort_by='situacao', order='desc' if sort_by == 'situacao' and order == 'asc' else 'asc') }}">Situação {% if sort_by == 'situacao' %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}</a></th>
+                <th>Observações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in pendencias %}
+            <tr class="clickable-row">
+                <td><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
+                <td>{{ p.pendencia }}</td>
+                <td>{{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}</td>
+                <td>{{ p.responsavel }}</td>
+                <td>{{ p.situacao }}</td>
+                <td>{{ p.observacoes }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5">Nenhuma pendência diversa encontrada.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <div id="filterModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Filtrar Pendências</h3>
+            <form method="POST" action="{{ url_for('pendencias_filtrar') }}">
+                <div>
+                    <label for="filter_pendencia">Pendência:</label>
+                    <input type="text" name="filter_pendencia" id="filter_pendencia" value="{{ filter_values.get('filter_pendencia', '') }}">
+                </div>
+                <div>
+                    <label for="filter_responsavel">Responsável:</label>
+                    <input type="text" name="filter_responsavel" id="filter_responsavel" value="{{ filter_values.get('filter_responsavel', '') }}">
+                </div>
+                <div>
+                    <label for="filter_situacao">Situação:</label>
+                    <input type="text" name="filter_situacao" id="filter_situacao" value="{{ filter_values.get('filter_situacao', '') }}">
+                </div>
+                <div class="button-toolbar">
+                    <button type="submit">Aplicar Filtro</button>
+                    <button type="button" class="btn-cancel-modal">Cancelar</button>
+                    <button type="button" id="btnLimparFiltroPendencias" class="button">Limpar Filtro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initializeClickableTable(
+        'tabelaPendencias',
+        'selected_pendencia',
+        'btnDetalhes',
+        "{{ url_for('detalhes_pendencia', pendencia_id='REPLACE_ID') }}"
+    );
+
+    // Lógica para o modal de filtro
+    const btnFiltro = document.getElementById('btnFiltro');
+    const filterModal = document.getElementById('filterModal');
+
+    if (btnFiltro) {
+        btnFiltro.addEventListener('click', () => filterModal.classList.add('active'));
+    }
+    if (filterModal) {
+        filterModal.addEventListener('click', (e) => {
+            if (e.target === filterModal) filterModal.classList.remove('active');
+        });
+        const btnCancel = filterModal.querySelector('.btn-cancel-modal');
+        if (btnCancel) {
+            btnCancel.addEventListener('click', () => filterModal.classList.remove('active'));
+        }
+    }
+
+    // <<< LÓGICA ADICIONADA PARA O BOTÃO DE LIMPAR FILTRO >>>
+    const btnLimparFiltro = document.getElementById('btnLimparFiltroPendencias');
+    if (btnLimparFiltro) {
+        btnLimparFiltro.addEventListener('click', function() {
+            window.location.href = "{{ url_for('pendencias_diversos') }}";
+        });
+    }
+});
+</script>
+{% endblock %}
