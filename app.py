@@ -789,7 +789,46 @@ def pendencias_filtrar():
         filter_values=request.form
     )
 
+@app.route('/pendencias/por_instrumento')
+@login_required
+def pendencias_por_instrumento():
+    user_id_obj = ObjectId(current_user.id)
 
+    pipeline = [
+        {'$match': {
+            'user_id': user_id_obj,
+            'status': 'Pendente',
+            'instrumento_id': {'$exists': True}
+        }},
+        {'$lookup': {
+            'from': 'INSTRUMENTOCONTRATUAL',
+            'localField': 'instrumento_id',
+            'foreignField': '_id',
+            'as': 'instrumento_info'
+        }},
+        # <<< CORREÇÃO APLICADA AQUI >>>
+        {'$unwind': {'path': '$instrumento_info', 'preserveNullAndEmptyArrays': True}},
+        {'$group': {
+            '_id': '$instrumento_id',
+            'detalhes_instrumento': {'$first': '$instrumento_info'},
+            'pendencias': {'$push': '$$ROOT'}
+        }},
+        {'$sort': {
+            'detalhes_instrumento.n_instrumento': 1
+        }}
+    ]
+
+    grupos_de_pendencias = list(pendencias_collection.aggregate(pipeline))
+
+    hoje = datetime.now()
+    for grupo in grupos_de_pendencias:
+        pendencias_com_prazo = [p for p in grupo['pendencias'] if p.get('prazo')]
+        grupo['pendencias_sem_prazo'] = [p for p in grupo['pendencias'] if not p.get('prazo')]
+        
+        grupo['pendencias_vencidas'] = [p for p in pendencias_com_prazo if p['prazo'] < hoje]
+        grupo['pendencias_a_vencer'] = [p for p in pendencias_com_prazo if p['prazo'] >= hoje]
+
+    return render_template('pendencias_por_instrumento.html', grupos=grupos_de_pendencias)
 
 @app.route('/controle/concluidas')
 @login_required

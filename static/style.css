@@ -1130,3 +1130,17 @@ body.theme-dark select {
     color: var(--text-primary);
     opacity: 0.7;
 }
+
+/* Estilo para pendências vencidas na tabela */
+tr.pendencia-vencida td {
+    color: #e74c3c; /* Vermelho */
+    font-weight: bold;
+}
+
+/* Botão pequeno para a coluna de Ações */
+.button-small {
+    padding: 5px 10px;
+    font-size: 14px;
+    background-color: var(--secondary-color);
+    color: var(--text-primary);
+}
