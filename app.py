@@ -71,7 +71,8 @@ users_collection = db['users']
 documentacao_tipos_collection = db['DOCUMENTACAO']
 pendencias_collection = db['PENDENCIAS']
 
-# Logo após a definição das coleções
+# Para as configurações de exibição de colunas
+
 TODAS_AS_COLUNAS_CONTROLE = [
     ['tipo_documento', 'Tipo Documento'],
     ['n_instrumento', 'Nº Instrumento'],
@@ -84,6 +85,14 @@ TODAS_AS_COLUNAS_CONTROLE = [
     ['situacao', 'Situação']
 ]
 
+TODAS_AS_COLUNAS_PENDENCIAS = [
+    ['pendencia', 'Pendência'],
+    ['prazo', 'Prazo'],
+    ['responsavel', 'Responsável'],
+    ['situacao', 'Situação'],
+    ['observacoes', 'Observações']
+]
+
 # --- Configuração Flask-Login ---
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -94,7 +103,7 @@ def unauthorized():
     return redirect(url_for('login'))
 
 class User(UserMixin):
-    def __init__(self, username, email, password_hash, id=None, theme='theme-blue', colunas_visiveis=None):
+    def __init__(self, username, email, password_hash, id=None, theme='theme-blue', colunas_visiveis=None, colunas_visiveis_pendencias=None):
         self.username = username
         self.email = email
         self.password_hash = password_hash
@@ -102,6 +111,7 @@ class User(UserMixin):
         self.theme = theme
         # Se o usuário não tiver preferência salva, usa a lista completa como padrão
         self.colunas_visiveis = colunas_visiveis or [col[0] for col in TODAS_AS_COLUNAS_CONTROLE]
+        self.colunas_visiveis_pendencias = colunas_visiveis_pendencias or [col[0] for col in TODAS_AS_COLUNAS_PENDENCIAS]
 
     def get_id(self):
         return self.id
@@ -116,7 +126,8 @@ def load_user(user_id):
             password_hash=user_data['password_hash'],
             id=user_data['_id'],
             theme=user_data.get('theme', 'theme-blue'),
-            colunas_visiveis=user_data.get('colunas_visiveis_controle')
+            colunas_visiveis=user_data.get('colunas_visiveis_controle'),
+            colunas_visiveis_pendencias=user_data.get('colunas_visiveis_pendencias')
         )
     return None
 
@@ -326,6 +337,21 @@ def save_column_prefs():
     users_collection.update_one(
         {'_id': ObjectId(current_user.id)},
         {'$set': {'colunas_visiveis_controle': colunas_validas}}
+    )
+    return {'status': 'success'}
+
+@app.route('/user/save_pendencias_column_prefs', methods=['POST'])
+@login_required
+def save_pendencias_column_prefs():
+    data = request.get_json()
+    colunas = data.get('colunas', [])
+    
+    colunas_permitidas = [col[0] for col in TODAS_AS_COLUNAS_PENDENCIAS]
+    colunas_validas = [c for c in colunas if c in colunas_permitidas]
+
+    users_collection.update_one(
+        {'_id': ObjectId(current_user.id)},
+        {'$set': {'colunas_visiveis_pendencias': colunas_validas}}
     )
     return {'status': 'success'}
 
@@ -692,7 +718,10 @@ def pendencias_diversos():
         pendencias=list(lista_pendencias),
         sort_by=sort_by,
         order=order,
-        filter_values={}
+        filter_values={},
+        todas_as_colunas=TODAS_AS_COLUNAS_PENDENCIAS,
+        colunas_visiveis=current_user.colunas_visiveis_pendencias
+
     )
 
 @app.route('/pendencias/novo', methods=['GET', 'POST'])

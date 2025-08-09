@@ -5,9 +5,10 @@
     <div class="button-toolbar">
         <div class="toolbar-group-left">
             <button id="btnFiltro">Filtro...</button>
+            <button id="btnConfigurarColunas">Configurar colunas</button>
+        </div>
         <div class="toolbar-group-center">
             <button id="btnDetalhes" disabled>Detalhes...</button>
-        </div>
         </div>
         <div class="toolbar-group-right">
             <a href="{{ url_for('nova_pendencia') }}" class="button">Novo</a>
@@ -17,27 +18,35 @@
     <table border="1" id="tabelaPendencias">
         <thead>
             <tr>
-                <th></th>
-                <th><a href="{{ url_for('pendencias_diversos', sort_by='pendencia', order='desc' if sort_by == 'pendencia' and order == 'asc' else 'asc') }}">Pendência {% if sort_by == 'pendencia' %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}</a></th>
-                <th><a href="{{ url_for('pendencias_diversos', sort_by='prazo', order='desc' if sort_by == 'prazo' and order == 'asc' else 'asc') }}">Prazo {% if sort_by == 'prazo' %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}</a></th>
-                <th><a href="{{ url_for('pendencias_diversos', sort_by='responsavel', order='desc' if sort_by == 'responsavel' and order == 'asc' else 'asc') }}">Responsável {% if sort_by == 'responsavel' %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}</a></th>
-                <th><a href="{{ url_for('pendencias_diversos', sort_by='situacao', order='desc' if sort_by == 'situacao' and order == 'asc' else 'asc') }}">Situação {% if sort_by == 'situacao' %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}</a></th>
-                <th>Observações</th>
+                <th></th> {% for col_id, col_nome in todas_as_colunas %}
+                    {% if col_id in colunas_visiveis %}
+                        <th>
+                            <a href="{{ url_for('pendencias_diversos', sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc') }}">
+                                {{ col_nome }}
+                                {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}
+                            </a>
+                        </th>
+                    {% endif %}
+                {% endfor %}
             </tr>
         </thead>
         <tbody>
             {% for p in pendencias %}
             <tr class="clickable-row">
                 <td><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
-                <td>{{ p.pendencia }}</td>
-                <td>{{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}</td>
-                <td>{{ p.responsavel }}</td>
-                <td>{{ p.situacao }}</td>
-                <td>{{ p.observacoes }}</td>
+                {% for col_id, col_nome in todas_as_colunas %}
+                    {% if col_id in colunas_visiveis %}
+                        {% if col_id == 'prazo' %}
+                            <td>{{ p.prazo.strftime('%d/%m/%Y') if p.prazo else 'N/D' }}</td>
+                        {% else %}
+                            <td>{{ p[col_id] }}</td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
             </tr>
             {% else %}
             <tr>
-                <td colspan="5">Nenhuma pendência diversa encontrada.</td>
+                <td colspan="{{ colunas_visiveis|length + 1 }}">Nenhuma pendência diversa encontrada.</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -67,6 +76,18 @@
             </form>
         </div>
     </div>
+    <div id="configColunasModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Selecione as colunas para exibir</h3>
+            <div id="colunas-checklist" class="modal-colunas-list">
+                </div>
+            <div class="button-toolbar">
+                <button id="btnSalvarColunas">Salvar e Atualizar</button>
+                <button type="button" class="btn-cancel-modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}
 
 {% block page_scripts %}
@@ -103,6 +124,52 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = "{{ url_for('pendencias_diversos') }}";
         });
     }
+
+        // --- LÓGICA PARA CONFIGURAÇÃO DE COLUNAS ---
+    const btnConfigurarColunas = document.getElementById('btnConfigurarColunas');
+    const configColunasModal = document.getElementById('configColunasModal');
+    const checklistContainer = document.getElementById('colunas-checklist');
+    const btnSalvarColunas = document.getElementById('btnSalvarColunas');
+
+    const todasAsColunas = {{ todas_as_colunas | tojson | safe }};
+    const colunasVisiveis = {{ colunas_visiveis | tojson | safe }};
+
+    todasAsColunas.forEach(coluna => {
+        const col_id = coluna[0];
+        const col_nome = coluna[1];
+        const isChecked = colunasVisiveis.includes(col_id);
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = `
+            <label>
+                <input type="checkbox" name="coluna_pref" value="${col_id}" ${isChecked ? 'checked' : ''}>
+                ${col_nome}
+            </label>
+        `;
+        checklistContainer.appendChild(wrapper);
+    });
+
+    btnConfigurarColunas.addEventListener('click', () => {
+        configColunasModal.classList.add('active');
+    });
+
+    btnSalvarColunas.addEventListener('click', () => {
+        const checkboxes = document.querySelectorAll('#colunas-checklist input[type="checkbox"]:checked');
+        const colunasSelecionadas = Array.from(checkboxes).map(cb => cb.value);
+
+        fetch("{{ url_for('save_pendencias_column_prefs') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ colunas: colunasSelecionadas })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
+            } else {
+                alert('Erro ao salvar as preferências.');
+            }
+        });
+    });
 });
 </script>
 {% endblock %}
