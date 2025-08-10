@@ -39,7 +39,7 @@
                         {% if col_id == 'prazo' %}
                             <td>{{ p.prazo.strftime('%d/%m/%Y') if p.prazo else 'N/D' }}</td>
                         {% else %}
-                            <td>{{ p[col_id] }}</td>
+                            <td>{{ p[col_id] or '' }}</td>
                         {% endif %}
                     {% endif %}
                 {% endfor %}

@@ -80,89 +80,87 @@
 {% block page_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Inicializa o Select2 (sem alterações)
-    $('#instrumento_id').select2({ /* ... */ });
+    const isNewRecord = {{ 'true' if novo else 'false' }};
+    const formPendencia = document.getElementById('formPendencia');
 
-    // <<< INÍCIO DA NOVA LÓGICA >>>
-    // Pega a lista COMPLETA de instrumentos que o app.py enviou
-    const instrumentosData = JSON.parse('{{ instrumentos_json | safe }}');
-    
+    // --- 1. LÓGICA DO SELECT2 E INFO BOX ---
+    $('#instrumento_id').select2({
+        placeholder: "-- Nenhuma (Pendência Diversa) --",
+        allowClear: true,
+        width: '100%',
+        closeOnSelect: true
+    });
+
     const infoBox = document.getElementById('info-instrumento-box');
     const infoCompleto = document.getElementById('info_instrumento_completo');
     const infoContratada = document.getElementById('info_contratada');
     const infoObjeto = document.getElementById('info_objeto');
 
     function atualizarInfoBox() {
-        const selectedId = $('#instrumento_id').val();
-
-        if (selectedId) {
-            // Encontra o instrumento na lista completa usando o ID selecionado
-            const dados = instrumentosData.find(inst => inst._id === selectedId);
-            if (dados) {
-                infoCompleto.textContent = `${dados.tipo_documento} Nº ${dados.n_instrumento}`;
-                infoContratada.textContent = dados.contratada;
-                infoObjeto.textContent = dados.objeto_resumido;
-                infoBox.style.display = 'block';
-            }
+        const selectedOption = $('#instrumento_id').find(':selected');
+        const instrumentoId = selectedOption.val();
+        if (instrumentoId) {
+            const dados = JSON.parse(selectedOption.data('dados') || '{}');
+            infoCompleto.textContent = `${dados.tipo_documento} Nº ${dados.n_instrumento}`;
+            infoContratada.textContent = dados.contratada;
+            infoObjeto.textContent = dados.objeto_resumido;
+            infoBox.style.display = 'block';
         } else {
             infoBox.style.display = 'none';
-            infoCompleto.textContent = '';
-            infoContratada.textContent = '';
-            infoObjeto.textContent = '';
         }
     }
-
-    // <<< OUVINTES DE EVENTO CORRIGIDOS AQUI >>>
-    $('#instrumento_id').on('select2:select', function (e) {
-        atualizarInfoBox();
-    });
-    $('#instrumento_id').on('select2:unselect', function (e) {
-        setTimeout(function() {
-            atualizarInfoBox();
-        }, 50);
-    });
     
-    // Roda a função uma vez na carga da página
-    atualizarInfoBox();
+    $('#instrumento_id').on('select2:select', atualizarInfoBox);
+    $('#instrumento_id').on('select2:unselect', () => setTimeout(atualizarInfoBox, 50));
+    
 
-
+    // ======================================================================
+    // 2. LÓGICA PRINCIPAL PARA CADA MODO (NOVO VS. EDIÇÃO)
+    // ======================================================================
     if (isNewRecord) {
+        // MODO NOVO: Habilita todos os campos para um novo registro
         formPendencia.querySelectorAll('input, textarea, select').forEach(field => {
             if (field.id !== 'instrumento_id') {
                 field.disabled = false;
             }
         });
-        $('#instrumento_id').prop('disabled', false).trigger('change');
+        $('#instrumento_id').prop('disabled', false);
+        atualizarInfoBox();
+
     } else {
+        // MODO EDIÇÃO/CONSULTA: Configura os botões
+        atualizarInfoBox(); // Preenche o info box com os dados existentes
+        
         const btnEditar = document.getElementById('btnEditar');
         const btnSalvar = document.getElementById('btnSalvar');
         const btnCancelar = document.getElementById('btnCancelar');
         const btnExcluir = document.getElementById('btnExcluir');
         const formExcluir = document.getElementById('formExcluir');
         
-        const acaoFechar = () => {
-            // Tenta obter a URL de origem a partir de um parâmetro na URL atual
-            const urlParams = new URLSearchParams(window.location.search);
-            const origem = urlParams.get('origem');
+        function toggleEditFields(enable) {
+            formPendencia.querySelectorAll('input, textarea, select').forEach(field => {
+                if (field.id !== 'instrumento_id') field.disabled = !enable;
+            });
+            $('#instrumento_id').prop('disabled', !enable);
+        }
 
-            if (origem && origem.includes('/pendencias/')) {
-                window.location.href = origem;
-            } else {
-                // Se não encontrar, volta para a lista de diversos como padrão seguro
-                window.location.href = "{{ url_for('pendencias_diversos') }}";
-            }
+        const acaoFechar = () => {
+            const origem = document.querySelector('input[name="origem"]').value || "{{ url_for('pendencias_diversos') }}";
+            window.location.href = origem;
         };
 
-        const acaoCancelarEdicao = () => showCustomConfirm('Cancelar Edição?', 'As alterações não salvas serão perdidas.', (c) => { if(c) location.reload(); }, 'Sim, Cancelar');
+        const acaoCancelarEdicao = () => {
+            showCustomConfirm('Cancelar Edição?', 'As alterações não salvas serão perdidas.', (confirmed) => { 
+                if (confirmed) location.reload(); 
+            }, 'Sim, Cancelar');
+        };
 
+        // --- Estado Inicial dos Botões ---
         btnCancelar.onclick = acaoFechar;
 
+        // --- Lógica do Botão Editar ---
         btnEditar.addEventListener('click', () => {
-            formPendencia.querySelectorAll('input, textarea, select').forEach(field => {
-                if(field.id !== 'instrumento_id') field.disabled = false;
-            });
-            $('#instrumento_id').prop('disabled', false).trigger('change');
-
+            toggleEditFields(true);
             btnSalvar.disabled = false;
             btnEditar.disabled = true;
             btnExcluir.disabled = true;
@@ -170,10 +168,16 @@ document.addEventListener('DOMContentLoaded', function() {
             btnCancelar.onclick = acaoCancelarEdicao;
         });
 
+        // --- Lógica do Botão Excluir ---
         btnExcluir.addEventListener('click', () => {
-            showCustomConfirm('Confirmar Exclusão?', 'A pendência será excluída permanentemente.', (c) => { 
-                if (c) formExcluir.submit(); 
-            }, 'Excluir');
+            showCustomConfirm(
+                'Confirmar Exclusão?', 
+                'A pendência será excluída permanentemente.', 
+                (confirmed) => { 
+                    if (confirmed) formExcluir.submit(); 
+                }, 
+                'Excluir'
+            );
         });
     }
 });

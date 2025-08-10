@@ -790,6 +790,7 @@ def detalhes_pendencia(pendencia_id):
         return redirect(url_for('detalhes_pendencia', pendencia_id=pendencia_id, origem=origem))
     
     # <<< Busca os instrumentos para popular o dropdown >>>
+    instrumentos = get_instrumentos_para_dropdown()
     instrumentos_json = json.dumps(instrumentos, default=json_util.default)
     return render_template('form_pendencia.html', pendencia=pendencia, novo=False, instrumentos=instrumentos, instrumentos_json=instrumentos_json)
 
