@@ -128,6 +128,25 @@ document.addEventListener('DOMContentLoaded', function() {
         $('#instrumento_id').prop('disabled', false);
         atualizarInfoBox();
 
+        const btnCancelarNovo = formPendencia.querySelector('a.button'); // Encontra o botão 'Cancelar'
+        if (btnCancelarNovo) {
+            btnCancelarNovo.addEventListener('click', function(event) {
+                event.preventDefault(); // Impede a navegação imediata
+                const urlDestino = this.href;
+                showCustomConfirm(
+                    'Cancelar Cadastro?',
+                    'Tem certeza que deseja cancelar? Os dados inseridos serão perdidos.',
+                    (confirmed) => {
+                        if (confirmed) {
+                            window.location.href = urlDestino;
+                        }
+                    },
+                    'Sim, Cancelar'
+                );
+            });
+        }
+
+
     } else {
         // MODO EDIÇÃO/CONSULTA
         atualizarInfoBox();
@@ -158,12 +177,21 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
 
-        const acaoCancelarEdicao = () => location.reload();
+        const acaoCancelarEdicao = () => {
+            showCustomConfirm(
+                'Cancelar Edição?', 
+                'As alterações não salvas serão perdidas. Deseja continuar?', 
+                (confirmed) => { 
+                    if (confirmed) location.reload(); 
+                }, 
+                'Sim, Cancelar'
+            );
+        };
 
         btnCancelar.onclick = acaoFechar;
 
         btnEditar.addEventListener('click', () => {
-            toggleEditFields(true); // << ESTA CHAMADA AGORA FUNCIONA
+            toggleEditFields(true);
             btnSalvar.disabled = false;
             btnEditar.disabled = true;
             btnExcluir.disabled = true;
