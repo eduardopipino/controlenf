@@ -708,7 +708,7 @@ def pendencias_diversos():
     }
     lista_pendencias = list(pendencias_collection.find(query_filter).sort(sort_document))
 
-    hoje = datetime.now()
+    hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     for p in lista_pendencias:
         p['vencido'] = p.get('prazo') and p.get('prazo') < hoje
 
@@ -867,7 +867,7 @@ def pendencias_filtrar():
     query_filter = {
         'user_id': ObjectId(current_user.id),
         'status': 'Pendente',
-        'instrumento_id': {'$exists': False} # Mantém o filtro de pendências diversas
+        'instrumento_id': {'$in': [None, '']}
     }
 
     for key, value in filter_values.items():
