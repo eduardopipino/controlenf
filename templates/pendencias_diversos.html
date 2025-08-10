@@ -37,7 +37,7 @@
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
                         {% if col_id == 'prazo' %}
-                            <td>{{ p.prazo.strftime('%d/%m/%Y') if p.prazo else 'N/D' }}</td>
+                            <td>{{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}</td>
                         {% else %}
                             <td>{{ p[col_id] or '' }}</td>
                         {% endif %}

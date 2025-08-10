@@ -5,7 +5,7 @@
 
     <div class="button-toolbar">
         <div class="toolbar-group-left">
-            </div>
+             </div>
         <div class="toolbar-group-center">
             <button id="btnDetalhes" disabled>Detalhes...</button>
         </div>
@@ -29,39 +29,34 @@
         </form>
     </div>
 
-
     {% if not grupos %}
         <div class="container">
-            <p>Nenhuma pendência vinculada a instrumentos contratuais foi encontrada para o filtro selecionado.</p>
+            <p>Nenhuma pendência vinculada a instrumentos contratuais foi encontrada.</p>
         </div>
     {% else %}
         {% for grupo in grupos %}
             <div class="container container-darker" style="margin-bottom: 20px;">
                 <div class="info-display-box" style="margin-bottom: 20px; padding: 10px;">
-                    <p><strong>Nº Instrumento Contratual:</strong> {{ grupo.detalhes_instrumento.tipo_documento }} Nº {{ grupo.detalhes_instrumento.n_instrumento }}</p>
-                    <p><strong>Contratada/Fornecedora:</strong> {{ grupo.detalhes_instrumento.contratada }}</p>
-                    <p><strong>Objeto:</strong> {{ grupo.detalhes_instrumento.objeto_resumido }}</p>
+                    <p><strong>Nº Instrumento Contratual:</strong> {{ grupo.detalhes_instrumento.tipo_documento or '' }} Nº {{ grupo.detalhes_instrumento.n_instrumento or '' }}</p>
+                    <p><strong>Contratada/Fornecedora:</strong> {{ grupo.detalhes_instrumento.contratada or '' }}</p>
+                    <p><strong>Objeto:</strong> {{ grupo.detalhes_instrumento.objeto_resumido or '' }}</p>
                 </div>
 
                 {% if grupo.pendencias_vencidas or grupo.pendencias_a_vencer %}
                     <h4>Pendências com Prazo</h4>
                     <table border="1" style="width: 100%;">
-                        <thead>
-                            <tr>
-                                <th></th><th>Pendência</th><th>Prazo</th><th>Responsável</th><th>Situação</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th></th><th>Pendência</th><th>Prazo</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr></thead>
                         <tbody>
                             {% for p in grupo.pendencias_vencidas %}
                             <tr class="clickable-row pendencia-vencida">
                                 <td><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
-                                <td>{{ p.pendencia }}</td><td>{{ p.prazo.strftime('%d/%m/%Y') }}</td><td>{{ p.responsavel }}</td><td>{{ p.situacao }}</td>
+                                <td>{{ p.pendencia or '' }}</td><td>{{ p.prazo.strftime('%d/%m/%Y') }}</td><td>{{ p.responsavel or '' }}</td><td>{{ p.situacao or '' }}</td><td>{{ p.observacoes or '' }}</td>
                             </tr>
                             {% endfor %}
                             {% for p in grupo.pendencias_a_vencer %}
                             <tr class="clickable-row">
                                 <td><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
-                                <td>{{ p.pendencia }}</td><td>{{ p.prazo.strftime('%d/%m/%Y') }}</td><td>{{ p.responsavel }}</td><td>{{ p.situacao }}</td>
+                                <td>{{ p.pendencia or '' }}</td><td>{{ p.prazo.strftime('%d/%m/%Y') }}</td><td>{{ p.responsavel or '' }}</td><td>{{ p.situacao or '' }}</td><td>{{ p.observacoes or '' }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -69,18 +64,14 @@
                 {% endif %}
 
                 {% if grupo.pendencias_sem_prazo %}
-                    <h4 style="margin-top: 15px;">Pendências Sem Prazo (Lembretes)</h4>
+                    <h4 style="margin-top: 15px;">Pendências Sem Prazo</h4>
                     <table border="1" style="width: 100%;">
-                        <thead>
-                            <tr>
-                                <th></th><th>Pendência</th><th>Responsável</th><th>Situação</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th></th><th>Pendência</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr></thead>
                         <tbody>
                             {% for p in grupo.pendencias_sem_prazo %}
                             <tr class="clickable-row">
                                 <td><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
-                                <td>{{ p.pendencia }}</td><td>{{ p.responsavel }}</td><td>{{ p.situacao }}</td>
+                                <td>{{ p.pendencia or '' }}</td><td>{{ p.responsavel or '' }}</td><td>{{ p.situacao or '' }}</td><td>{{ p.observacoes or '' }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -90,6 +81,7 @@
         {% endfor %}
     {% endif %}
 {% endblock %}
+
 
 {% block page_scripts %}
 <script>

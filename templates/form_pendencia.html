@@ -4,13 +4,13 @@
     <h2>{{ 'Nova Pendência' if novo else 'Detalhes da Pendência' }}</h2>
     
     <form id="formPendencia" method="POST">
-        <input type="hidden" name="origem" value="{{ request.referrer }}">
-
         <div>
             <label for="instrumento_id">Vincular a um Instrumento Contratual (Opcional):</label>
-            <select id="instrumento_id" name="instrumento_id">
-                <option></option> {% for inst in instrumentos %}
-                    <option value="{{ inst._id }}"
+            <select id="instrumento_id" name="instrumento_id" disabled>
+                <option></option>
+                {% for inst in instrumentos %}
+                    <option value="{{ inst._id }}" 
+                            data-dados="{{ inst|tojson|safe }}"
                             {% if pendencia.instrumento_id and pendencia.instrumento_id|string == inst._id|string %}selected{% endif %}>
                         {{ inst.n_instrumento }} / {{ inst.tipo_documento }} / {{ inst.contratada }}
                     </option>
@@ -24,6 +24,7 @@
             <p><strong>Objeto:</strong> <span id="info_objeto"></span></p>
         </div>
         <br>
+        
         <div>
             <label for="pendencia">Pendência:</label>
             <textarea id="pendencia" name="pendencia" required disabled>{{ pendencia.pendencia or '' }}</textarea>
@@ -56,7 +57,7 @@
         <br>
 
         <div class="button-toolbar">
-            {% if not novo %}
+             {% if not novo %}
                 <div class="toolbar-group-left">
                     <button type="button" id="btnEditar">Editar</button>
                     <button type="button" id="btnExcluir">Excluir</button>
@@ -65,12 +66,13 @@
                     <button type="submit" id="btnSalvar" disabled>Salvar</button>
                     <button type="button" id="btnCancelar">Fechar</button>
                 </div>
-            {% else %}
+             {% else %}
                 <button type="submit">Salvar</button>
-                <a href="{{ url_for('pendencias_diversos') }}" class="button">Cancelar</a>
-            {% endif %}
+                <a href="{{ origem }}" class="button">Cancelar</a>
+             {% endif %}
         </div>
     </form>
+
     {% if not novo %}
     <form id="formExcluir" method="POST" action="{{ url_for('excluir_pendencia', pendencia_id=pendencia._id) }}" style="display: none;"></form>
     {% endif %}
@@ -83,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const isNewRecord = {{ 'true' if novo else 'false' }};
     const formPendencia = document.getElementById('formPendencia');
 
-    // --- 1. LÓGICA DO SELECT2 E INFO BOX ---
+    // --- LÓGICA DO SELECT2 E INFO BOX ---
     $('#instrumento_id').select2({
         placeholder: "-- Nenhuma (Pendência Diversa) --",
         allowClear: true,
@@ -91,45 +93,46 @@ document.addEventListener('DOMContentLoaded', function() {
         closeOnSelect: true
     });
 
+    const instrumentosData = JSON.parse('{{ instrumentos_json | default("[]") | safe }}');
     const infoBox = document.getElementById('info-instrumento-box');
     const infoCompleto = document.getElementById('info_instrumento_completo');
     const infoContratada = document.getElementById('info_contratada');
     const infoObjeto = document.getElementById('info_objeto');
 
     function atualizarInfoBox() {
-        const selectedOption = $('#instrumento_id').find(':selected');
-        const instrumentoId = selectedOption.val();
-        if (instrumentoId) {
-            const dados = JSON.parse(selectedOption.data('dados') || '{}');
-            infoCompleto.textContent = `${dados.tipo_documento} Nº ${dados.n_instrumento}`;
-            infoContratada.textContent = dados.contratada;
-            infoObjeto.textContent = dados.objeto_resumido;
-            infoBox.style.display = 'block';
+        const selectedId = $('#instrumento_id').val();
+        if (selectedId) {
+            const dados = instrumentosData.find(inst => inst._id === selectedId);
+            if (dados) {
+                infoCompleto.textContent = `${dados.tipo_documento} Nº ${dados.n_instrumento}`;
+                infoContratada.textContent = dados.contratada;
+                infoObjeto.textContent = dados.objeto_resumido;
+                infoBox.style.display = 'block';
+            } else {
+                infoBox.style.display = 'none';
+            }
         } else {
             infoBox.style.display = 'none';
         }
     }
     
-    $('#instrumento_id').on('select2:select', atualizarInfoBox);
-    $('#instrumento_id').on('select2:unselect', () => setTimeout(atualizarInfoBox, 50));
+    $('#instrumento_id').on('change', atualizarInfoBox);
     
 
-    // ======================================================================
-    // 2. LÓGICA PRINCIPAL PARA CADA MODO (NOVO VS. EDIÇÃO)
-    // ======================================================================
+    // --- LÓGICA PRINCIPAL ---
     if (isNewRecord) {
-        // MODO NOVO: Habilita todos os campos para um novo registro
+        // MODO NOVO: Habilita todos os campos
         formPendencia.querySelectorAll('input, textarea, select').forEach(field => {
-            if (field.id !== 'instrumento_id') {
-                field.disabled = false;
-            }
+            if (field.name !== 'origem') field.disabled = false;
         });
         $('#instrumento_id').prop('disabled', false);
         atualizarInfoBox();
 
     } else {
-        // MODO EDIÇÃO/CONSULTA: Configura os botões
-        atualizarInfoBox(); // Preenche o info box com os dados existentes
+        // MODO EDIÇÃO/CONSULTA
+        atualizarInfoBox();
+        
+        const pendenciaData = JSON.parse('{{ pendencia_json | default("{}") | safe }}');
         
         const btnEditar = document.getElementById('btnEditar');
         const btnSalvar = document.getElementById('btnSalvar');
@@ -137,30 +140,30 @@ document.addEventListener('DOMContentLoaded', function() {
         const btnExcluir = document.getElementById('btnExcluir');
         const formExcluir = document.getElementById('formExcluir');
         
+        // ======================================================================
+        // A FUNÇÃO QUE ESTAVA FALTANDO ESTÁ AQUI
+        // ======================================================================
         function toggleEditFields(enable) {
             formPendencia.querySelectorAll('input, textarea, select').forEach(field => {
-                if (field.id !== 'instrumento_id') field.disabled = !enable;
+                if (field.name !== 'origem' && field.id !== 'instrumento_id') field.disabled = !enable;
             });
             $('#instrumento_id').prop('disabled', !enable);
         }
 
         const acaoFechar = () => {
-            const origem = document.querySelector('input[name="origem"]').value || "{{ url_for('pendencias_diversos') }}";
-            window.location.href = origem;
+            if (pendenciaData && pendenciaData.instrumento_id) {
+                window.location.href = "{{ url_for('pendencias_por_instrumento') }}";
+            } else {
+                window.location.href = "{{ url_for('pendencias_diversos') }}";
+            }
         };
 
-        const acaoCancelarEdicao = () => {
-            showCustomConfirm('Cancelar Edição?', 'As alterações não salvas serão perdidas.', (confirmed) => { 
-                if (confirmed) location.reload(); 
-            }, 'Sim, Cancelar');
-        };
+        const acaoCancelarEdicao = () => location.reload();
 
-        // --- Estado Inicial dos Botões ---
         btnCancelar.onclick = acaoFechar;
 
-        // --- Lógica do Botão Editar ---
         btnEditar.addEventListener('click', () => {
-            toggleEditFields(true);
+            toggleEditFields(true); // << ESTA CHAMADA AGORA FUNCIONA
             btnSalvar.disabled = false;
             btnEditar.disabled = true;
             btnExcluir.disabled = true;
@@ -168,16 +171,9 @@ document.addEventListener('DOMContentLoaded', function() {
             btnCancelar.onclick = acaoCancelarEdicao;
         });
 
-        // --- Lógica do Botão Excluir ---
         btnExcluir.addEventListener('click', () => {
-            showCustomConfirm(
-                'Confirmar Exclusão?', 
-                'A pendência será excluída permanentemente.', 
-                (confirmed) => { 
-                    if (confirmed) formExcluir.submit(); 
-                }, 
-                'Excluir'
-            );
+            showCustomConfirm('Confirmar Exclusão?', 'A pendência será excluída permanentemente.', 
+            (c) => { if (c) formExcluir.submit(); }, 'Excluir');
         });
     }
 });
