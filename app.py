@@ -235,14 +235,14 @@ def get_situacoes_que_arquivam():
     return [s['situacao'] for s in situacoes]
 
 def get_instrumentos_para_dropdown():
-    # Busca os instrumentos
+    # Busca os instrumentos vigentes
     instrumentos = list(instrumentos_collection.find(
-        {'user_id': ObjectId(current_user.id)},
+        {'user_id': ObjectId(current_user.id), 'vigente': True},
         {'n_instrumento': 1, 'tipo_documento': 1, 'contratada': 1, 'objeto_resumido': 1}
     ))
     
     # <<< INÍCIO DA CORREÇÃO >>>
-    # Converte o ObjectId de cada instrumento para uma string
+    # Converte o ObjectId de cada instrumento para uma string antes de retornar
     for inst in instrumentos:
         inst['_id'] = str(inst['_id'])
     # <<< FIM DA CORREÇÃO >>>
@@ -750,9 +750,19 @@ def nova_pendencia():
         else:
             return redirect(url_for('pendencias_diversos'))
 
-    # <<< Busca os instrumentos para popular o dropdown >>>
     instrumentos = get_instrumentos_para_dropdown()
-    return render_template('form_pendencia.html', pendencia={}, novo=True, instrumentos=instrumentos)
+
+    # <<< Busca os instrumentos para popular o dropdown >>>
+    instrumentos_json = json.dumps(instrumentos, default=json_util.default)
+    
+    # Adiciona a nova variável ao render_template
+    return render_template(
+        'form_pendencia.html', 
+        pendencia={}, 
+        novo=True, 
+        instrumentos=instrumentos, 
+        instrumentos_json=instrumentos_json # <<< VARIÁVEL AGORA ESTÁ AQUI
+    )
 
 @app.route('/pendencias/detalhes/<string:pendencia_id>', methods=['GET', 'POST'])
 @login_required
@@ -780,8 +790,8 @@ def detalhes_pendencia(pendencia_id):
         return redirect(url_for('detalhes_pendencia', pendencia_id=pendencia_id, origem=origem))
     
     # <<< Busca os instrumentos para popular o dropdown >>>
-    instrumentos = get_instrumentos_para_dropdown()
-    return render_template('form_pendencia.html', pendencia=pendencia, novo=False, instrumentos=instrumentos)
+    instrumentos_json = json.dumps(instrumentos, default=json_util.default)
+    return render_template('form_pendencia.html', pendencia=pendencia, novo=False, instrumentos=instrumentos, instrumentos_json=instrumentos_json)
 
 @app.route('/pendencias/excluir/<string:pendencia_id>', methods=['POST'])
 @login_required

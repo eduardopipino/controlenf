@@ -9,23 +9,21 @@
         <div>
             <label for="instrumento_id">Vincular a um Instrumento Contratual (Opcional):</label>
             <select id="instrumento_id" name="instrumento_id">
-                <option value="">-- Nenhuma (Pendência Diversa) --</option>
-                {% for inst in instrumentos %}
-                    <option value="{{ inst._id }}" 
-                            data-dados="{{ inst|tojson|safe }}"
-                            {% if pendencia.instrumento_id and pendencia.instrumento_id == inst._id %}selected{% endif %}>
+                <option></option> {% for inst in instrumentos %}
+                    <option value="{{ inst._id }}"
+                            {% if pendencia.instrumento_id and pendencia.instrumento_id|string == inst._id|string %}selected{% endif %}>
                         {{ inst.n_instrumento }} / {{ inst.tipo_documento }} / {{ inst.contratada }}
                     </option>
                 {% endfor %}
             </select>
         </div>
         <br>
-        <div id="info-instrumento-box" class="info-display-box" style="display: none;">
+        <div id="info-instrumento-box" class="info-display-box">
             <p><strong>Nº Instrumento Contratual:</strong> <span id="info_instrumento_completo"></span></p>
             <p><strong>Contratada/Fornecedora:</strong> <span id="info_contratada"></span></p>
             <p><strong>Objeto:</strong> <span id="info_objeto"></span></p>
         </div>
-
+        <br>
         <div>
             <label for="pendencia">Pendência:</label>
             <textarea id="pendencia" name="pendencia" required disabled>{{ pendencia.pendencia or '' }}</textarea>
@@ -80,40 +78,53 @@
 {% endblock %}
 
 {% block page_scripts %}
-    <script>
+<script>
 document.addEventListener('DOMContentLoaded', function() {
-    const isNewRecord = {{ 'true' if novo else 'false' }};
-    const formPendencia = document.getElementById('formPendencia');
+    // Inicializa o Select2 (sem alterações)
+    $('#instrumento_id').select2({ /* ... */ });
 
-    $('#instrumento_id').select2({
-        placeholder: "-- Nenhuma (Pendência Diversa) --",
-        allowClear: true,
-        width: '100%',
-        closeOnSelect: true // <<< ADICIONE ESTA LINHA
-    });
-
+    // <<< INÍCIO DA NOVA LÓGICA >>>
+    // Pega a lista COMPLETA de instrumentos que o app.py enviou
+    const instrumentosData = JSON.parse('{{ instrumentos_json | safe }}');
+    
     const infoBox = document.getElementById('info-instrumento-box');
     const infoCompleto = document.getElementById('info_instrumento_completo');
     const infoContratada = document.getElementById('info_contratada');
     const infoObjeto = document.getElementById('info_objeto');
 
     function atualizarInfoBox() {
-        const selectedOption = $('#instrumento_id').find(':selected');
-        const instrumentoId = selectedOption.val();
+        const selectedId = $('#instrumento_id').val();
 
-        if (instrumentoId) {
-            const dados = JSON.parse(selectedOption.data('dados') || '{}');
-            infoCompleto.textContent = `${dados.tipo_documento} Nº ${dados.n_instrumento}`;
-            infoContratada.textContent = dados.contratada;
-            infoObjeto.textContent = dados.objeto_resumido;
-            infoBox.style.display = 'block';
+        if (selectedId) {
+            // Encontra o instrumento na lista completa usando o ID selecionado
+            const dados = instrumentosData.find(inst => inst._id === selectedId);
+            if (dados) {
+                infoCompleto.textContent = `${dados.tipo_documento} Nº ${dados.n_instrumento}`;
+                infoContratada.textContent = dados.contratada;
+                infoObjeto.textContent = dados.objeto_resumido;
+                infoBox.style.display = 'block';
+            }
         } else {
             infoBox.style.display = 'none';
+            infoCompleto.textContent = '';
+            infoContratada.textContent = '';
+            infoObjeto.textContent = '';
         }
     }
+
+    // <<< OUVINTES DE EVENTO CORRIGIDOS AQUI >>>
+    $('#instrumento_id').on('select2:select', function (e) {
+        atualizarInfoBox();
+    });
+    $('#instrumento_id').on('select2:unselect', function (e) {
+        setTimeout(function() {
+            atualizarInfoBox();
+        }, 50);
+    });
     
-    $('#instrumento_id').on('change', atualizarInfoBox);
+    // Roda a função uma vez na carga da página
     atualizarInfoBox();
+
 
     if (isNewRecord) {
         formPendencia.querySelectorAll('input, textarea, select').forEach(field => {
