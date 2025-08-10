@@ -32,7 +32,7 @@
         </thead>
         <tbody>
             {% for p in pendencias %}
-            <tr class="clickable-row">
+            <tr class="clickable-row {{ 'pendencia-vencida' if p.vencido else '' }}">
                 <td><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}

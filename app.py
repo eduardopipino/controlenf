@@ -706,11 +706,15 @@ def pendencias_diversos():
         'status': 'Pendente',
         'instrumento_id': {'$in': [None, '']}
     }
-    lista_pendencias = pendencias_collection.find(query_filter).sort(sort_document)
+    lista_pendencias = list(pendencias_collection.find(query_filter).sort(sort_document))
+
+    hoje = datetime.now()
+    for p in lista_pendencias:
+        p['vencido'] = p.get('prazo') and p.get('prazo') < hoje
 
     return render_template(
         'pendencias_diversos.html', 
-        pendencias=list(lista_pendencias),
+        pendencias=lista_pendencias,
         sort_by=sort_by, order=order, filter_values={},
         todas_as_colunas=TODAS_AS_COLUNAS_PENDENCIAS,
         colunas_visiveis=getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
@@ -757,7 +761,8 @@ def pendencias_por_instrumento():
     grupos_de_pendencias = list(pendencias_collection.aggregate(pipeline))
 
     # --- Lógica de Preparação dos Dados (separar por prazo) ---
-    hoje = datetime.now()
+    # Define 'hoje' como a meia-noite do dia atual
+    hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     for grupo in grupos_de_pendencias:
         if not grupo.get('detalhes_instrumento'):
             grupo['detalhes_instrumento'] = {'n_instrumento': 'Inválido', 'tipo_documento': 'Instrumento', 'contratada': 'Não encontrado', 'objeto_resumido': 'Link quebrado.'}
@@ -876,12 +881,19 @@ def pendencias_filtrar():
 
     lista_pendencias = pendencias_collection.find(query_filter).sort(sort_document)
 
+    # Define 'hoje' como a meia-noite do dia atual
+    hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    for p in lista_pendencias:
+        p['vencido'] = p.get('prazo') and p['prazo'] < hoje
+
     return render_template(
         'pendencias_diversos.html', 
         pendencias=list(lista_pendencias), 
         sort_by=sort_by,
         order=order,
-        filter_values=request.form
+        filter_values=request.form,
+        todas_as_colunas=TODAS_AS_COLUNAS_PENDENCIAS,
+        colunas_visiveis=getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
     )
 
 @app.route('/controle/concluidas')
