@@ -776,7 +776,8 @@ def detalhes_pendencia(pendencia_id):
         }
         pendencias_collection.update_one({'_id': ObjectId(pendencia_id)}, {'$set': update})
         flash('Pendência atualizada com sucesso!', 'success')
-        return redirect(url_for('detalhes_pendencia', pendencia_id=pendencia_id))
+        origem = request.form.get('origem', url_for('pendencias_diversos'))
+        return redirect(url_for('detalhes_pendencia', pendencia_id=pendencia_id, origem=origem))
     
     # <<< Busca os instrumentos para popular o dropdown >>>
     instrumentos = get_instrumentos_para_dropdown()

@@ -88,7 +88,8 @@ document.addEventListener('DOMContentLoaded', function() {
     $('#instrumento_id').select2({
         placeholder: "-- Nenhuma (Pendência Diversa) --",
         allowClear: true,
-        width: '100%'
+        width: '100%',
+        closeOnSelect: true // <<< ADICIONE ESTA LINHA
     });
 
     const infoBox = document.getElementById('info-instrumento-box');
@@ -129,14 +130,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const formExcluir = document.getElementById('formExcluir');
         
         const acaoFechar = () => {
-            const origem = "{{ request.referrer }}";
-            // Retorna para a página de origem, ou para a de diversos como padrão
+            // Tenta obter a URL de origem a partir de um parâmetro na URL atual
+            const urlParams = new URLSearchParams(window.location.search);
+            const origem = urlParams.get('origem');
+
             if (origem && origem.includes('/pendencias/')) {
                 window.location.href = origem;
             } else {
+                // Se não encontrar, volta para a lista de diversos como padrão seguro
                 window.location.href = "{{ url_for('pendencias_diversos') }}";
             }
         };
+
         const acaoCancelarEdicao = () => showCustomConfirm('Cancelar Edição?', 'As alterações não salvas serão perdidas.', (c) => { if(c) location.reload(); }, 'Sim, Cancelar');
 
         btnCancelar.onclick = acaoFechar;
