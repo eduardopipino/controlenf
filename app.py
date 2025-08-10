@@ -836,8 +836,15 @@ def detalhes_pendencia(pendencia_id):
         }
         pendencias_collection.update_one({'_id': ObjectId(pendencia_id)}, {'$set': update_data})
         flash('Pendência atualizada com sucesso!', 'success')
-        # Redireciona de volta para a própria página de detalhes, sem a 'origem'
-        return redirect(url_for('detalhes_pendencia', pendencia_id=pendencia_id))
+        
+        # Se o usuário acabou de desvincular (instrumento_id agora é nulo),
+        # redireciona para a lista de diversos.
+        if not instrumento_id:
+            return redirect(url_for('pendencias_diversos'))
+        
+        # Caso contrário, volta para a própria página de detalhes ou para a origem.
+        origem = request.form.get('origem', url_for('pendencias_por_instrumento'))
+        return redirect(origem)
     
     # Lógica GET
     instrumentos = get_instrumentos_para_dropdown()

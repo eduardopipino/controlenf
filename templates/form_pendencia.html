@@ -7,7 +7,7 @@
         <div>
             <label for="instrumento_id">Vincular a um Instrumento Contratual (Opcional):</label>
             <select id="instrumento_id" name="instrumento_id" disabled>
-                <option></option>
+                <option value="">-- Nenhuma (Pendência Diversa) --</option>
                 {% for inst in instrumentos %}
                     <option value="{{ inst._id }}" 
                             data-dados="{{ inst|tojson|safe }}"
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- LÓGICA DO SELECT2 E INFO BOX ---
     $('#instrumento_id').select2({
-        placeholder: "-- Nenhuma (Pendência Diversa) --",
+        // O placeholder foi removido. O texto agora vem direto do HTML.
         allowClear: true,
         width: '100%',
         closeOnSelect: true
