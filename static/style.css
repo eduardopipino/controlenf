@@ -1160,3 +1160,13 @@ tr.pendencia-vencida td {
     font-size: 16px; /* Você pode aumentar ou diminuir este valor, ex: 18px */
     height: 32px;    /* Um pequeno ajuste na altura para acomodar a fonte maior */
 }
+
+/* Estilo para cards de alerta no dashboard */
+.summary-card.card-alert {
+    border-left-color: #e74c3c; /* Vermelho de alerta */
+}
+
+.summary-card.card-alert .summary-value,
+.summary-card.card-alert h3 {
+    color: #e74c3c;
+}

@@ -6,12 +6,12 @@
 
     <div class="summary-container">
         <a href="{{ url_for('controle_pendentes') }}" class="summary-card">
-            <h3>Controles Pendentes</h3>
+            <h3>Notas Fiscais Pendentes</h3>
             <div class="summary-value">{{ summary.pendentes }}</div>
             <div class="summary-link">Ver Detalhes &rarr;</div>
         </a>
 
-        <a href="{{ url_for('instrumentos_contratuais') }}" class="summary-card">
+        <a href="{{ url_for('instrumentos_contratuais_vigentes') }}" class="summary-card">
             <h3>Instrumentos Contratuais</h3>
             <div class="summary-value">{{ summary.vigentes }}</div>
             <div class="summary-description">vigentes de {{ summary.total_instrumentos }} instrumentos contratuais</div>
@@ -32,6 +32,36 @@
             </ul>
         </div>
     </div>
+	
+<hr style="margin-top: 30px; margin-bottom: 0;">
+
+<div class="summary-container">
+    <a href="{{ url_for('pendencias_geral') }}" class="summary-card card-alert">
+        <h3>Pendências Vencidas</h3>
+        <div class="summary-value">{{ summary.pendencias_vencidas }}</div>
+        <p class="summary-description">Itens com prazo ultrapassado.</p>
+        <span class="summary-link">Verificar Agora &rarr;</span>
+    </a>
+
+    <a href="{{ url_for('pendencias_geral') }}" class="summary-card">
+        <h3>A Vencer (Próximos 7 dias)</h3>
+        <div class="summary-value">{{ summary.pendencias_a_vencer }}</div>
+        <p class="summary-description">Pendências com prazo definido para a próxima semana.</p>
+        <span class="summary-link">Planejar &rarr;</span>
+    </a>
+
+    <div class="summary-card">
+        <h3>Carga de Trabalho (Pendências)</h3>
+        <ul class="summary-list">
+            {% for resp in summary.pendencias_por_responsavel %}
+                <li>{{ resp._id or 'Não definido' }} <span><strong>{{ resp.count }}</strong></span></li>
+            {% else %}
+                <li>Nenhuma pendência em aberto.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+	
 <hr style="margin: 40px 0;">
 
 <div class="changelog-container">

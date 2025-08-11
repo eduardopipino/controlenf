@@ -3,7 +3,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 from bson import json_util
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
@@ -394,46 +394,77 @@ def save_pendencias_column_prefs():
     return {'status': 'success'}
 
 # --- Rotas Principais ---
+
 @app.route('/')
 @login_required
 def index():
     try:
         user_id_obj = ObjectId(current_user.id)
+        hoje = datetime.now().date()
+        data_limite_semana = (datetime.now() + timedelta(days=7)).date()
+
+        # --- Contagens Originais (Instrumentos e Controles) ---
+        # Lógica correta para Controles Pendentes
+        situacoes_arquivadoras = get_situacoes_que_arquivam()
+        controles_pendentes_count = controle_collection.count_documents({
+            'user_id': user_id_obj,
+            'situacao': {'$nin': situacoes_arquivadoras}
+        })
+
+        instrumentos_vigentes_count = instrumentos_collection.count_documents({'user_id': user_id_obj, 'vigente': True})
+        total_instrumentos_count = instrumentos_collection.count_documents({'user_id': user_id_obj})
         
-        # Pipeline para contar frequências a partir dos ITENS de instrumentos VIGENTES
         frequencia_pipeline = [
             {'$match': {'user_id': user_id_obj, 'vigente': True}},
-            {'$lookup': {
-                'from': 'ITENS_INSTRUMENTO',
-                'localField': '_id',
-                'foreignField': 'instrumento_id',
-                'as': 'itens'
-            }},
+            {'$lookup': {'from': 'ITENS_INSTRUMENTO', 'localField': '_id', 'foreignField': 'instrumento_id', 'as': 'itens'}},
             {'$unwind': '$itens'},
             {'$group': {'_id': '$itens.tipo_frequencia', 'count': {'$sum': 1}}},
             {'$sort': {'count': -1}}
         ]
-        
-        summary_data = {
-            'pendentes': controle_collection.count_documents({'user_id': user_id_obj, 'situacao': {'$ne': 'FINANCEIRO'}}),
-            'vigentes': instrumentos_collection.count_documents({'user_id': user_id_obj, 'vigente': True}),
-            'total_instrumentos': instrumentos_collection.count_documents({'user_id': user_id_obj}),
-            'frequencias': list(instrumentos_collection.aggregate(frequencia_pipeline))
-        }
-    except Exception as e:
-        flash(f"Não foi possível carregar os dados do resumo: {e}", "error")
-        summary_data = {'pendentes': 0, 'vigentes': 0, 'total_instrumentos': 0, 'frequencias': []}
+        frequencias_data = list(instrumentos_collection.aggregate(frequencia_pipeline))
 
-    try:
+        # --- Novas Consultas para Pendências ---
+        pendencias_vencidas_count = pendencias_collection.count_documents({
+            'user_id': user_id_obj, 'status': 'Pendente',
+            'prazo': {'$lt': datetime.combine(hoje, datetime.min.time())}
+        })
+        pendencias_a_vencer_count = pendencias_collection.count_documents({
+            'user_id': user_id_obj, 'status': 'Pendente',
+            'prazo': {
+                '$gte': datetime.combine(hoje, datetime.min.time()),
+                '$lt': datetime.combine(data_limite_semana, datetime.min.time())
+            }
+        })
+        pipeline_responsavel = [
+            {'$match': {'user_id': user_id_obj, 'status': 'Pendente'}},
+            {'$group': {'_id': {'$ifNull': ['$responsavel', 'Não Definido']}, 'count': {'$sum': 1}}},
+            {'$sort': {'count': -1}}
+        ]
+        pendencias_por_responsavel = list(pendencias_collection.aggregate(pipeline_responsavel))
+        
+        # --- Junção de todos os dados para enviar ao template ---
+        summary_data = {
+            'pendentes': controles_pendentes_count,
+            'vigentes': instrumentos_vigentes_count,
+            'total_instrumentos': total_instrumentos_count,
+            'frequencias': frequencias_data,
+            'pendencias_vencidas': pendencias_vencidas_count,
+            'pendencias_a_vencer': pendencias_a_vencer_count,
+            'pendencias_por_responsavel': pendencias_por_responsavel
+        }
+        
         with open('changelog.json', 'r', encoding='utf-8') as f:
             changelog_data = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        changelog_data = [] # Se o arquivo não existir ou for inválido, envia uma lista vazia
 
-    # Adiciona o 'changelog' ao render_template
+    except Exception as e:
+        flash(f"Não foi possível carregar os dados do dashboard: {e}", "error")
+        summary_data = {
+            'pendentes': 0, 'vigentes': 0, 'total_instrumentos': 0, 'frequencias': [],
+            'pendencias_vencidas': 0, 'pendencias_a_vencer': 0, 'pendencias_por_responsavel': []
+        }
+        changelog_data = []
+
     return render_template('index.html', summary=summary_data, changelog=changelog_data)
-
-    #return render_template('index.html', summary=summary_data)
 
 # --- CADASTROS DE INSTRUMENTOS ---
 
