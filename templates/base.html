@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Sauron - Controle de dependências DGC</title>
+    <title>Sistema Sauron</title>
     
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
     
@@ -33,10 +33,10 @@
                 <li class="nav-item dropdown">
                     <a href="#" class="nav-link dropbtn">Controle de Pendências</a>
                     <ul class="dropdown-menu">
-                        <li><a href="#" class="dropdown-item">Visualização Geral</a></li>
+                        <li><a href="{{ url_for('pendencias_geral') }}" class="dropdown-item">Todas as pendências</a></li>
                         <li><a href="{{ url_for('pendencias_por_instrumento') }}" class="dropdown-item">Por instrumento contratual</a></li>
                         <li><a href="{{ url_for('pendencias_diversos') }}" class="dropdown-item">Diversas</a></li>
-                        <li><a href="#" class="dropdown-item">Prazos</a></li>
+                        <li><a href="#" class="dropdown-item">Concluídas</a></li>
                     </ul>
                 </li>
                 <li class="nav-item dropdown">

@@ -86,6 +86,8 @@ TODAS_AS_COLUNAS_CONTROLE = [
 ]
 
 TODAS_AS_COLUNAS_PENDENCIAS = [
+    ['instrumento_display', 'Nº / Tipo'], # <<< NOVA COLUNA
+    ['contratada', 'Contratada'],         # <<< NOVA COLUNA
     ['pendencia', 'Pendência'],
     ['prazo', 'Prazo'],
     ['responsavel', 'Responsável'],
@@ -244,6 +246,38 @@ def get_instrumentos_para_dropdown():
     for inst in instrumentos:
         inst['_id'] = str(inst['_id'])
     return instrumentos
+
+def get_pendencias_com_detalhes(query_filter, sort_document):
+    """Busca pendências e faz o join com instrumentos para obter detalhes."""
+    pipeline = [
+        {'$match': query_filter},
+        {'$lookup': {
+            'from': 'INSTRUMENTOCONTRATUAL',
+            'localField': 'instrumento_id',
+            'foreignField': '_id',
+            'as': 'instrumento_info'
+        }},
+        {'$unwind': {'path': '$instrumento_info', 'preserveNullAndEmptyArrays': True}},
+        {'$addFields': {
+            'contratada': '$instrumento_info.contratada',
+            'instrumento_display': {
+                '$concat': [
+                    {'$ifNull': ['$instrumento_info.n_instrumento', '']},
+                    ' / ',
+                    {'$ifNull': ['$instrumento_info.tipo_documento', '']}
+                ]
+            }
+        }},
+        {'$sort': sort_document}
+    ]
+    pendencias = list(pendencias_collection.aggregate(pipeline))
+    
+    # Remove o '/ ' para pendências sem vínculo
+    for p in pendencias:
+        if not p.get('instrumento_id'):
+            p['instrumento_display'] = ''
+
+    return pendencias
 
 # --- Rotas de Autenticação ---
 @app.route('/login', methods=['GET', 'POST'])
@@ -803,11 +837,13 @@ def nova_pendencia():
         pendencias_collection.insert_one(nova)
         flash('Nova pendência criada com sucesso!', 'success')
         
-        origem = request.form.get('origem')
-        if origem and 'por_instrumento' in origem:
-            return redirect(url_for('pendencias_por_instrumento'))
-        else:
-            return redirect(url_for('pendencias_diversos'))
+        return redirect(url_for('pendencias_geral'))
+
+        # origem = request.form.get('origem')
+        # if origem and 'por_instrumento' in origem:
+        #     return redirect(url_for('pendencias_por_instrumento'))
+        # else:
+        #     return redirect(url_for('pendencias_diversos'))
 
     # Lógica GET
     instrumentos = get_instrumentos_para_dropdown()
@@ -837,14 +873,16 @@ def detalhes_pendencia(pendencia_id):
         pendencias_collection.update_one({'_id': ObjectId(pendencia_id)}, {'$set': update_data})
         flash('Pendência atualizada com sucesso!', 'success')
         
+        return redirect(url_for('pendencias_geral'))
+
         # Se o usuário acabou de desvincular (instrumento_id agora é nulo),
         # redireciona para a lista de diversos.
-        if not instrumento_id:
-            return redirect(url_for('pendencias_diversos'))
+        # if not instrumento_id:
+        #     return redirect(url_for('pendencias_diversos'))
         
         # Caso contrário, volta para a própria página de detalhes ou para a origem.
-        origem = request.form.get('origem', url_for('pendencias_por_instrumento'))
-        return redirect(origem)
+        # origem = request.form.get('origem', url_for('pendencias_por_instrumento'))
+        # return redirect(origem)
     
     # Lógica GET
     instrumentos = get_instrumentos_para_dropdown()
@@ -864,7 +902,9 @@ def detalhes_pendencia(pendencia_id):
 def excluir_pendencia(pendencia_id):
     pendencias_collection.delete_one({'_id': ObjectId(pendencia_id), 'user_id': ObjectId(current_user.id)})
     flash('Pendência excluída com sucesso!', 'success')
-    return redirect(url_for('pendencias_diversos'))
+    return redirect(url_for('pendencias_geral'))
+
+    #return redirect(url_for('pendencias_diversos'))
 
 @app.route('/pendencias/filtrar', methods=['POST'])
 @login_required
@@ -901,6 +941,108 @@ def pendencias_filtrar():
         filter_values=request.form,
         todas_as_colunas=TODAS_AS_COLUNAS_PENDENCIAS,
         colunas_visiveis=getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
+    )
+
+@app.route('/pendencias/geral')
+@login_required
+def pendencias_geral():
+    sort_by = request.args.get('sort_by', 'data_criacao')
+    order = request.args.get('order', 'asc')
+    sort_order_mongo = -1 if order == 'desc' else 1
+    sort_document = {sort_by: sort_order_mongo} # <<< Formato de Dicionário (correto para aggregate)
+    
+    query_filter = {'user_id': ObjectId(current_user.id), 'status': 'Pendente'}
+    lista_pendencias = get_pendencias_com_detalhes(query_filter, sort_document)
+
+    hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    for p in lista_pendencias:
+        p['vencido'] = p.get('prazo') and p['prazo'] < hoje
+
+    colunas_visiveis = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
+
+    return render_template(
+        'pendencias_geral.html', 
+        pendencias=lista_pendencias,
+        sort_by=sort_by, order=order, filter_values={},
+        todas_as_colunas=TODAS_AS_COLUNAS_PENDENCIAS,
+        colunas_visiveis=colunas_visiveis
+    )
+
+@app.route('/pendencias/geral/filtrar', methods=['POST'])
+@login_required
+def pendencias_geral_filtrar():
+    filter_values = {key.replace('filter_', ''): val.strip() for key, val in request.form.items() if key.startswith('filter_')}
+    
+    query_filter = {'user_id': ObjectId(current_user.id), 'status': 'Pendente'}
+    for key, value in filter_values.items():
+        if value:
+            query_filter[key] = {'$regex': value, '$options': 'i'}
+            
+    sort_by = request.args.get('sort_by', 'data_criacao')
+    order = request.args.get('order', 'asc')
+    sort_order_mongo = -1 if order == 'desc' else 1
+    sort_document = {sort_by: sort_order_mongo} # <<< Formato de Dicionário (correto para aggregate)
+
+    lista_pendencias = get_pendencias_com_detalhes(query_filter, sort_document)
+    
+    hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    for p in lista_pendencias:
+        p['vencido'] = p.get('prazo') and p['prazo'] < hoje
+
+    colunas_visiveis = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
+
+    return render_template(
+        'pendencias_geral.html', 
+        pendencias=lista_pendencias, 
+        sort_by=sort_by, order=order,
+        filter_values=request.form,
+        todas_as_colunas=TODAS_AS_COLUNAS_PENDENCIAS,
+        colunas_visiveis=colunas_visiveis
+    )
+
+@app.route('/pendencias/exportar')
+@login_required
+def exportar_pendencias_csv():
+    query_filter = {'user_id': ObjectId(current_user.id), 'status': 'Pendente'}
+    
+    # Define um documento de ordenação padrão para a nova função
+    sort_document = {'prazo': 1}
+    # Usa a nova função que busca todos os detalhes do instrumento
+    registros = get_pendencias_com_detalhes(query_filter, sort_document)
+
+    output = io.StringIO()
+    output.write('\ufeff') # BOM para Excel entender UTF-8
+    writer = csv.writer(output, delimiter=';', quotechar='"', quoting=csv.QUOTE_ALL)
+    
+    # Escreve o cabeçalho
+    colunas = ['Instrumento Vinculado', 'Pendência', 'Prazo', 'Responsável', 'Situação', 'Observações']
+    writer.writerow(colunas)
+    
+    # Escreve os dados
+    for r in registros:
+        # Busca detalhes do instrumento se houver vínculo
+        instrumento_str = ''
+        if r.get('instrumento_id'):
+            inst = instrumentos_collection.find_one({'_id': r['instrumento_id']})
+            if inst:
+                instrumento_str = f"{inst.get('tipo_documento', '')} Nº {inst.get('n_instrumento', '')} - {inst.get('contratada', '')}"
+
+        linha = [
+            instrumento_str,
+            r.get('pendencia', ''),
+            r.get('prazo').strftime('%d/%m/%Y') if r.get('prazo') else '',
+            r.get('responsavel', ''),
+            r.get('situacao', ''),
+            r.get('observacoes', '')
+        ]
+        writer.writerow(linha)
+
+    output.seek(0)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"export_pendencias_{timestamp}.csv"
+    return Response(
+        output.getvalue(), mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment;filename={filename}"}
     )
 
 @app.route('/controle/concluidas')
