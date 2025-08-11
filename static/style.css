@@ -2,6 +2,12 @@
 
 /* Cores Padrão (Tema Azul Padrão / Fallback) */
 :root {
+    /* Variáveis de Tamanho de Fonte */
+    --font-size-base: 12px; /* Altere este valor para 14px, 15px, 16px, etc. */
+    --font-size-h3: 1.4em;   /* Títulos h3 serão 1.4x maiores que a fonte base */
+    --font-size-h2: 1.6em;   /* Títulos h2 serão 1.6x maiores */
+    --font-size-small: 0.9em;/* Texto pequeno será 0.9x menor */
+
     /* Cores Primárias */
     --primary-color: #3498db;      /* Azul médio para botões, destaques */
     --secondary-color: #aed6f1;    /* Azul claro para fundos secundários (ex: hover tabela, dropdowns) */
@@ -160,6 +166,7 @@ body.theme-dark {
 
 body {
     font-family: Arial, sans-serif;
+	font-size: var(--font-size-base); /* <<< APLICA A VARIÁVEL BASE */
     margin: 0;
     padding: 0;
     background-color: var(--background-primary);
@@ -334,7 +341,7 @@ button, a.button {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: var(--font-size-base); /* <<< USA A VARIÁVEL */
     transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
     box-shadow: 0 2px 4px var(--shadow-base);
     text-decoration: none; /* Garante que o link não tenha sublinhado */
@@ -379,7 +386,7 @@ select {
     border: 1px solid var(--border-base);
     border-radius: 5px;
     box-sizing: border-box;
-    font-size: 16px;
+    font-size: var(--font-size-base); /* <<< USA A VARIÁVEL */
     background-color: var(--background-secondary);
     color: var(--text-primary);
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -510,7 +517,7 @@ td input[type="radio"] {
     color: var(--tertiary-color);
     margin-top: 0;
     margin-bottom: 15px;
-    font-size: 1.2em;
+    font-size: var(--font-size-h3); /* <<< USA A VARIÁVEL DE TÍTULO */
 }
 
 /* Modals (Filter and Recurrent) */
