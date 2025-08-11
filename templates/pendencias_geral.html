@@ -60,6 +60,14 @@
         <div class="modal-content">
             <h3>Filtrar Pendências</h3>
             <form method="POST" action="{{ url_for('pendencias_concluidas_filtrar' if page_mode == 'concluidas' else 'pendencias_geral_filtrar') }}">
+				<div>
+					<label for="filter_n_instrumento">Nº Instrumento:</label>
+					<input type="text" name="filter_n_instrumento" id="filter_n_instrumento" value="{{ filter_values.get('filter_n_instrumento', '') }}">
+				</div>
+				<div>
+					<label for="filter_contratada">Contratada:</label>
+					<input type="text" name="filter_contratada" id="filter_contratada" value="{{ filter_values.get('filter_contratada', '') }}">
+				</div>
                 <div>
                     <label for="filter_pendencia">Pendência:</label>
                     <input type="text" name="filter_pendencia" id="filter_pendencia" value="{{ filter_values.get('filter_pendencia', '') }}">
@@ -158,7 +166,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnLimparFiltro = document.getElementById('btnLimparFiltro');
     if (btnLimparFiltro) {
         btnLimparFiltro.addEventListener('click', () => {
-            window.location.href = "{{ url_for(request.endpoint) }}";
+            // Determina a rota correta baseada no modo da página
+            const targetUrl = "{{ url_for('pendencias_concluidas' if page_mode == 'concluidas' else 'pendencias_geral') }}";
+            window.location.href = targetUrl;
         });
     }
 

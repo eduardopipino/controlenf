@@ -249,8 +249,16 @@ def get_instrumentos_para_dropdown():
 
 def get_pendencias_com_detalhes(query_filter, sort_document):
     """Busca pendências e faz o join com instrumentos para obter detalhes."""
+    
+    # Separa os filtros: os que são da pendência e os que são do instrumento
+    filtros_instrumento = {}
+    if 'instrumento_info.n_instrumento' in query_filter:
+        filtros_instrumento['instrumento_info.n_instrumento'] = query_filter.pop('instrumento_info.n_instrumento')
+    if 'instrumento_info.contratada' in query_filter:
+        filtros_instrumento['instrumento_info.contratada'] = query_filter.pop('instrumento_info.contratada')
+
     pipeline = [
-        {'$match': query_filter},
+        {'$match': query_filter}, # Primeiro, filtra as pendências
         {'$lookup': {
             'from': 'INSTRUMENTOCONTRATUAL',
             'localField': 'instrumento_id',
@@ -258,12 +266,14 @@ def get_pendencias_com_detalhes(query_filter, sort_document):
             'as': 'instrumento_info'
         }},
         {'$unwind': {'path': '$instrumento_info', 'preserveNullAndEmptyArrays': True}},
+        # Agora que os dados foram juntados, podemos aplicar o segundo filtro
+        {'$match': filtros_instrumento}, 
         {'$addFields': {
             'contratada': '$instrumento_info.contratada',
+            'n_instrumento': '$instrumento_info.n_instrumento', # Adiciona para ordenação
             'instrumento_display': {
                 '$concat': [
-                    {'$ifNull': ['$instrumento_info.n_instrumento', '']},
-                    ' / ',
+                    {'$ifNull': ['$instrumento_info.n_instrumento', '']}, ' / ',
                     {'$ifNull': ['$instrumento_info.tipo_documento', '']}
                 ]
             }
@@ -272,11 +282,9 @@ def get_pendencias_com_detalhes(query_filter, sort_document):
     ]
     pendencias = list(pendencias_collection.aggregate(pipeline))
     
-    # Remove o '/ ' para pendências sem vínculo
     for p in pendencias:
         if not p.get('instrumento_id'):
             p['instrumento_display'] = ''
-
     return pendencias
 
 # --- Rotas de Autenticação ---
@@ -919,7 +927,11 @@ def pendencias_filtrar():
 
     for key, value in filter_values.items():
         if value:
-            query_filter[key] = {'$regex': value, '$options': 'i'}
+            # Para os novos campos, a busca precisa ser nos dados do instrumento vinculado
+            if key in ['n_instrumento', 'contratada']:
+                query_filter[f'instrumento_info.{key}'] = {'$regex': value, '$options': 'i'}
+            else:
+                query_filter[key] = {'$regex': value, '$options': 'i'}
             
     sort_by = request.args.get('sort_by', 'data_criacao')
     order = request.args.get('order', 'asc')
@@ -977,7 +989,13 @@ def pendencias_geral_filtrar():
     query_filter = {'user_id': ObjectId(current_user.id), 'status': 'Pendente'}
     for key, value in filter_values.items():
         if value:
-            query_filter[key] = {'$regex': value, '$options': 'i'}
+            # A função get_pendencias_com_detalhes agora espera 'instrumento_info.chave'
+            if key == 'n_instrumento':
+                query_filter['instrumento_info.n_instrumento'] = {'$regex': value, '$options': 'i'}
+            elif key == 'contratada':
+                 query_filter['instrumento_info.contratada'] = {'$regex': value, '$options': 'i'}
+            else:
+                query_filter[key] = {'$regex': value, '$options': 'i'}
             
     sort_by = request.args.get('sort_by', 'data_criacao')
     order = request.args.get('order', 'asc')
@@ -1059,9 +1077,9 @@ def pendencias_concluidas():
     
     lista_pendencias = get_pendencias_com_detalhes(query_filter, sort_document)
 
-    hoje = datetime.now().date()
+    hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     for p in lista_pendencias:
-        p['vencido'] = p.get('prazo') and p['prazo'].date() < hoje
+        p['vencido'] = p.get('prazo') and p.get('prazo') < hoje
 
     colunas_visiveis = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
 
@@ -1080,9 +1098,16 @@ def pendencias_concluidas_filtrar():
     filter_values = {key.replace('filter_', ''): val.strip() for key, val in request.form.items() if key.startswith('filter_')}
     
     query_filter = {'user_id': ObjectId(current_user.id), 'status': 'Concluído'}
+	
     for key, value in filter_values.items():
         if value:
-            query_filter[key] = {'$regex': value, '$options': 'i'}
+            # A função get_pendencias_com_detalhes agora espera 'instrumento_info.chave'
+            if key == 'n_instrumento':
+                query_filter['instrumento_info.n_instrumento'] = {'$regex': value, '$options': 'i'}
+            elif key == 'contratada':
+                 query_filter['instrumento_info.contratada'] = {'$regex': value, '$options': 'i'}
+            else:
+                query_filter[key] = {'$regex': value, '$options': 'i'}
             
     sort_by = request.args.get('sort_by', 'data_criacao')
     order = request.args.get('order', 'desc')
@@ -1098,12 +1123,13 @@ def pendencias_concluidas_filtrar():
     colunas_visiveis = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
 
     return render_template(
-        'pendencias_concluidas.html', # <<< Aponta para o novo template
+        'pendencias_geral.html',
         pendencias=lista_pendencias, 
         sort_by=sort_by, order=order,
         filter_values=request.form,
         todas_as_colunas=TODAS_AS_COLUNAS_PENDENCIAS,
-        colunas_visiveis=colunas_visiveis
+        colunas_visiveis=colunas_visiveis,
+		page_mode='concluidas'
     )
 
 @app.route('/pendencias/exportar_concluidas')
