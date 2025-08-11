@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Pendências - Todas</h2>
+    <h2>Pendências - {% if page_mode == 'concluidas' %}Concluídas{% else %}Todas{% endif %}</h2>
 
     <div class="button-toolbar">
         <div class="toolbar-group-left">
@@ -25,7 +25,7 @@
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
                         <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
-                            <a href="{{ url_for('pendencias_geral', sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc') }}">
+                            <a href="{{ url_for(request.endpoint, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc') }}">
                                 {{ col_nome }}
                                 {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}
                             </a>
@@ -59,7 +59,7 @@
     <div id="filterModal" class="modal-overlay">
         <div class="modal-content">
             <h3>Filtrar Pendências</h3>
-            <form method="POST" action="{{ url_for('pendencias_geral_filtrar') }}">
+            <form method="POST" action="{{ url_for('pendencias_concluidas_filtrar' if page_mode == 'concluidas' else 'pendencias_geral_filtrar') }}">
                 <div>
                     <label for="filter_pendencia">Pendência:</label>
                     <input type="text" name="filter_pendencia" id="filter_pendencia" value="{{ filter_values.get('filter_pendencia', '') }}">
@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnLimparFiltro = document.getElementById('btnLimparFiltro');
     if (btnLimparFiltro) {
         btnLimparFiltro.addEventListener('click', () => {
-            window.location.href = "{{ url_for('pendencias_geral') }}";
+            window.location.href = "{{ url_for(request.endpoint) }}";
         });
     }
 

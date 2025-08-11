@@ -965,7 +965,8 @@ def pendencias_geral():
         pendencias=lista_pendencias,
         sort_by=sort_by, order=order, filter_values={},
         todas_as_colunas=TODAS_AS_COLUNAS_PENDENCIAS,
-        colunas_visiveis=colunas_visiveis
+        colunas_visiveis=colunas_visiveis,
+        page_mode='geral'
     )
 
 @app.route('/pendencias/geral/filtrar', methods=['POST'])
@@ -997,7 +998,8 @@ def pendencias_geral_filtrar():
         sort_by=sort_by, order=order,
         filter_values=request.form,
         todas_as_colunas=TODAS_AS_COLUNAS_PENDENCIAS,
-        colunas_visiveis=colunas_visiveis
+        colunas_visiveis=colunas_visiveis,
+        page_mode='geral'
     )
 
 @app.route('/pendencias/exportar')
@@ -1064,11 +1066,12 @@ def pendencias_concluidas():
     colunas_visiveis = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
 
     return render_template(
-        'pendencias_concluidas.html', # <<< Aponta para o novo template
+        'pendencias_geral.html', # Aponta para o template GERAL
         pendencias=lista_pendencias,
         sort_by=sort_by, order=order, filter_values={},
         todas_as_colunas=TODAS_AS_COLUNAS_PENDENCIAS,
-        colunas_visiveis=colunas_visiveis
+        colunas_visiveis=colunas_visiveis,
+        page_mode='concluidas' # Adiciona a "bandeira" do modo de página
     )
 
 @app.route('/pendencias/concluidas/filtrar', methods=['POST'])
