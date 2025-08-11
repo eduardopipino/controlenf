@@ -1045,6 +1045,97 @@ def exportar_pendencias_csv():
         headers={"Content-Disposition": f"attachment;filename={filename}"}
     )
 
+@app.route('/pendencias/concluidas')
+@login_required
+def pendencias_concluidas():
+    sort_by = request.args.get('sort_by', 'data_criacao')
+    order = request.args.get('order', 'desc') # Padrão para concluídas é mais novo primeiro
+    sort_order_mongo = -1 if order == 'desc' else 1
+    sort_document = {sort_by: sort_order_mongo}
+    
+    query_filter = {'user_id': ObjectId(current_user.id), 'status': 'Concluído'}
+    
+    lista_pendencias = get_pendencias_com_detalhes(query_filter, sort_document)
+
+    hoje = datetime.now().date()
+    for p in lista_pendencias:
+        p['vencido'] = p.get('prazo') and p['prazo'].date() < hoje
+
+    colunas_visiveis = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
+
+    return render_template(
+        'pendencias_concluidas.html', # <<< Aponta para o novo template
+        pendencias=lista_pendencias,
+        sort_by=sort_by, order=order, filter_values={},
+        todas_as_colunas=TODAS_AS_COLUNAS_PENDENCIAS,
+        colunas_visiveis=colunas_visiveis
+    )
+
+@app.route('/pendencias/concluidas/filtrar', methods=['POST'])
+@login_required
+def pendencias_concluidas_filtrar():
+    filter_values = {key.replace('filter_', ''): val.strip() for key, val in request.form.items() if key.startswith('filter_')}
+    
+    query_filter = {'user_id': ObjectId(current_user.id), 'status': 'Concluído'}
+    for key, value in filter_values.items():
+        if value:
+            query_filter[key] = {'$regex': value, '$options': 'i'}
+            
+    sort_by = request.args.get('sort_by', 'data_criacao')
+    order = request.args.get('order', 'desc')
+    sort_order_mongo = -1 if order == 'desc' else 1
+    sort_document = {sort_by: sort_order_mongo}
+
+    lista_pendencias = get_pendencias_com_detalhes(query_filter, sort_document)
+    
+    hoje = datetime.now().date()
+    for p in lista_pendencias:
+        p['vencido'] = p.get('prazo') and p['prazo'].date() < hoje
+
+    colunas_visiveis = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
+
+    return render_template(
+        'pendencias_concluidas.html', # <<< Aponta para o novo template
+        pendencias=lista_pendencias, 
+        sort_by=sort_by, order=order,
+        filter_values=request.form,
+        todas_as_colunas=TODAS_AS_COLUNAS_PENDENCIAS,
+        colunas_visiveis=colunas_visiveis
+    )
+
+@app.route('/pendencias/exportar_concluidas')
+@login_required
+def exportar_pendencias_concluidas_csv():
+    query_filter = {'user_id': ObjectId(current_user.id), 'status': 'Concluído'}
+    sort_document = {'data_criacao': -1}
+    registros = get_pendencias_com_detalhes(query_filter, sort_document)
+
+    # ... (a lógica de criar o CSV a partir daqui é a mesma da função 'exportar_pendencias_csv',
+    # você pode copiar o resto daquela função para cá)
+    output = io.StringIO()
+    output.write('\ufeff')
+    writer = csv.writer(output, delimiter=';', quotechar='"', quoting=csv.QUOTE_ALL)
+    
+    colunas = { 'Nº / TIPO': 'instrumento_display', 'CONTRATADA': 'contratada', 'PENDÊNCIA': 'pendencia', 'PRAZO': 'prazo', 'RESPONSÁVEL': 'responsavel', 'SITUAÇÃO': 'situacao', 'OBSERVAÇÕES': 'observacoes' }
+    writer.writerow(colunas.keys())
+    
+    for registro in registros:
+        linha = []
+        for campo_db in colunas.values():
+            valor = registro.get(campo_db, '')
+            if campo_db == 'prazo' and isinstance(valor, datetime):
+                valor = valor.strftime('%d/%m/%Y')
+            linha.append(str(valor))
+        writer.writerow(linha)
+
+    output.seek(0)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"export_pendencias_concluidas_{timestamp}.csv"
+    return Response(
+        output.getvalue(), mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment;filename={filename}"}
+    )
+
 @app.route('/controle/concluidas')
 @login_required
 def controle_concluidas():

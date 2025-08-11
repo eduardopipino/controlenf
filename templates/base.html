@@ -33,10 +33,10 @@
                 <li class="nav-item dropdown">
                     <a href="#" class="nav-link dropbtn">Controle de Pendências</a>
                     <ul class="dropdown-menu">
-                        <li><a href="{{ url_for('pendencias_geral') }}" class="dropdown-item">Todas as pendências</a></li>
+                        <li><a href="{{ url_for('pendencias_geral') }}" class="dropdown-item">Todas</a></li>
                         <li><a href="{{ url_for('pendencias_por_instrumento') }}" class="dropdown-item">Por instrumento contratual</a></li>
                         <li><a href="{{ url_for('pendencias_diversos') }}" class="dropdown-item">Diversas</a></li>
-                        <li><a href="#" class="dropdown-item">Concluídas</a></li>
+                        <li><a href="{{ url_for('pendencias_concluidas') }}" class="dropdown-item">Concluídas</a></li>
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
