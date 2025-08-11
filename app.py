@@ -754,12 +754,18 @@ def pendencias_diversos():
     for p in lista_pendencias:
         p['vencido'] = p.get('prazo') and p.get('prazo') < hoje
 
+    # Pega a preferência de colunas geral do usuário
+    prefs_usuario = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
+    
+    # Filtra a lista para remover as colunas que não fazem sentido nesta tela
+    colunas_a_exibir = [col for col in prefs_usuario if col not in ['instrumento_display', 'contratada']]
+
     return render_template(
         'pendencias_diversos.html', 
         pendencias=lista_pendencias,
         sort_by=sort_by, order=order, filter_values={},
         todas_as_colunas=TODAS_AS_COLUNAS_PENDENCIAS,
-        colunas_visiveis=getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
+        colunas_visiveis=colunas_a_exibir # <-- Usa a nova lista já filtrada
     )
 
 @app.route('/pendencias/por_instrumento')
