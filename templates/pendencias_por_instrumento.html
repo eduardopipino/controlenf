@@ -10,7 +10,7 @@
             <button id="btnDetalhes" disabled>Detalhes...</button>
         </div>
         <div class="toolbar-group-right">
-            <a href="{{ url_for('nova_pendencia') }}" class="button">Novo</a>
+            <a href="{{ url_for('nova_pendencia', origem=request.path) }}" class="button">Novo</a>
         </div>
     </div>
     <br>
@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 btnDetalhes.disabled = false;
                 btnDetalhes.onclick = () => {
                     const selectedId = this.value;
-                    window.location.href = "{{ url_for('detalhes_pendencia', pendencia_id='REPLACE_ID') }}".replace('REPLACE_ID', selectedId);
+                    window.location.href = "{{ url_for('detalhes_pendencia', pendencia_id='REPLACE_ID', origem=request.path) }}".replace('REPLACE_ID', selectedId);
                 };
             }
         });

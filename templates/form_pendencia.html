@@ -4,6 +4,7 @@
     <h2>{{ 'Nova Pendência' if novo else 'Detalhes da Pendência' }}</h2>
     
     <form id="formPendencia" method="POST">
+            <input type="hidden" name="origem" value="{{ origem or request.referrer }}">
         <div>
             <label for="instrumento_id">Vincular a um Instrumento Contratual (Opcional):</label>
             <select id="instrumento_id" name="instrumento_id" disabled>
@@ -68,7 +69,7 @@
                 </div>
             {% else %}
                 <button type="submit">Salvar</button>
-                <a href="{{ url_for('pendencias_geral') }}" class="button">Cancelar</a>
+                <a href="{{ origem or url_for('pendencias_geral') }}" class="button">Cancelar</a>
             {% endif %}
         </div>
     </form>
@@ -170,7 +171,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const acaoFechar = () => {
-            window.location.href = "{{ url_for('pendencias_geral') }}";
+            const urlOrigem = document.querySelector('input[name="origem"]').value;
+            window.location.href = urlOrigem || "{{ url_for('pendencias_geral') }}";
         };
 
         const acaoCancelarEdicao = () => {

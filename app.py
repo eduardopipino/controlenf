@@ -869,6 +869,9 @@ def pendencias_por_instrumento():
 @app.route('/pendencias/novo', methods=['GET', 'POST'])
 @login_required
 def nova_pendencia():
+    # Pega a origem da URL quando a página é aberta
+    origem_url = request.args.get('origem', url_for('pendencias_geral'))
+
     if request.method == 'POST':
         instrumento_id = request.form.get('instrumento_id')
         nova = {
@@ -881,20 +884,15 @@ def nova_pendencia():
         }
         pendencias_collection.insert_one(nova)
         flash('Nova pendência criada com sucesso!', 'success')
-        
-        return redirect(url_for('pendencias_geral'))
 
-        # origem = request.form.get('origem')
-        # if origem and 'por_instrumento' in origem:
-        #     return redirect(url_for('pendencias_por_instrumento'))
-        # else:
-        #     return redirect(url_for('pendencias_diversos'))
+        # Lê a origem do campo oculto do formulário
+        origem_post = request.form.get('origem')
+
+        return redirect(url_for('pendencias_geral'))
 
     # Lógica GET
     instrumentos = get_instrumentos_para_dropdown()
     instrumentos_json = json.dumps(instrumentos, default=json_util.default)
-    # <<< CORREÇÃO: Passa a URL de origem corretamente para o template >>>
-    origem_url = request.referrer or url_for('pendencias_diversos')
     return render_template('form_pendencia.html', pendencia={}, novo=True, instrumentos=instrumentos, instrumentos_json=instrumentos_json, origem=origem_url)
 
 @app.route('/pendencias/detalhes/<string:pendencia_id>', methods=['GET', 'POST'])
@@ -904,6 +902,9 @@ def detalhes_pendencia(pendencia_id):
     if not pendencia:
         flash('Pendência não encontrada.', 'error')
         return redirect(url_for('pendencias_geral'))
+
+    # Pega a origem da URL (se existir) ou usa o referrer como fallback
+    origem_url = request.args.get('origem', request.referrer or url_for('pendencias_geral'))
 
     if request.method == 'POST':
         # A lógica POST permanece a mesma, mas o redirect fica mais simples
@@ -918,29 +919,14 @@ def detalhes_pendencia(pendencia_id):
         pendencias_collection.update_one({'_id': ObjectId(pendencia_id)}, {'$set': update_data})
         flash('Pendência atualizada com sucesso!', 'success')
         
-        return redirect(url_for('pendencias_geral'))
+        # Lê a origem do campo oculto e a repassa no redirect
+        origem_post = request.form.get('origem')
+        return redirect(url_for('detalhes_pendencia', pendencia_id=pendencia_id, origem=origem_post))
 
-        # Se o usuário acabou de desvincular (instrumento_id agora é nulo),
-        # redireciona para a lista de diversos.
-        # if not instrumento_id:
-        #     return redirect(url_for('pendencias_diversos'))
-        
-        # Caso contrário, volta para a própria página de detalhes ou para a origem.
-        # origem = request.form.get('origem', url_for('pendencias_por_instrumento'))
-        # return redirect(origem)
-    
     # Lógica GET
     instrumentos = get_instrumentos_para_dropdown()
-    # Converte os dados da pendência para JSON para que o JavaScript possa usá-los
     pendencia_json = json.dumps(pendencia, default=json_util.default)
-    
-    return render_template(
-        'form_pendencia.html', 
-        pendencia=pendencia, 
-        novo=False, 
-        instrumentos=instrumentos,
-        pendencia_json=pendencia_json # Envia os dados da pendência para o script
-    )
+    return render_template('form_pendencia.html', pendencia=pendencia, novo=False, instrumentos=instrumentos, pendencia_json=pendencia_json, origem=origem_url)
 
 @app.route('/pendencias/excluir/<string:pendencia_id>', methods=['POST'])
 @login_required
