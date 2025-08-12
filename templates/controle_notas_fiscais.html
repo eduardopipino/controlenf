@@ -11,15 +11,13 @@
             <a href="{{ url_for('exportar_csv', filter_mode=filter_mode) }}" class="button">Exportar</a>
         </div>
         
-        {% if filter_mode == 'pendentes' %}
-        <div class="toolbar-group-center">
-                <button id="btnDetalhes" disabled>Detalhes...</button>
-            </div>
-            {% endif %}
+		<div class="toolbar-group-center">
+			<button id="btnDetalhes" disabled>Detalhes...</button>
+		</div>
             
-            <div class="toolbar-group-right">
-                <button onclick="location.href='{{ url_for('novo_controle') }}'">Novo</button>
-                <button id="btnNovoRecorrente">Novo - Recorrente</button>
+		<div class="toolbar-group-right">
+			<button onclick="location.href='{{ url_for('novo_controle') }}'">Novo</button>
+			<button id="btnNovoRecorrente">Novo - Recorrente</button>
         </div>
     </div>
     
@@ -239,7 +237,7 @@ btnColorCode.addEventListener('click', function() {
     });
 
     // Atualiza o texto do botão principal
-    btnColorCode.textContent = colorsActive ? 'Remover Cores' : 'Identificar por cores';
+    btnColorCode.textContent = colorsActive ? 'Remover cores' : 'Identificar por cores';
 });
         // LÓGICA PARA A ATUALIZAÇÃO RÁPIDA DE SITUAÇÃO
     const dropdowns = document.querySelectorAll('.situacao-dropdown');

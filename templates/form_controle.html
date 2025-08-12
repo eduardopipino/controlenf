@@ -4,7 +4,7 @@
     <h2>{{ 'Novo Registro de Controle' if novo else 'Controle Detalhado' }}</h2>
     <form id="formControle" method="POST">
         <div>
-            <label for="item_id">Item do Instrumento Contratual:</label>
+            <label for="item_id">Item do Instrumento Contratual: *</label>
             <select id="item_id" name="item_id" required>
                 <option></option> 
             </select>
@@ -16,11 +16,11 @@
             <p><strong>Nº Instrumento Contratual:</strong> <span id="info_instrumento_completo"></span></p>
             <p><strong>Contratada/Fornecedora:</strong> <span id="info_contratada"></span></p>
             <p><strong>Objeto:</strong> <span id="info_objeto"></span></p>
-            <p><strong>ITEM:</strong> <span id="info_item"></span></p>
+            <p><strong>Item:</strong> <span id="info_item"></span></p>
         </div>
         
         <div>
-            <label for="referencia">Referência:</label>
+            <label for="referencia">Referência: *</label>
             <input type="text" id="referencia" name="referencia" value="{{ controle.referencia if controle else '' }}" required disabled>
         </div>
         <div>

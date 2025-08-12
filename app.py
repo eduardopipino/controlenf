@@ -311,7 +311,7 @@ def login():
     return render_template('login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
-#@limiter.limit("1 per minute")
+#@limiter.limit("5 per minute")
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('index'))

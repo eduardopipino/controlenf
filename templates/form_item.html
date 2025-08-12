@@ -9,11 +9,11 @@
     <div class="container">
         <form method="POST">
             <div>
-                <label for="descricao_item">Descrição do Item:</label>
+                <label for="descricao_item">Descrição do Item: *</label>
                 <input type="text" id="descricao_item" name="descricao_item" value="{{ item.descricao_item or '' }}" placeholder="Ex: Pagamento mensal de serviço" required>
             </div>
             <div>
-                <label for="tipo_frequencia">Tipo/Frequência:</label>
+                <label for="tipo_frequencia">Tipo/Frequência: *</label>
                 <input type="text" id="tipo_frequencia" name="tipo_frequencia" value="{{ item.tipo_frequencia or '' }}" placeholder="Ex: Mensal, Bimestral, Por Solicitação" required>
             </div>
             <br>
