@@ -903,7 +903,7 @@ def detalhes_pendencia(pendencia_id):
     pendencia = pendencias_collection.find_one({'_id': ObjectId(pendencia_id), 'user_id': ObjectId(current_user.id)})
     if not pendencia:
         flash('Pendência não encontrada.', 'error')
-        return redirect(url_for('pendencias_diversos'))
+        return redirect(url_for('pendencias_geral'))
 
     if request.method == 'POST':
         # A lógica POST permanece a mesma, mas o redirect fica mais simples

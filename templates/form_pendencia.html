@@ -57,7 +57,7 @@
         <br>
 
         <div class="button-toolbar">
-             {% if not novo %}
+            {% if not novo %}
                 <div class="toolbar-group-left">
                     <button type="button" id="btnEditar">Editar</button>
                     <button type="button" id="btnExcluir">Excluir</button>
@@ -66,10 +66,10 @@
                     <button type="submit" id="btnSalvar" disabled>Salvar</button>
                     <button type="button" id="btnCancelar">Fechar</button>
                 </div>
-             {% else %}
+            {% else %}
                 <button type="submit">Salvar</button>
-                <a href="{{ origem }}" class="button">Cancelar</a>
-             {% endif %}
+                <a href="{{ url_for('pendencias_geral') }}" class="button">Cancelar</a>
+            {% endif %}
         </div>
     </form>
 
@@ -170,11 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const acaoFechar = () => {
-            if (pendenciaData && pendenciaData.instrumento_id) {
-                window.location.href = "{{ url_for('pendencias_por_instrumento') }}";
-            } else {
-                window.location.href = "{{ url_for('pendencias_diversos') }}";
-            }
+            window.location.href = "{{ url_for('pendencias_geral') }}";
         };
 
         const acaoCancelarEdicao = () => {
