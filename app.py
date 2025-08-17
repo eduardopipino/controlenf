@@ -105,15 +105,19 @@ def unauthorized():
     return redirect(url_for('login'))
 
 class User(UserMixin):
-    def __init__(self, username, email, password_hash, id=None, theme='theme-blue', colunas_visiveis=None, colunas_visiveis_pendencias=None):
+    def __init__(self, username, email, password_hash, id=None, theme='theme-blue', 
+                 colunas_visiveis=None, colunas_visiveis_pendencias=None, 
+                 font_size_preference=None, spacing_preference=None): # <--- PARÂMETROS ADICIONADOS AQUI
         self.username = username
         self.email = email
         self.password_hash = password_hash
         self.id = str(id) if id else None
         self.theme = theme
-        # Se o usuário não tiver preferência salva, usa a lista completa como padrão
         self.colunas_visiveis = colunas_visiveis or [col[0] for col in TODAS_AS_COLUNAS_CONTROLE]
         self.colunas_visiveis_pendencias = colunas_visiveis_pendencias or [col[0] for col in TODAS_AS_COLUNAS_PENDENCIAS]
+        # LINHAS CORRIGIDAS ABAIXO
+        self.font_size_preference = font_size_preference or 'media'
+        self.spacing_preference = spacing_preference or 'regular'
 
     def get_id(self):
         return self.id
@@ -129,7 +133,9 @@ def load_user(user_id):
             id=user_data['_id'],
             theme=user_data.get('theme', 'theme-blue'),
             colunas_visiveis=user_data.get('colunas_visiveis_controle'),
-            colunas_visiveis_pendencias=user_data.get('colunas_visiveis_pendencias')
+            colunas_visiveis_pendencias=user_data.get('colunas_visiveis_pendencias'),
+            font_size_preference=user_data.get('font_size_preference', 'media'),
+            spacing_preference=user_data.get('spacing_preference', 'regular')
         )
     return None
 
@@ -287,6 +293,41 @@ def get_pendencias_com_detalhes(query_filter, sort_document):
             p['instrumento_display'] = ''
     return pendencias
 
+def _gerar_pendencias_csv(query_filter, filename_prefix):
+    """Função auxiliar para gerar CSV de pendências."""
+    sort_document = {'prazo': 1}
+    # get_pendencias_com_detalhes já traz os dados do instrumento
+    registros = get_pendencias_com_detalhes(query_filter, sort_document)
+
+    output = io.StringIO()
+    output.write('\ufeff')  # BOM para Excel entender UTF-8
+    writer = csv.writer(output, delimiter=';', quotechar='"', quoting=csv.QUOTE_ALL)
+    
+    colunas = ['Nº / Tipo', 'Contratada', 'Pendência', 'Prazo', 'Responsável', 'Situação', 'Observações']
+    writer.writerow(colunas)
+    
+    for r in registros:
+        linha = [
+            r.get('instrumento_display', 'Pendência Diversa'), # <--- MAIS EFICIENTE
+            r.get('contratada', ''),                         # <--- MAIS EFICIENTE
+            r.get('pendencia', ''),
+            r.get('prazo').strftime('%d/%m/%Y') if r.get('prazo') else '',
+            r.get('responsavel', ''),
+            r.get('situacao', ''),
+            r.get('observacoes', '')
+        ]
+        writer.writerow(linha)
+
+    output.seek(0)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{filename_prefix}_{timestamp}.csv"
+    return Response(
+        output.getvalue(), mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment;filename={filename}"}
+    )
+
+# fim das funções auxiliares
+
 # --- Rotas de Autenticação ---
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -361,6 +402,7 @@ def set_theme():
         )
         return {'status': 'success', 'theme': theme}
     return {'status': 'error', 'message': 'Invalid theme'}, 400
+
 
 @app.route('/user/save_column_prefs', methods=['POST'])
 @login_required
@@ -1043,50 +1085,17 @@ def pendencias_geral_filtrar():
         page_mode='geral'
     )
 
-@app.route('/pendencias/exportar')
+@app.route('/pendencias/exportar/pendentes')
 @login_required
-def exportar_pendencias_csv():
+def exportar_pendencias_pendentes_csv():
     query_filter = {'user_id': ObjectId(current_user.id), 'status': 'Pendente'}
-    
-    # Define um documento de ordenação padrão para a nova função
-    sort_document = {'prazo': 1}
-    # Usa a nova função que busca todos os detalhes do instrumento
-    registros = get_pendencias_com_detalhes(query_filter, sort_document)
+    return _gerar_pendencias_csv(query_filter, "export_pendencias_pendentes")
 
-    output = io.StringIO()
-    output.write('\ufeff') # BOM para Excel entender UTF-8
-    writer = csv.writer(output, delimiter=';', quotechar='"', quoting=csv.QUOTE_ALL)
-    
-    # Escreve o cabeçalho
-    colunas = ['Instrumento Vinculado', 'Pendência', 'Prazo', 'Responsável', 'Situação', 'Observações']
-    writer.writerow(colunas)
-    
-    # Escreve os dados
-    for r in registros:
-        # Busca detalhes do instrumento se houver vínculo
-        instrumento_str = ''
-        if r.get('instrumento_id'):
-            inst = instrumentos_collection.find_one({'_id': r['instrumento_id']})
-            if inst:
-                instrumento_str = f"{inst.get('tipo_documento', '')} Nº {inst.get('n_instrumento', '')} - {inst.get('contratada', '')}"
-
-        linha = [
-            instrumento_str,
-            r.get('pendencia', ''),
-            r.get('prazo').strftime('%d/%m/%Y') if r.get('prazo') else '',
-            r.get('responsavel', ''),
-            r.get('situacao', ''),
-            r.get('observacoes', '')
-        ]
-        writer.writerow(linha)
-
-    output.seek(0)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"export_pendencias_{timestamp}.csv"
-    return Response(
-        output.getvalue(), mimetype="text/csv",
-        headers={"Content-Disposition": f"attachment;filename={filename}"}
-    )
+@app.route('/pendencias/exportar/concluidas')
+@login_required
+def exportar_pendencias_concluidas_csv():
+    query_filter = {'user_id': ObjectId(current_user.id), 'status': 'Concluído'}
+    return _gerar_pendencias_csv(query_filter, "export_pendencias_concluidas")
 
 @app.route('/pendencias/concluidas')
 @login_required
@@ -1153,39 +1162,6 @@ def pendencias_concluidas_filtrar():
         todas_as_colunas=TODAS_AS_COLUNAS_PENDENCIAS,
         colunas_visiveis=colunas_visiveis,
 		page_mode='concluidas'
-    )
-
-@app.route('/pendencias/exportar_concluidas')
-@login_required
-def exportar_pendencias_concluidas_csv():
-    query_filter = {'user_id': ObjectId(current_user.id), 'status': 'Concluído'}
-    sort_document = {'data_criacao': -1}
-    registros = get_pendencias_com_detalhes(query_filter, sort_document)
-
-    # ... (a lógica de criar o CSV a partir daqui é a mesma da função 'exportar_pendencias_csv',
-    # você pode copiar o resto daquela função para cá)
-    output = io.StringIO()
-    output.write('\ufeff')
-    writer = csv.writer(output, delimiter=';', quotechar='"', quoting=csv.QUOTE_ALL)
-    
-    colunas = { 'Nº / TIPO': 'instrumento_display', 'CONTRATADA': 'contratada', 'PENDÊNCIA': 'pendencia', 'PRAZO': 'prazo', 'RESPONSÁVEL': 'responsavel', 'SITUAÇÃO': 'situacao', 'OBSERVAÇÕES': 'observacoes' }
-    writer.writerow(colunas.keys())
-    
-    for registro in registros:
-        linha = []
-        for campo_db in colunas.values():
-            valor = registro.get(campo_db, '')
-            if campo_db == 'prazo' and isinstance(valor, datetime):
-                valor = valor.strftime('%d/%m/%Y')
-            linha.append(str(valor))
-        writer.writerow(linha)
-
-    output.seek(0)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"export_pendencias_concluidas_{timestamp}.csv"
-    return Response(
-        output.getvalue(), mimetype="text/csv",
-        headers={"Content-Disposition": f"attachment;filename={filename}"}
     )
 
 @app.route('/controle/concluidas')

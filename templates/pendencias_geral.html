@@ -7,7 +7,12 @@
         <div class="toolbar-group-left">
             <button id="btnFiltro">Filtro...</button>
             <button id="btnConfigurarColunas">Configurar Colunas</button>
-            <a href="{{ url_for('exportar_pendencias_csv') }}" class="button">Exportar</a>
+            {% if page_mode == 'concluidas' %}
+                <a href="{{ url_for('exportar_pendencias_concluidas_csv') }}" class="button">Exportar Concluídas</a>
+            {% else %}
+                <a href="{{ url_for('exportar_pendencias_pendentes_csv') }}" class="button">Exportar Pendentes</a>
+            {% endif %}
+
         </div>
         <div class="toolbar-group-center">
             <button id="btnDetalhes" disabled>Detalhes...</button>
