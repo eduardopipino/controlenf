@@ -69,7 +69,7 @@
                 </div>
             {% else %}
                 <button type="submit">Salvar</button>
-                <a href="{{ origem or url_for('pendencias_geral') }}" class="button">Cancelar</a>
+                <a href="{{ origem or url_for('pendencias_lista', page_mode='geral') }}" class="button">Cancelar</a>
             {% endif %}
         </div>
     </form>
@@ -172,9 +172,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const acaoFechar = () => {
             const urlOrigem = document.querySelector('input[name="origem"]').value;
-            window.location.href = urlOrigem || "{{ url_for('pendencias_geral') }}";
+            window.location.href = urlOrigem || "{{ url_for('pendencias_lista', page_mode='geral') }}";
         };
-
         const acaoCancelarEdicao = () => {
             showCustomConfirm(
                 'Cancelar Edição?', 

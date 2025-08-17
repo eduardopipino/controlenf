@@ -30,7 +30,7 @@
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
                         <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
-                            <a href="{{ url_for(request.endpoint, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc') }}">
+                            <a href="{{ url_for(request.endpoint, page_mode=page_mode, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc') }}">
                                 {{ col_nome }}
                                 {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}
                             </a>
@@ -64,7 +64,8 @@
     <div id="filterModal" class="modal-overlay">
         <div class="modal-content">
             <h3>Filtrar Pendências</h3>
-            <form method="POST" action="{{ url_for('pendencias_concluidas_filtrar' if page_mode == 'concluidas' else 'pendencias_geral_filtrar') }}">
+            <form method="POST" action="{{ url_for('pendencias_filtrar') }}">
+                <input type="hidden" name="page_mode" value="{{ page_mode }}">
 				<div>
 					<label for="filter_n_instrumento">Nº Instrumento:</label>
 					<input type="text" name="filter_n_instrumento" id="filter_n_instrumento" value="{{ filter_values.get('filter_n_instrumento', '') }}">
@@ -171,8 +172,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnLimparFiltro = document.getElementById('btnLimparFiltro');
     if (btnLimparFiltro) {
         btnLimparFiltro.addEventListener('click', () => {
-            // Determina a rota correta baseada no modo da página
-            const targetUrl = "{{ url_for('pendencias_concluidas' if page_mode == 'concluidas' else 'pendencias_geral') }}";
+            // A nova rota unificada simplifica esta lógica
+            const targetUrl = "{{ url_for('pendencias_lista', page_mode=page_mode) }}";
             window.location.href = targetUrl;
         });
     }

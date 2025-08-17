@@ -21,7 +21,7 @@
                 <th></th> {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
                         <th>
-                            <a href="{{ url_for('pendencias_diversos', sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc') }}">
+                            <a href="{{ url_for('pendencias_lista', page_mode='diversas', sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc') }}">
                                 {{ col_nome }}
                                 {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}
                             </a>

@@ -1,19 +1,23 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, Response
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-from pymongo import MongoClient
-from bson.objectid import ObjectId
-from datetime import datetime, timedelta
-import json
-from bson import json_util
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
-from collections import Counter
+# 1. Bibliotecas Padrão do Python
 import os
+import json
 import re
 import io
 import csv
+from collections import Counter
+from datetime import datetime, timedelta
+
+# 2. Bibliotecas de Terceiros (Instaladas via pip)
 import certifi
+from bson import json_util
+from bson.objectid import ObjectId
+from flask import Flask, Response, flash, redirect, render_template, request, url_for
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_login import (LoginManager, UserMixin, current_user, login_required,
+                         login_user, logout_user)
+from pymongo import MongoClient
+from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
 
@@ -815,38 +819,64 @@ def controle_lista(filter_mode):
 
 # --- CONTROLE DE PENDÊNCIAS ---
 
-@app.route('/pendencias/diversos')
+@app.route('/pendencias/<string:page_mode>')
 @login_required
-def pendencias_diversos():
+def pendencias_lista(page_mode="geral"):
+    # Define o filtro base
+    query_filter = {'user_id': ObjectId(current_user.id)}
+    template_a_renderizar = 'pendencias_geral.html'
+    
+    if page_mode == 'concluidas':
+        query_filter['status'] = 'Concluído'
+    elif page_mode == 'diversas':
+        query_filter['status'] = 'Pendente'
+        query_filter['instrumento_id'] = {'$in': [None, '']}
+        template_a_renderizar = 'pendencias_diversos.html' # Ainda usa o template antigo se quiser
+    else: # modo 'geral'
+        query_filter['status'] = 'Pendente'
+        page_mode = 'geral' # Garante um valor padrão
+    
+    # Adiciona filtros da URL (via GET)
+    filter_values = {}
+    for key, value in request.args.items():
+        if key.startswith('filter_') and value:
+            clean_key = key.replace('filter_', '').strip()
+            filter_values[key] = value
+            if clean_key in ['n_instrumento', 'contratada']:
+                query_filter[f'instrumento_info.{clean_key}'] = {'$regex': value, '$options': 'i'}
+            else:
+                query_filter[clean_key] = {'$regex': value, '$options': 'i'}
+
+    # Lógica de ordenação
     sort_by = request.args.get('sort_by', 'data_criacao')
     order = request.args.get('order', 'asc')
     sort_order_mongo = -1 if order == 'desc' else 1
-    sort_document = [(sort_by, sort_order_mongo)]
-    
-    query_filter = {
-        'user_id': ObjectId(current_user.id),
-        'status': 'Pendente',
-        'instrumento_id': {'$in': [None, '']}
-    }
-    lista_pendencias = list(pendencias_collection.find(query_filter).sort(sort_document))
+    sort_document = {sort_by: sort_order_mongo}
 
+    # Busca os dados
+    lista_pendencias = get_pendencias_com_detalhes(query_filter, sort_document)
     hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     for p in lista_pendencias:
         p['vencido'] = p.get('prazo') and p.get('prazo') < hoje
 
-    # Pega a preferência de colunas geral do usuário
-    prefs_usuario = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
+    colunas_visiveis = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
     
-    # Filtra a lista para remover as colunas que não fazem sentido nesta tela
-    colunas_a_exibir = [col for col in prefs_usuario if col not in ['instrumento_display', 'contratada']]
-
     return render_template(
-        'pendencias_diversos.html', 
+        template_a_renderizar,
         pendencias=lista_pendencias,
-        sort_by=sort_by, order=order, filter_values={},
+        sort_by=sort_by, order=order,
+        filter_values=filter_values,
         todas_as_colunas=TODAS_AS_COLUNAS_PENDENCIAS,
-        colunas_visiveis=colunas_a_exibir # <-- Usa a nova lista já filtrada
+        colunas_visiveis=colunas_visiveis,
+        page_mode=page_mode
     )
+
+@app.route('/pendencias/filtrar', methods=['POST'])
+@login_required
+def pendencias_filtrar():
+    page_mode = request.form.get('page_mode', 'geral')
+    filter_params = {key: val for key, val in request.form.items() if key.startswith('filter_') and key != 'page_mode'}
+    return redirect(url_for('pendencias_lista', page_mode=page_mode, **filter_params))
 
 @app.route('/pendencias/por_instrumento')
 @login_required
@@ -919,7 +949,7 @@ def pendencias_por_instrumento():
 @login_required
 def nova_pendencia():
     # Pega a origem da URL quando a página é aberta
-    origem_url = request.args.get('origem', url_for('pendencias_geral'))
+    origem_url = request.args.get('origem', url_for('pendencias_lista', page_mode='geral'))
 
     if request.method == 'POST':
         instrumento_id = request.form.get('instrumento_id')
@@ -934,10 +964,8 @@ def nova_pendencia():
         pendencias_collection.insert_one(nova)
         flash('Nova pendência criada com sucesso!', 'success')
 
-        # Lê a origem do campo oculto do formulário
-        origem_post = request.form.get('origem')
-
-        return redirect(url_for('pendencias_geral'))
+        # O redirect aqui já estava correto, mantemos
+        return redirect(url_for('pendencias_lista', page_mode='geral'))
 
     # Lógica GET
     instrumentos = get_instrumentos_para_dropdown()
@@ -950,10 +978,10 @@ def detalhes_pendencia(pendencia_id):
     pendencia = pendencias_collection.find_one({'_id': ObjectId(pendencia_id), 'user_id': ObjectId(current_user.id)})
     if not pendencia:
         flash('Pendência não encontrada.', 'error')
-        return redirect(url_for('pendencias_geral'))
+        return redirect(url_for('pendencias_lista', page_mode='geral'))
 
     # Pega a origem da URL (se existir) ou usa o referrer como fallback
-    origem_url = request.args.get('origem', request.referrer or url_for('pendencias_geral'))
+    origem_url = request.args.get('origem', request.referrer or url_for('pendencias_lista', page_mode='geral'))
 
     if request.method == 'POST':
         # A lógica POST permanece a mesma, mas o redirect fica mais simples
@@ -982,115 +1010,9 @@ def detalhes_pendencia(pendencia_id):
 def excluir_pendencia(pendencia_id):
     pendencias_collection.delete_one({'_id': ObjectId(pendencia_id), 'user_id': ObjectId(current_user.id)})
     flash('Pendência excluída com sucesso!', 'success')
-    return redirect(url_for('pendencias_geral'))
+    return redirect(url_for('pendencias_lista', page_mode='geral'))
 
     #return redirect(url_for('pendencias_diversos'))
-
-@app.route('/pendencias/filtrar', methods=['POST'])
-@login_required
-def pendencias_filtrar():
-    filter_values = {key.replace('filter_', ''): val.strip() for key, val in request.form.items() if key.startswith('filter_')}
-    
-    query_filter = {
-        'user_id': ObjectId(current_user.id),
-        'status': 'Pendente',
-        'instrumento_id': {'$in': [None, '']}
-    }
-
-    for key, value in filter_values.items():
-        if value:
-            # Para os novos campos, a busca precisa ser nos dados do instrumento vinculado
-            if key in ['n_instrumento', 'contratada']:
-                query_filter[f'instrumento_info.{key}'] = {'$regex': value, '$options': 'i'}
-            else:
-                query_filter[key] = {'$regex': value, '$options': 'i'}
-            
-    sort_by = request.args.get('sort_by', 'data_criacao')
-    order = request.args.get('order', 'asc')
-    sort_order_mongo = -1 if order == 'desc' else 1
-    sort_document = [(sort_by, sort_order_mongo)]
-
-    lista_pendencias = pendencias_collection.find(query_filter).sort(sort_document)
-
-    # Define 'hoje' como a meia-noite do dia atual
-    hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    for p in lista_pendencias:
-        p['vencido'] = p.get('prazo') and p['prazo'] < hoje
-
-    return render_template(
-        'pendencias_diversos.html', 
-        pendencias=list(lista_pendencias), 
-        sort_by=sort_by,
-        order=order,
-        filter_values=request.form,
-        todas_as_colunas=TODAS_AS_COLUNAS_PENDENCIAS,
-        colunas_visiveis=getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
-    )
-
-@app.route('/pendencias/geral')
-@login_required
-def pendencias_geral():
-    sort_by = request.args.get('sort_by', 'data_criacao')
-    order = request.args.get('order', 'asc')
-    sort_order_mongo = -1 if order == 'desc' else 1
-    sort_document = {sort_by: sort_order_mongo} # <<< Formato de Dicionário (correto para aggregate)
-    
-    query_filter = {'user_id': ObjectId(current_user.id), 'status': 'Pendente'}
-    lista_pendencias = get_pendencias_com_detalhes(query_filter, sort_document)
-
-    hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    for p in lista_pendencias:
-        p['vencido'] = p.get('prazo') and p['prazo'] < hoje
-
-    colunas_visiveis = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
-
-    return render_template(
-        'pendencias_geral.html', 
-        pendencias=lista_pendencias,
-        sort_by=sort_by, order=order, filter_values={},
-        todas_as_colunas=TODAS_AS_COLUNAS_PENDENCIAS,
-        colunas_visiveis=colunas_visiveis,
-        page_mode='geral'
-    )
-
-@app.route('/pendencias/geral/filtrar', methods=['POST'])
-@login_required
-def pendencias_geral_filtrar():
-    filter_values = {key.replace('filter_', ''): val.strip() for key, val in request.form.items() if key.startswith('filter_')}
-    
-    query_filter = {'user_id': ObjectId(current_user.id), 'status': 'Pendente'}
-    for key, value in filter_values.items():
-        if value:
-            # A função get_pendencias_com_detalhes agora espera 'instrumento_info.chave'
-            if key == 'n_instrumento':
-                query_filter['instrumento_info.n_instrumento'] = {'$regex': value, '$options': 'i'}
-            elif key == 'contratada':
-                 query_filter['instrumento_info.contratada'] = {'$regex': value, '$options': 'i'}
-            else:
-                query_filter[key] = {'$regex': value, '$options': 'i'}
-            
-    sort_by = request.args.get('sort_by', 'data_criacao')
-    order = request.args.get('order', 'asc')
-    sort_order_mongo = -1 if order == 'desc' else 1
-    sort_document = {sort_by: sort_order_mongo} # <<< Formato de Dicionário (correto para aggregate)
-
-    lista_pendencias = get_pendencias_com_detalhes(query_filter, sort_document)
-    
-    hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    for p in lista_pendencias:
-        p['vencido'] = p.get('prazo') and p['prazo'] < hoje
-
-    colunas_visiveis = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
-
-    return render_template(
-        'pendencias_geral.html', 
-        pendencias=lista_pendencias, 
-        sort_by=sort_by, order=order,
-        filter_values=request.form,
-        todas_as_colunas=TODAS_AS_COLUNAS_PENDENCIAS,
-        colunas_visiveis=colunas_visiveis,
-        page_mode='geral'
-    )
 
 @app.route('/pendencias/exportar/pendentes')
 @login_required
@@ -1104,72 +1026,7 @@ def exportar_pendencias_concluidas_csv():
     query_filter = {'user_id': ObjectId(current_user.id), 'status': 'Concluído'}
     return _gerar_pendencias_csv(query_filter, "export_pendencias_concluidas")
 
-@app.route('/pendencias/concluidas')
-@login_required
-def pendencias_concluidas():
-    sort_by = request.args.get('sort_by', 'data_criacao')
-    order = request.args.get('order', 'desc') # Padrão para concluídas é mais novo primeiro
-    sort_order_mongo = -1 if order == 'desc' else 1
-    sort_document = {sort_by: sort_order_mongo}
-    
-    query_filter = {'user_id': ObjectId(current_user.id), 'status': 'Concluído'}
-    
-    lista_pendencias = get_pendencias_com_detalhes(query_filter, sort_document)
 
-    hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    for p in lista_pendencias:
-        p['vencido'] = p.get('prazo') and p.get('prazo') < hoje
-
-    colunas_visiveis = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
-
-    return render_template(
-        'pendencias_geral.html', # Aponta para o template GERAL
-        pendencias=lista_pendencias,
-        sort_by=sort_by, order=order, filter_values={},
-        todas_as_colunas=TODAS_AS_COLUNAS_PENDENCIAS,
-        colunas_visiveis=colunas_visiveis,
-        page_mode='concluidas' # Adiciona a "bandeira" do modo de página
-    )
-
-@app.route('/pendencias/concluidas/filtrar', methods=['POST'])
-@login_required
-def pendencias_concluidas_filtrar():
-    filter_values = {key.replace('filter_', ''): val.strip() for key, val in request.form.items() if key.startswith('filter_')}
-    
-    query_filter = {'user_id': ObjectId(current_user.id), 'status': 'Concluído'}
-	
-    for key, value in filter_values.items():
-        if value:
-            # A função get_pendencias_com_detalhes agora espera 'instrumento_info.chave'
-            if key == 'n_instrumento':
-                query_filter['instrumento_info.n_instrumento'] = {'$regex': value, '$options': 'i'}
-            elif key == 'contratada':
-                 query_filter['instrumento_info.contratada'] = {'$regex': value, '$options': 'i'}
-            else:
-                query_filter[key] = {'$regex': value, '$options': 'i'}
-            
-    sort_by = request.args.get('sort_by', 'data_criacao')
-    order = request.args.get('order', 'desc')
-    sort_order_mongo = -1 if order == 'desc' else 1
-    sort_document = {sort_by: sort_order_mongo}
-
-    lista_pendencias = get_pendencias_com_detalhes(query_filter, sort_document)
-    
-    hoje = datetime.now().date()
-    for p in lista_pendencias:
-        p['vencido'] = p.get('prazo') and p['prazo'].date() < hoje
-
-    colunas_visiveis = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
-
-    return render_template(
-        'pendencias_geral.html',
-        pendencias=lista_pendencias, 
-        sort_by=sort_by, order=order,
-        filter_values=request.form,
-        todas_as_colunas=TODAS_AS_COLUNAS_PENDENCIAS,
-        colunas_visiveis=colunas_visiveis,
-		page_mode='concluidas'
-    )
 
 # ======================================================================
 # CORREÇÃO 2: LÓGICA DE CRIAÇÃO DE NOVO CONTROLE
@@ -1216,7 +1073,7 @@ def novo_controle():
         }
         controle_collection.insert_one(novo_registro_controle)
         flash('Registro de Controle criado com sucesso!', 'success')
-        return redirect(url_for('controle_pendentes'))
+        return redirect(url_for('controle_lista', filter_mode='pendentes'))
         
     return render_template('form_controle.html', controle={}, itens_for_js=json.dumps(itens_for_js), situacoes=situacoes, novo=True)
 
@@ -1231,12 +1088,12 @@ def novo_controle_recorrente():
 
     if not referencia_digitada:
         flash('Por favor, digite uma referência.', 'error')
-        return redirect(url_for('controle_pendentes'))
+        return redirect(url_for('controle_lista', filter_mode='pendentes'))
 
     match = re.match(r'^\s*(\d{1,2})\s*(?:[/-]\s*(\d{4}))?\s*$', referencia_digitada)
     if not match:
         flash(f"Formato de referência '{referencia_digitada}' inválido. Use MM/AAAA ou apenas MM.", 'error')
-        return redirect(url_for('controle_pendentes'))
+        return redirect(url_for('controle_lista', filter_mode='pendentes'))
 
     mes_num = int(match.group(1))
     ano_num = int(match.group(2)) if match.group(2) else datetime.now().year
@@ -1293,7 +1150,7 @@ def novo_controle_recorrente():
     if skipped_count > 0: flash(f'{skipped_count} registro(s) foram ignorados pois já existiam para essa referência.', 'info')
     if not created_count and not skipped_count: flash("Nenhum item recorrente (mensal/bimestral) encontrado nos seus instrumentos vigentes.", 'warning')
 
-    return redirect(url_for('controle_pendentes'))
+    return redirect(url_for('controle_lista', filter_mode='pendentes'))
 
 @app.route('/controle/detalhes/<string:controle_id>', methods=['GET', 'POST'])
 @login_required
@@ -1301,18 +1158,28 @@ def detalhes_controle(controle_id):
     controle = controle_collection.find_one({'_id': ObjectId(controle_id), 'user_id': ObjectId(current_user.id)})
     if not controle:
         flash('Registro de Controle não encontrado ou não pertence a você.', 'error')
-        return redirect(url_for('controle_pendentes'))
+        return redirect(url_for('controle_lista', filter_mode='pendentes'))
 
     if request.method == 'POST':
-        # ... (toda a sua lógica de validação e busca de dados continua aqui)
         item_id_str = request.form.get('item_id')
         referencia = request.form.get('referencia', '').strip()
 
         if not all([item_id_str, referencia]):
-            flash('Os campos "Item do Instrumento Contratual" e "Referência" são obrigatórios.', 'error')
-            # ... (lógica de recarregar a página em caso de erro)
-            return render_template(...)
+            flash('Os campos "Item do Instrumento" e "Referência" são obrigatórios.', 'error')
+            # Recarrega os dados necessários para o template em caso de erro
+            itens_for_js = get_itens_para_dropdown_js()
+            situacoes = get_situacoes_para_dropdown()
+            # Retorna o formulário com os dados que o usuário já preencheu
+            return render_template(
+                'form_controle.html', 
+                controle=request.form, 
+                itens_for_js=json.dumps(itens_for_js), 
+                situacoes=situacoes, 
+                current_item_id=item_id_str, 
+                novo=False
+            )
         
+        # Esta parte agora só executa se a validação acima passar
         item_selecionado = itens_collection.find_one({'_id': ObjectId(item_id_str), 'user_id': ObjectId(current_user.id)})
         instrumento_pai = instrumentos_collection.find_one({'_id': item_selecionado['instrumento_id']})
 
@@ -1336,14 +1203,9 @@ def detalhes_controle(controle_id):
             {'$set': update_data}
         )
         flash('Registro de Controle atualizado com sucesso!', 'success')
-        
-        # ======================================================================
-        # <<< A ÚNICA MUDANÇA É NESTA LINHA >>>
-        # Redireciona para a própria página de detalhes, em vez da lista.
-        # ======================================================================
         return redirect(url_for('detalhes_controle', controle_id=controle_id))
 
-    # A lógica GET para carregar a página pela primeira vez permanece a mesma
+    # Lógica GET (quando a página é carregada pela primeira vez)
     itens_for_js = get_itens_para_dropdown_js()
     situacoes = get_situacoes_para_dropdown()
     current_item_id_str = str(controle.get('item_id', ''))
@@ -1358,7 +1220,7 @@ def excluir_controle(controle_id):
         flash('Registro de Controle excluído com sucesso!', 'success')
     else:
         flash('Erro ao excluir ou registro não encontrado.', 'error')
-    return redirect(url_for('controle_pendentes'))
+    return redirect(url_for('controle_lista', filter_mode='pendentes'))
 
 @app.route('/exportar/<string:filter_mode>')
 @login_required

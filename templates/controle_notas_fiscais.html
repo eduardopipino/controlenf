@@ -29,7 +29,7 @@
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
                         <th class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }}">
-                            <a href="{{ url_for(request.endpoint, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc') }}">
+                            <a href="{{ url_for(request.endpoint, filter_mode=filter_mode, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc') }}">
                                 {{ col_nome }}
                                 {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}
                             </a>
@@ -119,8 +119,9 @@
                 <div class="button-toolbar">
                     <button type="submit">Aplicar Filtro</button>
                     <button type="button" class="btn-cancel-modal">Cancelar</button>
+                    <button type="button" class="button" onclick="window.location.href='{{ url_for('controle_lista', filter_mode=filter_mode) }}'">Limpar Filtro</button>
                     {#<button type="button" id="btnLimparFiltro" class="button">Limpar Filtro</button>#}
-                    <a href="{{ url_for('controle_lista', filter_mode=filter_mode) }}" class="button">Limpar Filtro</a>
+                    {#<a href="{{ url_for('controle_lista', filter_mode=filter_mode) }}" class="button">Limpar Filtro</a>#}
                 </div>
             </form>
         </div>
@@ -133,6 +134,7 @@
                 <div>
                     <label for="referencia_recorrente">Referência (Ex: "MM/AAAA" ou "MM"):</label>
                     <input type="text" id="referencia_recorrente" name="referencia_recorrente" placeholder="Ex: 07/2025 ou 7" required>
+                    <br>
                     <small>Se o ano for omitido, o ano atual será usado.</small>
                 </div>
                 <div class="button-toolbar">
@@ -173,16 +175,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const recorrenteModal = document.getElementById('recorrenteModal');
 
     const situacoesArquivadoras = JSON.parse('{{ arquivadores_json | default("[]") | safe }}');
-
-    // <<< ADICIONE ESTE BLOCO NOVO >>>
-    const btnLimparFiltro = document.getElementById('btnLimparFiltro');
-    if (btnLimparFiltro) {
-        btnLimparFiltro.addEventListener('click', function() {
-            // Redireciona para a página correta, limpando os filtros
-            window.location.href = "{{ url_for('controle_pendentes' if filter_mode == 'pendentes' else 'controle_concluidas') }}";
-        });
-    }
-    // <<< FIM DO BLOCO NOVO >>>
 
     if (btnFiltro) {
         btnFiltro.addEventListener('click', () => filterModal.classList.add('active'));

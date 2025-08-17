@@ -68,7 +68,7 @@
                 </div>
              {% else %}
                 <button type="submit" id="btnSalvarNovo">Salvar</button>
-                <a href="{{ url_for('controle_pendentes') }}" class="button">Cancelar</a>
+                <a href="{{ url_for('controle_lista', filter_mode='pendentes') }}" class="button">Cancelar</a>
              {% endif %}
         </div>
     </form>
@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // --- LÓGICA DOS BOTÕES ---
-        const acaoFechar = () => window.location.href = "{{ url_for('controle_pendentes') }}";
+        const acaoFechar = () => window.location.href = "{{ url_for('controle_lista', filter_mode='pendentes') }}";
         const acaoCancelarEdicao = () => {
             showCustomConfirm('Cancelar Edição?', 'As alterações serão perdidas.', (confirmed) => { 
                 if (confirmed) location.reload(); 
