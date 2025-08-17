@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnLimparFiltro = document.getElementById('btnLimparFiltroPendencias');
     if (btnLimparFiltro) {
         btnLimparFiltro.addEventListener('click', function() {
-            window.location.href = "{{ url_for('pendencias_diversos') }}";
+            window.location.href = "{{ url_for('pendencias_lista', page_mode='diversas') }}";
         });
     }
 

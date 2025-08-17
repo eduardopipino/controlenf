@@ -4,7 +4,7 @@
     <h2>{{ 'Nova Pendência' if novo else 'Detalhes da Pendência' }}</h2>
     
     <form id="formPendencia" method="POST">
-            <input type="hidden" name="origem" value="{{ origem or request.referrer }}">
+        <input type="hidden" name="origem" value="{{ origem or request.referrer }}">
         <div>
             <label for="instrumento_id">Vincular a um Instrumento Contratual (Opcional):</label>
             <select id="instrumento_id" name="instrumento_id" disabled>
@@ -19,7 +19,7 @@
             </select>
         </div>
         <br>
-        <div id="info-instrumento-box" class="info-display-box">
+        <div id="info-instrumento-box" class="info-display-box" style="display:none;">
             <p><strong>Nº Instrumento Contratual:</strong> <span id="info_instrumento_completo"></span></p>
             <p><strong>Contratada/Fornecedora:</strong> <span id="info_contratada"></span></p>
             <p><strong>Objeto:</strong> <span id="info_objeto"></span></p>
@@ -69,7 +69,7 @@
                 </div>
             {% else %}
                 <button type="submit">Salvar</button>
-                <a href="{{ origem or url_for('pendencias_lista', page_mode='geral') }}" class="button">Cancelar</a>
+                <a href="{{ origem or url_for('pendencias_lista', page_mode='geral') }}" class="button" id="btnCancelarNovo">Cancelar</a>
             {% endif %}
         </div>
     </form>
@@ -88,10 +88,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- LÓGICA DO SELECT2 E INFO BOX ---
     $('#instrumento_id').select2({
-        // O placeholder foi removido. O texto agora vem direto do HTML.
         allowClear: true,
         width: '100%',
-        closeOnSelect: true
+        closeOnSelect: true,
+        placeholder: 'Selecione um instrumento para vincular (opcional)'
     });
 
     const instrumentosData = JSON.parse('{{ instrumentos_json | default("[]") | safe }}');
@@ -119,7 +119,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     $('#instrumento_id').on('change', atualizarInfoBox);
     
-
     // --- LÓGICA PRINCIPAL ---
     if (isNewRecord) {
         // MODO NOVO: Habilita todos os campos
@@ -129,10 +128,11 @@ document.addEventListener('DOMContentLoaded', function() {
         $('#instrumento_id').prop('disabled', false);
         atualizarInfoBox();
 
-        const btnCancelarNovo = formPendencia.querySelector('a.button'); // Encontra o botão 'Cancelar'
+        // --- LÓGICA DE CONFIRMAÇÃO PARA O BOTÃO CANCELAR ---
+        const btnCancelarNovo = document.getElementById('btnCancelarNovo');
         if (btnCancelarNovo) {
             btnCancelarNovo.addEventListener('click', function(event) {
-                event.preventDefault(); // Impede a navegação imediata
+                event.preventDefault(); 
                 const urlDestino = this.href;
                 showCustomConfirm(
                     'Cancelar Cadastro?',
@@ -147,12 +147,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-
     } else {
         // MODO EDIÇÃO/CONSULTA
         atualizarInfoBox();
-        
-        const pendenciaData = JSON.parse('{{ pendencia_json | default("{}") | safe }}');
         
         const btnEditar = document.getElementById('btnEditar');
         const btnSalvar = document.getElementById('btnSalvar');
@@ -160,9 +157,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const btnExcluir = document.getElementById('btnExcluir');
         const formExcluir = document.getElementById('formExcluir');
         
-        // ======================================================================
-        // A FUNÇÃO QUE ESTAVA FALTANDO ESTÁ AQUI
-        // ======================================================================
         function toggleEditFields(enable) {
             formPendencia.querySelectorAll('input, textarea, select').forEach(field => {
                 if (field.name !== 'origem' && field.id !== 'instrumento_id') field.disabled = !enable;
@@ -174,6 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const urlOrigem = document.querySelector('input[name="origem"]').value;
             window.location.href = urlOrigem || "{{ url_for('pendencias_lista', page_mode='geral') }}";
         };
+
         const acaoCancelarEdicao = () => {
             showCustomConfirm(
                 'Cancelar Edição?', 
