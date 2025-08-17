@@ -26,8 +26,8 @@
                 <li class="nav-item dropdown">
                     <a href="#" class="nav-link dropbtn">Controle de Notas Fiscais</a>
                     <ul class="dropdown-menu">
-                        <li><a href="{{ url_for('controle_pendentes') }}" class="dropdown-item">Pendentes</a></li>
-                        <li><a href="{{ url_for('controle_concluidas') }}" class="dropdown-item">Concluídas</a></li>
+                        <li><a href="{{ url_for('controle_lista', filter_mode='pendentes') }}" class="dropdown-item">Pendentes</a></li>
+                        <li><a href="{{ url_for('controle_lista', filter_mode='concluidas') }}" class="dropdown-item">Concluídas</a></li>
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
@@ -42,7 +42,7 @@
                 <li class="nav-item dropdown">
                     <a href="#" class="nav-link dropbtn">Cadastros</a>
                     <ul class="dropdown-menu">
-                        <li><a href="{{ url_for('instrumentos_contratuais_vigentes') }}" class="dropdown-item">Instrumentos Contratuais</a></li>
+                        <li><a href="{{ url_for('instrumentos_contratuais', filtro='vigentes') }}" class="dropdown-item">Instrumentos Contratuais</a></li>
                         <li><a href="{{ url_for('cadastros_documentacao') }}" class="dropdown-item">Documentação</a></li>
                         <li><a href="{{ url_for('cadastros_situacao') }}" class="dropdown-item">Situação</a></li>
                     </ul>

@@ -510,26 +510,19 @@ def index():
 
 # --- CADASTROS DE INSTRUMENTOS ---
 
-@app.route('/cadastros/instrumentos_contratuais')
+@app.route('/cadastros/instrumentos_contratuais', defaults={'filtro': 'vigentes'})
+@app.route('/cadastros/instrumentos_contratuais/<string:filtro>')
 @login_required
-def instrumentos_contratuais():
-    instrumentos = instrumentos_collection.find({'user_id': ObjectId(current_user.id)})
-    # <<< ADICIONADO: Informa ao template que o filtro 'todos' está ativo >>>
-    return render_template('instrumentos_contratuais.html', instrumentos=list(instrumentos), filtro_ic_ativo='todos')
+def instrumentos_contratuais(filtro):
+    query = {'user_id': ObjectId(current_user.id)}
+    if filtro == 'vigentes':
+        query['vigente'] = True
+    elif filtro == 'extintos':
+        query['vigente'] = False
+    # Se filtro for 'todos', nenhuma chave 'vigente' é adicionada, buscando todos.
 
-@app.route('/cadastros/instrumentos_contratuais/vigentes')
-@login_required
-def instrumentos_contratuais_vigentes():
-    instrumentos = instrumentos_collection.find({'user_id': ObjectId(current_user.id), 'vigente': True})
-    # <<< ADICIONADO: Informa ao template que o filtro 'vigentes' está ativo >>>
-    return render_template('instrumentos_contratuais.html', instrumentos=list(instrumentos), filtro_ic_ativo='vigentes')
-
-@app.route('/cadastros/instrumentos_contratuais/extintos')
-@login_required
-def instrumentos_contratuais_extintos():
-    instrumentos = instrumentos_collection.find({'user_id': ObjectId(current_user.id), 'vigente': False})
-    # <<< ADICIONADO: Informa ao template que o filtro 'extintos' está ativo >>>
-    return render_template('instrumentos_contratuais.html', instrumentos=list(instrumentos), filtro_ic_ativo='extintos')
+    instrumentos = instrumentos_collection.find(query)
+    return render_template('instrumentos_contratuais.html', instrumentos=list(instrumentos), filtro_ativo=filtro)
 
 @app.route('/cadastros/instrumentos_contratuais/novo', methods=['GET', 'POST'])
 @login_required
@@ -764,41 +757,55 @@ def excluir_tipo_documento(doc_id):
     return redirect(url_for('cadastros_documentacao'))
 
 # --- ROTAS DE CONTROLE ---
-@app.route('/controle/pendentes')
-@login_required
-def controle_pendentes():
-    situacoes_arquivadoras = get_situacoes_que_arquivam()
 
-    # <<< LÓGICA DE ORDENAÇÃO ADICIONADA AQUI >>>
-    sort_by = request.args.get('sort_by', 'data_criacao') # Campo padrão para ordenar
-    order = request.args.get('order', 'asc') # Ordem padrão (descendente)
-    
-    # Converte 'asc'/'desc' para 1/-1 do MongoDB
+@app.route('/controle/<string:filter_mode>')
+@login_required
+def controle_lista(filter_mode):
+    # 1. Monta o filtro base de acordo com o modo da página
+    situacoes_arquivadoras = get_situacoes_que_arquivam()
+    query_filter = {}
+    if filter_mode == 'pendentes':
+        query_filter['situacao'] = {'$nin': situacoes_arquivadoras}
+    elif filter_mode == 'concluidas':
+        query_filter['situacao'] = {'$in': situacoes_arquivadoras}
+    else:
+        # Redireciona para um modo padrão se a URL for inválida
+        return redirect(url_for('controle_lista', filter_mode='pendentes'))
+
+    # 2. Adiciona filtros do formulário (vindas da URL via GET)
+    filter_values = {}
+    filtro_ativo = False
+    for key, value in request.args.items():
+        if key.startswith('filter_') and value:
+            clean_key = key.replace('filter_', '')
+            query_filter[clean_key] = {'$regex': value.strip(), '$options': 'i'}
+            filter_values[key] = value
+            filtro_ativo = True
+
+    # 3. Lógica de Ordenação
+    sort_by = request.args.get('sort_by', 'data_criacao')
+    order = request.args.get('order', 'asc')
     sort_order_mongo = -1 if order == 'desc' else 1
     sort_document = {sort_by: sort_order_mongo}
 
-
-    # Passa o documento de ordenação para a função de busca
-    controles = get_controle_data(
-        query_filter={'situacao': {'$nin': situacoes_arquivadoras}}, # nin = not in
-        sort_document=sort_document
-    )
+    # 4. Busca os dados
+    controles = get_controle_data(query_filter, sort_document=sort_document)
     
-    # O resto da função permanece igual...
+    # 5. Prepara dados para o template
     situacoes_para_filtro = get_situacoes_para_dropdown()
     chart_data_json = prepare_chart_data(controles)
     color_map_json = json.dumps(get_color_map_for_user())
-    
-    # Passa os parâmetros de ordenação para o template, para que ele possa montar os links
+
+    # 6. Renderiza o template
     return render_template(
-        'controle_notas_fiscais.html', 
-        controles=list(controles), 
-        situacoes_para_filtro=situacoes_para_filtro, 
-        filter_mode='pendentes', 
-        chart_data=chart_data_json, 
-        filter_values={}, 
-        color_map_json=color_map_json, # <<< ENVIANDO O ESTADO ATUAL DA ORDENAÇÃO PARA O TEMPLATE >>>
-        filtro_ativo=False,
+        'controle_notas_fiscais.html',
+        controles=list(controles),
+        situacoes_para_filtro=situacoes_para_filtro,
+        filter_mode=filter_mode,
+        filter_values=filter_values,
+        chart_data=chart_data_json,
+        color_map_json=color_map_json,
+        filtro_ativo=filtro_ativo,
         arquivadores_json=json.dumps(situacoes_arquivadoras),
         sort_by=sort_by,
         order=order,
@@ -1164,93 +1171,6 @@ def pendencias_concluidas_filtrar():
 		page_mode='concluidas'
     )
 
-@app.route('/controle/concluidas')
-@login_required
-def controle_concluidas():
-    situacoes_arquivadoras = get_situacoes_que_arquivam()
-    
-    # <<< LÓGICA DE ORDENAÇÃO ADICIONADA AQUI >>>
-    sort_by = request.args.get('sort_by', 'data_criacao') # Campo padrão para ordenar
-    order = request.args.get('order', 'asc') # Ordem padrão (descendente)
-    
-    # Converte 'asc'/'desc' para 1/-1 do MongoDB
-    sort_order_mongo = -1 if order == 'desc' else 1
-    sort_document = {sort_by: sort_order_mongo}
-
-    # Passa o documento de ordenação para a função de busca
-    controles = get_controle_data(
-    query_filter={'situacao': {'$in': situacoes_arquivadoras}}, # in = está na lista
-        sort_document=sort_document
-    )
-    
-    situacoes_para_filtro = get_situacoes_para_dropdown()
-    chart_data_json = prepare_chart_data(controles)
-    # <<< ADICIONADO: Envia o mapa de cores para o template >>>
-    color_map_json = json.dumps(get_color_map_for_user())
-    return render_template(
-        'controle_notas_fiscais.html', 
-        controles=list(controles), 
-        situacoes_para_filtro=situacoes_para_filtro, 
-        filter_mode='concluidas', 
-        chart_data=chart_data_json, 
-        filter_values={}, 
-        color_map_json=color_map_json,
-        filtro_ativo=False,
-        arquivadores_json=json.dumps(situacoes_arquivadoras),
-        sort_by=sort_by,
-        order=order,
-        todas_as_colunas=TODAS_AS_COLUNAS_CONTROLE,
-        colunas_visiveis=current_user.colunas_visiveis
-    )
-
-@app.route('/controle/filtrar', methods=['POST'])
-@login_required
-def controle_filtrar():
-    filter_values = {key.replace('filter_', ''): val.strip() for key, val in request.form.items() if key.startswith('filter_')}
-    original_filter_mode = request.form.get('original_filter_mode', 'pendentes')
-    
-    query_filter = {}
-    
-    situacoes_arquivadoras = get_situacoes_que_arquivam()
-
-    if original_filter_mode == 'pendentes':
-        query_filter['situacao'] = {'$nin': situacoes_arquivadoras}
-    elif original_filter_mode == 'concluidas':
-        query_filter['situacao'] = {'$in': situacoes_arquivadoras}
-
-    for key, value in filter_values.items():
-        if value:
-            query_filter[key] = {'$regex': value, '$options': 'i'}
-            
-    # <<< LÓGICA DE ORDENAÇÃO ADICIONADA >>>
-    # (Mantém a ordenação atual se o usuário estiver apenas filtrando)
-    sort_by = request.args.get('sort_by', 'data_criacao')
-    order = request.args.get('order', 'asc')
-    sort_order_mongo = -1 if order == 'desc' else 1
-    sort_document = {sort_by: sort_order_mongo}
-
-    controles = get_controle_data(query_filter, sort_document=sort_document)
-    
-    situacoes_para_filtro = get_situacoes_para_dropdown()
-    chart_data_json = prepare_chart_data(controles)
-    color_map_json = json.dumps(get_color_map_for_user())
-    
-    return render_template(
-        'controle_notas_fiscais.html', 
-        controles=list(controles), 
-        situacoes_para_filtro=situacoes_para_filtro, 
-        filter_mode=original_filter_mode, 
-        filter_values=request.form, 
-        chart_data=chart_data_json,
-        color_map_json=color_map_json,
-        filtro_ativo=True,
-        arquivadores_json=json.dumps(situacoes_arquivadoras),
-        sort_by=sort_by,
-        order=order,
-        todas_as_colunas=TODAS_AS_COLUNAS_CONTROLE,
-        colunas_visiveis=current_user.colunas_visiveis
-    )
-    
 # ======================================================================
 # CORREÇÃO 2: LÓGICA DE CRIAÇÃO DE NOVO CONTROLE
 # ======================================================================

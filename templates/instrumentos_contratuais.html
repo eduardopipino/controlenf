@@ -5,9 +5,9 @@
 
     <div class="button-toolbar">
         <div class="toolbar-group-left">
-            <button class="{{ 'filtro-ativo' if filtro_ic_ativo == 'todos' else '' }}" onclick="location.href='{{ url_for('instrumentos_contratuais') }}'">Todos</button>
-            <button class="{{ 'filtro-ativo' if filtro_ic_ativo == 'vigentes' else '' }}" onclick="location.href='{{ url_for('instrumentos_contratuais_vigentes') }}'">Vigentes</button>
-            <button class="{{ 'filtro-ativo' if filtro_ic_ativo == 'extintos' else '' }}" onclick="location.href='{{ url_for('instrumentos_contratuais_extintos') }}'">Extintos</button>
+            <button class="{{ 'filtro-ativo' if filtro_ativo == 'todos' else '' }}" onclick="location.href='{{ url_for('instrumentos_contratuais', filtro='todos') }}'">Todos</button>
+            <button class="{{ 'filtro-ativo' if filtro_ativo == 'vigentes' else '' }}" onclick="location.href='{{ url_for('instrumentos_contratuais', filtro='vigentes') }}'">Vigentes</button>
+            <button class="{{ 'filtro-ativo' if filtro_ativo == 'extintos' else '' }}" onclick="location.href='{{ url_for('instrumentos_contratuais', filtro='extintos') }}'">Extintos</button>
         </div>
 
         <div class="toolbar-group-center">

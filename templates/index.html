@@ -11,7 +11,7 @@
             <div class="summary-link">Ver Detalhes &rarr;</div>
         </a>
 
-        <a href="{{ url_for('instrumentos_contratuais_vigentes') }}" class="summary-card">
+        <a href="{{ url_for('instrumentos_contratuais', filtro='vigentes') }}" class="summary-card">
             <h3>Instrumentos Contratuais</h3>
             <div class="summary-value">{{ summary.vigentes }}</div>
             <div class="summary-description">vigentes de {{ summary.total_instrumentos }} instrumentos contratuais</div>
