@@ -27,7 +27,31 @@
         <br>
         <div>
             <button type="submit">Salvar e Adicionar Itens</button>
-            <a href="{{ url_for('instrumentos_contratuais') }}" class="button">Cancelar</a>
+            <a href="{{ url_for('instrumentos_contratuais') }}" class="button" id="btnCancelarNovo">Cancelar</a>
         </div>
     </form>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnCancelar = document.getElementById('btnCancelarNovo');
+    if (btnCancelar) {
+        btnCancelar.addEventListener('click', function(event) {
+            event.preventDefault();
+            const urlDestino = this.href;
+            showCustomConfirm(
+                'Cancelar Cadastro?',
+                'Os dados inseridos serão perdidos. Deseja continuar?',
+                (confirmed) => {
+                    if (confirmed) {
+                        window.location.href = urlDestino;
+                    }
+                },
+                'Sim, Cancelar'
+            );
+        });
+    }
+});
+</script>
 {% endblock %}

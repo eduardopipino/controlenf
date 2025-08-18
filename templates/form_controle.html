@@ -68,7 +68,7 @@
                 </div>
              {% else %}
                 <button type="submit" id="btnSalvarNovo">Salvar</button>
-                <a href="{{ url_for('controle_lista', filter_mode='pendentes') }}" class="button">Cancelar</a>
+                <a href="{{ url_for('controle_lista', filter_mode='pendentes') }}" class="button" id="btnCancelarNovo">Cancelar</a>
              {% endif %}
         </div>
     </form>
@@ -180,6 +180,27 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('#documentacao-checklist input[type="checkbox"]').forEach(chk => {
             chk.disabled = false;
         });
+
+            const btnCancelarNovo = document.getElementById('btnCancelarNovo');
+        if (btnCancelarNovo) {
+            btnCancelarNovo.addEventListener('click', function(event) {
+                event.preventDefault(); // Impede a navegação imediata
+                const urlDestino = this.href;
+
+                // Chama o modal de confirmação
+                showCustomConfirm(
+                    'Cancelar Cadastro?',
+                    'Os dados inseridos serão perdidos. Deseja continuar?',
+                    (confirmed) => {
+                        if (confirmed) {
+                            window.location.href = urlDestino; // Navega se confirmado
+                        }
+                    },
+                    'Sim, Cancelar'
+                );
+            });
+        }
+
 
     } else {
         // Lógica para um registro existente (EDIÇÃO/CONSULTA)

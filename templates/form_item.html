@@ -19,7 +19,7 @@
             <br>
             <div class="button-toolbar">
                 <button type="submit">Salvar</button>
-                <a href="{{ url_for('gerenciar_instrumento', instrumento_id=instrumento._id) }}" class="button">Cancelar</a>
+                <a href="{{ url_for('gerenciar_instrumento', instrumento_id=instrumento._id) }}" class="button" id="btnCancelar">Cancelar</a>
             </div>
             <hr>
             <h4>Documentos Exigidos para este Item</h4>
@@ -38,4 +38,28 @@
             </div>
         </form>
     </div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnCancelar = document.getElementById('btnCancelar');
+    if (btnCancelar) {
+        btnCancelar.addEventListener('click', function(event) {
+            event.preventDefault();
+            const urlDestino = this.href;
+            showCustomConfirm(
+                'Cancelar Alterações?',
+                'Os dados não salvos serão perdidos. Deseja continuar?',
+                (confirmed) => {
+                    if (confirmed) {
+                        window.location.href = urlDestino;
+                    }
+                },
+                'Sim, Cancelar'
+            );
+        });
+    }
+});
+</script>
 {% endblock %}

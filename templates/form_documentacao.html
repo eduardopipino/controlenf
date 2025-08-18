@@ -9,7 +9,31 @@
         <br>
         <div class="button-toolbar">
             <button type="submit">Salvar</button>
-            <a href="{{ url_for('cadastros_documentacao') }}" class="button">Cancelar</a>
+            <a href="{{ url_for('cadastros_documentacao') }}" class="button" id="btnCancelar">Cancelar</a>
         </div>
     </form>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnCancelar = document.getElementById('btnCancelar');
+    if (btnCancelar) {
+        btnCancelar.addEventListener('click', function(event) {
+            event.preventDefault();
+            const urlDestino = this.href;
+            showCustomConfirm(
+                'Cancelar Cadastro?',
+                'Os dados inseridos serão perdidos. Deseja continuar?',
+                (confirmed) => {
+                    if (confirmed) {
+                        window.location.href = urlDestino;
+                    }
+                },
+                'Sim, Cancelar'
+            );
+        });
+    }
+});
+</script>
 {% endblock %}
