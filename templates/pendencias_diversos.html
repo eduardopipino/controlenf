@@ -170,6 +170,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    const btnCancelModal = document.querySelector('#configColunasModal .btn-cancel-modal');
+    if (btnCancelModal) {
+        // Lógica para FECHAR o modal clicando em "Cancelar"
+        btnCancelModal.addEventListener('click', () => {
+            configColunasModal.classList.remove('active');
+        });
+    }
+    
+    // Lógica para FECHAR o modal clicando fora da caixa de diálogo
+    if (configColunasModal) {
+        configColunasModal.addEventListener('click', (e) => {
+            if (e.target === configColunasModal) {
+                configColunasModal.classList.remove('active');
+            }
+        });
+    }
+
 });
 </script>
 {% endblock %}
