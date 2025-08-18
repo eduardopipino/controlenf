@@ -2,12 +2,21 @@
 
 /* Cores Padrão (Tema Azul Padrão / Fallback) */
 :root {
-    /* Variáveis de Tamanho de Fonte */
-    --font-size-base: 12px; /* Altere este valor para 14px, 15px, 16px, etc. */
-    --font-size-h3: 1.4em;   /* Títulos h3 serão 1.4x maiores que a fonte base */
-    --font-size-h2: 1.6em;   /* Títulos h2 serão 1.6x maiores */
-    --font-size-small: 0.9em;/* Texto pequeno será 0.9x menor */
-
+    /* --- NOVAS VARIÁVEIS DE CONFIGURAÇÃO (PARAMETRIZAÇÃO) --- */
+    --font-size-base: 12px; /* Padrão: Média */
+    --spacing-unit: 8px;   /* Padrão: Regular */
+    
+    /* Variáveis de cálculo (baseadas nas de cima) */
+    --font-size-h3: 1.4em;
+    --font-size-h2: 1.6em;
+    --font-size-small: 0.9em;
+    --padding-button-vertical: var(--spacing-unit);
+    --padding-button-horizontal: calc(var(--spacing-unit) * 1.5);
+    --padding-input-horizontal: var(--spacing-unit);
+    --padding-table-cell: var(--spacing-unit);
+    --height-nav: calc(var(--spacing-unit) * 6);
+    --element-height: calc(var(--spacing-unit) * 4.5);
+    
     /* Cores Primárias */
     --primary-color: #3498db;      /* Azul médio para botões, destaques */
     --secondary-color: #aed6f1;    /* Azul claro para fundos secundários (ex: hover tabela, dropdowns) */
@@ -189,7 +198,7 @@ nav {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    height: 50px;
+    height: var(--height-nav);
 }
 
 #main-nav-menu > li {
@@ -335,18 +344,27 @@ body.theme-dark h1, body.theme-dark h2, body.theme-dark h3 {
 /* Buttons */
 /* Buttons (e links estilizados como botões) */
 button, a.button {
+    /* --- Estilos Visuais --- */
     background-color: var(--primary-color);
     color: var(--text-secondary);
-    padding: 10px 15px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    font-size: var(--font-size-base); /* <<< USA A VARIÁVEL */
+    font-size: var(--font-size-base);
     transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
     box-shadow: 0 2px 4px var(--shadow-base);
-    text-decoration: none; /* Garante que o link não tenha sublinhado */
-    display: inline-block; /* Alinha corretamente o link */
-    text-align: center;
+    text-decoration: none;
+
+    /* --- Estilos de Alinhamento e Normalização --- */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    /* Adicionamos a altura fixa e ajustamos o padding */
+    height: var(--element-height);
+    padding: 0 var(--padding-button-horizontal);
+    font-family: inherit;
+    line-height: 1;
+    margin: 0;
 }
 
 /* *** ALTERAÇÃO APLICADA AQUI *** */
@@ -382,11 +400,12 @@ input[type="password"],
 textarea,
 select {
     width: calc(100% - 22px);
-    padding: 10px;
+    height: var(--element-height);
+    padding: 0 var(--padding-input-horizontal); 
     border: 1px solid var(--border-base);
     border-radius: 5px;
     box-sizing: border-box;
-    font-size: var(--font-size-base); /* <<< USA A VARIÁVEL */
+    font-size: var(--font-size-base);
     background-color: var(--background-secondary);
     color: var(--text-primary);
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -436,7 +455,7 @@ table {
 
 th, td {
     border: 1px solid var(--border-base);
-    padding: 12px 15px;
+    padding: var(--padding-table-cell);
     text-align: left;
     white-space: nowrap;
     vertical-align: top;
@@ -1152,3 +1171,17 @@ tr.pendencia-vencida td {
     color: var(--text-primary);
 }
 
+/* ====================================================================== */
+/* CLASSES DE PARAMETRIZAÇÃO DE APARÊNCIA                                 */
+/* ====================================================================== */
+
+/* Tamanhos de Fonte */
+body.font-size-pequena { --font-size-base: 10px; }
+body.font-size-media { --font-size-base: 12px; }
+body.font-size-grande { --font-size-base: 14px; }
+body.font-size-extra_grande { --font-size-base: 16px; }
+
+/* Espaçamentos */
+body.spacing-compacto { --spacing-unit: 5px; }
+body.spacing-regular { --spacing-unit: 8px; }
+body.spacing-espacado { --spacing-unit: 12px; }

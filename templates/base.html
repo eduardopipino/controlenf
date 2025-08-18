@@ -11,7 +11,7 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body class="{{ current_user.theme if current_user.is_authenticated else 'theme-blue' }}">
+<body class="{{ current_user.theme if current_user.is_authenticated else 'theme-blue' }} font-size-{{ current_user.font_size_preference or 'media' }} spacing-{{ current_user.spacing_preference or 'regular' }}">
     <nav>
         <ul id="main-nav-menu">
             {% if current_user.is_authenticated %}
@@ -47,7 +47,10 @@
                         <li><a href="{{ url_for('cadastros_situacao') }}" class="dropdown-item">Situação</a></li>
                     </ul>
                 </li>
-                <li class="nav-item dropdown" style="margin-left: auto;">
+                <li class="nav-item" style="margin-left: auto;">
+                    <a href="{{ url_for('configuracoes') }}" class="nav-link">Configurações</a>
+                </li>
+                <li class="nav-item dropdown">
                     <a href="#" class="nav-link dropbtn">Temas</a>
                     <ul class="dropdown-menu">
                         <li><a href="#" class="dropdown-item" data-theme="theme-light">Claro</a></li>

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Configurações de Aparência</h2>
+    <p>Ajuste o tamanho da fonte e o espaçamento do sistema para sua preferência. Após salvar, você precisará fazer login novamente para que as alterações entrem em vigor.</p>
+
+    <div class="container container-darker">
+        <form method="POST">
+            <div>
+                <label for="font_size">Tamanho da Fonte</label>
+                <select name="font_size" id="font_size">
+                    <option value="pequena" {% if current_user.font_size_preference == 'pequena' %}selected{% endif %}>Pequena</option>
+                    <option value="media" {% if current_user.font_size_preference == 'media' %}selected{% endif %}>Média (Padrão)</option>
+                    <option value="grande" {% if current_user.font_size_preference == 'grande' %}selected{% endif %}>Grande</option>
+                    <option value="extra_grande" {% if current_user.font_size_preference == 'extra_grande' %}selected{% endif %}>Extra Grande</option>
+                </select>
+            </div>
+            <div>
+                <label for="spacing">Densidade da Interface (Espaçamento)</label>
+                <select name="spacing" id="spacing">
+                    <option value="compacto" {% if current_user.spacing_preference == 'compacto' %}selected{% endif %}>Compacto</option>
+                    <option value="regular" {% if current_user.spacing_preference == 'regular' %}selected{% endif %}>Regular (Padrão)</option>
+                    <option value="espacado" {% if current_user.spacing_preference == 'espacado' %}selected{% endif %}>Espaçado</option>
+                </select>
+            </div>
+            <br>
+            <div class="button-toolbar">
+                <button type="submit">Salvar Alterações</button>
+                <a href="{{ url_for('index') }}" class="button">Cancelar</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

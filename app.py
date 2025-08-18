@@ -393,6 +393,8 @@ def logout():
     flash('Você foi desconectado.', 'info')
     return redirect(url_for('login'))
 
+# --- Rotas de preferências pessoais ---
+
 @app.route('/set_theme', methods=['POST'])
 @login_required
 def set_theme():
@@ -407,6 +409,36 @@ def set_theme():
         return {'status': 'success', 'theme': theme}
     return {'status': 'error', 'message': 'Invalid theme'}, 400
 
+@app.route('/configuracoes', methods=['GET', 'POST'])
+@login_required
+def configuracoes():
+    if request.method == 'POST':
+        # Valida as opções recebidas do formulário
+        font_size = request.form.get('font_size')
+        allowed_fonts = ['pequena', 'media', 'grande', 'extra_grande']
+        if font_size not in allowed_fonts:
+            font_size = 'media' # Valor padrão seguro
+
+        spacing = request.form.get('spacing')
+        allowed_spacing = ['compacto', 'regular', 'espacado']
+        if spacing not in allowed_spacing:
+            spacing = 'regular' # Valor padrão seguro
+
+        # Atualiza o documento do usuário no banco de dados
+        users_collection.update_one(
+            {'_id': ObjectId(current_user.id)},
+            {'$set': {
+                'font_size_preference': font_size,
+                'spacing_preference': spacing
+            }}
+        )
+        flash('Configurações salvas com sucesso!', 'success')
+        # É importante recarregar o usuário para que as novas preferências sejam aplicadas
+        logout_user()
+        return redirect(url_for('login')) 
+    
+    # Se for GET, apenas exibe a página
+    return render_template('configuracoes.html')
 
 @app.route('/user/save_column_prefs', methods=['POST'])
 @login_required
