@@ -9,9 +9,12 @@
     
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v=datetime.now().timestamp()) }}">
 </head>
 <body class="{{ current_user.theme if current_user.is_authenticated else 'theme-blue' }} font-size-{{ current_user.font_size_preference or 'media' }} spacing-{{ current_user.spacing_preference or 'regular' }}">
+    <div style="background: #ffc; color: #000; padding: 10px; border-bottom: 2px solid #ccc; text-align: center; font-size: 14px; z-index: 9999; position: relative;">
+        <strong>INFORMAÇÃO DE DEBUG:</strong> | Tema: [{{ current_user.theme }}] | Fonte: [{{ current_user.font_size_preference }}] | Espaçamento: [{{ current_user.spacing_preference }}]
+    </div>
     <nav>
         <ul id="main-nav-menu">
             {% if current_user.is_authenticated %}

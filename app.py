@@ -20,6 +20,8 @@ from pymongo import MongoClient
 from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
+app.jinja_env.globals.update(datetime=datetime)
+
 
 limiter = Limiter(
     get_remote_address,
@@ -130,6 +132,7 @@ class User(UserMixin):
 def load_user(user_id):
     user_data = users_collection.find_one({'_id': ObjectId(user_id)})
     if user_data:
+        print(f"--- DEBUG: Carregando usuário '{user_data['username']}' -> Espaçamento salvo: '{user_data.get('spacing_preference')}' ---")
         return User(
             username=user_data['username'],
             email=user_data['email'],
@@ -423,6 +426,8 @@ def configuracoes():
         allowed_spacing = ['compacto', 'regular', 'espacado']
         if spacing not in allowed_spacing:
             spacing = 'regular' # Valor padrão seguro
+
+        print(f"--- DEBUG: Tentando salvar -> Fonte: '{font_size}', Espaçamento: '{spacing}' ---")
 
         # Atualiza o documento do usuário no banco de dados
         users_collection.update_one(

@@ -341,32 +341,6 @@ body.theme-dark h1, body.theme-dark h2, body.theme-dark h3 {
     flex-wrap: wrap;
 }
 
-/* Buttons */
-/* Buttons (e links estilizados como botões) */
-button, a.button {
-    /* --- Estilos Visuais --- */
-    background-color: var(--primary-color);
-    color: var(--text-secondary);
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: var(--font-size-base);
-    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-    box-shadow: 0 2px 4px var(--shadow-base);
-    text-decoration: none;
-
-    /* --- Estilos de Alinhamento e Normalização --- */
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    /* Adicionamos a altura fixa e ajustamos o padding */
-    height: var(--element-height);
-    padding: 0 var(--padding-button-horizontal);
-    font-family: inherit;
-    line-height: 1;
-    margin: 0;
-}
-
 /* *** ALTERAÇÃO APLICADA AQUI *** */
 button:hover:not([disabled]), a.button:hover {
     background-color: var(--accent-color);
@@ -394,24 +368,6 @@ label {
     color: var(--tertiary-color);
 }
 
-input[type="text"],
-input[type="email"],
-input[type="password"],
-textarea,
-select {
-    width: calc(100% - 22px);
-    height: var(--element-height);
-    padding: 0 var(--padding-input-horizontal); 
-    border: 1px solid var(--border-base);
-    border-radius: 5px;
-    box-sizing: border-box;
-    font-size: var(--font-size-base);
-    background-color: var(--background-secondary);
-    color: var(--text-primary);
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease;
-    resize: none;
-}
 
 input[readonly],
 textarea[readonly] {
@@ -451,14 +407,6 @@ table {
     overflow: hidden;
     width: 100%;
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-th, td {
-    border: 1px solid var(--border-base);
-    padding: var(--padding-table-cell);
-    text-align: left;
-    white-space: nowrap;
-    vertical-align: top;
 }
 
 #tabelaControle th:nth-child(2),
@@ -1185,3 +1133,60 @@ body.font-size-extra_grande { --font-size-base: 16px; }
 body.spacing-compacto { --spacing-unit: 5px; }
 body.spacing-regular { --spacing-unit: 8px; }
 body.spacing-espacado { --spacing-unit: 12px; }
+
+/* ====================================================================== */
+/* BLOCO DE REGRAS PARA ELEMENTOS COM ESPAÇAMENTO DINÂMICO       */
+/* ====================================================================== */
+
+/* --- BOTÕES --- */
+button, a.button {
+    background-color: var(--primary-color);
+    color: var(--text-secondary);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: var(--font-size-base);
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 4px var(--shadow-base);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    /* ALTURA E PADDING USANDO AS VARIÁVEIS */
+    height: var(--element-height);
+    padding: 0 var(--padding-button-horizontal);
+    font-family: inherit;
+    line-height: 1;
+    margin: 0;
+}
+
+/* --- CAMPOS DE FORMULÁRIO --- */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+    width: calc(100% - 22px);
+    border: 1px solid var(--border-base);
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: var(--font-size-base);
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+    resize: none;
+    /* ALTURA E PADDING USANDO AS VARIÁVEIS */
+    height: var(--element-height);
+    padding: 0 var(--padding-input-horizontal); 
+}
+
+/* --- CÉLULAS DA TABELA --- */
+th, td {
+    border: 1px solid var(--border-base);
+    text-align: left;
+    white-space: nowrap;
+    vertical-align: top;
+    /* PADDING USANDO A VARIÁVEL */
+    padding: var(--padding-table-cell);
+}
