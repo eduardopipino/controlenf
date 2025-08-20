@@ -348,7 +348,9 @@ def login():
             user = User(
                 username=user_data['username'], email=user_data['email'],
                 password_hash=user_data['password_hash'], id=user_data['_id'],
-                theme=user_data.get('theme', 'theme-blue')
+                theme=user_data.get('theme', 'theme-blue'),
+                font_size_preference=user_data.get('font_size_preference', 'media'),
+                spacing_preference=user_data.get('spacing_preference', 'regular')
             )
             login_user(user)
             flash('Login realizado com sucesso!', 'success')
@@ -439,7 +441,12 @@ def configuracoes():
         )
         flash('Configurações salvas com sucesso!', 'success')
         # É importante recarregar o usuário para que as novas preferências sejam aplicadas
-        logout_user()
+        
+        #logout_user()
+        #ou
+        current_user.font_size_preference = font_size
+        current_user.spacing_preference = spacing
+        
         return redirect(url_for('login')) 
     
     # Se for GET, apenas exibe a página
