@@ -134,7 +134,7 @@ class User(UserMixin):
 def load_user(user_id):
     user_data = users_collection.find_one({'_id': ObjectId(user_id)})
     if user_data:
-        print(f"--- DEBUG: Carregando usuário '{user_data['username']}' -> Espaçamento salvo: '{user_data.get('spacing_preference')}' ---")
+        #print(f"--- DEBUG: Carregando usuário '{user_data['username']}' -> Espaçamento salvo: '{user_data.get('spacing_preference')}' ---")
         return User(
             username=user_data['username'],
             email=user_data['email'],
@@ -431,7 +431,7 @@ def configuracoes():
         if spacing not in allowed_spacing:
             spacing = 'regular' # Valor padrão seguro
 
-        print(f"--- DEBUG: Tentando salvar -> Fonte: '{font_size}', Espaçamento: '{spacing}' ---")
+        #print(f"--- DEBUG: Tentando salvar -> Fonte: '{font_size}', Espaçamento: '{spacing}' ---")
 
         # Atualiza o documento do usuário no banco de dados
         users_collection.update_one(
@@ -569,9 +569,48 @@ def instrumentos_contratuais(filtro):
         query['vigente'] = True
     elif filtro == 'extintos':
         query['vigente'] = False
-    # Se filtro for 'todos', nenhuma chave 'vigente' é adicionada, buscando todos.
+    # Se filtro for 'todos', nenhuma chave 'vigente' é adicionada.
 
-    instrumentos = instrumentos_collection.find(query)
+    # <<< LÓGICA ALTERADA PARA USAR AGGREGATION >>>
+    pipeline = [
+        # 1. Filtra os instrumentos como antes
+        {'$match': query},
+        # 2. "Junta" os dados da coleção de itens
+        {
+            '$lookup': {
+                'from': 'ITENS_INSTRUMENTO',
+                'localField': '_id',
+                'foreignField': 'instrumento_id',
+                'as': 'itens_associados'
+            }
+        },
+        # 3. Cria o novo campo 'itens_string' com a lista de descrições
+        {
+            '$addFields': {
+                'itens_string': {
+                    '$reduce': {
+                        'input': '$itens_associados.descricao_item',
+                        'initialValue': '',
+                        'in': {
+                            '$cond': {
+                                'if': {'$eq': ['$$value', '']},
+                                'then': '$$this',
+                                'else': {'$concat': ['$$value', ', ', '$$this']}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        # 4. (Opcional) Remove o array de itens para limpar o resultado
+        {
+            '$project': {
+                'itens_associados': 0
+            }
+        }
+    ]
+
+    instrumentos = instrumentos_collection.aggregate(pipeline)
     return render_template('instrumentos_contratuais.html', instrumentos=list(instrumentos), filtro_ativo=filtro)
 
 @app.route('/cadastros/instrumentos_contratuais/novo', methods=['GET', 'POST'])

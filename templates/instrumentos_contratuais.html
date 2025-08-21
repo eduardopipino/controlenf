@@ -29,6 +29,7 @@
                 <th>Tipo Documento</th>
                 <th>Contratada</th>
                 <th>Objeto Resumido</th>
+                <th>Itens</th>
                 <th>Vigente</th>
             </tr>
         </thead>
@@ -40,6 +41,7 @@
                 <td>{{ instrumento.tipo_documento }}</td>
                 <td>{{ instrumento.contratada }}</td>
                 <td>{{ instrumento.objeto_resumido }}</td>
+                <td class="coluna-texto-longo">{{ instrumento.itens_string or '' }}</td>
                 <td>{{ 'Sim' if instrumento.vigente else 'Não' }}</td>
             </tr>
             {% else %}
