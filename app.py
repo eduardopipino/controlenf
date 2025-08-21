@@ -86,6 +86,8 @@ TODAS_AS_COLUNAS_CONTROLE = [
     ['objeto', 'Objeto'],
     ['item_descricao', 'Item'],
     ['referencia', 'Referência'],
+    ['nota_fiscal', 'Documento Fiscal'],
+    ['carta_de_correcao', 'Carta de Correção'],
     ['documentacao', 'Documentação'],
     ['observacoes', 'Observações'],
     ['situacao', 'Situação']
@@ -255,7 +257,7 @@ def get_instrumentos_para_dropdown():
         {'user_id': ObjectId(current_user.id), 'vigente': True},
         {'n_instrumento': 1, 'tipo_documento': 1, 'contratada': 1, 'objeto_resumido': 1}
     ))
-    # <<< CORREÇÃO: Garante que o ObjectId seja sempre convertido para string >>>
+    # <<< Garante que o ObjectId seja sempre convertido para string >>>
     for inst in instrumentos:
         inst['_id'] = str(inst['_id'])
     return instrumentos
@@ -1073,7 +1075,7 @@ def exportar_pendencias_concluidas_csv():
 
 
 # ======================================================================
-# CORREÇÃO 2: LÓGICA DE CRIAÇÃO DE NOVO CONTROLE
+# 2: LÓGICA DE CRIAÇÃO DE NOVO CONTROLE
 # ======================================================================
 @app.route('/controle/novo', methods=['GET', 'POST'])
 @login_required
@@ -1122,7 +1124,7 @@ def novo_controle():
     return render_template('form_controle.html', controle={}, itens_for_js=json.dumps(itens_for_js), situacoes=situacoes, novo=True)
 
 # ======================================================================
-# CORREÇÃO 3: LÓGICA DE CRIAÇÃO DE CONTROLE RECORRENTE
+# 3: LÓGICA DE CRIAÇÃO DE CONTROLE RECORRENTE
 # ======================================================================
 @app.route('/controle/novo_recorrente', methods=['POST'])
 @login_required
@@ -1287,7 +1289,9 @@ def exportar_csv(filter_mode):
         'Nº INSTRUMENTO': 'n_instrumento',
         'CONTRATADA': 'contratada',
         'OBJETO': 'objeto',
-        'NOTA FISCAL': 'nota_fiscal',
+        'ITEM': 'item_descricao',
+        'REFERÊNCIA': 'referencia',
+        'DOCUMENTO FISCAL': 'nota_fiscal',
         'CARTA DE CORREÇÃO': 'carta_de_correcao',
         'DOCUMENTAÇÃO': 'documentacao',
         'OBSERVAÇÕES': 'observacoes',
@@ -1295,9 +1299,9 @@ def exportar_csv(filter_mode):
     }
 
     output = io.StringIO()
-    # *** ALTERAÇÃO APLICADA AQUI: Adiciona o BOM (Byte Order Mark) para UTF-8 ***
     # Isso sinaliza ao Excel para usar a codificação correta e exibir os acentos.
     output.write('\ufeff')
+
     
     writer = csv.writer(output, delimiter=';', quotechar='"', quoting=csv.QUOTE_ALL)
     
