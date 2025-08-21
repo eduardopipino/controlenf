@@ -23,7 +23,7 @@
 
     /* --- NOVAS VARIÁVEIS DE CONFIGURAÇÃO (PARAMETRIZAÇÃO) --- */
     --font-size-base: 12px; /* Padrão: Média */
-    --spacing-unit: 8px;   /* Padrão: Regular */
+    --spacing-unit: 6px;   /* Padrão: Regular */
     
     /* Variáveis de cálculo (baseadas nas de cima) */
     --font-size-h3: 1.4em;
@@ -564,7 +564,7 @@ td input[type="radio"] {
     border: 1px solid var(--border-base);
     border-radius: 5px;
     box-sizing: border-box;
-    font-size: 16px;
+    font-size: var(--font-size-base);
     background-color: var(--background-secondary);
     color: var(--text-primary);
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
