@@ -266,6 +266,12 @@ btnColorCode.addEventListener('click', function() {
                         linhaDaTabela.classList.remove('update-success');
                     }, 1500);
 
+                    // Se o modo de cores estiver ativo, atualiza a cor do campo alterado
+                    if (colorsActive) {
+                        const novaCor = colorMap[novaSituacao] || 'transparent';
+                        this.style.backgroundColor = novaCor; // 'this' se refere ao dropdown que foi alterado
+                    }
+
                     // Se a situação mudou para "FINANCEIRO" na tela de pendentes, remove a linha com animação
                     if (situacoesArquivadoras.includes(novaSituacao) && "{{ filter_mode }}" === "pendentes") {
                         setTimeout(() => {
