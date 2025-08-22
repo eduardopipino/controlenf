@@ -1242,3 +1242,209 @@ body.theme-dark #tabelaControle tbody tr.update-success {
 body.theme-dark #tabelaControle tbody tr.update-error {
     background-color: #4c1218; /* Um vermelho bem escuro (bordô) */
 }
+
+/* ====================================================================== */
+/* ESTILOS DE RESPONSIVIDADE PARA TELAS PEQUENAS (Ex: Celulares)        */
+/* Ponto de quebra: qualquer tela com 768px de largura ou menos         */
+/* ====================================================================== */
+
+@media (max-width: 768px) {
+
+    /* --- 1. AJUSTES GERAIS --- */
+    .container {
+        padding: 15px;
+        margin: 10px auto;
+    }
+
+    h2 {
+        font-size: 1.4em;
+    }
+
+    /* --- 2. NAVEGAÇÃO / MENU HAMBÚRGUER --- */
+    .hamburger-menu {
+        display: flex; /* Mostra o botão hambúrguer */
+        background: none;
+        border: none;
+        color: white;
+        font-size: 28px;
+        cursor: pointer;
+        padding: 0 15px;
+        z-index: 1001; /* Garante que fique acima de tudo */
+    }
+
+    nav {
+        display: flex;
+        justify-content: space-between; /* Alinha logo à esquerda e hambúrguer à direita */
+    }
+
+    #main-nav-menu {
+        display: none; /* Esconde o menu de desktop */
+    }
+
+    .nav-links-mobile {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 280px; /* Largura do menu lateral */
+        height: 100%;
+        background-color: var(--nav-bg-color);
+        box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+        transform: translateX(-100%); /* Começa escondido fora da tela */
+        transition: transform 0.3s ease-in-out;
+        z-index: 1000;
+        padding-top: 60px; /* Espaço para o botão de fechar */
+    }
+    
+    /* Quando o body tiver a classe 'nav-open', o menu desliza para a tela */
+    body.nav-open .nav-links-mobile {
+        transform: translateX(0);
+    }
+
+    .nav-links-mobile ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column; /* Organiza os links verticalmente */
+    }
+    
+    .nav-links-mobile a {
+        display: block;
+        padding: 15px 20px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 1.1em;
+    }
+
+    .nav-links-mobile a:hover {
+        background-color: var(--accent-color);
+    }
+    
+    .dropdown-mobile-toggle {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    .dropdown-mobile-toggle::after {
+        content: '▼';
+        font-size: 0.7em;
+        margin-left: 10px;
+    }
+
+    .dropdown-menu-mobile {
+        display: none;
+        list-style: none;
+        padding: 0;
+        background-color: rgba(0,0,0,0.2);
+    }
+    
+    .dropdown-menu-mobile a {
+        padding-left: 40px; /* Indentação para sub-itens */
+        font-size: 1em;
+    }
+    
+    .dropdown-menu-mobile.open {
+        display: block;
+    }
+    
+    .nav-brand-container {
+        padding: 0 0 0 15px;
+    }
+
+    /* --- 3. TABELAS RESPONSIVAS (TRANSFORMAÇÃO EM CARDS) --- */
+    .responsive-card-table {
+        border: none;
+        box-shadow: none;
+    }
+
+    .responsive-card-table thead {
+        display: none; /* Esconde o cabeçalho original */
+    }
+
+    .responsive-card-table tr {
+        display: block; /* Cada linha vira um "bloco" / card */
+        border: 1px solid var(--border-base);
+        border-radius: 8px;
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: var(--background-secondary);
+        box-shadow: 0 2px 5px var(--shadow-base);
+    }
+    
+    body.theme-dark .responsive-card-table tr {
+        background-color: #181818;
+    }
+
+    .responsive-card-table td {
+        display: flex; /* Organiza rótulo e valor */
+        justify-content: space-between; /* Alinha o valor à direita */
+        text-align: right; /* Alinha o texto do valor */
+        padding: 8px 0;
+        border-bottom: 1px dashed var(--border-base);
+        white-space: normal;
+        overflow-wrap: break-word;
+    }
+
+    .responsive-card-table td:last-child {
+        border-bottom: none;
+    }
+
+    /* O "mágico" pseudo-elemento que cria o rótulo da coluna */
+    .responsive-card-table td::before {
+        content: attr(data-label); /* Pega o texto do atributo data-label */
+        font-weight: bold;
+        text-align: left;
+        padding-right: 15px;
+        color: var(--tertiary-color);
+    }
+    
+    .responsive-card-table td.situacao-dropdown-cell {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .responsive-card-table td.situacao-dropdown-cell::before {
+        margin-bottom: 8px;
+    }
+
+    /* --- 4. EXPANSÃO DOS CARDS (PROGRESSIVE DISCLOSURE) --- */
+    .responsive-card-table tr td.col-detalhe {
+        display: none; /* Esconde as colunas de detalhe por padrão */
+    }
+
+    .responsive-card-table tr.card-expanded td.col-detalhe {
+        display: flex; /* Mostra as colunas de detalhe quando o card está expandido */
+    }
+
+    .expand-card-btn {
+        width: 100%;
+        margin-top: 15px;
+        background-color: var(--secondary-color);
+        color: var(--text-primary);
+        font-weight: bold;
+    }
+
+    /* --- 5. BARRAS DE FERRAMENTAS E FORMULÁRIOS --- */
+    .button-toolbar {
+        flex-direction: column; /* Empilha os grupos de botões */
+        align-items: stretch; /* Faz os grupos ocuparem 100% da largura */
+        gap: 15px;
+    }
+
+    .toolbar-group-left,
+    .toolbar-group-center,
+    .toolbar-group-right {
+        width: 100%;
+        margin: 0;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .button-toolbar button, .button-toolbar a.button {
+        width: 100%;
+    }
+}
