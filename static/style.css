@@ -227,7 +227,7 @@ nav {
 #main-nav-menu > li {
     position: relative;
     list-style-type: none;
-    display: inline-block;
+    /* display: inline-block; --> causando glitch? também é display: flex */
     height: 100%;
 }
 

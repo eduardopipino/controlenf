@@ -141,8 +141,7 @@
                             });
                             const data = await response.json();
                             if (data.status === 'success') {
-                                body.className = '';
-                                body.classList.add(selectedTheme);
+                                location.reload();
                             } else {
                                 alert('Erro ao mudar o tema.');
                             }
