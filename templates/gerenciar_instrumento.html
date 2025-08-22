@@ -61,8 +61,9 @@
                     <td>{{ item.tipo_frequencia }}</td>
                     <td>
                         <a href="{{ url_for('editar_item_instrumento', item_id=item._id) }}" class="button">Editar</a>
-                        <form id="formExcluirItem-{{ item._id }}" method="POST" action="{{ url_for('excluir_item_instrumento', item_id=item._id) }}" style="display: none;"></form>
                         <button type="button" class="button-danger btn-excluir-item" data-item-id="{{ item._id }}" data-item-descricao="{{ item.descricao_item }}">Excluir</button>
+                        <button type="button" class="button btn-novo-controle" data-item-id="{{ item._id }}" data-item-descricao="{{ item.descricao_item }}">Novo controle</button>
+                        <form id="formExcluirItem-{{ item._id }}" method="POST" action="{{ url_for('excluir_item_instrumento', item_id=item._id) }}" style="display: none;"></form>
                     </td>
                 </tr>
                 {% else %}
@@ -79,12 +80,30 @@
              <a href="{{ url_for('adicionar_item_instrumento', instrumento_id=instrumento._id) }}" class="button">Adicionar Item</a>
         </div>
     </div>
+
+    <div id="novoControleModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modalTitleNovoControle">Criar Controle para Item</h3>
+            <div>
+                <label for="referencia_modal">Referência: *</label>
+                <input type="text" id="referencia_modal" name="referencia_modal" placeholder="Ex: 08/2025" required>
+                <input type="hidden" id="item_id_modal">
+            </div>
+            <div class="button-toolbar">
+                <button type="button" id="btnCriarControle">Criar</button>
+                <button type="button" class="btn-cancel-modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
 {% endblock %}
+
 
 {% block page_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Referências aos elementos do formulário principal
+    // ======================================================================
+    // MANTÉM TODO O JAVASCRIPT EXISTENTE AQUI
+    // ======================================================================
     const formFields = [
         document.getElementById('contratada'),
         document.getElementById('objeto_resumido'),
@@ -95,44 +114,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnCancelar = document.getElementById('btnCancelar');
     const btnExcluir = document.getElementById('btnExcluir');
     const formExcluirInstrumento = document.getElementById('formExcluirInstrumento');
-
-    // ======================================================================
-    // 2. LÓGICA JAVASCRIPT ATUALIZADA PARA O BOTÃO FECHAR/CANCELAR
-    // ======================================================================
-    
-    // Define a função para o comportamento de "Cancelar Edição"
     const acaoCancelarEdicao = () => {
         showCustomConfirm('Cancelar Edição?', 'As alterações não salvas serão perdidas. Deseja continuar?',
             (confirmed) => { if (confirmed) { location.reload(); } }, 'Sim, Cancelar');
     };
-
-    // Define a função para o comportamento de "Fechar"
     const acaoFechar = () => {
         window.location.href = "{{ url_for('instrumentos_contratuais') }}";
     };
-
-    // ----- ESTADO INICIAL DA PÁGINA -----
-    // Ao carregar, o botão funciona como "Fechar"
     btnCancelar.onclick = acaoFechar;
-
-
-    // ----- LÓGICA AO CLICAR EM "EDITAR" -----
     if(btnEditar) {
         btnEditar.addEventListener('click', () => {
-            // Habilita os campos para edição
             formFields.forEach(field => field.disabled = false);
-            
-            // Ajusta a visibilidade e estado dos botões
             btnEditar.disabled = true;
             btnExcluir.disabled = true;
             btnSalvar.disabled = false;
-            
-            // Transforma o botão "Fechar" em "Cancelar"
-            btnCancelar.textContent = 'Cancelar'; // Muda o texto
-            btnCancelar.onclick = acaoCancelarEdicao; // Muda a função do clique
+            btnCancelar.textContent = 'Cancelar';
+            btnCancelar.onclick = acaoCancelarEdicao;
         });
-
-        // A lógica do botão de exclusão permanece a mesma
         btnExcluir.addEventListener('click', () => {
             showCustomConfirm(
                 'Confirmar Exclusão', 
@@ -144,15 +142,12 @@ document.addEventListener('DOMContentLoaded', function() {
             );
         });
     }
-
-    // Lógica para os botões de exclusão de cada item (sem alterações)
     const btnsExcluirItem = document.querySelectorAll('.btn-excluir-item');
     btnsExcluirItem.forEach(button => {
         button.addEventListener('click', function() {
             const itemId = this.dataset.itemId;
             const itemDescricao = this.dataset.itemDescricao;
             const formParaSubmeter = document.getElementById(`formExcluirItem-${itemId}`);
-
             showCustomConfirm(
                 'Confirmar Exclusão do Item',
                 `Tem certeza que deseja excluir o item "${itemDescricao}"?`,
@@ -163,6 +158,78 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 'Excluir Item'
             );
+        });
+    });
+
+    // ======================================================================
+    // <<< NOVO CÓDIGO JAVASCRIPT PARA O MODAL >>>
+    // ======================================================================
+    const novoControleModal = document.getElementById('novoControleModal');
+    const btnsAbrirModal = document.querySelectorAll('.btn-novo-controle');
+    const btnCriarControle = document.getElementById('btnCriarControle');
+    const btnCancelarModal = novoControleModal.querySelector('.btn-cancel-modal');
+    
+    // Abrir o modal
+    btnsAbrirModal.forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.dataset.itemId;
+            const itemDescricao = this.dataset.itemDescricao;
+            
+            // Preenche os dados no modal
+            document.getElementById('item_id_modal').value = itemId;
+            document.getElementById('referencia_modal').value = ''; // Limpa o campo
+            document.getElementById('modalTitleNovoControle').textContent = `Criar Controle para: ${itemDescricao}`;
+
+            novoControleModal.classList.add('active');
+            document.getElementById('referencia_modal').focus();
+        });
+    });
+
+    // Fechar o modal
+    const fecharModal = () => {
+        novoControleModal.classList.remove('active');
+    };
+
+    btnCancelarModal.addEventListener('click', fecharModal);
+    novoControleModal.addEventListener('click', (e) => {
+        if (e.target === novoControleModal) {
+            fecharModal();
+        }
+    });
+
+    // Criar o controle (enviar para o backend)
+    btnCriarControle.addEventListener('click', function() {
+        const itemId = document.getElementById('item_id_modal').value;
+        const referencia = document.getElementById('referencia_modal').value.trim();
+
+        if (!referencia) {
+            alert('O campo Referência é obrigatório.');
+            return;
+        }
+
+        fetch("{{ url_for('criar_controle_rapido') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                item_id: itemId,
+                referencia: referencia
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Redireciona para a página de pendentes
+                window.location.href = data.redirect_url;
+            } else {
+                // Exibe a mensagem de erro retornada pelo backend
+                alert('Erro: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erro de rede:', error);
+            alert('Ocorreu um erro de comunicação com o servidor.');
         });
     });
 });

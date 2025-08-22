@@ -1489,6 +1489,68 @@ def editar_item_instrumento(item_id):
 
     return render_template('form_item.html', instrumento=instrumento, item=item, novo=False, todos_os_docs=todos_os_docs)
 
+# app.py (ADICIONE ESTE NOVO BLOCO DE CÓDIGO AO FINAL DO ARQUIVO)
+
+@app.route('/item/criar_controle_rapido', methods=['POST'])
+@login_required
+def criar_controle_rapido():
+    """Cria um novo registro de controle a partir do modal da tela de detalhes do instrumento."""
+    data = request.get_json()
+    item_id_str = data.get('item_id')
+    referencia = data.get('referencia', '').strip()
+
+    if not all([item_id_str, referencia]):
+        return {'status': 'error', 'message': 'Item ID e Referência são obrigatórios.'}, 400
+
+    try:
+        user_id_obj = ObjectId(current_user.id)
+        item_id_obj = ObjectId(item_id_str)
+
+        # 1. Busca o item e o instrumento pai para obter os dados
+        item_selecionado = itens_collection.find_one({'_id': item_id_obj, 'user_id': user_id_obj})
+        if not item_selecionado:
+            return {'status': 'error', 'message': 'Item não encontrado.'}, 404
+        
+        instrumento_pai = instrumentos_collection.find_one({'_id': item_selecionado['instrumento_id']})
+        if not instrumento_pai:
+            return {'status': 'error', 'message': 'Instrumento pai não encontrado.'}, 404
+
+        # 2. (Opcional, mas recomendado) Verifica se já existe um controle para este item e referência
+        if controle_collection.find_one({'item_id': item_id_obj, 'referencia': referencia, 'user_id': user_id_obj}):
+             return {'status': 'error', 'message': f'Já existe um controle para a referência "{referencia}" deste item.'}, 409
+
+        # 3. Monta o novo registro de controle
+        novo_registro_controle = {
+            'item_id': item_id_obj,
+            'n_instrumento': instrumento_pai['n_instrumento'],
+            'tipo_documento': instrumento_pai['tipo_documento'],
+            'contratada': instrumento_pai['contratada'],
+            'objeto': instrumento_pai['objeto_resumido'],
+            'referencia': referencia,
+            'nota_fiscal': '',
+            'carta_de_correcao': '',
+            'documentacao': [],
+            'observacoes': 'Gerado via criação rápida.',
+            'situacao': '', # Inicia com situação vazia (pendente)
+            'data_criacao': datetime.now(),
+            'user_id': user_id_obj
+        }
+        
+        # 4. Insere no banco de dados
+        controle_collection.insert_one(novo_registro_controle)
+        
+        # 5. Retorna sucesso com a URL de redirecionamento
+        flash('Novo registro de controle criado com sucesso!', 'success')
+        return {
+            'status': 'success', 
+            'message': 'Registro criado!',
+            'redirect_url': url_for('controle_lista', filter_mode='pendentes')
+        }
+
+    except Exception as e:
+        print(f"Erro na criação rápida de controle: {e}")
+        return {'status': 'error', 'message': 'Ocorreu um erro interno no servidor.'}, 500
+
 #if __name__ == '__main__':
 #    app.run(debug=True)
 
