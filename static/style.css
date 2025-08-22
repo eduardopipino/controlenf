@@ -1228,3 +1228,17 @@ textarea[readonly] {
 body.theme-dark .select2-container--default.select2-container--disabled .select2-selection--single .select2-selection__rendered {
     color: #aaa;
 }
+
+/* ====================================================================== */
+/* CORREÇÃO: Cores de Feedback de Atualização para o Tema Escuro        */
+/* ====================================================================== */
+
+/* Define uma cor de fundo escura e sutil para o feedback de SUCESSO no tema escuro */
+body.theme-dark #tabelaControle tbody tr.update-success {
+    background-color: #082f12; /* Um verde bem escuro, quase cinza */
+}
+
+/* Define uma cor de fundo escura e sutil para o feedback de ERRO no tema escuro */
+body.theme-dark #tabelaControle tbody tr.update-error {
+    background-color: #4c1218; /* Um vermelho bem escuro (bordô) */
+}

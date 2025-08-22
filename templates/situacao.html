@@ -14,8 +14,8 @@
                 <th></th> 
                 <th>Nome da Situação *</th>
                 <th>Arquiva Registro?</th>
-                <th>Cor</th>
-            </tr>
+                <th>Cor (Temas Claros)</th>
+                <th>Cor (Tema Escuro)</th> </tr>
         </thead>
         <tbody>
             {% for situacao in situacoes %}
@@ -25,12 +25,16 @@
                 <td>{{ 'Sim' if situacao.arquiva_registro else 'Não' }}</td>
                 <td>
                     <span class="color-preview" style="background-color: {{ situacao.cor or '#ffffff' }};"></span>
-                    {{ situacao.cor }}
+                    {{ situacao.cor or '#ffffff' }}
+                </td>
+                <td>
+                    <span class="color-preview" style="background-color: {{ situacao.cor_tema_escuro or '#3a3a3a' }}; border: 1px solid #777;"></span>
+                    {{ situacao.cor_tema_escuro or '#3a3a3a' }}
                 </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="4">Nenhuma situação cadastrada.</td>
+                <td colspan="5">Nenhuma situação cadastrada.</td>
             </tr>
             {% endfor %}
         </tbody>

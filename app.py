@@ -744,10 +744,13 @@ def nova_situacao():
             flash('Você já possui uma situação com este nome.', 'error')
             return render_template('form_situacao.html', situacao=request.form, novo=True)
 
-        # <<< ADICIONADO: Salva a cor no banco de dados >>>
+        cor_tema_escuro = request.form.get('cor_tema_escuro', '#3a3a3a').strip()
+
+        # <<< Salva a cor no banco de dados >>>
         situacao_collection.insert_one({
             'situacao': situacao_nome, 
             'cor': cor_situacao,
+            'cor_tema_escuro': cor_tema_escuro,
             'user_id': ObjectId(current_user.id),
             'arquiva_registro': arquiva
         })
@@ -777,10 +780,13 @@ def editar_situacao(situacao_id):
             {'situacao': situacao['situacao'], 'user_id': ObjectId(current_user.id)},
             {'$set': {'situacao': nova_situacao_nome}}
         )
+        
+        nova_cor_tema_escuro = request.form.get('cor_tema_escuro', '#3a3a3a').strip()
+        
         situacao_collection.update_one(
             {'_id': ObjectId(situacao_id), 'user_id': ObjectId(current_user.id)},
-            # <<< ADICIONADO: Atualiza a cor no banco de dados >>>
-            {'$set': {'situacao': nova_situacao_nome, 'cor': nova_cor_situacao, 'arquiva_registro': arquiva}}
+            # <<< Atualiza a cor no banco de dados >>>
+            {'$set': {'situacao': nova_situacao_nome, 'cor': nova_cor_situacao, 'cor_tema_escuro': nova_cor_tema_escuro, 'arquiva_registro': arquiva}}
         )
         flash('Situação atualizada com sucesso!', 'success')
         return redirect(url_for('cadastros_situacao'))
@@ -808,10 +814,30 @@ def excluir_situacao(situacao_id):
 # --- ROTAS DE CONTROLE ATUALIZADAS PARA ENVIAR O MAPA DE CORES ---
 
 def get_color_map_for_user():
-    """Função auxiliar para criar um mapa de Situação -> Cor."""
-    situacoes = situacao_collection.find({'user_id': ObjectId(current_user.id)}, {'situacao': 1, 'cor': 1})
-    # Cria um dicionário, ex: {'FAZER': '#ff0000', 'CONCLUÍDO': '#00ff00'}
-    return {s['situacao']: s.get('cor', '#ffffff') for s in situacoes}
+    """
+    Função auxiliar para criar um mapa de Situação -> Cor,
+    considerando o tema ativo do usuário.
+    """
+    # Busca também o novo campo de cor para o tema escuro
+    situacoes = situacao_collection.find(
+        {'user_id': ObjectId(current_user.id)}, 
+        {'situacao': 1, 'cor': 1, 'cor_tema_escuro': 1}
+    )
+    
+    color_map = {}
+    is_dark_theme = current_user.theme == 'theme-dark'
+
+    for s in situacoes:
+        situacao_nome = s['situacao']
+        
+        if is_dark_theme:
+            # Se o tema for escuro, usa a cor específica (com fallback para a cor padrão)
+            color_map[situacao_nome] = s.get('cor_tema_escuro') or s.get('cor', '#3a3a3a')
+        else:
+            # Para outros temas, usa a cor padrão
+            color_map[situacao_nome] = s.get('cor', '#ffffff')
+            
+    return color_map
 
 # --- CADASTROS DE TIPOS DE DOCUMENTO ---
 
