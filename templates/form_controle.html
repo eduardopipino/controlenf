@@ -201,7 +201,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-
     } else {
         // Lógica para um registro existente (EDIÇÃO/CONSULTA)
         fillDetails(currentItemId);
@@ -216,6 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Função para habilitar/desabilitar campos
         function toggleEditFields(enable) {
+            $('#item_id').prop('disabled', !enable);
             editableFieldIds.forEach(id => {
                 const field = document.getElementById(id);
                 if (field) field.disabled = !enable;
@@ -224,6 +224,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 chk.disabled = !enable;
             });
         }
+
+        toggleEditFields(false); // Garante que tudo comece desabilitado
 
         // --- LÓGICA DOS BOTÕES ---
         const acaoFechar = () => window.location.href = "{{ url_for('controle_lista', filter_mode='pendentes') }}";

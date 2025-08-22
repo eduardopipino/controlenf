@@ -80,6 +80,8 @@
     --modal-shadow: var(--shadow-base);
     --modal-h3-border: var(--secondary-color);
     --modal-text: var(--text-primary);
+
+    --disabled-bg-color: #e9ecef; /* Um cinza claro padrão */
 }
 
 /* --- Tema Claro --- */
@@ -188,6 +190,8 @@ body.theme-dark {
     --flash-warning-text: #fff3cd;
     --flash-warning-border: #ffeeba;
     --modal-h3-border: var(--border-base);
+
+    --disabled-bg-color: #3a3a3a; /* Cinza mais claro que o fundo do formulário */
 }
 
 /* --- ESTILOS GERAIS PARA COMPONENTES (APLICADOS SEMPRE) --- */
@@ -385,14 +389,6 @@ label {
     margin-bottom: 5px;
     font-weight: bold;
     color: var(--tertiary-color);
-}
-
-
-input[readonly],
-textarea[readonly] {
-    background-color: #e9ecef;
-    cursor: not-allowed;
-    opacity: 0.7;
 }
 
 input[type="text"]:focus,
@@ -660,23 +656,18 @@ td input[type="radio"] {
 
 /* --- ESTILOS ESPECÍFICOS PARA TEMAS --- */
 
-body.theme-dark {
-    input[readonly],
-    textarea[readonly] {
-        background-color: var(--secondary-color);
-        color: var(--text-primary);
-        opacity: 0.6;
-    }
-    .dropdown-item:hover {
-        color: var(--text-primary);
-    }
-    input[type="text"]:focus,
-    input[type="email"]:focus,
-    input[type="password"]:focus,
-    textarea:focus,
-    select:focus {
-        box-shadow: 0 0 0 2px var(--secondary-color), inset 0 1px 3px rgba(0, 0, 0, 0.4);
-    }
+/* Esta é a forma correta para um arquivo .css padrão */
+
+body.theme-dark .dropdown-item:hover {
+    color: var(--text-primary);
+}
+
+body.theme-dark input[type="text"]:focus,
+body.theme-dark input[type="email"]:focus,
+body.theme-dark input[type="password"]:focus,
+body.theme-dark textarea:focus,
+body.theme-dark select:focus {
+    box-shadow: 0 0 0 2px var(--secondary-color), inset 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 /* Estilos para o Dashboard (Página Inicial) */
@@ -1208,4 +1199,32 @@ th, td {
     vertical-align: top;
     /* PADDING USANDO A VARIÁVEL */
     padding: var(--padding-table-cell);
+}
+
+/* ====================================================================== */
+/* ESTILO OTIMIZADO PARA CAMPOS DESABILITADOS E READONLY                  */
+/* ====================================================================== */
+
+/* Regra principal para todos os campos bloqueados */
+input:disabled,
+textarea:disabled,
+select:disabled,
+input[readonly],
+textarea[readonly] {
+    background-color: var(--disabled-bg-color) !important;
+    color: var(--text-primary) !important;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+/* Regra específica para o container do Select2 quando desabilitado */
+.select2-container--default.select2-container--disabled .select2-selection--single {
+    background-color: var(--disabled-bg-color) !important;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+/* Garante que o texto do Select2 desabilitado fique legível no tema escuro */
+body.theme-dark .select2-container--default.select2-container--disabled .select2-selection--single .select2-selection__rendered {
+    color: #aaa;
 }
