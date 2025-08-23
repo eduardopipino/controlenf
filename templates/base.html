@@ -155,7 +155,7 @@
                 });
             }
 
-                        // --- LÓGICA CORRIGIDA PARA O MENU HAMBÚRGUER ---
+            // --- LÓGICA CORRIGIDA PARA O MENU HAMBÚRGUER ---
             const hamburger = document.querySelector('.hamburger-menu');
             const body = document.body;
 
@@ -170,17 +170,25 @@
             dropdowns.forEach(dropdown => {
                 const link = dropdown.querySelector('a');
                 link.addEventListener('click', function(e) {
-                    // Em telas pequenas, previne o link de navegar e abre/fecha o submenu
-                    if (window.innerWidth <= 768) {
-                        e.preventDefault();
-                        // Fecha outros submenus abertos
-                        dropdowns.forEach(d => {
-                            if (d !== dropdown) {
-                                d.classList.remove('open');
-                            }
-                        });
-                        dropdown.classList.toggle('open');
-                    }
+                if (link) {
+                    link.addEventListener('click', function(e) {
+                        // Em telas pequenas, previne o link de navegar e abre/fecha o submenu
+                        if (window.innerWidth <= 768) {
+                            e.preventDefault();
+                            
+                            // Fecha outros submenus abertos para evitar poluição visual
+                            document.querySelectorAll('.dropdown.open').forEach(openDropdown => {
+                                if (openDropdown !== dropdown) {
+                                    openDropdown.classList.remove('open');
+                                }
+                            });
+                            
+                            // Abre ou fecha o submenu atual
+                            dropdown.classList.toggle('open');
+                        }
+                    });
+                }
+
                 });
             });
         });
