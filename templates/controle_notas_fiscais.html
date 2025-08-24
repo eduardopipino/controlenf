@@ -3,7 +3,7 @@
 {% block content %}
     <h2>Controle de Notas Fiscais {% if filter_mode == 'pendentes' %}- Pendentes{% elif filter_mode == 'concluidas' %}- Concluídas{% endif %}</h2>
     
-    <div class="button-toolbar">
+    <div class="button-toolbar desktop-actions">
         <div class="toolbar-group-left">
             <button id="btnFiltro" class="{{ 'filtro-ativo' if filtro_ativo else '' }}">Filtro...</button>
             <button id="btnColorCode">Identificar por cores</button>
@@ -11,18 +11,33 @@
             <a href="{{ url_for('exportar_csv', filter_mode=filter_mode) }}" class="button">Exportar</a>
         </div>
         
-		<div class="toolbar-group-center">
-			<button id="btnDetalhes" disabled>Detalhes...</button>
-		</div>
-            
-		<div class="toolbar-group-right">
-			<button onclick="location.href='{{ url_for('novo_controle') }}'">Novo</button>
-			<button id="btnNovoRecorrente">Novo - Recorrente</button>
+        <div class="toolbar-group-center">
+            <button id="btnDetalhes" disabled>Detalhes...</button>
+        </div>
+                
+        <div class="toolbar-group-right">
+            <button onclick="location.href='{{ url_for('novo_controle') }}'">Novo</button>
+            <button id="btnNovoRecorrente">Novo - Recorrente</button>
+        </div>
+    </div>
+    
+    <div class="mobile-actions">
+        <a href="{{ url_for('novo_controle') }}" class="fab" title="Novo Registro">+</a>
+
+        <div class="kebab-menu-container">
+            <button id="btnKebab" class="kebab-menu-button">&#8942;</button>
+            <div class="kebab-menu-dropdown">
+                <a href="#" id="btnFiltroMobile">Filtrar...</a>
+                <a href="#" id="btnConfigurarColunasMobile">Configurar Colunas</a>
+                <a href="{{ url_for('exportar_csv', filter_mode=filter_mode) }}">Exportar CSV</a>
+                <a href="#" id="btnColorCodeMobile">Identificar por Cores</a>
+                <a href="#" id="btnNovoRecorrenteMobile">Novo - Recorrente</a>
+            </div>
         </div>
     </div>
     
     <br>
-    <table border="1" id="tabelaControle">
+    <table border="1" id="tabelaControle" class="responsive-card-table">
         <thead>
             <tr>
                 <th></th>
@@ -40,38 +55,35 @@
         </thead>
 <tbody>
     {% for controle in controles %}
-    <tr class="clickable-row" id="controle-row-{{ controle._id }}">
-        <td><input type="radio" name="selected_controle" value="{{ controle._id }}"></td>
+    <tr id="controle-row-{{ controle._id }}" data-id="{{ controle._id }}" data-url="{{ url_for('detalhes_controle', controle_id=controle._id) }}">
+        
+        <td data-label="Selecionar"><input type="radio" name="selected_controle" value="{{ controle._id }}"></td>
         
         {% set colunas_longas = ['objeto', 'item_descricao', 'documentacao', 'observacoes'] %}
+        {% set colunas_detalhe = ['tipo_documento', 'n_instrumento', 'documentacao', 'observacoes'] %}
 
         {% for col_id, col_nome in todas_as_colunas %}
             {% if col_id in colunas_visiveis %}
 
                 {% if col_id == 'situacao' %}
-                    <td class="celula-situacao">
+                    <td data-label="{{ col_nome }}" class="celula-situacao">
                         <select class="situacao-dropdown" data-id="{{ controle._id }}">
                             <option value="">-- Nenhuma --</option>
                             {% for sit in situacoes_para_filtro %}
-                                <option value="{{ sit.situacao }}" {% if sit.situacao == controle.situacao %}selected{% endif %}>
-                                    {{ sit.situacao }}
-                                </option>
+                                <option value="{{ sit.situacao }}" {% if sit.situacao == controle.situacao %}selected{% endif %}>{{ sit.situacao }}</option>
                             {% endfor %}
                         </select>
                     </td>
-                
                 {% else %}
-                    <td class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }}">
-                        {% if col_id == 'documentacao' %}
-                            {{ controle.documentacao | join(', ') }}
-                        {% else %}
-                            {{ controle[col_id] }}
-                        {% endif %}
+                    <td data-label="{{ col_nome }}" class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }} {{ 'col-detalhe' if col_id in colunas_detalhe else '' }}">
+                        {{ controle[col_id] | join(', ') if col_id == 'documentacao' else controle[col_id] }}
                     </td>
                 {% endif %}
 
             {% endif %}
         {% endfor %}
+
+        <td><button class="expand-card-btn">Ver mais</button></td>
     </tr>
     {% else %}
     <tr>
@@ -162,28 +174,9 @@
 {% block page_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    initializeClickableTable(
-        'tabelaControle',
-        'selected_controle',
-        'btnDetalhes',
-        "{{ url_for('detalhes_controle', controle_id='REPLACE_ID') }}"
-    );
 
-    const btnFiltro = document.getElementById('btnFiltro');
-    const filterModal = document.getElementById('filterModal');
-    const btnNovoRecorrente = document.getElementById('btnNovoRecorrente');
-    const recorrenteModal = document.getElementById('recorrenteModal');
-
-    const situacoesArquivadoras = JSON.parse('{{ arquivadores_json | default("[]") | safe }}');
-
-    if (btnFiltro) {
-        btnFiltro.addEventListener('click', () => filterModal.classList.add('active'));
-    }
-
-    if (btnNovoRecorrente) {
-        btnNovoRecorrente.addEventListener('click', () => recorrenteModal.classList.add('active'));
-    }
-
+    // --- 1. LÓGICA GERAL PARA FECHAMENTO DE MODAIS ---
+    // (Este era o código que faltava)
     document.querySelectorAll('.modal-overlay').forEach(modal => {
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
@@ -191,88 +184,108 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
     document.querySelectorAll('.btn-cancel-modal').forEach(button => {
         button.addEventListener('click', () => {
             button.closest('.modal-overlay').classList.remove('active');
         });
     });
 
+    // --- 2. LÓGICA PARA ABERTURA DE MODAIS ---
+    const filterModal = document.getElementById('filterModal');
+    const recorrenteModal = document.getElementById('recorrenteModal');
+    const configColunasModal = document.getElementById('configColunasModal');
 
-
-// LÓGICA DO BOTÃO DE IDENTIFICAR POR CORES (CORRIGIDA)
-const btnColorCode = document.getElementById('btnColorCode');
-const colorMap = JSON.parse('{{ color_map_json | default("{}") | safe }}');
-let colorsActive = false;
-
-btnColorCode.addEventListener('click', function() {
-    colorsActive = !colorsActive; // Inverte o estado liga/desliga
+    document.getElementById('btnFiltro')?.addEventListener('click', () => filterModal.classList.add('active'));
+    document.getElementById('btnFiltroMobile')?.addEventListener('click', () => filterModal.classList.add('active'));
     
-    const tableRows = document.querySelectorAll('#tabelaControle tbody tr');
+    document.getElementById('btnNovoRecorrente')?.addEventListener('click', () => recorrenteModal.classList.add('active'));
+    document.getElementById('btnNovoRecorrenteMobile')?.addEventListener('click', () => recorrenteModal.classList.add('active'));
     
-    tableRows.forEach(row => {
-        // Encontra o <select> DENTRO da célula da situação
-        const situacaoSelect = row.querySelector('.situacao-dropdown'); 
-        if (!situacaoSelect) return;
+    document.getElementById('btnConfigurarColunas')?.addEventListener('click', () => configColunasModal.classList.add('active'));
+    document.getElementById('btnConfigurarColunasMobile')?.addEventListener('click', () => configColunasModal.classList.add('active'));
 
-        // Pega o valor SELECIONADO do dropdown, não o texto da célula inteira
-        const situacaoText = situacaoSelect.value;
+    // --- 3. LÓGICA RESPONSIVA (DESKTOP vs MOBILE) ---
+    if (window.innerWidth > 768) {
+        // MODO DESKTOP: Inicia a tabela com seleção por radio button
+        initializeClickableTable(
+            'tabelaControle',
+            'selected_controle',
+            'btnDetalhes',
+            "{{ url_for('detalhes_controle', controle_id='REPLACE_ID') }}"
+        );
+    } else {
+        // MODO MOBILE: Transforma cada card em um link para a página de detalhes
+        const cards = document.querySelectorAll('.responsive-card-table tr[data-url]');
+        cards.forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Navega apenas se o clique NÃO for em um elemento interativo
+                if (!e.target.closest('.expand-card-btn, .situacao-dropdown, input')) {
+                    window.location.href = this.dataset.url;
+                }
+            });
+        });
+    }
 
-        if (colorsActive) {
-            // Se o modo de cores está ativo, aplica a cor
-            const cor = colorMap[situacaoText] || 'transparent';
-            // Aplica a cor de fundo AO PRÓPRIO DROPDOWN
-            situacaoSelect.style.backgroundColor = cor;
-        } else {
-            // Remove a cor de fundo do dropdown, voltando ao normal
-            situacaoSelect.style.backgroundColor = '';
-        }
+    // --- 4. LÓGICA PARA EXPANDIR CARDS (SÓ TEM EFEITO VISÍVEL NO MOBILE) ---
+    document.querySelectorAll('.expand-card-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const card = this.closest('tr');
+            card.classList.toggle('card-expanded');
+            this.textContent = card.classList.contains('card-expanded') ? 'Ver menos' : 'Ver mais';
+        });
     });
 
-    // Atualiza o texto do botão principal
-    btnColorCode.textContent = colorsActive ? 'Remover cores' : 'Identificar por cores';
-});
-        // LÓGICA PARA A ATUALIZAÇÃO RÁPIDA DE SITUAÇÃO
-    const dropdowns = document.querySelectorAll('.situacao-dropdown');
-
-    dropdowns.forEach(dropdown => {
-        // Impede que clicar no dropdown acione o clique na linha inteira
-        dropdown.addEventListener('click', function(event) {
-            event.stopPropagation();
+    // --- 5. LÓGICA DO MENU KEBAB (SÓ APARECE NO MOBILE) ---
+    const kebabButton = document.getElementById('btnKebab');
+    const kebabDropdown = document.querySelector('.kebab-menu-dropdown');
+    if (kebabButton) {
+        kebabButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            kebabDropdown.style.display = kebabDropdown.style.display === 'block' ? 'none' : 'block';
         });
+        document.addEventListener('click', () => {
+            kebabDropdown.style.display = 'none';
+        });
+    }
 
-        // Adiciona o "ouvinte" para a ação de mudança
-        dropdown.addEventListener('change', function(event) {
+    // --- 6. LÓGICA DE IDENTIFICAR POR CORES ---
+    const colorMap = JSON.parse('{{ color_map_json | default("{}") | safe }}');
+    let colorsActive = false;
+    function toggleColorCoding() {
+        colorsActive = !colorsActive;
+        document.querySelectorAll('.situacao-dropdown').forEach(select => {
+            const cor = colorsActive ? (colorMap[select.value] || 'transparent') : '';
+            select.style.backgroundColor = cor;
+        });
+        const btnDesktop = document.getElementById('btnColorCode');
+        if(btnDesktop) btnDesktop.classList.toggle('filtro-ativo', colorsActive);
+    }
+    document.getElementById('btnColorCode')?.addEventListener('click', toggleColorCoding);
+    document.getElementById('btnColorCodeMobile')?.addEventListener('click', toggleColorCoding);
+
+    // --- 7. LÓGICA PARA ATUALIZAÇÃO RÁPIDA DE SITUAÇÃO ---
+    const dropdowns = document.querySelectorAll('.situacao-dropdown');
+    const situacoesArquivadoras = JSON.parse('{{ arquivadores_json | default("[]") | safe }}');
+    dropdowns.forEach(dropdown => {
+        dropdown.addEventListener('click', event => event.stopPropagation());
+        dropdown.addEventListener('change', function() {
             const controleId = this.dataset.id;
             const novaSituacao = this.value;
             const linhaDaTabela = document.getElementById(`controle-row-${controleId}`);
-
             fetch("{{ url_for('update_situacao_inline') }}", {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    controle_id: controleId,
-                    nova_situacao: novaSituacao
-                }),
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ controle_id: controleId, nova_situacao: novaSituacao }),
             })
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // Feedback visual de sucesso
                     linhaDaTabela.classList.add('update-success');
-                    setTimeout(() => {
-                        linhaDaTabela.classList.remove('update-success');
-                    }, 1500);
-
-                    // Se o modo de cores estiver ativo, atualiza a cor do campo alterado
+                    setTimeout(() => { linhaDaTabela.classList.remove('update-success'); }, 1500);
                     if (colorsActive) {
-                        const novaCor = colorMap[novaSituacao] || 'transparent';
-                        this.style.backgroundColor = novaCor; // 'this' se refere ao dropdown que foi alterado
+                        this.style.backgroundColor = colorMap[novaSituacao] || 'transparent';
                     }
-
-                    // Se a situação mudou para "FINANCEIRO" na tela de pendentes, remove a linha com animação
                     if (situacoesArquivadoras.includes(novaSituacao) && "{{ filter_mode }}" === "pendentes") {
                         setTimeout(() => {
                             linhaDaTabela.style.opacity = '0';
@@ -280,54 +293,32 @@ btnColorCode.addEventListener('click', function() {
                         }, 500);
                     }
                 } else {
-                    // Feedback visual de erro
                     linhaDaTabela.classList.add('update-error');
-                    setTimeout(() => {
-                        linhaDaTabela.classList.remove('update-error');
-                    }, 2000);
-                    // Opcional: recarregar o valor antigo em caso de erro
-                    // this.value = /* valor antigo */;
+                    setTimeout(() => { linhaDaTabela.classList.remove('update-error'); }, 2000);
                 }
             })
-            .catch(error => {
-                console.error('Erro de rede:', error);
-                alert('Ocorreu um erro de comunicação. Tente novamente.');
-            });
+            .catch(error => console.error('Erro de rede:', error));
         });
     });
 
-    // --- LÓGICA PARA CONFIGURAÇÃO DE COLUNAS ---
-    const btnConfigurarColunas = document.getElementById('btnConfigurarColunas');
-    const configColunasModal = document.getElementById('configColunasModal');
+    // --- 8. LÓGICA PARA CONFIGURAÇÃO DE COLUNAS ---
     const checklistContainer = document.getElementById('colunas-checklist');
     const btnSalvarColunas = document.getElementById('btnSalvarColunas');
-
-    // Pega as variáveis enviadas pelo Python
     const todasAsColunas = {{ todas_as_colunas | tojson | safe }};
     const colunasVisiveis = {{ colunas_visiveis | tojson | safe }};
-
-// Popula o modal com os checkboxes
-todasAsColunas.forEach(coluna => {
-    const col_id = coluna[0];
-    const col_nome = coluna[1];
-    const isChecked = colunasVisiveis.includes(col_id);
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = `
-        <label>
-            <input type="checkbox" name="coluna_pref" value="${col_id}" ${isChecked ? 'checked' : ''}>
-            ${col_nome}
-        </label>
-    `;
-    checklistContainer.appendChild(wrapper);
-});
-    btnConfigurarColunas.addEventListener('click', () => {
-        configColunasModal.classList.add('active');
-    });
+    
+    if (checklistContainer.children.length === 0) {
+        todasAsColunas.forEach(coluna => {
+            const [col_id, col_nome] = coluna;
+            const isChecked = colunasVisiveis.includes(col_id);
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = `<label><input type="checkbox" name="coluna_pref" value="${col_id}" ${isChecked ? 'checked' : ''}> ${col_nome}</label>`;
+            checklistContainer.appendChild(wrapper);
+        });
+    }
 
     btnSalvarColunas.addEventListener('click', () => {
-        const checkboxes = document.querySelectorAll('#colunas-checklist input[type="checkbox"]:checked');
-        const colunasSelecionadas = Array.from(checkboxes).map(cb => cb.value);
-
+        const colunasSelecionadas = Array.from(checklistContainer.querySelectorAll('input:checked')).map(cb => cb.value);
         fetch("{{ url_for('save_column_prefs') }}", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -336,13 +327,13 @@ todasAsColunas.forEach(coluna => {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                // Recarrega a página para exibir a nova configuração de colunas
                 location.reload();
             } else {
                 alert('Erro ao salvar as preferências.');
             }
         });
     });
+
 });
 </script>
 {% endblock %}
