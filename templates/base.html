@@ -16,67 +16,60 @@
         <strong>INFORMAÇÃO DE DEBUG:</strong> | Tema: [{{ current_user.theme }}] | Fonte: [{{ current_user.font_size_preference }}] | Espaçamento: [{{ current_user.spacing_preference }}]
     </div>#}
 
-    
-    <button class="hamburger-menu" aria-label="Abrir menu">
-        <span class="hamburger-icon">&#9776;</span>
-        <span class="close-icon">&times;</span>
-    </button>
+    <nav>
+        <button class="hamburger-menu" aria-label="Abrir menu">
+            <span class="hamburger-icon">&#9776;</span>
+            <span class="close-icon">&times;</span>
+        </button>
 
-    <div id="nav-links-container">
-        <ul id="main-nav-menu">
-            {% if current_user.is_authenticated %}
-                <li class="nav-item">
-                    <a href="{{ url_for('index') }}" class="nav-link">Início</a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a href="#" class="nav-link dropbtn">Controle de Notas Fiscais</a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{{ url_for('controle_lista', filter_mode='pendentes') }}">Pendentes</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('controle_lista', filter_mode='concluidas') }}">Concluídas</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item dropdown">
-                    <a href="#" class="nav-link dropbtn">Controle de Pendências</a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{{ url_for('pendencias_lista', page_mode='geral') }}">Todas</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('pendencias_por_instrumento') }}">Por instrumento</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('pendencias_lista', page_mode='diversas') }}">Diversas</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('pendencias_lista', page_mode='concluidas') }}">Concluídas</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item dropdown">
-                    <a href="#" class="nav-link dropbtn">Cadastros</a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{{ url_for('instrumentos_contratuais', filtro='vigentes') }}">Instrumentos Contratuais</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('cadastros_documentacao') }}">Documentação</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('cadastros_situacao') }}">Situação</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item nav-item-right">
-                    <a href="{{ url_for('configuracoes') }}" class="nav-link">Configurações</a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a href="#" class="nav-link dropbtn">Temas</a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#" class="dropdown-item" data-theme="theme-light">Claro</a></li>
-                        <li><a href="#" class="dropdown-item" data-theme="theme-blue">Azul</a></li>
-                        <li><a href="#" class="dropdown-item" data-theme="theme-green">Verde</a></li>
-                        <li><a href="#" class="dropdown-item" data-theme="theme-pink">Rosa</a></li>
-                        <li><a href="#" class="dropdown-item" data-theme="theme-dark">Escuro</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ url_for('logout') }}" class="nav-link">Logout ({{ current_user.username }})</a>
-                </li>
-            {% endif %}
-        </ul>
-    </div>
-
-    <nav class="desktop-nav">
         <a href="{{ url_for('index') }}" class="nav-brand-container">
             <img src="{{ url_for('static', filename='images/favicon.png') }}" class="nav-icon">
         </a>
-        </nav>
+
+        <div id="nav-links-container">
+            <ul id="main-nav-menu">
+                {% if current_user.is_authenticated %}
+                    <li class="nav-item"><a href="{{ url_for('index') }}" class="nav-link">Início</a></li>
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropbtn">Controle de Notas Fiscais</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('controle_lista', filter_mode='pendentes') }}">Pendentes</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('controle_lista', filter_mode='concluidas') }}">Concluídas</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropbtn">Controle de Pendências</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('pendencias_lista', page_mode='geral') }}">Todas</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('pendencias_por_instrumento') }}">Por instrumento</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('pendencias_lista', page_mode='diversas') }}">Diversas</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('pendencias_lista', page_mode='concluidas') }}">Concluídas</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropbtn">Cadastros</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('instrumentos_contratuais', filtro='vigentes') }}">Instrumentos Contratuais</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('cadastros_documentacao') }}">Documentação</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('cadastros_situacao') }}">Situação</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item nav-item-right"><a href="{{ url_for('configuracoes') }}" class="nav-link">Configurações</a></li>
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropbtn">Temas</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" class="dropdown-item" data-theme="theme-light">Claro</a></li>
+                            <li><a href="#" class="dropdown-item" data-theme="theme-blue">Azul</a></li>
+                            <li><a href="#" class="dropdown-item" data-theme="theme-green">Verde</a></li>
+                            <li><a href="#" class="dropdown-item" data-theme="theme-pink">Rosa</a></li>
+                            <li><a href="#" class="dropdown-item" data-theme="theme-dark">Escuro</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item"><a href="{{ url_for('logout') }}" class="nav-link">Logout ({{ current_user.username }})</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
 
     <div class="nav-overlay"></div>
     <div class="flash-messages">
