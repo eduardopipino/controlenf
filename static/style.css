@@ -1249,7 +1249,6 @@ body.theme-dark #tabelaControle tbody tr.update-error {
 /* ====================================================================== */
 /* NAVEGAÇÃO E COMPONENTES (ESTILOS PADRÃO / DESKTOP)                   */
 /* ====================================================================== */
-
 nav {
     display: flex;
     align-items: center;
@@ -1293,7 +1292,6 @@ nav {
 /* ====================================================================== */
 /* ESTILOS DE RESPONSIVIDADE PARA TELAS PEQUENAS                        */
 /* ====================================================================== */
-
 @media (max-width: 768px) {
 
     /* Empurra o conteúdo para baixo para dar espaço à barra superior fixa */
@@ -1308,17 +1306,25 @@ nav {
         left: 0;
         width: 100%;
     }
-
-    /* Esconde a logo no celular para uma UI mais limpa */
+    
+    /* Esconde a logo no celular para uma UI mais limpa, como sugerido */
     .nav-brand-container {
         display: none;
     }
     
+    /* Esconde os links do desktop (eles estarão no painel) */
+    #nav-links-container {
+        display: none;
+    }
+
     /* Mostra e estiliza o botão hambúrguer */
     .hamburger-menu {
         display: flex;
-        width: 60px;
+        position: absolute; /* Relativo à <nav> fixa */
+        top: 0;
+        left: 0;
         height: 100%;
+        width: 60px;
         background: none;
         border: none;
         color: var(--text-secondary);
@@ -1332,9 +1338,8 @@ nav {
     body.nav-open .hamburger-menu .close-icon { display: block; }
     body.nav-open .hamburger-menu .hamburger-icon { display: none; }
 
-
-    /* O painel de menu deslizante */
-    #nav-links-container {
+    /* O painel de menu deslizante (usa o #nav-links-container) */
+    body.nav-open #nav-links-container {
         display: block;
         position: fixed;
         top: 0;
@@ -1343,18 +1348,15 @@ nav {
         height: 100%;
         background-color: var(--nav-bg-color);
         box-shadow: 2px 0 10px rgba(0,0,0,0.5);
-        transform: translateX(-100%);
+        transform: translateX(0);
         transition: transform 0.3s ease-in-out;
-        z-index: 1001; /* Abaixo do botão, acima do overlay */
-        padding-top: var(--height-nav); /* <<< CORREÇÃO: Empurra os links para baixo do botão */
+        z-index: 1001;
+        padding-top: var(--height-nav); /* Empurra os links para baixo da barra */
         box-sizing: border-box;
         overflow-y: auto;
     }
-    body.nav-open #nav-links-container {
-        transform: translateX(0);
-    }
-
-    /* Estiliza a lista e itens dentro do painel mobile */
+    
+    /* Estilos para a lista e itens dentro do painel mobile */
     #main-nav-menu {
         flex-direction: column;
         height: auto;
@@ -1363,6 +1365,15 @@ nav {
         width: 100%;
         height: auto;
     }
+
+    #main-nav-menu > li > a {
+        color: var(--text-secondary); 
+        padding: 15px 20px;
+        width: 100%;
+        box-sizing: border-box;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
     .nav-item-right {
         margin-left: 0 !important;
     }
@@ -1370,11 +1381,12 @@ nav {
         position: static;
         box-shadow: none;
         border-radius: 0;
-        background-color: rgba(0,0,0,0.2); /* <<< COR CORRETA PARA SUBMENU MOBILE ESCURO */
+        background-color: rgba(0,0,0,0.2); /* Fundo para submenu no tema escuro */
     }
-    /* <<< CORREÇÃO: Cor correta para submenu mobile em temas claros */
+    /* Cor de fundo para submenu nos temas claros */
     body:not(.theme-dark) .dropdown-menu {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: var(--secondary-color);
+        opacity: 0.8; /* Adiciona uma leve transparência para diferenciar */
     }
     
     /* O overlay de fundo */
@@ -1387,10 +1399,5 @@ nav {
     }
     body.nav-open .nav-overlay {
         display: block;
-    }
-
-    /* Corrige o posicionamento do Kebab para não ficar sobre o título */
-     .kebab-menu-container {
-        top: 10px;
     }
 }
