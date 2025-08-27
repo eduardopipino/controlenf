@@ -1289,6 +1289,64 @@ nav {
     display: none;
 }
 
+/* Por padrão, esconde ações de mobile e o botão de expandir card */
+.mobile-actions,
+.expand-card-btn {
+    display: none;
+}
+
+/* Estilos base do dropdown do menu kebab */
+.kebab-menu-dropdown {
+    display: none;
+    position: absolute;
+    top: 55px;
+    right: 15px;
+    background-color: var(--background-secondary);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px var(--shadow-base);
+    z-index: 998;
+    overflow: hidden;
+    min-width: 220px;
+}
+
+.kebab-menu-dropdown a {
+    display: block;
+    padding: 12px 20px;
+    color: var(--text-primary);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.kebab-menu-dropdown a:hover {
+    background-color: var(--secondary-color);
+}
+
+/* Estilos base do Botão Flutuante (FAB) */
+.fab {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 56px;
+    height: 56px;
+    background-color: var(--primary-color);
+    color: var(--text-secondary);
+    border-radius: 50%;
+    box-shadow: 0 4px 10px var(--shadow-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 300;
+    text-decoration: none;
+    z-index: 997;
+    transition: transform 0.2s ease-in-out;
+}
+
+.fab:hover {
+    transform: scale(1.05);
+    color: var(--text-secondary);
+}
+
 /* ====================================================================== */
 /* ESTILOS DE RESPONSIVIDADE PARA TELAS PEQUENAS                        */
 /* ====================================================================== */
@@ -1400,4 +1458,135 @@ nav {
     body.nav-open .nav-overlay {
         display: block;
     }
+
+    /* --- VISIBILIDADE DAS BARRAS DE AÇÃO --- */
+    .desktop-actions {
+        display: none; /* Esconde a barra de botões do desktop */
+    }
+
+    .mobile-actions {
+        display: block; /* Mostra os botões flutuantes do mobile */
+    }
+
+    /* --- ESTILOS PARA O MENU KEBAB (AÇÕES SECUNDÁRIAS NO MOBILE) --- */
+    .kebab-menu-container {
+        position: fixed;
+        /* Ajuste para ficar abaixo da barra de navegação */
+        top: calc(var(--height-nav) + 10px);
+        right: 15px;
+        z-index: 998;
+    }
+
+    .kebab-menu-button {
+        width: 48px;
+        height: 48px;
+        background-color: var(--primary-color);
+        border: none;
+        border-radius: 50%;
+        color: var(--text-secondary);
+        font-size: 28px;
+        font-weight: bold;
+        line-height: 1;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        transition: background-color 0.2s ease;
+        box-shadow: 0 2px 5px var(--shadow-base);
+    }
+    
+    .kebab-menu-button:hover, .kebab-menu-button:active {
+        background-color: var(--accent-color);
+    }
+
+    /* Ajuste para o Kebab no tema escuro */
+    body.theme-dark .kebab-menu-button {
+        background-color: var(--primary-color);
+    }
+    body.theme-dark .kebab-menu-button:hover, 
+    body.theme-dark .kebab-menu-button:active {
+        background-color: var(--accent-color);
+    }
+
+        /* --- TRANSFORMAÇÃO DA TABELA EM CARDS --- */
+    .responsive-card-table {
+        border: none;
+        box-shadow: none;
+        background-color: transparent;
+        margin-top: 0;
+    }
+    .responsive-card-table thead {
+        display: none;
+    }
+    .responsive-card-table tr {
+        display: block;
+        border: 1px solid var(--border-base);
+        border-radius: 8px;
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: var(--background-secondary);
+        box-shadow: 0 2px 5px var(--shadow-base);
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .responsive-card-table tr:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px var(--shadow-base);
+    }
+    body.theme-dark .responsive-card-table tr {
+        background-color: #181818;
+    }
+    /* Esconde a coluna do radio button no modo card */
+    .responsive-card-table td:first-child {
+        display: none;
+    }
+    .responsive-card-table td {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        text-align: right;
+        padding: 10px 0;
+        border-bottom: 1px dashed var(--border-base);
+        white-space: normal;
+        overflow-wrap: break-word;
+    }
+    .responsive-card-table td:last-child {
+        border-bottom: none;
+    }
+    .responsive-card-table td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        text-align: left;
+        padding-right: 15px;
+        color: var(--tertiary-color);
+    }
+    .responsive-card-table .celula-situacao {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .responsive-card-table .situacao-dropdown {
+        width: 100%;
+    }
+    
+    /* --- EXPANSÃO DOS CARDS --- */
+    .responsive-card-table td.col-detalhe {
+        display: none;
+    }
+    .responsive-card-table tr.card-expanded td.col-detalhe {
+        display: flex;
+    }
+    .expand-card-btn {
+        display: block;
+        width: 100%;
+        margin-top: 15px;
+        padding: 10px;
+        height: auto;
+        background-color: var(--secondary-color);
+        color: var(--text-primary);
+        font-weight: bold;
+        border: 1px solid var(--border-base);
+    }
+
 }
