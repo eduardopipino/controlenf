@@ -60,7 +60,7 @@
         <td data-label="Selecionar"><input type="radio" name="selected_controle" value="{{ controle._id }}"></td>
         
         {% set colunas_longas = ['objeto', 'item_descricao', 'documentacao', 'observacoes'] %}
-        {% set colunas_detalhe = ['tipo_documento', 'n_instrumento', 'documentacao', 'observacoes'] %}
+        {% set colunas_detalhe = ['tipo_documento', 'n_instrumento', 'nota_fiscal', 'carta_de_correcao', 'documentacao', 'observacoes'] %}
 
         {% for col_id, col_nome in todas_as_colunas %}
             {% if col_id in colunas_visiveis %}

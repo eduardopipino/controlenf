@@ -454,6 +454,12 @@ table {
     overflow-wrap: break-word !important;
 }
 
+/* Aumenta a largura mínima da coluna Situação (11ª coluna por padrão) */
+#tabelaControle th:nth-child(12),
+#tabelaControle td:nth-child(12) {
+    min-width: 200px;
+}
+
 th {
     background-color: var(--primary-color);
     color: var(--text-secondary);
@@ -1560,6 +1566,7 @@ nav {
         text-align: left;
         padding-right: 15px;
         color: var(--tertiary-color);
+        flex-shrink: 0; /* <<< ADICIONE ESTA LINHA */
     }
     .responsive-card-table .celula-situacao {
         flex-direction: column;
