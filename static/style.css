@@ -1549,9 +1549,9 @@ nav {
     }
     .responsive-card-table td {
         display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        text-align: right;
+        flex-direction: column;   /* <<< Empilha o rótulo e o valor */
+        align-items: flex-start; /* <<< Alinha ambos à esquerda */
+        text-align: left;        /* <<< Alinha o texto do valor à esquerda */
         padding: 10px 0;
         border-bottom: 1px dashed var(--border-base);
         white-space: normal;
@@ -1563,10 +1563,9 @@ nav {
     .responsive-card-table td::before {
         content: attr(data-label);
         font-weight: bold;
-        text-align: left;
-        padding-right: 15px;
         color: var(--tertiary-color);
-        flex-shrink: 0; /* <<< ADICIONE ESTA LINHA */
+        margin-bottom: 5px; /* Adiciona um pequeno espaço abaixo do rótulo */
+        text-align: left;
     }
     .responsive-card-table .celula-situacao {
         flex-direction: column;
