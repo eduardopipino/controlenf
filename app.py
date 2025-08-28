@@ -216,11 +216,18 @@ def get_controle_data(query_filter=None, sort_document=None):
         }},
         {'$unwind': {'path': '$instrumento_join', 'preserveNullAndEmptyArrays': True}},
         {'$addFields': {
-            'n_instrumento': {'$ifNull': ['$instrumento_join.n_instrumento', '$n_instrumento']},
-            'tipo_documento': {'$ifNull': ['$instrumento_join.tipo_documento', '$tipo_documento']},
-            'contratada': {'$ifNull': ['$instrumento_join.contratada', '$contratada']},
-            'objeto': {'$ifNull': ['$instrumento_join.objeto_resumido', '$objeto']},
-            'item_descricao': {'$ifNull': ['$item_join.descricao_item', '']}
+            # Envolvemos cada campo em um segundo $ifNull para garantir que o resultado final nunca seja nulo, e sim ""
+            'n_instrumento':  {'$ifNull': [{'$ifNull': ['$instrumento_join.n_instrumento', '$n_instrumento']}, ""]},
+            'tipo_documento': {'$ifNull': [{'$ifNull': ['$instrumento_join.tipo_documento', '$tipo_documento']}, ""]},
+            'contratada':     {'$ifNull': [{'$ifNull': ['$instrumento_join.contratada', '$contratada']}, ""]},
+            'objeto':         {'$ifNull': [{'$ifNull': ['$instrumento_join.objeto_resumido', '$objeto']}, ""]},
+            'item_descricao': {'$ifNull': ['$item_join.descricao_item', ""]},
+            
+            # <<< ADICIONAMOS OS CAMPOS DA TABELA CONTROLE PARA GARANTIR QUE NÃO SEJAM NULOS >>>
+            'nota_fiscal':      {'$ifNull': ['$nota_fiscal', ""]},
+            'referencia':       {'$ifNull': ['$referencia', ""]},
+            'observacoes':      {'$ifNull': ['$observacoes', ""]},
+            'documentacao':     {'$ifNull': ['$documentacao', []]} # Documentação deve ser uma lista vazia, não string
         }}
     ]
 

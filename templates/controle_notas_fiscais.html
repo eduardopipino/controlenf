@@ -76,7 +76,9 @@
                     </td>
                 {% else %}
                     <td data-label="{{ col_nome }}" class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }} {{ 'col-detalhe' if col_id in colunas_detalhe else '' }}">
-                        {{ controle[col_id] | join(', ') if col_id == 'documentacao' else controle[col_id] }}
+                        <span class="card-value">
+                            {{ controle[col_id] | join(', ') if col_id == 'documentacao' else controle[col_id] }}
+                        </span>
                     </td>
                 {% endif %}
 

@@ -1535,6 +1535,7 @@ nav {
         box-shadow: 0 2px 5px var(--shadow-base);
         cursor: pointer;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+        /*align-items: flex-start; /* <<<  */
     }
     .responsive-card-table tr:hover {
         transform: translateY(-3px);
@@ -1552,6 +1553,8 @@ nav {
         flex-direction: column;   /* <<< Empilha o rótulo e o valor */
         align-items: flex-start; /* <<< Alinha ambos à esquerda */
         text-align: left;        /* <<< Alinha o texto do valor à esquerda */
+        width: 100%;                  /* <<<  */
+        box-sizing: border-box;         /* <<< Garante que o padding não quebre o layout */
         padding: 10px 0;
         border-bottom: 1px dashed var(--border-base);
         white-space: normal;
@@ -1566,6 +1569,7 @@ nav {
         color: var(--tertiary-color);
         margin-bottom: 5px; /* Adiciona um pequeno espaço abaixo do rótulo */
         text-align: left;
+        padding-right: 0; /* Remove padding desnecessário */
     }
     .responsive-card-table .celula-situacao {
         flex-direction: column;
@@ -1594,5 +1598,9 @@ nav {
         font-weight: bold;
         border: 1px solid var(--border-base);
     }
-
+    /* Força o valor do card a crescer e ocupar o espaço disponível */
+    .responsive-card-table .card-value {
+        flex-grow: 1;
+        text-align: right;
+    }
 }
