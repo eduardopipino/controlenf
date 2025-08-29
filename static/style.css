@@ -1353,6 +1353,13 @@ nav {
     color: var(--text-secondary);
 }
 
+td .card-value {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    word-wrap: break-word; /* quebra texto longo */
+}
+
 /* ====================================================================== */
 /* ESTILOS DE RESPONSIVIDADE PARA TELAS PEQUENAS                        */
 /* ====================================================================== */
@@ -1535,7 +1542,7 @@ nav {
         box-shadow: 0 2px 5px var(--shadow-base);
         cursor: pointer;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
-        /*align-items: flex-start; /* <<<  */
+        /*  align-items: flex-start; /* <<<  */
     }
     .responsive-card-table tr:hover {
         transform: translateY(-3px);
@@ -1549,16 +1556,13 @@ nav {
         display: none;
     }
     .responsive-card-table td {
-        display: flex;
-        flex-direction: column;   /* <<< Empilha o rótulo e o valor */
-        align-items: flex-start; /* <<< Alinha ambos à esquerda */
-        text-align: left;        /* <<< Alinha o texto do valor à esquerda */
-        width: 100%;                  /* <<<  */
-        box-sizing: border-box;         /* <<< Garante que o padding não quebre o layout */
+        display: block; /* <<< Força o comportamento de um DIV */
+        width: 100% ;
+        box-sizing: border-box;
         padding: 10px 0;
         border-bottom: 1px dashed var(--border-base);
-        white-space: normal;
-        overflow-wrap: break-word;
+        text-align: left; /* Garante que o texto do valor comece à esquerda */
+        border-bottom: none !important;
     }
     .responsive-card-table td:last-child {
         border-bottom: none;
@@ -1567,9 +1571,9 @@ nav {
         content: attr(data-label);
         font-weight: bold;
         color: var(--tertiary-color);
-        margin-bottom: 5px; /* Adiciona um pequeno espaço abaixo do rótulo */
+        margin-bottom: 5px;
+        display: block; /* <<< Garante que o rótulo ocupe sua própria linha */
         text-align: left;
-        padding-right: 0; /* Remove padding desnecessário */
     }
     .responsive-card-table .celula-situacao {
         flex-direction: column;
@@ -1585,7 +1589,8 @@ nav {
         display: none;
     }
     .responsive-card-table tr.card-expanded td.col-detalhe {
-        display: flex;
+        display: block !important;   /* em vez de flex */
+        width: 100% !important;
     }
     .expand-card-btn {
         display: block;
@@ -1600,7 +1605,70 @@ nav {
     }
     /* Força o valor do card a crescer e ocupar o espaço disponível */
     .responsive-card-table .card-value {
-        flex-grow: 1;
-        text-align: right;
+        display: block;
+        width: 100% !important;
+        text-align: left;        /* fica mais legível em cards */
+        white-space: normal;     /* quebra linhas */
+        word-break: break-word;  /* não deixa palavras gigantes estourarem */
+    }
+    td, td .card-value {
+        width: 100% !important;
+    }
+    /* Anula o limite de largura da classe .coluna-texto-longo no modo card */
+    .responsive-card-table .coluna-texto-longo {
+        max-width: none;
+        min-width: 0;
+    }
+    /* 1) Garante que a linha e as células sejam blocos largura cheia */
+    .responsive-card-table tr,
+    .responsive-card-table td {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    float: none !important;
+    clear: both !important;
+    box-sizing: border-box;
+    }
+
+    /* 2) As colunas de detalhe (expandidas) devem ser bloco, não flex */
+    .responsive-card-table tr.card-expanded > td.col-detalhe {
+    display: block !important;
+    width: 100% !important;
+    }
+
+    /* 3) Qualquer conteúdo interno vira bloco largura cheia */
+    .responsive-card-table td > *,
+    .responsive-card-table td > * > * {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    float: none !important;
+    box-sizing: border-box;
+    }
+
+    /* 4) Rótulo em cima, valor embaixo, ambas 100% */
+    .responsive-card-table td::before {
+    display: block !important;
+    width: 100% !important;
+    margin-bottom: 6px;
+    white-space: normal !important;
+    }
+
+    .responsive-card-table .card-value {
+    display: block !important;
+    width: 100% !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;  /* quebra palavras grandes */
+    word-break: break-word;
+    text-align: left !important; /* evita “parecer” estreito à direita */
+    }
+
+    /* 5) Zera qualquer flex que tenha “sobrado” */
+    .responsive-card-table tr.card-expanded,
+    .responsive-card-table tr.card-expanded td,
+    .responsive-card-table tr.card-expanded td.col-detalhe {
+    flex: 0 0 auto !important;
     }
 }
