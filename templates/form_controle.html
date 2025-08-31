@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const wrapper = document.createElement('div');
                     wrapper.innerHTML = `
                         <label>
-                            <input type="checkbox" name="documentacao" value="${docName}" ${isChecked ? 'checked' : ''} disabled>
+                            <input type="checkbox" name="documentacao" value="${docName}" ${isChecked ? 'checked' : ''} ${isNewRecord ? '' : 'disabled'}>
                             ${docName}
                         </label>
                     `;
