@@ -1560,9 +1560,9 @@ td .card-value {
         width: 100% ;
         box-sizing: border-box;
         padding: 10px 0;
-        border-bottom: 1px dashed var(--border-base);
+        /*border-bottom: 1px dashed var(--border-base);*/
         text-align: left; /* Garante que o texto do valor comece à esquerda */
-        border-bottom: none !important;
+        border: none !important;
     }
     .responsive-card-table td:last-child {
         border-bottom: none;
@@ -1671,4 +1671,30 @@ td .card-value {
     .responsive-card-table tr.card-expanded td.col-detalhe {
     flex: 0 0 auto !important;
     }
+
+        /* === REFINAMENTOS FINAIS PARA O LAYOUT DOS CARDS === */
+
+    /* Força o esconderijo da primeira coluna (radio button) no modo card */
+    .responsive-card-table td:first-child {
+        display: none !important;
+    }
+
+    /* Esconde as colunas de detalhe por padrão */
+    .responsive-card-table td.col-detalhe {
+        display: none !important;
+    }
+
+    /* Mostra as colunas de detalhe quando o card está expandido */
+    .responsive-card-table tr.card-expanded td.col-detalhe {
+        display: block !important;
+    }
+
+    /* Garante que o botão de expandir só apareça no modo card */
+    .expand-card-btn {
+        display: block !important;
+    }
+    table.responsive-card-table td:last-of-type {
+        border-bottom: none !important; /* Remove a linha do botão "Ver mais" */
+    }
+
 }
