@@ -392,10 +392,54 @@ def register():
             flash('Email já registrado. Use outro ou faça login.', 'error')
             return render_template('register.html', form_data=request.form)
         hashed_password = generate_password_hash(password)
-        users_collection.insert_one({
+        
+        '''users_collection.insert_one({
+            'username': username, 'email': email,
+            'password_hash': hashed_password, 'theme': 'theme-blue'
+        })'''
+
+        # <<< INÍCIO DO NOVO BLOCO DE CÓDIGO PARA DADOS PADRÃO >>>
+
+        # Capturamos o resultado para obter o ID
+        result = users_collection.insert_one({
             'username': username, 'email': email,
             'password_hash': hashed_password, 'theme': 'theme-blue'
         })
+        novo_user_id = result.inserted_id
+
+        # Agora, usamos o ID para inserir os dados padrão
+
+        # 1. Inserir Documentos Padrão
+        documentos_padrao = [
+            "Relatório", "TRP", "Relatório de Conformidade/Inconformidade", "TRD",
+            "Certificado de garantia", "Planilhas", "Boleto", "Declaração IN 1234/2012",
+            "ART", "Trabalhista/Previdenciária", "Certificado de curso"
+        ]
+        docs_para_inserir = [{'nome': nome, 'user_id': novo_user_id} for nome in documentos_padrao]
+        if docs_para_inserir:
+            documentacao_tipos_collection.insert_many(docs_para_inserir)
+
+        # 2. Inserir Situações Padrão
+        situacoes_padrao = [
+            {'n': 'Conferência Relatório', 'c': '#c6e7fb', 'ce': '#0040ff', 'a': False},
+            {'n': 'Emissão de Termos',     'c': '#feffc7', 'ce': '#d1c000', 'a': False},
+            {'n': 'Fazer',                 'c': '#d1ffd9', 'ce': '#00bd1f', 'a': False},
+            {'n': 'Aguardar',              'c': '#d6d9ff', 'ce': '#7300ff', 'a': False},
+            {'n': 'Liquidação',            'c': '#ffdbb3', 'ce': '#ff8800', 'a': False},
+            {'n': 'Cobrar',                'c': '#ffc2b3', 'ce': '#ff0000', 'a': False},
+            {'n': 'Cancelado',             'c': '#c7c7c7', 'ce': '#3d3d3d', 'a': True},
+            {'n': 'Financeiro',            'c': '#c2c2c2', 'ce': '#636363', 'a': True}
+        ]
+        situacoes_para_inserir = [{
+            'situacao': s['n'], 'cor': s['c'], 'cor_tema_escuro': s['ce'],
+            'arquiva_registro': s['a'], 'user_id': novo_user_id
+        } for s in situacoes_padrao]
+        if situacoes_para_inserir:
+            situacao_collection.insert_many(situacoes_para_inserir)
+            
+        # <<< FIM DO NOVO BLOCO DE CÓDIGO >>>
+
+
         flash('Cadastro realizado com sucesso! Faça login para continuar.', 'success')
         return redirect(url_for('login'))
     return render_template('register.html', form_data={})
@@ -825,7 +869,6 @@ def get_color_map_for_user():
     Função auxiliar para criar um mapa de Situação -> Cor,
     considerando o tema ativo do usuário.
     """
-    # Busca também o novo campo de cor para o tema escuro
     situacoes = situacao_collection.find(
         {'user_id': ObjectId(current_user.id)}, 
         {'situacao': 1, 'cor': 1, 'cor_tema_escuro': 1}
@@ -838,10 +881,16 @@ def get_color_map_for_user():
         situacao_nome = s['situacao']
         
         if is_dark_theme:
-            # Se o tema for escuro, usa a cor específica (com fallback para a cor padrão)
-            color_map[situacao_nome] = s.get('cor_tema_escuro') or s.get('cor', '#3a3a3a')
+            # Tenta pegar a cor específica do tema escuro.
+            dark_color = s.get('cor_tema_escuro')
+            # Se uma cor escura foi definida E não é uma string vazia, use-a.
+            if dark_color:
+                color_map[situacao_nome] = dark_color
+            # Caso contrário, use uma cor escura PADRÃO, nunca a cor do tema claro.
+            else:
+                color_map[situacao_nome] = '#3a3a3a' # Um cinza escuro seguro
         else:
-            # Para outros temas, usa a cor padrão
+            # Para outros temas, a lógica continua a mesma.
             color_map[situacao_nome] = s.get('cor', '#ffffff')
             
     return color_map
