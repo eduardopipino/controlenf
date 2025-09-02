@@ -992,7 +992,6 @@ def pendencias_lista(page_mode="geral"):
     # Define o filtro base
     query_filter = {'user_id': ObjectId(current_user.id)}
     
-    # Unifica a lógica do filtro
     if page_mode == 'concluidas':
         query_filter['status'] = 'Concluído'
     elif page_mode == 'diversas':
@@ -1000,7 +999,7 @@ def pendencias_lista(page_mode="geral"):
         query_filter['instrumento_id'] = {'$in': [None, '']}
     else: # modo 'geral'
         query_filter['status'] = 'Pendente'
-        page_mode = 'geral' # Garante um valor padrão
+        page_mode = 'geral'
     
     # Adiciona filtros da URL (via GET)
     filter_values = {}
@@ -1025,15 +1024,21 @@ def pendencias_lista(page_mode="geral"):
     for p in lista_pendencias:
         p['vencido'] = p.get('prazo') and p.get('prazo') < hoje
 
-    colunas_visiveis = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
+    # <<< INÍCIO DA NOVA LÓGICA DE FILTRO DE COLUNAS >>>
+    colunas_para_exibir = TODAS_AS_COLUNAS_PENDENCIAS
+    if page_mode == 'diversas':
+        colunas_a_remover = ['instrumento_display', 'contratada']
+        colunas_para_exibir = [col for col in colunas_para_exibir if col[0] not in colunas_a_remover]
+    # <<< FIM DA NOVA LÓGICA >>>
+
+    colunas_visiveis = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in colunas_para_exibir])
     
-    # <<< ALTERAÇÃO PRINCIPAL: Renderiza sempre o mesmo template >>>
     return render_template(
         'pendencias_geral.html',
         pendencias=lista_pendencias,
         sort_by=sort_by, order=order,
         filter_values=filter_values,
-        todas_as_colunas=TODAS_AS_COLUNAS_PENDENCIAS,
+        todas_as_colunas=colunas_para_exibir,
         colunas_visiveis=colunas_visiveis,
         page_mode=page_mode
     )
