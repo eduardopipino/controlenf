@@ -55,12 +55,9 @@
         </thead>
         <tbody>
             {% for p in pendencias %}
-            <tr class="{{ 'pendencia-vencida' if p.vencido else '' }}" data-url="{{ url_for('detalhes_pendencia', pendencia_id=p._id, origem=request.path) }}">
-                
+            <tr class="clickable-row {{ 'pendencia-vencida' if p.vencido else '' }}" data-url="{{ url_for('detalhes_pendencia', pendencia_id=p._id, origem=request.path) }}">
                 <td data-label="Selecionar"><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
-                
                 {% set colunas_detalhe = ['instrumento_display', 'contratada', 'observacoes'] %}
-
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
                         <td data-label="{{ col_nome }}" class="{{ 'col-detalhe' if col_id in colunas_detalhe else '' }}">
