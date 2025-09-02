@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Pendências - {% if page_mode == 'concluidas' %}Concluídas{% else %}Todas{% endif %}</h2>
+    <h2>Pendências - {% if page_mode == 'concluidas' %}Concluídas{% elif page_mode == 'diversas' %}Diversas{% else %}Todas{% endif %}</h2>
 
     <div class="button-toolbar">
         <div class="toolbar-group-left">

@@ -991,14 +991,13 @@ def controle_lista(filter_mode):
 def pendencias_lista(page_mode="geral"):
     # Define o filtro base
     query_filter = {'user_id': ObjectId(current_user.id)}
-    template_a_renderizar = 'pendencias_geral.html'
     
+    # Unifica a lógica do filtro
     if page_mode == 'concluidas':
         query_filter['status'] = 'Concluído'
     elif page_mode == 'diversas':
         query_filter['status'] = 'Pendente'
         query_filter['instrumento_id'] = {'$in': [None, '']}
-        template_a_renderizar = 'pendencias_diversos.html' # Ainda usa o template antigo se quiser
     else: # modo 'geral'
         query_filter['status'] = 'Pendente'
         page_mode = 'geral' # Garante um valor padrão
@@ -1028,8 +1027,9 @@ def pendencias_lista(page_mode="geral"):
 
     colunas_visiveis = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
     
+    # <<< ALTERAÇÃO PRINCIPAL: Renderiza sempre o mesmo template >>>
     return render_template(
-        template_a_renderizar,
+        'pendencias_geral.html',
         pendencias=lista_pendencias,
         sort_by=sort_by, order=order,
         filter_values=filter_values,

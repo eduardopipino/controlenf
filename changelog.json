@@ -1,5 +1,10 @@
 [
   {
+    "versao": "1.7",
+    "data": "xx/09/2025",
+    "descricao": "Melhorias de desempenho..."
+  },
+  {
     "versao": "1.6",
     "data": "01/09/2025",
     "descricao": "Implementação de responsividade em Controle de Notas Fiscais e outros ajustes."
