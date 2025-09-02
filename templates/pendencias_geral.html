@@ -3,7 +3,7 @@
 {% block content %}
     <h2>Pendências - {% if page_mode == 'concluidas' %}Concluídas{% elif page_mode == 'diversas' %}Diversas{% else %}Todas{% endif %}</h2>
 
-    <div class="button-toolbar">
+    <div class="button-toolbar desktop-actions">
         <div class="toolbar-group-left">
             <button id="btnFiltro">Filtro...</button>
             <button id="btnConfigurarColunas">Configurar Colunas</button>
@@ -12,7 +12,6 @@
             {% else %}
                 <a href="{{ url_for('exportar_pendencias_pendentes_csv') }}" class="button">Exportar Pendentes</a>
             {% endif %}
-
         </div>
         <div class="toolbar-group-center">
             <button id="btnDetalhes" disabled>Detalhes...</button>
@@ -21,19 +20,34 @@
             <a href="{{ url_for('nova_pendencia', origem=request.path) }}" class="button">Novo</a>
         </div>
     </div>
+
+    <div class="mobile-actions">
+        <a href="{{ url_for('nova_pendencia', origem=request.path) }}" class="fab" title="Nova Pendência">+</a>
+        <div class="kebab-menu-container">
+            <button id="btnKebab" class="kebab-menu-button">&#8942;</button>
+            <div class="kebab-menu-dropdown">
+                <a href="#" id="btnFiltroMobile">Filtrar...</a>
+                <a href="#" id="btnConfigurarColunasMobile">Configurar Colunas</a>
+                
+                {% if page_mode == 'concluidas' %}
+                    <a href="{{ url_for('exportar_pendencias_concluidas_csv') }}">Exportar Concluídas</a>
+                {% else %}
+                    <a href="{{ url_for('exportar_pendencias_pendentes_csv') }}">Exportar Pendentes</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
     <br>
 
-    <table border="1" id="tabelaPendencias">
+    <table border="1" id="tabelaPendencias" class="responsive-card-table">
         <thead>
             <tr>
                 <th></th>
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
                         <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
-                            <a href="{{ url_for(request.endpoint, page_mode=page_mode, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc') }}">
-                                {{ col_nome }}
-                                {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}
-                            </a>
+                            <a href="{{ url_for(request.endpoint, page_mode=page_mode, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc') }}">{{ col_nome }} {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}</a>
                         </th>
                     {% endif %}
                 {% endfor %}
@@ -41,21 +55,29 @@
         </thead>
         <tbody>
             {% for p in pendencias %}
-            <tr class="clickable-row {{ 'pendencia-vencida' if p.vencido else '' }}">
-                <td><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
+            <tr class="{{ 'pendencia-vencida' if p.vencido else '' }}" data-url="{{ url_for('detalhes_pendencia', pendencia_id=p._id, origem=request.path) }}">
+                
+                <td data-label="Selecionar"><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
+                
+                {% set colunas_detalhe = ['instrumento_display', 'contratada', 'observacoes'] %}
+
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
-                        {% if col_id == 'prazo' %}
-                            <td>{{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}</td>
-                        {% else %}
-                            <td class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">{{ p[col_id] or '' }}</td>
-                        {% endif %}
+                        <td data-label="{{ col_nome }}" class="{{ 'col-detalhe' if col_id in colunas_detalhe else '' }}">
+                            {% if col_id == 'prazo' %}
+                                {{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}
+                            {% else %}
+                                {{ p[col_id] or '' }}
+                            {% endif %}
+                        </td>
                     {% endif %}
                 {% endfor %}
+
+                <td><button class="expand-card-btn">Ver mais</button></td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="{{ colunas_visiveis|length + 1 }}">Nenhuma pendência encontrada.</td>
+                <td colspan="{{ colunas_visiveis|length + 2 }}">Nenhuma pendência encontrada.</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -110,32 +132,69 @@
 {% block page_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Lógica para Tabela Clicável e Botão Detalhes
-    initializeClickableTable(
-        'tabelaPendencias', 'selected_pendencia', 'btnDetalhes',
-        "{{ url_for('detalhes_pendencia', pendencia_id='REPLACE_ID', origem=request.path) }}"
-    );
 
-    // Lógica para Modais (Filtro e Configurar Colunas)
-    const modals = {
-        'btnFiltro': 'filterModal',
-        'btnConfigurarColunas': 'configColunasModal'
-    };
-    for (const [btnId, modalId] of Object.entries(modals)) {
-        const btn = document.getElementById(btnId);
-        const modal = document.getElementById(modalId);
-        if (btn && modal) {
-            btn.addEventListener('click', () => modal.classList.add('active'));
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) modal.classList.remove('active');
+    // --- LÓGICA DE MODAIS ---
+    // (Seu código original para abrir e fechar os modais)
+    const filterModal = document.getElementById('filterModal');
+    const configColunasModal = document.getElementById('configColunasModal');
+
+    // Liga os botões do desktop e do mobile (que você adicionou no Passo 1) aos seus modais
+    document.getElementById('btnFiltro')?.addEventListener('click', () => filterModal.classList.add('active'));
+    document.getElementById('btnFiltroMobile')?.addEventListener('click', () => filterModal.classList.add('active'));
+    document.getElementById('btnConfigurarColunas')?.addEventListener('click', () => configColunasModal.classList.add('active'));
+    document.getElementById('btnConfigurarColunasMobile')?.addEventListener('click', () => configColunasModal.classList.add('active'));
+
+    // Lógica para fechar os modais (clicando fora ou no botão Cancelar)
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.classList.remove('active');
+        });
+        modal.querySelectorAll('.btn-cancel-modal').forEach(cancelBtn => {
+            cancelBtn.addEventListener('click', () => modal.classList.remove('active'));
+        });
+    });
+
+    // --- LÓGICA RESPONSIVA (DESKTOP vs MOBILE) ---
+    if (window.innerWidth > 768) {
+        // MODO DESKTOP: Inicia a tabela com seleção por radio button
+        initializeClickableTable('tabelaPendencias', 'selected_pendencia', 'btnDetalhes', "{{ url_for('detalhes_pendencia', pendencia_id='REPLACE_ID', origem=request.path) }}");
+    } else {
+        // MODO MOBILE: Transforma cada card em um link para a página de detalhes
+        document.querySelectorAll('.responsive-card-table tr[data-url]').forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Navega apenas se o clique NÃO for em um elemento interativo dentro do card
+                if (!e.target.closest('.expand-card-btn, input')) {
+                    window.location.href = this.dataset.url;
+                }
             });
-            modal.querySelectorAll('.btn-cancel-modal').forEach(cancelBtn => {
-                cancelBtn.addEventListener('click', () => modal.classList.remove('active'));
-            });
-        }
+        });
     }
 
-    // Lógica para Configuração de Colunas
+    // --- LÓGICA PARA EXPANDIR CARDS (MOBILE) ---
+    document.querySelectorAll('.expand-card-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation(); // Impede que o clique no botão acione o clique do card
+            const card = this.closest('tr');
+            card.classList.toggle('card-expanded');
+            this.textContent = card.classList.contains('card-expanded') ? 'Ver menos' : 'Ver mais';
+        });
+    });
+
+    // --- LÓGICA DO MENU KEBAB (MOBILE) ---
+    const kebabButton = document.getElementById('btnKebab');
+    const kebabDropdown = document.querySelector('.kebab-menu-dropdown');
+    if (kebabButton) {
+        kebabButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            kebabDropdown.style.display = kebabDropdown.style.display === 'block' ? 'none' : 'block';
+        });
+        // Fecha o menu se clicar em qualquer outro lugar da página
+        document.addEventListener('click', () => {
+            if (kebabDropdown) kebabDropdown.style.display = 'none';
+        });
+    }
+
+    // --- LÓGICA EXISTENTE PARA CONFIGURAÇÃO DE COLUNAS E FILTRO ---
     const checklistContainer = document.getElementById('colunas-checklist');
     const btnSalvarColunas = document.getElementById('btnSalvarColunas');
     if (checklistContainer && btnSalvarColunas) {
@@ -168,11 +227,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Lógica para o novo botão Limpar Filtro
     const btnLimparFiltro = document.getElementById('btnLimparFiltro');
     if (btnLimparFiltro) {
         btnLimparFiltro.addEventListener('click', () => {
-            // A nova rota unificada simplifica esta lógica
             const targetUrl = "{{ url_for('pendencias_lista', page_mode=page_mode) }}";
             window.location.href = targetUrl;
         });
