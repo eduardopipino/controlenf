@@ -1560,9 +1560,11 @@ td .card-value {
         width: 100% ;
         box-sizing: border-box;
         padding: 10px 0;
-        /*border-bottom: 1px dashed var(--border-base);*/
         text-align: left; /* Garante que o texto do valor comece à esquerda */
         border: none !important;
+        overflow-wrap: break-word;
+        word-break: break-word; 
+
     }
     .responsive-card-table td:last-child {
         border-bottom: none;
@@ -1603,15 +1605,7 @@ td .card-value {
         font-weight: bold;
         border: 1px solid var(--border-base);
     }
-    /* Força o valor do card a crescer e ocupar o espaço disponível */
-    .responsive-card-table .card-value {
-        display: block;
-        width: 100% !important;
-        text-align: left;        /* fica mais legível em cards */
-        white-space: normal;     /* quebra linhas */
-        word-break: break-word;  /* não deixa palavras gigantes estourarem */
-    }
-    td, td .card-value {
+     td, td .card-value {
         width: 100% !important;
     }
     /* Anula o limite de largura da classe .coluna-texto-longo no modo card */
@@ -1656,13 +1650,15 @@ td .card-value {
     white-space: normal !important;
     }
 
+    /* Regra final e unificada para o VALOR dentro dos cards */
     .responsive-card-table .card-value {
-    display: block !important;
-    width: 100% !important;
-    white-space: normal !important;
-    overflow-wrap: anywhere;  /* quebra palavras grandes */
-    word-break: break-word;
-    text-align: left !important; /* evita “parecer” estreito à direita */
+        display: block !important;      /* Garante que o valor se comporte como um bloco */
+        width: 100% !important;         /* Garante que ocupe toda a largura */
+        box-sizing: border-box;         /* Garante que o padding não afete a largura */
+        white-space: normal !important; /* ESSENCIAL para permitir a quebra de linha */
+        overflow-wrap: break-word;      /* Quebra palavras longas para não estourarem o layout */
+        word-break: break-word;         /* Garante a quebra em todos os cenários */
+        text-align: left !important;      /* Garante o alinhamento correto do texto */
     }
 
     /* 5) Zera qualquer flex que tenha “sobrado” */
@@ -1672,7 +1668,7 @@ td .card-value {
     flex: 0 0 auto !important;
     }
 
-        /* === REFINAMENTOS FINAIS PARA O LAYOUT DOS CARDS === */
+    /* === REFINAMENTOS FINAIS PARA O LAYOUT DOS CARDS === */
 
     /* Força o esconderijo da primeira coluna (radio button) no modo card */
     .responsive-card-table td:first-child {
