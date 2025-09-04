@@ -35,92 +35,116 @@
         </div>
     {% else %}
         {% for grupo in grupos %}
-            <div class="container container-darker" style="margin-bottom: 20px;">
-                <div class="info-display-box" style="margin-bottom: 20px; padding: 10px;">
-                    <p><strong>Nº Instrumento Contratual:</strong> {{ grupo.detalhes_instrumento.tipo_documento or '' }} Nº {{ grupo.detalhes_instrumento.n_instrumento or '' }}</p>
-                    <p><strong>Contratada/Fornecedora:</strong> {{ grupo.detalhes_instrumento.contratada or '' }}</p>
-                    <p><strong>Objeto:</strong> {{ grupo.detalhes_instrumento.objeto_resumido or '' }}</p>
-                </div>
-
-                {% if grupo.pendencias_vencidas or grupo.pendencias_a_vencer %}
-                    <h4>Pendências com Prazo</h4>
-                    <table border="1" style="width: 100%;">
-                        <thead><tr><th></th><th>Pendência</th><th>Prazo</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr></thead>
-                        <tbody>
-                            {% for p in grupo.pendencias_vencidas %}
-                            <tr class="clickable-row pendencia-vencida">
-                                <td><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
-                                <td>{{ p.pendencia or '' }}</td><td>{{ p.prazo.strftime('%d/%m/%Y') }}</td><td>{{ p.responsavel or '' }}</td><td>{{ p.situacao or '' }}</td><td>{{ p.observacoes or '' }}</td>
-                            </tr>
-                            {% endfor %}
-                            {% for p in grupo.pendencias_a_vencer %}
-                            <tr class="clickable-row">
-                                <td><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
-                                <td>{{ p.pendencia or '' }}</td><td>{{ p.prazo.strftime('%d/%m/%Y') }}</td><td>{{ p.responsavel or '' }}</td><td>{{ p.situacao or '' }}</td><td>{{ p.observacoes or '' }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                {% endif %}
-
-                {% if grupo.pendencias_sem_prazo %}
-                    <h4 style="margin-top: 15px;">Pendências Sem Prazo</h4>
-                    <table border="1" style="width: 100%;">
-                        <thead><tr><th></th><th>Pendência</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr></thead>
-                        <tbody>
-                            {% for p in grupo.pendencias_sem_prazo %}
-                            <tr class="clickable-row">
-                                <td><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
-                                <td>{{ p.pendencia or '' }}</td><td>{{ p.responsavel or '' }}</td><td>{{ p.situacao or '' }}</td><td>{{ p.observacoes or '' }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                {% endif %}
+        <div class="container container-darker" style="margin-bottom: 20px;">
+            <div class="info-display-box" style="margin-bottom: 20px; padding: 10px;">
+                <p><strong>Nº Instrumento Contratual:</strong> {{ grupo.detalhes_instrumento.tipo_documento or '' }} Nº {{ grupo.detalhes_instrumento.n_instrumento or '' }}</p>
+                <p><strong>Contratada/Fornecedora:</strong> {{ grupo.detalhes_instrumento.contratada or '' }}</p>
+                <p><strong>Objeto:</strong> {{ grupo.detalhes_instrumento.objeto_resumido or '' }}</p>
             </div>
+
+            {% if grupo.pendencias_vencidas or grupo.pendencias_a_vencer %}
+                <h4>Pendências com Prazo</h4>
+                <table class="responsive-card-table">
+                    <thead>
+                        <tr><th></th><th>Pendência</th><th>Prazo</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for p in grupo.pendencias_vencidas %}
+                        <tr class="clickable-row pendencia-vencida" data-url="{{ url_for('detalhes_pendencia', pendencia_id=p._id) }}">
+                            <td data-label="Selecionar"><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
+                            <td data-label="Pendência"><span class="card-value">{{ p.pendencia or '' }}</span></td>
+                            <td data-label="Prazo"><span class="card-value">{{ p.prazo.strftime('%d/%m/%Y') }}</span></td>
+                            <td data-label="Responsável"><span class="card-value">{{ p.responsavel or '' }}</span></td>
+                            <td data-label="Situação"><span class="card-value">{{ p.situacao or '' }}</span></td>
+                            <td data-label="Observações"><span class="card-value">{{ p.observacoes or '' }}</span></td>                        </tr>
+                        {% endfor %}
+                        {% for p in grupo.pendencias_a_vencer %}
+                        <tr class="clickable-row" data-url="{{ url_for('detalhes_pendencia', pendencia_id=p._id) }}">
+                            <td data-label="Selecionar"><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
+                            <td data-label="Pendência"><span class="card-value">{{ p.pendencia or '' }}</span></td>
+                            <td data-label="Prazo"><span class="card-value">{{ p.prazo.strftime('%d/%m/%Y') }}</span></td>
+                            <td data-label="Responsável"><span class="card-value">{{ p.responsavel or '' }}</span></td>
+                            <td data-label="Situação"><span class="card-value">{{ p.situacao or '' }}</span></td>
+                            <td data-label="Observações"><span class="card-value">{{ p.observacoes or '' }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+
+            {% if grupo.pendencias_sem_prazo %}
+                <h4 style="margin-top: 15px;">Pendências Sem Prazo</h4>
+                <table class="responsive-card-table">
+                    <thead>
+                        <tr><th></th><th>Pendência</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for p in grupo.pendencias_sem_prazo %}
+                        <tr class="clickable-row" data-url="{{ url_for('detalhes_pendencia', pendencia_id=p._id) }}">
+                            <td data-label="Selecionar"><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
+                            <td data-label="Pendência"><span class="card-value">{{ p.pendencia or '' }}</span></td>
+                            <td data-label="Responsável"><span class="card-value">{{ p.responsavel or '' }}</span></td>
+                            <td data-label="Situação"><span class="card-value">{{ p.situacao or '' }}</span></td>
+                            <td data-label="Observações"><span class="card-value">{{ p.observacoes or '' }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
         {% endfor %}
     {% endif %}
+
 {% endblock %}
 
 
 {% block page_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // SCRIPT COMPLETO PARA HABILITAR SELEÇÃO E BOTÃO DE DETALHES
-    const btnDetalhes = document.getElementById('btnDetalhes');
-    
-    // Desmarca todos os outros radios quando um é clicado
-    function uncheckOthers(clickedRadio) {
+    // Lógica que decide qual interatividade aplicar com base no tamanho da tela
+    if (window.innerWidth > 768) {
+        // MODO DESKTOP: Habilita a seleção de linha na tabela
+        const btnDetalhes = document.getElementById('btnDetalhes');
+        
+        function uncheckOthers(clickedRadio) {
+            document.querySelectorAll('input[name="selected_pendencia"]').forEach(radio => {
+                if (radio !== clickedRadio) { radio.checked = false; }
+            });
+        }
+
         document.querySelectorAll('input[name="selected_pendencia"]').forEach(radio => {
-            if (radio !== clickedRadio) {
-                radio.checked = false;
-            }
+            radio.addEventListener('change', function() {
+                if (this.checked) {
+                    uncheckOthers(this);
+                    btnDetalhes.disabled = false;
+                    btnDetalhes.onclick = () => {
+                        const selectedId = this.value;
+                        window.location.href = "{{ url_for('detalhes_pendencia', pendencia_id='REPLACE_ID', origem=request.path) }}".replace('REPLACE_ID', selectedId);
+                    };
+                }
+            });
+        });
+
+        document.querySelectorAll('.clickable-row').forEach(row => {
+            row.addEventListener('click', () => {
+                const radioButton = row.querySelector('input[type="radio"]');
+                if (radioButton) {
+                    radioButton.checked = true;
+                    radioButton.dispatchEvent(new Event('change', { 'bubbles': true }));
+                }
+            });
+        });
+    } else {
+        // MODO MOBILE: Transforma cada card (linha da tabela) em um link
+        document.querySelectorAll('tr[data-url]').forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Navega apenas se o clique não for em um input ou link dentro do card
+                if (!e.target.closest('input, a')) {
+                    window.location.href = this.dataset.url;
+                }
+            });
         });
     }
-
-    document.querySelectorAll('input[name="selected_pendencia"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            if (this.checked) {
-                uncheckOthers(this); // Garante que só um fique marcado na página inteira
-                btnDetalhes.disabled = false;
-                btnDetalhes.onclick = () => {
-                    const selectedId = this.value;
-                    window.location.href = "{{ url_for('detalhes_pendencia', pendencia_id='REPLACE_ID', origem=request.path) }}".replace('REPLACE_ID', selectedId);
-                };
-            }
-        });
-    });
-
-    document.querySelectorAll('.clickable-row').forEach(row => {
-        row.addEventListener('click', () => {
-            const radioButton = row.querySelector('input[type="radio"]');
-            if (radioButton) {
-                radioButton.checked = true;
-                const event = new Event('change', { 'bubbles': true });
-                radioButton.dispatchEvent(event);
-            }
-        });
-    });
 });
 </script>
 {% endblock %}
