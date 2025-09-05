@@ -3,9 +3,7 @@
 {% block content %}
     <h2>Pendências por Instrumento Contratual</h2>
 
-    <div class="button-toolbar">
-        <div class="toolbar-group-left">
-             </div>
+    <div class="button-toolbar desktop-actions">
         <div class="toolbar-group-center">
             <button id="btnDetalhes" disabled>Detalhes...</button>
         </div>
@@ -13,6 +11,9 @@
             <a href="{{ url_for('nova_pendencia', origem=request.path) }}" class="button">Novo</a>
         </div>
     </div>
+        <div class="mobile-actions">
+            <a href="{{ url_for('nova_pendencia', origem=request.path) }}" class="fab" title="Novo">+</a>
+        </div>
     <br>
 
     <div class="container container-darker" style="margin-bottom: 20px; padding: 15px;">
@@ -43,7 +44,7 @@
             </div>
 
             {% if grupo.pendencias_vencidas or grupo.pendencias_a_vencer %}
-                <h4>Pendências com Prazo</h4>
+                <h4 class="pendencia-categoria-titulo">Pendências com Prazo</h4>
                 <table class="responsive-card-table">
                     <thead>
                         <tr><th></th><th>Pendência</th><th>Prazo</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr>
@@ -56,7 +57,8 @@
                             <td data-label="Prazo"><span class="card-value">{{ p.prazo.strftime('%d/%m/%Y') }}</span></td>
                             <td data-label="Responsável"><span class="card-value">{{ p.responsavel or '' }}</span></td>
                             <td data-label="Situação"><span class="card-value">{{ p.situacao or '' }}</span></td>
-                            <td data-label="Observações"><span class="card-value">{{ p.observacoes or '' }}</span></td>                        </tr>
+                            <td data-label="Observações"><span class="card-value">{{ p.observacoes or '' }}</span></td>
+                        </tr>
                         {% endfor %}
                         {% for p in grupo.pendencias_a_vencer %}
                         <tr class="clickable-row" data-url="{{ url_for('detalhes_pendencia', pendencia_id=p._id) }}">
@@ -73,7 +75,7 @@
             {% endif %}
 
             {% if grupo.pendencias_sem_prazo %}
-                <h4 style="margin-top: 15px;">Pendências Sem Prazo</h4>
+                <h4 class="pendencia-categoria-titulo">Pendências Sem Prazo</h4>
                 <table class="responsive-card-table">
                     <thead>
                         <tr><th></th><th>Pendência</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr>
@@ -103,7 +105,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Lógica que decide qual interatividade aplicar com base no tamanho da tela
     if (window.innerWidth > 768) {
-        // MODO DESKTOP: Habilita a seleção de linha na tabela
+        // --- MODO DESKTOP: Habilita a seleção de linha na tabela ---
         const btnDetalhes = document.getElementById('btnDetalhes');
         
         function uncheckOthers(clickedRadio) {
@@ -134,8 +136,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
+
     } else {
-        // MODO MOBILE: Transforma cada card (linha da tabela) em um link
+        // --- MODO MOBILE: Transforma cada card (linha da tabela) em um link ---
         document.querySelectorAll('tr[data-url]').forEach(card => {
             card.addEventListener('click', function(e) {
                 // Navega apenas se o clique não for em um input ou link dentro do card
