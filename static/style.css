@@ -1360,6 +1360,12 @@ td .card-value {
     word-wrap: break-word; /* quebra texto longo */
 }
 
+/* Esconde a última coluna (que contém o botão "Ver mais") na tabela do desktop */
+#tabelaControle th:last-child,
+#tabelaControle tbody td:last-child {
+    display: none;
+}
+
 /* ====================================================================== */
 /* ESTILOS DE RESPONSIVIDADE PARA TELAS PEQUENAS                        */
 /* ====================================================================== */
@@ -1692,6 +1698,10 @@ td .card-value {
     table.responsive-card-table td:last-of-type {
         border-bottom: none !important; /* Remove a linha do botão "Ver mais" */
     }
-
+    /* Garante que a célula do botão "Ver mais" apareça no modo card */
+    .responsive-card-table td:last-child {
+        display: block !important;
+        border-bottom: none !important; /* Remove a linha separadora debaixo do botão */
+    }
 }
 
