@@ -3,7 +3,7 @@
 {% block content %}
     <h2>Instrumentos Contratuais</h2>
 
-    <div class="button-toolbar">
+    <div class="button-toolbar desktop-actions">
         <div class="toolbar-group-left">
             <button class="{{ 'filtro-ativo' if filtro_ativo == 'todos' else '' }}" onclick="location.href='{{ url_for('instrumentos_contratuais', filtro='todos') }}'">Todos</button>
             <button class="{{ 'filtro-ativo' if filtro_ativo == 'vigentes' else '' }}" onclick="location.href='{{ url_for('instrumentos_contratuais', filtro='vigentes') }}'">Vigentes</button>
@@ -18,10 +18,24 @@
             <button onclick="location.href='{{ url_for('novo_instrumento_contratual') }}'">Novo</button>
         </div>
     </div>
+
+    <div class="mobile-actions">
+        <a href="{{ url_for('novo_instrumento_contratual') }}" class="fab" title="Novo Instrumento">+</a>
+        
+        <div class="kebab-menu-container">
+            <button id="btnKebab" class="kebab-menu-button">&#8942;</button>
+            <div class="kebab-menu-dropdown">
+                <a href="{{ url_for('instrumentos_contratuais', filtro='todos') }}">Todos</a>
+                <a href="{{ url_for('instrumentos_contratuais', filtro='vigentes') }}">Vigentes</a>
+                <a href="{{ url_for('instrumentos_contratuais', filtro='extintos') }}">Extintos</a>
+            </div>
+        </div>
+    </div>
+
     
     <br>
 
-    <table border="1" id="tabelaInstrumentos">
+    <table border="1" id="tabelaInstrumentos" class="responsive-card-table">
         <thead>
             <tr>
                 <th></th>
@@ -35,34 +49,61 @@
         </thead>
         <tbody>
             {% for instrumento in instrumentos %}
-            <tr class="clickable-row">
-                <td><input type="radio" name="selected_instrumento" value="{{ instrumento._id }}"></td>
-                <td>{{ instrumento.n_instrumento }}</td>
-                <td>{{ instrumento.tipo_documento }}</td>
-                <td>{{ instrumento.contratada }}</td>
-                <td>{{ instrumento.objeto_resumido }}</td>
-                <td class="coluna-texto-longo">{{ instrumento.itens_string or '' }}</td>
-                <td>{{ 'Sim' if instrumento.vigente else 'Não' }}</td>
+            <tr class="clickable-row" data-url="{{ url_for('gerenciar_instrumento', instrumento_id=instrumento._id) }}">
+                <td data-label="Selecionar"><input type="radio" name="selected_instrumento" value="{{ instrumento._id }}"></td>
+                <td data-label="Nº Instrumento"><span class="card-value">{{ instrumento.n_instrumento }}</span></td>
+                <td data-label="Tipo Documento"><span class="card-value">{{ instrumento.tipo_documento }}</span></td>
+                <td data-label="Contratada"><span class="card-value">{{ instrumento.contratada }}</span></td>
+                <td data-label="Objeto Resumido"><span class="card-value">{{ instrumento.objeto_resumido }}</span></td>
+                <td data-label="Itens"><span class="card-value">{{ instrumento.itens_string or '' }}</span></td>
+                <td data-label="Vigente"><span class="card-value">{{ 'Sim' if instrumento.vigente else 'Não' }}</span></td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="6">Nenhum instrumento contratual encontrado.</td>
+                <td colspan="7">Nenhum instrumento contratual encontrado.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+
 {% endblock %}
 
 {% block page_scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // A lógica de inicialização da tabela não precisa de alterações
+document.addEventListener('DOMContentLoaded', function() {
+    // Lógica que decide qual interatividade aplicar com base no tamanho da tela
+    if (window.innerWidth > 768) {
+        // MODO DESKTOP: Inicia a tabela com seleção por radio button
         initializeClickableTable(
             'tabelaInstrumentos',
             'selected_instrumento',
             'btnDetalhes',
             "{{ url_for('gerenciar_instrumento', instrumento_id='REPLACE_ID') }}"
         );
-    });
+    } else {
+        // MODO MOBILE: Transforma cada card (linha da tabela) em um link
+        document.querySelectorAll('.responsive-card-table tr[data-url]').forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Navega apenas se o clique não for em um input dentro do card
+                if (!e.target.closest('input')) {
+                    window.location.href = this.dataset.url;
+                }
+            });
+        });
+    }
+    // --- LÓGICA DO MENU KEBAB (MOBILE) ---
+    const kebabButton = document.getElementById('btnKebab');
+    const kebabDropdown = document.querySelector('.kebab-menu-dropdown');
+    if (kebabButton) {
+        kebabButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            kebabDropdown.style.display = kebabDropdown.style.display === 'block' ? 'none' : 'block';
+        });
+        // Fecha o menu se clicar em qualquer outro lugar
+        document.addEventListener('click', () => {
+            if (kebabDropdown) kebabDropdown.style.display = 'none';
+        });
+    }
+});
 </script>
 {% endblock %}

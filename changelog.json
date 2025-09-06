@@ -1,5 +1,10 @@
 [
   {
+    "versao": "1.9",
+    "data": "xx/09/2025",
+    "descricao": "Implantação de responsividade em Cadastros."
+  },
+  {
     "versao": "1.8",
     "data": "05/09/2025",
     "descricao": "Implantação de responsividade em Pendências Por Instrumentos Contratuais."
