@@ -12,8 +12,8 @@ import certifi
 from bson import json_util
 from bson.objectid import ObjectId
 from flask import Flask, Response, flash, redirect, render_template, request, url_for
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
+#from flask_limiter import Limiter
+#from flask_limiter.util import get_remote_address
 from flask_login import (LoginManager, UserMixin, current_user, login_required,
                          login_user, logout_user)
 from pymongo import MongoClient
@@ -23,12 +23,14 @@ app = Flask(__name__)
 app.jinja_env.globals.update(datetime=datetime)
 
 
+''' se user flask_limiter
 limiter = Limiter(
     get_remote_address,
     app=app,
     default_limits=["200 per day", "50 per hour"],
     storage_uri="memory://",
 )
+'''
 
 app.config['JSON_SORT_KEYS'] = False
 

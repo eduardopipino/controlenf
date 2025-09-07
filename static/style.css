@@ -1177,6 +1177,7 @@ button, a.button {
     font-family: inherit;
     line-height: 1;
     margin: 0;
+    text-align: center;
 }
 
 /* --- CAMPOS DE FORMULÁRIO --- */
@@ -1702,6 +1703,26 @@ td .card-value {
     .responsive-card-table td:last-child {
         display: block !important;
         border-bottom: none !important; /* Remove a linha separadora debaixo do botão */
+    }
+    /* Regra MAIS ESPECÍFICA para a barra de ações, agora sem 'gap' */
+    .responsive-card-table .card-actions-toolbar {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: center !important;
+        margin-top: 15px;
+        width: 100% !important;
+    }
+    /* NOVA REGRA: Adiciona margens APENAS aos links e botões para criar o espaçamento */
+    .responsive-card-table .card-actions-toolbar > a.button,
+    .responsive-card-table .card-actions-toolbar > button {
+        margin: 0 5px; /* Cria 10px de espaço uniforme entre os itens visíveis */
+    }
+    /* Garante que o link 'Editar' se comporte como um botão flexível */
+    .responsive-card-table .card-actions-toolbar a.button {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: var(--element-height);
     }
 }
 
