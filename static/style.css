@@ -1571,7 +1571,8 @@ td .card-value {
         border: none !important;
         overflow-wrap: break-word;
         word-break: break-word; 
-
+        box-sizing: border-box;
+        white-space: normal !important;
     }
     .responsive-card-table td:last-child {
         border-bottom: none;
@@ -1712,7 +1713,7 @@ td .card-value {
         margin-top: 15px;
         width: 100% !important;
     }
-    /* NOVA REGRA: Adiciona margens APENAS aos links e botões para criar o espaçamento */
+    /* Adiciona margens APENAS aos links e botões para criar o espaçamento */
     .responsive-card-table .card-actions-toolbar > a.button,
     .responsive-card-table .card-actions-toolbar > button {
         margin: 0 5px; /* Cria 10px de espaço uniforme entre os itens visíveis */

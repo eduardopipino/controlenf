@@ -2,34 +2,42 @@
 
 {% block content %}
     <h2>Cadastro de Situações</h2>
-    <div class="button-toolbar">
+    <div class="button-toolbar desktop-actions">
         <button onclick="location.href='{{ url_for('nova_situacao') }}'">Novo</button>
         <button id="btnEditar" disabled>Editar</button>
-        <button id="btnExcluir" disabled>Excluir</button>
+    </div>
+
+    <div class="mobile-actions">
+        <a href="{{ url_for('nova_situacao') }}" class="fab" title="Nova Situação">+</a>
     </div>
     <br>
-    <table border="1" id="tabelaSituacoes">
+    <table id="tabelaSituacoes" class="responsive-card-table">
         <thead>
             <tr>
                 <th></th> 
                 <th>Nome da Situação *</th>
                 <th>Arquiva Registro?</th>
                 <th>Cor (Temas Claros)</th>
-                <th>Cor (Tema Escuro)</th> </tr>
+                <th>Cor (Tema Escuro)</th>
+            </tr>
         </thead>
         <tbody>
             {% for situacao in situacoes %}
-            <tr class="clickable-row">
-                <td><input type="radio" name="selected_situacao" value="{{ situacao._id }}"></td>
-                <td>{{ situacao.situacao }}</td>
-                <td>{{ 'Sim' if situacao.arquiva_registro else 'Não' }}</td>
-                <td>
-                    <span class="color-preview" style="background-color: {{ situacao.cor or '#ffffff' }};"></span>
-                    {{ situacao.cor or '#ffffff' }}
+            <tr class="clickable-row" data-url="{{ url_for('editar_situacao', situacao_id=situacao._id) }}">
+                <td data-label="Selecionar"><input type="radio" name="selected_situacao" value="{{ situacao._id }}"></td>
+                <td data-label="Nome da Situação"><span class="card-value">{{ situacao.situacao }}</span></td>
+                <td data-label="Arquiva Registro?"><span class="card-value">{{ 'Sim' if situacao.arquiva_registro else 'Não' }}</span></td>
+                <td data-label="Cor (Temas Claros)">
+                    <span class="card-value">
+                        <span class="color-preview" style="background-color: {{ situacao.cor or '#ffffff' }};"></span>
+                        {{ situacao.cor or '#ffffff' }}
+                    </span>
                 </td>
-                <td>
-                    <span class="color-preview" style="background-color: {{ situacao.cor_tema_escuro or '#3a3a3a' }}; border: 1px solid #777;"></span>
-                    {{ situacao.cor_tema_escuro or '#3a3a3a' }}
+                <td data-label="Cor (Tema Escuro)">
+                    <span class="card-value">
+                        <span class="color-preview" style="background-color: {{ situacao.cor_tema_escuro or '#3a3a3a' }}; border: 1px solid #777;"></span>
+                        {{ situacao.cor_tema_escuro or '#3a3a3a' }}
+                    </span>
                 </td>
             </tr>
             {% else %}
@@ -44,45 +52,60 @@
 {% block page_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const btnEditar = document.getElementById('btnEditar');
-    const btnExcluir = document.getElementById('btnExcluir');
-    const radioButtons = document.querySelectorAll('input[name="selected_situacao"]');
-    const tableRows = document.querySelectorAll('#tabelaSituacoes tbody tr.clickable-row');
-    tableRows.forEach(row => {
-        row.addEventListener('click', () => {
-            const radioButton = row.querySelector('input[type="radio"]');
-            if (radioButton) {
-                radioButton.checked = true;
-                const event = new Event('change');
-                radioButton.dispatchEvent(event);
-            }
+    // Lógica que decide qual interatividade aplicar com base no tamanho da tela
+    if (window.innerWidth > 768) {
+        // --- MODO DESKTOP: Mantém a lógica original de seleção ---
+        const btnEditar = document.getElementById('btnEditar');
+        const btnExcluir = document.getElementById('btnExcluir');
+        
+        document.querySelectorAll('input[name="selected_situacao"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (radio.checked) {
+                    const selectedId = radio.value;
+                    const situacaoNome = radio.closest('tr').children[1].textContent.trim();
+                    
+                    btnEditar.disabled = false;
+                    btnEditar.onclick = () => {
+                        window.location.href = `{{ url_for('editar_situacao', situacao_id='REPLACE_ID') }}`.replace('REPLACE_ID', selectedId);
+                    };
+
+                    btnExcluir.disabled = false;
+                    btnExcluir.onclick = () => {
+                        showCustomConfirm('Confirmar Exclusão', `Tem certeza que deseja excluir a situação "${situacaoNome}"?`,
+                            (confirmed) => {
+                                if (confirmed) {
+                                    const deleteForm = document.createElement('form');
+                                    deleteForm.method = 'POST';
+                                    deleteForm.action = `{{ url_for('excluir_situacao', situacao_id='REPLACE_ID') }}`.replace('REPLACE_ID', selectedId);
+                                    document.body.appendChild(deleteForm);
+                                    deleteForm.submit();
+                                }
+                            }, 'Excluir Permanentemente');
+                    };
+                }
+            });
         });
-    });
-    radioButtons.forEach(radio => {
-        radio.addEventListener('change', () => {
-            if (radio.checked) {
-                const selectedId = radio.value;
-                const situacaoNome = radio.closest('tr').children[1].textContent;
-                btnEditar.disabled = false;
-                btnEditar.onclick = () => {
-                    window.location.href = `{{ url_for('editar_situacao', situacao_id='REPLACE_ID') }}`.replace('REPLACE_ID', selectedId);
-                };
-                btnExcluir.disabled = false;
-                btnExcluir.onclick = () => {
-                    showCustomConfirm('Confirmar Exclusão', `Tem certeza que deseja excluir a situação "${situacaoNome}"?`,
-                        (confirmed) => {
-                            if (confirmed) {
-                                const deleteForm = document.createElement('form');
-                                deleteForm.method = 'POST';
-                                deleteForm.action = `{{ url_for('excluir_situacao', situacao_id='REPLACE_ID') }}`.replace('REPLACE_ID', selectedId);
-                                document.body.appendChild(deleteForm);
-                                deleteForm.submit();
-                            }
-                        }, 'Excluir Permanentemente');
-                };
-            }
+
+        document.querySelectorAll('.clickable-row').forEach(row => {
+            row.addEventListener('click', () => {
+                const radioButton = row.querySelector('input[type="radio"]');
+                if (radioButton) {
+                    radioButton.checked = true;
+                    radioButton.dispatchEvent(new Event('change'));
+                }
+            });
         });
-    });
+
+    } else {
+        // --- MODO MOBILE: Transforma cada card (linha) em um link para a edição ---
+        document.querySelectorAll('tr[data-url]').forEach(card => {
+            card.addEventListener('click', function(e) {
+                if (!e.target.closest('input')) { // Previne clique no radio (que está escondido mas ainda existe)
+                    window.location.href = this.dataset.url;
+                }
+            });
+        });
+    }
 });
 </script>
 {% endblock %}

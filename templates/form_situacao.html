@@ -24,11 +24,23 @@
         </div>
 
         <br>
-        <div>
-            <button type="submit" id="btnSalvar" disabled>Salvar</button>
-            <button type="button" id="btnCancelar">Cancelar</button>
+        <div class="button-toolbar">
+            <div class="toolbar-group-left">
+                <button type="submit" id="btnSalvar" disabled>Salvar</button>
+                <button type="button" id="btnCancelar">Cancelar</button>
+            </div>
+            
+            {% if not novo %}
+            <div class="toolbar-group-right">
+                <button type="button" id="btnExcluir" class="button-danger">Excluir</button>
+            </div>
+            {% endif %}
         </div>
     </form>
+
+    {% if not novo %}
+        <form id="formExcluirSituacao" method="POST" action="{{ url_for('excluir_situacao', situacao_id=situacao._id) }}" style="display: none;"></form>
+    {% endif %}
 {% endblock %}
 
 {% block page_scripts %}
@@ -53,6 +65,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }, 'Sim');
     });
+
+    // <<< Botão Excluir >>>
+    const btnExcluir = document.getElementById('btnExcluir');
+    const formExcluir = document.getElementById('formExcluirSituacao');
+    // Usamos o valor do input, pois ele reflete o nome atual da situação
+    const situacaoNome = inputSituacao.value; 
+
+    if (btnExcluir && formExcluir) {
+        btnExcluir.addEventListener('click', () => {
+            showCustomConfirm(
+                'Confirmar Exclusão', 
+                `Tem certeza que deseja excluir a situação "${situacaoNome}"?`,
+                (confirmed) => {
+                    if (confirmed) {
+                        formExcluir.submit();
+                    }
+                },
+                'Excluir Permanentemente'
+            );
+        });
+    }
+
 });
 </script>
 {% endblock %}
