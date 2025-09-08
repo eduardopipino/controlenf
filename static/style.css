@@ -1659,8 +1659,9 @@ td .card-value {
     }
 
     /* Regra final e unificada para o VALOR dentro dos cards */
-    .responsive-card-table .card-value {
-        display: block !important;      /* Garante que o valor se comporte como um bloco */
+        display: flex;         /* <<< ALTERADO */
+        align-items: center;   /* <<< ADICIONADO: Alinha a cor e o texto verticalmente */
+        flex-wrap: wrap;       /* <<< ADICIONADO: Permite que o texto quebre se necessário */        display: block !important;      /* Garante que o valor se comporte como um bloco */
         width: 100% !important;         /* Garante que ocupe toda a largura */
         box-sizing: border-box;         /* Garante que o padding não afete a largura */
         white-space: normal !important; /* ESSENCIAL para permitir a quebra de linha */
@@ -1724,6 +1725,24 @@ td .card-value {
         align-items: center !important;
         justify-content: center !important;
         height: var(--element-height);
+    }
+    /* Regra "agressiva" que força QUALQUER conteúdo dentro de uma célula de card
+       a virar um bloco de largura cheia, resolvendo problemas de estouro de layout. */
+    .responsive-card-table td > * {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        text-align: left !important;
+        white-space: normal !important;
+    }
+    /* ADICIONE DENTRO do @media (max-width: 768px) */
+
+    /* Correção para o tamanho da caixinha de cor no modo card */
+    .responsive-card-table .color-preview {
+        width: 25px !important;     /* Força uma largura fixa pequena */
+        height: 25px !important;    /* Força uma altura fixa pequena */
+        display: block !important;    /* Garante que se comporte como um bloco */
     }
 }
 
