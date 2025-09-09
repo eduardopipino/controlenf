@@ -1561,10 +1561,6 @@ td .card-value {
     body.theme-dark .responsive-card-table tr {
         background-color: #181818;
     }
-    /* Esconde a coluna do radio button no modo card */
-    .responsive-card-table td:first-child {
-        display: none;
-    }
     .responsive-card-table td {
         display: block; /* <<< Força o comportamento de um DIV */
         width: 100% ;
@@ -1662,6 +1658,7 @@ td .card-value {
     }
 
     /* Regra final e unificada para o VALOR dentro dos cards */
+    .responsive-card-table .card-value {
         display: flex;         /* <<< ALTERADO */
         align-items: center;   /* <<< ADICIONADO: Alinha a cor e o texto verticalmente */
         flex-wrap: wrap;       /* <<< ADICIONADO: Permite que o texto quebre se necessário */        display: block !important;      /* Garante que o valor se comporte como um bloco */
@@ -1671,7 +1668,7 @@ td .card-value {
         overflow-wrap: break-word;      /* Quebra palavras longas para não estourarem o layout */
         word-break: break-word;         /* Garante a quebra em todos os cenários */
         text-align: left !important;      /* Garante o alinhamento correto do texto */
-    }
+    }    
 
     /* 5) Zera qualquer flex que tenha “sobrado” */
     .responsive-card-table tr.card-expanded,
@@ -1752,5 +1749,27 @@ td .card-value {
         width: 100%;
         box-sizing: border-box; /* Garante que o padding e a borda não estourem a largura */
     }
+
+    /* Correção específica para a célula de Cor no modo card */
+    .responsive-card-table td[data-label^="Cor"] {
+        /* Alinha o conteúdo (a caixinha de cor) à esquerda */
+        justify-content: flex-start;
+    }
+    /* ADICIONE DENTRO do @media (max-width: 768px) */
+
+/* ====================================================================== */
+/* CORREÇÃO FINAL E ESPECÍFICA PARA OS CARDS DA PÁGINA DE SITUAÇÕES     */
+/* ====================================================================== */
+
+/* 1. Define que a célula de Cor terá uma largura automática, baseada no seu conteúdo */
+.responsive-card-table td[data-label^="Cor"] {
+    width: auto !important;
+}
+
+/* 2. Garante que o conteúdo (a caixinha de cor) tenha o tamanho correto */
+.responsive-card-table td[data-label^="Cor"] > * {
+    width: 25px !important;
+    height: 25px !important;
+}
 }
 
