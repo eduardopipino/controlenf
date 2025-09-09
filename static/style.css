@@ -1535,6 +1535,7 @@ td .card-value {
         box-shadow: none;
         background-color: transparent;
         margin-top: 0;
+        /*display: block;*/
     }
     .responsive-card-table thead {
         display: none;
@@ -1550,6 +1551,8 @@ td .card-value {
         cursor: pointer;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         /*  align-items: flex-start; /* <<<  */
+        box-sizing: border-box;
+        width: 100%;
     }
     .responsive-card-table tr:hover {
         transform: translateY(-3px);
@@ -1743,6 +1746,11 @@ td .card-value {
         width: 25px !important;     /* Força uma largura fixa pequena */
         height: 25px !important;    /* Força uma altura fixa pequena */
         display: block !important;    /* Garante que se comporte como um bloco */
+    }
+    /* Correção de largura específica para os cards da página de Situações */
+    #tabelaSituacoes.responsive-card-table tr {
+        width: 100%;
+        box-sizing: border-box; /* Garante que o padding e a borda não estourem a largura */
     }
 }
 

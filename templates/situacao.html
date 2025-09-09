@@ -14,6 +14,7 @@
     <table id="tabelaSituacoes" class="responsive-card-table">
         <thead>
             <tr>
+                <th></th>
                 <th>Nome da Situação *</th>
                 <th>Arquiva Registro?</th>
                 <th>Cor (Temas Claros)</th>
@@ -23,19 +24,21 @@
         <tbody>
             {% for situacao in situacoes %}
             <tr class="clickable-row" data-url="{{ url_for('editar_situacao', situacao_id=situacao._id) }}">
-                <td data-label="Selecionar"><input type="radio" name="selected_situacao" value="{{ situacao._id }}"></td>
-                <td data-label="Nome da Situação"><span class="card-value">{{ situacao.situacao }}</span></td>
-                <td data-label="Arquiva Registro?"><span class="card-value">{{ 'Sim' if situacao.arquiva_registro else 'Não' }}</span></td>
-            <td data-label="Cor (Temas Claros)">
-                <span class="card-value">
-                    <span class="color-preview" style="background-color: {{ situacao.cor or '#ffffff' }};"></span>
-                    </span>
-            </td>
-            <td data-label="Cor (Tema Escuro)">
-                <span class="card-value">
-                    <span class="color-preview" style="background-color: {{ situacao.cor_tema_escuro or '#3a3a3a' }}; border: 1px solid #777;"></span>
-                    </span>
-            </td>
+                <td data-label="Selecionar">
+                    <input type="radio" name="selected_situacao" value="{{ situacao._id }}">
+                </td>
+                <td data-label="Nome da Situação">
+                    <span class="card-value">{{ situacao.situacao }}</span>
+                </td>
+                <td data-label="Arquiva Registro?">
+                    <span class="card-value">{{ 'Sim' if situacao.arquiva_registro else 'Não' }}</span>
+                </td>
+                <td data-label="Cor (Temas Claros)">
+                    <span class="card-value color-preview" style="background-color: {{ situacao.cor or '#ffffff' }};"></span>
+                </td>
+                <td data-label="Cor (Tema Escuro)">
+                    <span class="card-value color-preview" style="background-color: {{ situacao.cor_tema_escuro or '#3a3a3a' }}; border: 1px solid #777;"></span>
+                </td>
             </tr>
             {% else %}
             <tr>
