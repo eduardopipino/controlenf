@@ -868,7 +868,7 @@ a.summary-card:hover { /* Efeito de hover apenas para cards que são links */
     width: auto;
     
     /* Opcional: define uma largura mínima para a tabela inteira. */
-    min-width: 500px; 
+    min-width: 0; 
 }
 
 /* ====================================================================== */
@@ -1529,19 +1529,23 @@ td .card-value {
         background-color: var(--accent-color);
     }
 
-        /* --- TRANSFORMAÇÃO DA TABELA EM CARDS --- */
+    /* --- TRANSFORMAÇÃO DA TABELA EM CARDS --- */
     .responsive-card-table {
+        display: block; /* Garante que se comporte como um div */
+        width: 100%;                  /* <<< CORREÇÃO PRINCIPAL */
+        box-sizing: border-box;       /* <<< CORREÇÃO ESSENCIAL */
         border: none;
         box-shadow: none;
         background-color: transparent;
         margin-top: 0;
-        /*display: block;*/
     }
     .responsive-card-table thead {
         display: none;
     }
     .responsive-card-table tr {
-        display: block;
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important; /* <<< A PROPRIEDADE CHAVE */
         border: 1px solid var(--border-base);
         border-radius: 8px;
         margin-bottom: 20px;
@@ -1550,9 +1554,6 @@ td .card-value {
         box-shadow: 0 2px 5px var(--shadow-base);
         cursor: pointer;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
-        /*  align-items: flex-start; /* <<<  */
-        box-sizing: border-box;
-        width: 100%;
     }
     .responsive-card-table tr:hover {
         transform: translateY(-3px);
@@ -1757,19 +1758,20 @@ td .card-value {
     }
     /* ADICIONE DENTRO do @media (max-width: 768px) */
 
-/* ====================================================================== */
-/* CORREÇÃO FINAL E ESPECÍFICA PARA OS CARDS DA PÁGINA DE SITUAÇÕES     */
-/* ====================================================================== */
+    /* 1. Define que a célula de Cor terá uma largura automática, baseada no seu conteúdo */
+    .responsive-card-table td[data-label^="Cor"] {
+        width: auto !important;
+    }
 
-/* 1. Define que a célula de Cor terá uma largura automática, baseada no seu conteúdo */
-.responsive-card-table td[data-label^="Cor"] {
-    width: auto !important;
-}
+    /* 2. Garante que o conteúdo (a caixinha de cor) tenha o tamanho correto */
+    .responsive-card-table td[data-label^="Cor"] > * {
+        width: 25px !important;
+        height: 25px !important;
+    }
 
-/* 2. Garante que o conteúdo (a caixinha de cor) tenha o tamanho correto */
-.responsive-card-table td[data-label^="Cor"] > * {
-    width: 25px !important;
-    height: 25px !important;
+    /* Força o corpo da tabela a ocupar a largura total no modo card */
+    .responsive-card-table tbody {
+        display: block;
+        width: 100%;
+    }
 }
-}
-
