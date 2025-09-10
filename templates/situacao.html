@@ -34,10 +34,10 @@
                     <span class="card-value">{{ 'Sim' if situacao.arquiva_registro else 'Não' }}</span>
                 </td>
                 <td data-label="Cor (Temas Claros)">
-                    <span class="card-value color-preview" style="background-color: {{ situacao.cor or '#ffffff' }};">texto</span>
+                    <span class="card-value color-preview" style="background-color: {{ situacao.cor or '#ffffff' }};"></span>
                 </td>
                 <td data-label="Cor (Tema Escuro)">
-                    <span class="card-value color-preview" style="background-color: {{ situacao.cor_tema_escuro or '#3a3a3a' }}; border: 1px solid #777;">texto</span>
+                    <span class="card-value color-preview" style="background-color: {{ situacao.cor_tema_escuro or '#3a3a3a' }}; border: 1px solid #777;"></span>
                 </td>
             </tr>
             {% else %}
