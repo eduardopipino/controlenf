@@ -1367,6 +1367,12 @@ td .card-value {
     display: none;
 }
 
+/* Esconde a última coluna (do botão "Ver mais") na tabela de Pendências no desktop */
+#tabelaPendencias th:last-child,
+#tabelaPendencias tbody td:last-child {
+    display: none;
+}
+
 /* ====================================================================== */
 /* ESTILOS DE RESPONSIVIDADE PARA TELAS PEQUENAS                        */
 /* ====================================================================== */
