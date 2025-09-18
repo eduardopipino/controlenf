@@ -190,7 +190,7 @@ body.theme-dark {
     --flash-warning-text: #fff3cd;
     --flash-warning-border: #ffeeba;
     --modal-h3-border: var(--border-base);
-
+    --modal-bg: var(--background-secondary);
     --disabled-bg-color: #3a3a3a; /* Cinza mais claro que o fundo do formulário */
 }
 
