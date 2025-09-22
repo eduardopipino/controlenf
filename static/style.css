@@ -416,16 +416,6 @@ input[type="checkbox"] + label {
 }
 
 /* Tables */
-table {
-    border-collapse: collapse;
-    margin-top: 20px;
-    background-color: var(--background-secondary);
-    box-shadow: 0 2px 8px var(--shadow-base);
-    border-radius: 8px;
-    overflow: hidden;
-    width: 100%;
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
-}
 
 #tabelaControle th:nth-child(2),
 #tabelaControle td:nth-child(2),
@@ -458,14 +448,6 @@ table {
 #tabelaControle th:nth-child(12),
 #tabelaControle td:nth-child(12) {
     min-width: 200px;
-}
-
-th {
-    background-color: var(--primary-color);
-    color: var(--text-secondary);
-    font-weight: bold;
-    text-transform: uppercase;
-    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 tr:nth-child(even) {
@@ -1201,15 +1183,7 @@ select {
     padding: 0 var(--padding-input-horizontal); 
 }
 
-/* --- CÉLULAS DA TABELA --- */
-th, td {
-    border: 1px solid var(--border-base);
-    text-align: left;
-    white-space: nowrap;
-    vertical-align: top;
-    /* PADDING USANDO A VARIÁVEL */
-    padding: var(--padding-table-cell);
-}
+
 
 /* ====================================================================== */
 /* ESTILO OTIMIZADO PARA CAMPOS DESABILITADOS E READONLY                  */
@@ -1371,6 +1345,18 @@ td .card-value {
 #tabelaPendencias th:last-child,
 #tabelaPendencias tbody td:last-child {
     display: none;
+}
+
+.table-wrapper {
+    /* Herda a sombra e os cantos arredondados que estavam na tabela */
+    box-shadow: 0 2px 8px var(--shadow-base);
+    border-radius: 8px;
+    
+    /* A propriedade de rolagem agora vive aqui */
+    overflow-x: auto;
+    
+    /* Garante que o wrapper se comporte bem no layout */
+    margin-top: 20px;
 }
 
 /* ====================================================================== */
@@ -1781,3 +1767,39 @@ td .card-value {
         width: 100%;
     }
 }
+
+
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--border-base); 
+    margin-top: 20px;
+    background-color: var(--background-secondary);
+    box-shadow: 0 2px 8px var(--shadow-base);
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+th {
+    background-color: var(--primary-color);
+    color: var(--text-secondary);
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+th, td {
+    border: 1px solid var(--table-stripe);
+    text-align: left;
+    white-space: nowrap;
+    vertical-align: top;
+    padding: var(--padding-table-cell); 
+}
+
+/* Arredonda as 4 células de canto para corresponder ao raio da tabela */
+table thead tr:first-child th:first-child { border-top-left-radius: 8px; }
+table thead tr:first-child th:last-child { border-top-right-radius: 8px; }
+table tbody tr:last-child td:first-child { border-bottom-left-radius: 8px; }
+table tbody tr:last-child td:last-child { border-bottom-right-radius: 8px; }
