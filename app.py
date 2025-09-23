@@ -1068,13 +1068,6 @@ def pendencias_lista(page_mode="geral"):
 
     colunas_visiveis = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in colunas_para_exibir])
     
-    # <<< INÍCIO DO CÓDIGO DE DEPURAÇÃO >>>
-    print("\n--- DADOS DE PENDÊNCIAS (PARA DEPURAÇÃO) ---")
-    # Usamos json.dumps para formatar a saída e converter datas/ObjectIds
-    print(json.dumps(lista_pendencias, default=str, indent=2, ensure_ascii=False))
-    print("--- FIM DOS DADOS ---\n")
-    # <<< FIM DO CÓDIGO DE DEPURAÇÃO >>>
-    
     return render_template(
         'pendencias_geral.html',
         pendencias=lista_pendencias,
