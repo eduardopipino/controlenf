@@ -274,8 +274,8 @@ def get_instrumentos_para_dropdown():
 
 # SUBSTITUA A FUNÇÃO INTEIRA PELA VERSÃO ABAIXO
 
-def get_pendencias_com_detalhes(query_filter, sort_criteria):
-    """Busca pendências e faz o join, agora com lógica de ordenação avançada."""
+def get_pendencias_com_detalhes(query_filter, sort_by, sort_order):
+    """Busca pendências e faz o join, com lógica de ordenação avançada e corrigida."""
     
     filtros_instrumento = {}
     if 'instrumento_info.n_instrumento' in query_filter:
@@ -302,27 +302,19 @@ def get_pendencias_com_detalhes(query_filter, sort_criteria):
                     {'$ifNull': ['$instrumento_info.tipo_documento', '']}
                 ]
             },
-            # --- NOVO CAMPO TEMPORÁRIO PARA ORDENAÇÃO ---
-            # Cria um campo 'tem_prazo' que é 1 se o prazo existe, 0 se não.
+            # Campo temporário que é 1 se o prazo existe, e 0 se não
             'tem_prazo': {
                 '$cond': { 'if': '$prazo', 'then': 1, 'else': 0 }
             }
         }},
+        # --- ESTÁGIO DE ORDENAÇÃO CORRIGIDO ---
+        {'$sort': OrderedDict([
+            ('prioridade', -1),          # 1. Prioritários no topo
+            ('tem_prazo', -1),           # 2. Com prazo antes dos sem prazo
+            (sort_by, sort_order),     # 3. Critério do usuário (ex: prazo ASC/DESC)
+            ('data_criacao', 1)        # 4. Critério final de desempate
+        ])}
     ]
-
-    # --- NOVA LÓGICA DE CONSTRUÇÃO DA ORDENAÇÃO ---
-    # A ordenação por prioridade é sempre a primeira
-    sort_pipeline = OrderedDict([('prioridade', -1)])
-
-    # Se o usuário está ordenando por 'prazo', adicionamos a regra "com data primeiro"
-    if sort_criteria['field'] == 'prazo':
-        sort_pipeline['tem_prazo'] = -1
-
-    # Finalmente, adicionamos o critério de ordenação do usuário
-    sort_pipeline[sort_criteria['field']] = sort_criteria['order']
-
-    # Adiciona o estágio de ordenação completo à pipeline
-    pipeline.append({'$sort': sort_pipeline})
     
     pendencias = list(pendencias_collection.aggregate(pipeline))
     
@@ -1041,10 +1033,13 @@ def pendencias_lista(page_mode="geral"):
     sort_order_mongo = 1 if order == 'asc' else -1
     
     # Passamos os critérios de forma estruturada para a próxima função
-    sort_criteria = {'field': sort_by, 'order': sort_order_mongo}
-    
+    #sort_criteria = {sort_by: sort_order_mongo}
+        
     # Busca os dados
-    lista_pendencias = get_pendencias_com_detalhes(query_filter, sort_criteria)
+    #lista_pendencias = get_pendencias_com_detalhes(query_filter, sort_criteria)
+    # Passa os critérios de forma separada para a função de busca
+    lista_pendencias = get_pendencias_com_detalhes(query_filter, sort_by, sort_order_mongo)    
+    
     hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     for p in lista_pendencias:
         p['vencido'] = p.get('prazo') and p.get('prazo') < hoje
@@ -1108,7 +1103,8 @@ def pendencias_por_instrumento():
             'detalhes_instrumento': {'$first': '$instrumento_info'},
             'pendencias': {'$push': {
                 '_id': '$_id', 'pendencia': '$pendencia', 'prazo': '$prazo',
-                'responsavel': '$responsavel', 'situacao': '$situacao'
+                'responsavel': '$responsavel', 'situacao': '$situacao',
+                'observacoes': '$observacoes'
             }}
         }},
         {'$sort': {'detalhes_instrumento.n_instrumento': 1}}

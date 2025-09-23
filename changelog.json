@@ -1,5 +1,10 @@
 [
   {
+    "versao": "1.10",
+    "data": "23/09/2025",
+    "descricao": "Implantação de prioridade e ajustes de reordenação em Pendências, correções visuais e funcionais diversas."
+  },
+  {
     "versao": "1.9",
     "data": "09/09/2025",
     "descricao": "Implantação de responsividade em Cadastros."
