@@ -272,6 +272,8 @@ def get_instrumentos_para_dropdown():
         inst['_id'] = str(inst['_id'])
     return instrumentos
 
+# SUBSTITUA A FUNÇÃO INTEIRA PELA VERSÃO ABAIXO
+
 def get_pendencias_com_detalhes(query_filter, sort_by, sort_order):
     """Busca pendências e faz o join, com lógica de ordenação avançada e final."""
     
@@ -280,6 +282,9 @@ def get_pendencias_com_detalhes(query_filter, sort_by, sort_order):
         filtros_instrumento['instrumento_info.n_instrumento'] = query_filter.pop('instrumento_info.n_instrumento')
     if 'instrumento_info.contratada' in query_filter:
         filtros_instrumento['instrumento_info.contratada'] = query_filter.pop('instrumento_info.contratada')
+
+    # Transforma o campo de ordenação em um caminho que o MongoDB entende (ex: '$pendencia')
+    sort_field_path = f"${sort_by}"
 
     pipeline = [
         {'$match': query_filter},
@@ -300,22 +305,29 @@ def get_pendencias_com_detalhes(query_filter, sort_by, sort_order):
                     {'$ifNull': ['$instrumento_info.tipo_documento', '']}
                 ]
             },
-            # --- NOVOS CAMPOS PARA ORDENAÇÃO ROBUSTA ---
+            # --- CAMPOS DE ORDENAÇÃO ROBUSTOS ---
             # Campo que é 0 se tem prioridade, 1 se não tem.
             'ordem_prioridade': {
                 '$cond': { 'if': '$prioridade', 'then': 0, 'else': 1 }
             },
-            # Campo que é 0 se tem prazo, 1 se não tem.
-            'ordem_prazo_nulo': {
-                '$cond': { 'if': '$prazo', 'then': 0, 'else': 1 }
+            # Campo que é 0 se o campo ATUALMENTE SENDO ORDENADO tem valor, 1 se não tem.
+            'ordem_valor_nulo': {
+                '$cond': { 
+                    'if': { '$and': [
+                        { '$ne': [sort_field_path, None] },
+                        { '$ne': [sort_field_path, ""] }
+                    ]}, 
+                    'then': 0, 
+                    'else': 1 
+                }
             }
         }},
         # --- ESTÁGIO DE ORDENAÇÃO FINAL E CORRETO ---
         {'$sort': OrderedDict([
-            ('ordem_prioridade', 1),          # 1. Prioritários no topo (0 vem antes de 1)
-            ('ordem_prazo_nulo', 1),           # 2. Com prazo antes dos sem prazo (0 vem antes de 1)
-            (sort_by, sort_order),         # 3. Critério do usuário (ex: prazo ASC/DESC)
-            ('data_criacao', 1)            # 4. Critério final de desempate
+            ('ordem_prioridade', 1),    # 1. Prioritários no topo (0 vem antes de 1)
+            ('ordem_valor_nulo', 1),    # 2. Com valor no campo ordenado antes dos sem valor (0 vem antes de 1)
+            (sort_by, sort_order),      # 3. Critério do usuário (alfabético, data, etc.)
+            ('data_criacao', 1)         # 4. Critério final de desempate
         ])}
     ]
     
