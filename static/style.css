@@ -1796,6 +1796,8 @@ th, td {
     white-space: nowrap;
     vertical-align: top;
     padding: var(--padding-table-cell); 
+    /*margin-top: -1px;
+    margin-left: -1px;*/
 }
 
 /* Arredonda as 4 células de canto para corresponder ao raio da tabela */
@@ -1803,3 +1805,38 @@ table thead tr:first-child th:first-child { border-top-left-radius: 8px; }
 table thead tr:first-child th:last-child { border-top-right-radius: 8px; }
 table tbody tr:last-child td:first-child { border-bottom-left-radius: 8px; }
 table tbody tr:last-child td:last-child { border-bottom-right-radius: 8px; }
+
+/* ADICIONE ESTAS NOVAS REGRAS */
+
+/* Estilo para a linha quando a prioridade está ativa */
+tr.prioridade-ativa {
+    /* A barra vermelha vertical */
+    border-left: 5px solid #e74c3c;
+    
+    /* Um fundo sutil para maior destaque */
+    background-color: #fff5f5;
+}
+
+/* Ajuste para o tema escuro */
+body.theme-dark tr.prioridade-ativa {
+    border-left-color: #ff5252;
+    background-color: #2f2525;
+}
+
+/* Transição suave ao adicionar/remover a classe */
+#tabelaPendencias tbody tr {
+    transition: background-color 0.3s ease-in-out, border-left-color 0.3s ease-in-out;
+}
+
+/* ADICIONE esta regra (pode ser fora do @media) */
+.coluna-prioridade {
+    width: 20px; /* Largura da área de clique */
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23cccccc'%3E%3Cpath d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 16px;
+}
+tr.prioridade-ativa .coluna-prioridade {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='gold'%3E%3Cpath d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/%3E%3C/svg%3E");
+}

@@ -6,6 +6,7 @@ import io
 import csv
 from collections import Counter
 from datetime import datetime, timedelta
+from collections import OrderedDict
 
 # 2. Bibliotecas de Terceiros (Instaladas via pip)
 import certifi
@@ -302,7 +303,7 @@ def get_pendencias_com_detalhes(query_filter, sort_document):
                 ]
             }
         }},
-        {'$sort': sort_document}
+        {'$sort': OrderedDict(sort_document)}
     ]
     pendencias = list(pendencias_collection.aggregate(pipeline))
     
@@ -1018,8 +1019,8 @@ def pendencias_lista(page_mode="geral"):
     sort_by = request.args.get('sort_by', 'data_criacao')
     order = request.args.get('order', 'asc')
     sort_order_mongo = -1 if order == 'desc' else 1
-    sort_document = {sort_by: sort_order_mongo}
-
+    sort_document = [('prioridade', -1), (sort_by, sort_order_mongo)]
+    
     # Busca os dados
     lista_pendencias = get_pendencias_com_detalhes(query_filter, sort_document)
     hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
@@ -1133,7 +1134,8 @@ def nova_pendencia():
             'responsavel': request.form.get('responsavel'), 'situacao': request.form.get('situacao'),
             'observacoes': request.form.get('observacoes'), 'status': 'Pendente',
             'user_id': ObjectId(current_user.id), 'data_criacao': datetime.now(),
-            'instrumento_id': ObjectId(instrumento_id) if instrumento_id else None
+            'instrumento_id': ObjectId(instrumento_id) if instrumento_id else None,
+            'prioridade': False
         }
         pendencias_collection.insert_one(nova)
         flash('Nova pendência criada com sucesso!', 'success')
@@ -1200,7 +1202,22 @@ def exportar_pendencias_concluidas_csv():
     query_filter = {'user_id': ObjectId(current_user.id), 'status': 'Concluído'}
     return _gerar_pendencias_csv(query_filter, "export_pendencias_concluidas")
 
+@app.route('/pendencias/toggle_prioridade/<string:pendencia_id>', methods=['POST'])
+@login_required
+def toggle_prioridade_pendencia(pendencia_id):
+    pendencia = pendencias_collection.find_one(
+        {'_id': ObjectId(pendencia_id), 'user_id': ObjectId(current_user.id)}
+    )
+    if not pendencia:
+        return {'status': 'error', 'message': 'Pendência não encontrada.'}, 404
 
+    nova_prioridade = not pendencia.get('prioridade', False)
+    
+    pendencias_collection.update_one(
+        {'_id': ObjectId(pendencia_id)},
+        {'$set': {'prioridade': nova_prioridade}}
+    )
+    return {'status': 'success', 'nova_prioridade': nova_prioridade}
 
 # ======================================================================
 # 2: LÓGICA DE CRIAÇÃO DE NOVO CONTROLE

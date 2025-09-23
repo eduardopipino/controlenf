@@ -43,7 +43,7 @@
     <table border="1" id="tabelaPendencias" class="responsive-card-table">
         <thead>
             <tr>
-                <th></th>
+                <th></th> <th></th> 
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
                         <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
@@ -56,8 +56,9 @@
         </thead>
         <tbody>
             {% for p in pendencias %}
-            <tr class="clickable-row {{ 'pendencia-vencida' if p.vencido else '' }}" data-url="{{ url_for('detalhes_pendencia', pendencia_id=p._id, origem=request.path) }}">
+            <tr class="clickable-row {{ 'pendencia-vencida' if p.vencido else '' }} {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('detalhes_pendencia', pendencia_id=p._id, origem=request.path) }}">
                 <td data-label="Selecionar"><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
+                <td class="coluna-prioridade" data-id="{{ p._id }}"></td>
                 {% set colunas_detalhe = ['instrumento_display', 'contratada', 'observacoes'] %}
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
@@ -234,7 +235,27 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = targetUrl;
         });
     }
-
+    // --- LÓGICA PARA ALTERNAR PRIORIDADE ---
+    document.querySelectorAll('.coluna-prioridade').forEach(col => {
+        col.addEventListener('click', function(e) {
+            e.stopPropagation(); // Impede que o clique selecione a linha inteira
+            
+            const pendenciaId = this.dataset.id;
+            const tr = this.closest('tr');
+            
+            fetch(`/pendencias/toggle_prioridade/${pendenciaId}`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Alterna a classe visual e recarrega para reordenar
+                    tr.classList.toggle('prioridade-ativa', data.nova_prioridade);
+                    location.reload(); // Recarrega para ver a nova ordem
+                } else {
+                    alert('Erro ao alterar a prioridade.');
+                }
+            });
+        });
+    });
 });
 </script>
 {% endblock %}
