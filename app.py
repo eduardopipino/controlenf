@@ -272,10 +272,8 @@ def get_instrumentos_para_dropdown():
         inst['_id'] = str(inst['_id'])
     return instrumentos
 
-# SUBSTITUA A FUNÇÃO INTEIRA PELA VERSÃO ABAIXO
-
 def get_pendencias_com_detalhes(query_filter, sort_by, sort_order):
-    """Busca pendências e faz o join, com lógica de ordenação avançada e corrigida."""
+    """Busca pendências e faz o join, com lógica de ordenação avançada e final."""
     
     filtros_instrumento = {}
     if 'instrumento_info.n_instrumento' in query_filter:
@@ -302,17 +300,22 @@ def get_pendencias_com_detalhes(query_filter, sort_by, sort_order):
                     {'$ifNull': ['$instrumento_info.tipo_documento', '']}
                 ]
             },
-            # Campo temporário que é 1 se o prazo existe, e 0 se não
-            'tem_prazo': {
-                '$cond': { 'if': '$prazo', 'then': 1, 'else': 0 }
+            # --- NOVOS CAMPOS PARA ORDENAÇÃO ROBUSTA ---
+            # Campo que é 0 se tem prioridade, 1 se não tem.
+            'ordem_prioridade': {
+                '$cond': { 'if': '$prioridade', 'then': 0, 'else': 1 }
+            },
+            # Campo que é 0 se tem prazo, 1 se não tem.
+            'ordem_prazo_nulo': {
+                '$cond': { 'if': '$prazo', 'then': 0, 'else': 1 }
             }
         }},
-        # --- ESTÁGIO DE ORDENAÇÃO CORRIGIDO ---
+        # --- ESTÁGIO DE ORDENAÇÃO FINAL E CORRETO ---
         {'$sort': OrderedDict([
-            ('prioridade', -1),          # 1. Prioritários no topo
-            ('tem_prazo', -1),           # 2. Com prazo antes dos sem prazo
-            (sort_by, sort_order),     # 3. Critério do usuário (ex: prazo ASC/DESC)
-            ('data_criacao', 1)        # 4. Critério final de desempate
+            ('ordem_prioridade', 1),          # 1. Prioritários no topo (0 vem antes de 1)
+            ('ordem_prazo_nulo', 1),           # 2. Com prazo antes dos sem prazo (0 vem antes de 1)
+            (sort_by, sort_order),         # 3. Critério do usuário (ex: prazo ASC/DESC)
+            ('data_criacao', 1)            # 4. Critério final de desempate
         ])}
     ]
     
@@ -1052,6 +1055,13 @@ def pendencias_lista(page_mode="geral"):
     # <<< FIM DA NOVA LÓGICA >>>
 
     colunas_visiveis = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in colunas_para_exibir])
+    
+    # <<< INÍCIO DO CÓDIGO DE DEPURAÇÃO >>>
+    print("\n--- DADOS DE PENDÊNCIAS (PARA DEPURAÇÃO) ---")
+    # Usamos json.dumps para formatar a saída e converter datas/ObjectIds
+    print(json.dumps(lista_pendencias, default=str, indent=2, ensure_ascii=False))
+    print("--- FIM DOS DADOS ---\n")
+    # <<< FIM DO CÓDIGO DE DEPURAÇÃO >>>
     
     return render_template(
         'pendencias_geral.html',
