@@ -12,7 +12,7 @@ from collections import OrderedDict
 import certifi
 from bson import json_util
 from bson.objectid import ObjectId
-from flask import Flask, Response, flash, redirect, render_template, request, url_for
+from flask import Flask, Response, flash, redirect, render_template, request, url_for, session
 #from flask_limiter import Limiter
 #from flask_limiter.util import get_remote_address
 from flask_login import (LoginManager, UserMixin, current_user, login_required,
@@ -105,6 +105,11 @@ TODAS_AS_COLUNAS_PENDENCIAS = [
     ['situacao', 'Situação'],
     ['observacoes', 'Observações']
 ]
+
+#Sessão de navegador
+@app.before_request
+def make_session_non_permanent():
+    session.permanent = False
 
 # --- Configuração Flask-Login ---
 login_manager = LoginManager()
