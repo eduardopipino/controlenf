@@ -137,14 +137,14 @@ body.theme-green {
 
 /* --- Tema Rosa --- */
 body.theme-pink {
-    --primary-color: #d63384;   /* Rosa principal para botões e destaques */
+    --primary-color: #e77bbe;   /* Rosa principal para botões e destaques */
     --secondary-color: #fce4ec; /* Rosa bem claro para fundos e hovers de tabela */
-    --tertiary-color: #ab2769;  /* Rosa escuro para navegação e títulos */
+    --tertiary-color: #994372;  /* Rosa escuro para navegação e títulos */
 	--nav-bg-color: var(--tertiary-color);
-    --accent-color: #e664a7;    /* Rosa um pouco mais claro para hover de botões */
+    --accent-color: #eea2c9;    /* Rosa um pouco mais claro para hover de botões */
 
     /* Cores de Texto */
-    --text-primary: #3c1027;      /* Um cinza escuro com um toque de púrpura */
+    --text-primary: #441a30;      /* Um cinza escuro com um toque de púrpura */
     --text-secondary: #ffffff;    /* Texto claro para botões e navegação */
     
     /* Cores de Fundo */
