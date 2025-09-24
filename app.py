@@ -293,34 +293,26 @@ def get_pendencias_com_detalhes(query_filter, sort_by, sort_order):
 
     pipeline = [
         {'$match': query_filter},
-        {'$lookup': {
-            'from': 'INSTRUMENTOCONTRATUAL',
-            'localField': 'instrumento_id',
-            'foreignField': '_id',
-            'as': 'instrumento_info'
-        }},
+        {'$lookup': { 'from': 'INSTRUMENTOCONTRATUAL', 'localField': 'instrumento_id', 'foreignField': '_id', 'as': 'instrumento_info' }},
         {'$unwind': {'path': '$instrumento_info', 'preserveNullAndEmptyArrays': True}},
         {'$match': filtros_instrumento}, 
         {'$addFields': {
             'contratada': '$instrumento_info.contratada',
             'n_instrumento': '$instrumento_info.n_instrumento',
-            'instrumento_display': {
-                '$concat': [
-                    {'$ifNull': ['$instrumento_info.n_instrumento', '']}, ' / ',
-                    {'$ifNull': ['$instrumento_info.tipo_documento', '']}
-                ]
-            },
-            # --- CAMPOS DE ORDENAÇÃO ROBUSTOS ---
-            # Campo que é 0 se tem prioridade, 1 se não tem.
+            'instrumento_display': { '$concat': [ {'$ifNull': ['$instrumento_info.n_instrumento', '']}, ' / ', {'$ifNull': ['$instrumento_info.tipo_documento', '']} ] },
+            
+            # --- NOVOS CAMPOS PARA ORDENAÇÃO ROBUSTA ---
             'ordem_prioridade': {
                 '$cond': { 'if': '$prioridade', 'then': 0, 'else': 1 }
             },
-            # Campo que é 0 se o campo ATUALMENTE SENDO ORDENADO tem valor, 1 se não tem.
+            # Campo que é 0 se o campo ATUALMENTE SENDO ORDENADO tem valor, e 1 se está vazio/nulo
             'ordem_valor_nulo': {
                 '$cond': { 
                     'if': { '$and': [
                         { '$ne': [sort_field_path, None] },
-                        { '$ne': [sort_field_path, ""] }
+                        { '$ne': [sort_field_path, ""] },
+                        # Verificação especial para o campo calculado que pode resultar em " / "
+                        { '$ne': [sort_field_path, " / "] }
                     ]}, 
                     'then': 0, 
                     'else': 1 
