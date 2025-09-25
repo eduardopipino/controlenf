@@ -277,8 +277,6 @@ def get_instrumentos_para_dropdown():
         inst['_id'] = str(inst['_id'])
     return instrumentos
 
-# SUBSTITUA A FUNÇÃO INTEIRA PELA VERSÃO ABAIXO
-
 def get_pendencias_com_detalhes(query_filter, sort_by, sort_order):
     """Busca pendências e faz o join, com lógica de ordenação avançada e final."""
     
@@ -287,9 +285,6 @@ def get_pendencias_com_detalhes(query_filter, sort_by, sort_order):
         filtros_instrumento['instrumento_info.n_instrumento'] = query_filter.pop('instrumento_info.n_instrumento')
     if 'instrumento_info.contratada' in query_filter:
         filtros_instrumento['instrumento_info.contratada'] = query_filter.pop('instrumento_info.contratada')
-
-    # Transforma o campo de ordenação em um caminho que o MongoDB entende (ex: '$pendencia')
-    sort_field_path = f"${sort_by}"
 
     pipeline = [
         {'$match': query_filter},
@@ -300,33 +295,47 @@ def get_pendencias_com_detalhes(query_filter, sort_by, sort_order):
             'contratada': '$instrumento_info.contratada',
             'n_instrumento': '$instrumento_info.n_instrumento',
             'instrumento_display': { '$concat': [ {'$ifNull': ['$instrumento_info.n_instrumento', '']}, ' / ', {'$ifNull': ['$instrumento_info.tipo_documento', '']} ] },
-            
-            # --- NOVOS CAMPOS PARA ORDENAÇÃO ROBUSTA ---
-            'ordem_prioridade': {
-                '$cond': { 'if': '$prioridade', 'then': 0, 'else': 1 }
-            },
-            # Campo que é 0 se o campo ATUALMENTE SENDO ORDENADO tem valor, e 1 se está vazio/nulo
-            'ordem_valor_nulo': {
-                '$cond': { 
-                    'if': { '$and': [
-                        { '$ne': [sort_field_path, None] },
-                        { '$ne': [sort_field_path, ""] },
-                        # Verificação especial para o campo calculado que pode resultar em " / "
-                        { '$ne': [sort_field_path, " / "] }
-                    ]}, 
-                    'then': 0, 
-                    'else': 1 
-                }
-            }
         }},
-        # --- ESTÁGIO DE ORDENAÇÃO FINAL E CORRETO ---
-        {'$sort': OrderedDict([
-            ('ordem_prioridade', 1),    # 1. Prioritários no topo (0 vem antes de 1)
-            ('ordem_valor_nulo', 1),    # 2. Com valor no campo ordenado antes dos sem valor (0 vem antes de 1)
-            (sort_by, sort_order),      # 3. Critério do usuário (alfabético, data, etc.)
-            ('data_criacao', 1)         # 4. Critério final de desempate
-        ])}
     ]
+
+    # --- LÓGICA DE ORDENAÇÃO CONDICIONAL E HIERÁRQUICA ---
+    sort_pipeline = OrderedDict()
+    sort_pipeline['prioridade'] = -1 # Prioridade é sempre o primeiro critério
+
+    # Se a ordenação for por uma das colunas do instrumento...
+    if sort_by in ['instrumento_display', 'contratada']:
+        # Criamos campos temporários para ordenar corretamente
+        pipeline.extend([
+            {'$addFields': {
+                'tem_valor': { '$cond': { 'if': { '$and': [ {'$ne': [f'${sort_by}', None]}, {'$ne': [f'${sort_by}', ""]}, {'$ne': [f'${sort_by}', " / "]} ]}, 'then': 1, 'else': 0 }},
+                'partes_instrumento': { '$split': [ {'$ifNull': ['$n_instrumento', '']}, "/" ] }
+            }},
+            {'$addFields': {
+                'ano_instrumento_num': { '$convert': { 'input': { '$arrayElemAt': [ "$partes_instrumento", 1 ] }, 'to': 'int', 'onError': 0, 'onNull': 0 }},
+                'num_instrumento_num': { '$convert': { 'input': { '$arrayElemAt': [ "$partes_instrumento", 0 ] }, 'to': 'int', 'onError': 0, 'onNull': 0 }}
+            }}
+        ])
+        sort_pipeline['tem_valor'] = -1 # Coloca os sem valor por último
+        if sort_by == 'instrumento_display':
+            sort_pipeline['ano_instrumento_num'] = sort_order
+            sort_pipeline['num_instrumento_num'] = sort_order
+        else:
+            sort_pipeline[sort_by] = sort_order
+    
+    # Se a ordenação for por prazo...
+    elif sort_by == 'prazo':
+        pipeline.append({'$addFields': {'tem_prazo': { '$cond': { 'if': '$prazo', 'then': 1, 'else': 0 }}}})
+        sort_pipeline['tem_prazo'] = -1
+        sort_pipeline[sort_by] = sort_order
+        
+    # Para todas as outras colunas (responsavel, situacao, etc.)...
+    else:
+        pipeline.append({'$addFields': {'tem_valor': { '$cond': { 'if': { '$and': [ {'$ne': [f'${sort_by}', None]}, {'$ne': [f'${sort_by}', ""]} ]}, 'then': 1, 'else': 0 }}}})
+        sort_pipeline['tem_valor'] = -1
+        sort_pipeline[sort_by] = sort_order
+
+    # Adiciona o estágio de ordenação completo à pipeline
+    pipeline.append({'$sort': sort_pipeline})
     
     pendencias = list(pendencias_collection.aggregate(pipeline))
     
