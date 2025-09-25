@@ -277,10 +277,8 @@ def get_instrumentos_para_dropdown():
         inst['_id'] = str(inst['_id'])
     return instrumentos
 
-# SUBSTITUA A FUNÇÃO INTEIRA PELA VERSÃO ABAIXO
-
-def get_pendencias_com_detalhes(query_filter, sort_by, sort_order):
-    """Busca pendências e faz o join, com lógica de ordenação avançada e final."""
+def get_pendencias_com_detalhes(query_filter):
+    """Busca pendências e faz o join com instrumentos para obter detalhes."""
     
     filtros_instrumento = {}
     if 'instrumento_info.n_instrumento' in query_filter:
@@ -297,45 +295,8 @@ def get_pendencias_com_detalhes(query_filter, sort_by, sort_order):
             'contratada': '$instrumento_info.contratada',
             'n_instrumento': '$instrumento_info.n_instrumento',
             'instrumento_display': { '$concat': [ {'$ifNull': ['$instrumento_info.n_instrumento', '']}, ' / ', {'$ifNull': ['$instrumento_info.tipo_documento', '']} ] },
-        }},
+        }}
     ]
-
-    # --- LÓGICA DE ORDENAÇÃO CONDICIONAL E HIERÁRQUICA ---
-    sort_pipeline = OrderedDict()
-    sort_pipeline['prioridade'] = -1 # Prioridade é sempre o primeiro critério
-
-    # Caso super especial para ordenação por 'Nº / Tipo'
-    if sort_by == 'instrumento_display':
-        sort_field_path = "$instrumento_display"
-        # Adiciona campos temporários para quebrar e converter o número/ano
-        pipeline.extend([
-            {'$addFields': {
-                'tem_valor': { '$cond': { 'if': { '$and': [ {'$ne': [sort_field_path, None]}, {'$ne': [sort_field_path, ""]}, {'$ne': [sort_field_path, " / "]} ]}, 'then': 1, 'else': 0 }},
-                'partes_instrumento': { '$split': [ {'$ifNull': ['$n_instrumento', '']}, "/" ] }
-            }},
-            {'$addFields': {
-                'ano_instrumento_num': { '$convert': { 'input': { '$arrayElemAt': [ "$partes_instrumento", 1 ] }, 'to': 'int', 'onError': 0, 'onNull': 0 }},
-                'num_instrumento_num': { '$convert': { 'input': { '$arrayElemAt': [ "$partes_instrumento", 0 ] }, 'to': 'int', 'onError': 0, 'onNull': 0 }}
-            }}
-        ])
-        sort_pipeline['tem_valor'] = -1
-        sort_pipeline['ano_instrumento_num'] = sort_order
-        sort_pipeline['num_instrumento_num'] = sort_order
-    
-    # Caso geral para TODAS as outras colunas (Contratada, Prazo, Responsável, etc.)
-    else:
-        sort_field_path = f"${sort_by}"
-        pipeline.append(
-            {'$addFields': {
-                'tem_valor': { '$cond': { 'if': { '$and': [ {'$ne': [sort_field_path, None]}, {'$ne': [sort_field_path, ""]} ]}, 'then': 1, 'else': 0 }}
-            }}
-        )
-        sort_pipeline['tem_valor'] = -1
-        sort_pipeline[sort_by] = sort_order
-
-    
-    # Adiciona o estágio de ordenação completo à pipeline
-    pipeline.append({'$sort': sort_pipeline})
     
     pendencias = list(pendencias_collection.aggregate(pipeline))
     
@@ -1049,9 +1010,9 @@ def pendencias_lista(page_mode="geral"):
 
     # Lógica de ordenação
     # A ordenação padrão agora é por 'prazo'
-    sort_by = request.args.get('sort_by', 'prazo') 
-    order = request.args.get('order', 'asc')
-    sort_order_mongo = 1 if order == 'asc' else -1
+    #sort_by = request.args.get('sort_by', 'prazo') 
+    #order = request.args.get('order', 'asc')
+    #sort_order_mongo = 1 if order == 'asc' else -1
     
     # Passamos os critérios de forma estruturada para a próxima função
     #sort_criteria = {sort_by: sort_order_mongo}
@@ -1059,7 +1020,46 @@ def pendencias_lista(page_mode="geral"):
     # Busca os dados
     #lista_pendencias = get_pendencias_com_detalhes(query_filter, sort_criteria)
     # Passa os critérios de forma separada para a função de busca
-    lista_pendencias = get_pendencias_com_detalhes(query_filter, sort_by, sort_order_mongo)    
+    #lista_pendencias = get_pendencias_com_detalhes(query_filter, sort_by, sort_order_mongo)    
+    
+    # DEPOIS (Novo bloco de ordenação em Python)
+    
+    # Busca os dados brutos, sem ordenação complexa do DB
+    lista_pendencias_bruta = get_pendencias_com_detalhes(query_filter)
+
+    # --- LÓGICA DE ORDENAÇÃO "4 BUCKETS" EM PYTHON ---
+    sort_by = request.args.get('sort_by', 'prazo')
+    order = request.args.get('order', 'asc')
+    is_reverse = True if order == 'desc' else False
+
+    # 1. Separa nos 2 "baldes" principais (com e sem prioridade)
+    prioritarios = [p for p in lista_pendencias_bruta if p.get('prioridade')]
+    nao_prioritarios = [p for p in lista_pendencias_bruta if not p.get('prioridade')]
+
+    # Função auxiliar para separar cada balde em 2 "canecas" (com e sem valor)
+    def sort_bucket(bucket, key, is_reverse_order):
+        com_valor = [p for p in bucket if p.get(key) and str(p.get(key)).strip() and str(p.get(key)).strip() != '/']
+        sem_valor = [p for p in bucket if not p.get(key) or not str(p.get(key)).strip() or str(p.get(key)).strip() == '/']
+        
+        # Ordena a "caneca" com valor
+        # Lógica especial para 'n_instrumento'
+        if key == 'instrumento_display':
+            com_valor.sort(key=lambda x: (
+                int(x.get('n_instrumento', '0/0').split('/')[1]), 
+                int(x.get('n_instrumento', '0/0').split('/')[0])
+            ), reverse=is_reverse_order)
+        else:
+            com_valor.sort(key=lambda x: x.get(key, ''), reverse=is_reverse_order)
+
+        # Retorna as canecas na ordem correta: com valor primeiro, depois sem valor
+        return com_valor + sem_valor
+
+    # 2. Ordena o conteúdo de cada balde
+    prioritarios_ordenados = sort_bucket(prioritarios, sort_by, is_reverse)
+    nao_prioritarios_ordenados = sort_bucket(nao_prioritarios, sort_by, is_reverse)
+
+    # 3. Junta tudo na ordem final
+    lista_pendencias = prioritarios_ordenados + nao_prioritarios_ordenados
     
     hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     for p in lista_pendencias:
@@ -1074,6 +1074,13 @@ def pendencias_lista(page_mode="geral"):
 
     colunas_visiveis = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in colunas_para_exibir])
     
+    # <<< INÍCIO DO CÓDIGO DE DEPURAÇÃO >>>
+    #print(f"\n--- DEPURAÇÃO (Ordenado por: {sort_by}, Ordem: {order}) ---")
+    # Usamos json.dumps para formatar a saída e converter datas/ObjectIds
+    #print(json.dumps(lista_pendencias, default=str, indent=2, ensure_ascii=False))
+    #print("--- FIM DOS DADOS ---\n")
+    # <<< FIM DO CÓDIGO DE DEPURAÇÃO >>>
+
     return render_template(
         'pendencias_geral.html',
         pendencias=lista_pendencias,
