@@ -301,7 +301,7 @@ nav {
 }
 
 .flash-message {
-    padding: 15px;
+    padding: 10px;
     margin-bottom: 10px;
     border-radius: 5px;
     font-weight: bold;
@@ -363,7 +363,7 @@ body.theme-dark h1, body.theme-dark h2, body.theme-dark h3 {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 0;
     flex-wrap: wrap;
 }
 
@@ -384,7 +384,7 @@ button:disabled {
 
 /* Forms */
 form div {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 label {
@@ -776,7 +776,7 @@ a.summary-card:hover { /* Efeito de hover apenas para cards que são links */
     background-color: var(--background-primary);
     border: 1px solid var(--border-base);
     border-radius: 5px;
-    padding: 15px;
+    padding: 5px;
     margin-bottom: 25px;
 }
 
