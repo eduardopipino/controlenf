@@ -16,6 +16,6 @@
             <button type="submit">Entrar</button>
         </div>
         {# Frase "Ainda não tem uma conta?" eliminada, texto do link alterado #}
-        <p><a href="{{ url_for('register') }}">Nova conta</a>.</p>
+        <p><a href="{{ url_for('auth.register') }}">Nova conta</a>.</p>
     </form>
 {% endblock %}

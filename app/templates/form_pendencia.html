@@ -69,13 +69,13 @@
                 </div>
             {% else %}
                 <button type="submit">Salvar</button>
-                <a href="{{ origem or url_for('pendencias_lista', page_mode='geral') }}" class="button" id="btnCancelarNovo">Cancelar</a>
+                <a href="{{ origem or url_for('pendencias.pendencias_lista', page_mode='geral') }}" class="button" id="btnCancelarNovo">Cancelar</a>
             {% endif %}
         </div>
     </form>
 
     {% if not novo %}
-    <form id="formExcluir" method="POST" action="{{ url_for('excluir_pendencia', pendencia_id=pendencia._id) }}" style="display: none;"></form>
+    <form id="formExcluir" method="POST" action="{{ url_for('pendencias.excluir_pendencia', pendencia_id=pendencia._id) }}" style="display: none;"></form>
     {% endif %}
 
 {% endblock %}
@@ -166,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const acaoFechar = () => {
             const urlOrigem = document.querySelector('input[name="origem"]').value;
-            window.location.href = urlOrigem || "{{ url_for('pendencias_lista', page_mode='geral') }}";
+            window.location.href = urlOrigem || "{{ url_for('pendencias.pendencias_lista', page_mode='geral') }}";
         };
 
         const acaoCancelarEdicao = () => {

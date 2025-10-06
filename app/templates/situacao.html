@@ -8,7 +8,7 @@
     </div>
 
     <div class="mobile-actions">
-        <a href="{{ url_for('nova_situacao') }}" class="fab" title="Nova Situação">+</a>
+        <a href="{{ url_for('cadastros.nova_situacao') }}" class="fab" title="Nova Situação">+</a>
     </div>
     <br>
     <table id="tabelaSituacoes" class="responsive-card-table">
@@ -23,7 +23,7 @@
         </thead>
         <tbody>
             {% for situacao in situacoes %}
-            <tr class="clickable-row" data-url="{{ url_for('editar_situacao', situacao_id=situacao._id) }}">
+            <tr class="clickable-row" data-url="{{ url_for('cadastros.editar_situacao', situacao_id=situacao._id) }}">
                 <td data-label="Selecionar">
                     <input type="radio" name="selected_situacao" value="{{ situacao._id }}">
                 </td>
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     btnEditar.disabled = false;
                     btnEditar.onclick = () => {
-                        window.location.href = `{{ url_for('editar_situacao', situacao_id='REPLACE_ID') }}`.replace('REPLACE_ID', selectedId);
+                        window.location.href = `{{ url_for('cadastros.editar_situacao', situacao_id='REPLACE_ID') }}`.replace('REPLACE_ID', selectedId);
                     };
 
                     btnExcluir.disabled = false;
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 if (confirmed) {
                                     const deleteForm = document.createElement('form');
                                     deleteForm.method = 'POST';
-                                    deleteForm.action = `{{ url_for('excluir_situacao', situacao_id='REPLACE_ID') }}`.replace('REPLACE_ID', selectedId);
+                                    deleteForm.action = `{{ url_for('cadastros.excluir_situacao', situacao_id='REPLACE_ID') }}`.replace('REPLACE_ID', selectedId);
                                     document.body.appendChild(deleteForm);
                                     deleteForm.submit();
                                 }

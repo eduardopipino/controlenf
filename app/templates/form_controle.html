@@ -66,12 +66,12 @@
                 </div>
              {% else %}
                 <button type="submit" id="btnSalvarNovo">Salvar</button>
-                <a href="{{ url_for('controle_lista', filter_mode='pendentes') }}" class="button" id="btnCancelarNovo">Cancelar</a>
+                <a href="{{ url_for('controle.controle_lista', filter_mode='pendentes') }}" class="button" id="btnCancelarNovo">Cancelar</a>
              {% endif %}
         </div>
     </form>
     {% if not novo %}
-    <form id="formExcluirControle" method="POST" action="{{ url_for('excluir_controle', controle_id=controle._id) }}" style="display: none;"></form>
+    <form id="formExcluirControle" method="POST" action="{{ url_for('controle.excluir_controle', controle_id=controle._id) }}" style="display: none;"></form>
     {% endif %}
 
 {% endblock %}
@@ -226,7 +226,7 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleEditFields(false); // Garante que tudo comece desabilitado
 
         // --- LÓGICA DOS BOTÕES ---
-        const acaoFechar = () => window.location.href = "{{ url_for('controle_lista', filter_mode='pendentes') }}";
+        const acaoFechar = () => window.location.href = "{{ url_for('controle.controle_lista', filter_mode='pendentes') }}";
         const acaoCancelarEdicao = () => {
             showCustomConfirm('Cancelar Edição?', 'As alterações serão perdidas.', (confirmed) => { 
                 if (confirmed) location.reload(); 

@@ -5,9 +5,9 @@
 
     <div class="button-toolbar desktop-actions">
         <div class="toolbar-group-left">
-            <button class="{{ 'filtro-ativo' if filtro_ativo == 'todos' else '' }}" onclick="location.href='{{ url_for('instrumentos_contratuais', filtro='todos') }}'">Todos</button>
-            <button class="{{ 'filtro-ativo' if filtro_ativo == 'vigentes' else '' }}" onclick="location.href='{{ url_for('instrumentos_contratuais', filtro='vigentes') }}'">Vigentes</button>
-            <button class="{{ 'filtro-ativo' if filtro_ativo == 'extintos' else '' }}" onclick="location.href='{{ url_for('instrumentos_contratuais', filtro='extintos') }}'">Extintos</button>
+            <button class="{{ 'filtro-ativo' if filtro_ativo == 'todos' else '' }}" onclick="location.href='{{ url_for('instrumentos.instrumentos_contratuais', filtro='todos') }}'">Todos</button>
+            <button class="{{ 'filtro-ativo' if filtro_ativo == 'vigentes' else '' }}" onclick="location.href='{{ url_for('instrumentos.instrumentos_contratuais', filtro='vigentes') }}'">Vigentes</button>
+            <button class="{{ 'filtro-ativo' if filtro_ativo == 'extintos' else '' }}" onclick="location.href='{{ url_for('instrumentos.instrumentos_contratuais', filtro='extintos') }}'">Extintos</button>
         </div>
 
         <div class="toolbar-group-center">
@@ -15,19 +15,19 @@
         </div>
 
         <div class="toolbar-group-right">
-            <button onclick="location.href='{{ url_for('novo_instrumento_contratual') }}'">Novo</button>
+            <button onclick="location.href='{{ url_for('instrumentos.novo_instrumento_contratual') }}'">Novo</button>
         </div>
     </div>
 
     <div class="mobile-actions">
-        <a href="{{ url_for('novo_instrumento_contratual') }}" class="fab" title="Novo Instrumento">+</a>
+        <a href="{{ url_for('instrumentos.novo_instrumento_contratual') }}" class="fab" title="Novo Instrumento">+</a>
         
         <div class="kebab-menu-container">
             <button id="btnKebab" class="kebab-menu-button">&#8942;</button>
             <div class="kebab-menu-dropdown">
-                <a href="{{ url_for('instrumentos_contratuais', filtro='todos') }}">Todos</a>
-                <a href="{{ url_for('instrumentos_contratuais', filtro='vigentes') }}">Vigentes</a>
-                <a href="{{ url_for('instrumentos_contratuais', filtro='extintos') }}">Extintos</a>
+                <a href="{{ url_for('instrumentos.instrumentos_contratuais', filtro='todos') }}">Todos</a>
+                <a href="{{ url_for('instrumentos.instrumentos_contratuais', filtro='vigentes') }}">Vigentes</a>
+                <a href="{{ url_for('instrumentos.instrumentos_contratuais', filtro='extintos') }}">Extintos</a>
             </div>
         </div>
     </div>
@@ -49,7 +49,7 @@
         </thead>
         <tbody>
             {% for instrumento in instrumentos %}
-            <tr class="clickable-row" data-url="{{ url_for('gerenciar_instrumento', instrumento_id=instrumento._id) }}">
+            <tr class="clickable-row" data-url="{{ url_for('instrumentos.gerenciar_instrumento', instrumento_id=instrumento._id) }}">
                 <td data-label="Selecionar"><input type="radio" name="selected_instrumento" value="{{ instrumento._id }}"></td>
                 <td data-label="Nº Instrumento"><span class="card-value">{{ instrumento.n_instrumento }}</span></td>
                 <td data-label="Tipo Documento"><span class="card-value">{{ instrumento.tipo_documento }}</span></td>
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
             'tabelaInstrumentos',
             'selected_instrumento',
             'btnDetalhes',
-            "{{ url_for('gerenciar_instrumento', instrumento_id='REPLACE_ID') }}"
+            "{{ url_for('instrumentos.gerenciar_instrumento', instrumento_id='REPLACE_ID') }}"
         );
     } else {
         // MODO MOBILE: Transforma cada card (linha da tabela) em um link

@@ -8,7 +8,7 @@
             <button id="btnFiltro" class="{{ 'filtro-ativo' if filtro_ativo else '' }}">Filtro...</button>
             <button id="btnColorCode">Identificar por cores</button>
             <button id="btnConfigurarColunas">Configurar colunas</button>
-            <a href="{{ url_for('exportar_csv', filter_mode=filter_mode) }}" class="button">Exportar</a>
+            <a href="{{ url_for('controle.exportar_csv', filter_mode=filter_mode) }}" class="button">Exportar</a>
         </div>
         
         <div class="toolbar-group-center">
@@ -16,20 +16,20 @@
         </div>
                 
         <div class="toolbar-group-right">
-            <button onclick="location.href='{{ url_for('novo_controle') }}'">Novo</button>
+            <button onclick="location.href='{{ url_for('controle.novo_controle') }}'">Novo</button>
             <button id="btnNovoRecorrente">Novo - Recorrente</button>
         </div>
     </div>
     
     <div class="mobile-actions">
-        <a href="{{ url_for('novo_controle') }}" class="fab" title="Novo Registro">+</a>
+        <a href="{{ url_for('controle.novo_controle') }}" class="fab" title="Novo Registro">+</a>
 
         <div class="kebab-menu-container">
             <button id="btnKebab" class="kebab-menu-button">&#8942;</button>
             <div class="kebab-menu-dropdown">
                 <a href="#" id="btnFiltroMobile">Filtrar...</a>
                 <a href="#" id="btnConfigurarColunasMobile">Configurar Colunas</a>
-                <a href="{{ url_for('exportar_csv', filter_mode=filter_mode) }}">Exportar</a>
+                <a href="{{ url_for('controle.exportar_csv', filter_mode=filter_mode) }}">Exportar</a>
                 <a href="#" id="btnColorCodeMobile">Identificar por Cores</a>
                 <a href="#" id="btnNovoRecorrenteMobile">Novo - Recorrente</a>
             </div>
@@ -56,7 +56,7 @@
         </thead>
         <tbody>
             {% for controle in controles %}
-            <tr class="clickable-row" id="controle-row-{{ controle._id }}" data-id="{{ controle._id }}" data-url="{{ url_for('detalhes_controle', controle_id=controle._id) }}">
+            <tr class="clickable-row" id="controle-row-{{ controle._id }}" data-id="{{ controle._id }}" data-url="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}">
                 
                 <td data-label="Selecionar"><input type="radio" name="selected_controle" value="{{ controle._id }}"></td>
                 
@@ -100,7 +100,7 @@
         <div class="modal-content">
             <h3>Filtrar Registros</h3>
                 {# Alterado para METHOD="GET" e a action agora usa a rota unificada #}
-                <form method="GET" action="{{ url_for('controle_lista', filter_mode=filter_mode) }}">
+                <form method="GET" action="{{ url_for('controle.controle_lista', filter_mode=filter_mode) }}">
                 
                 <div>
                     <label for="filter_n_instrumento">Nº Instrumento:</label>
@@ -134,7 +134,7 @@
                 <div class="button-toolbar">
                     <button type="submit">Aplicar Filtro</button>
                     <button type="button" class="btn-cancel-modal">Cancelar</button>
-                    <button type="button" class="button" onclick="window.location.href='{{ url_for('controle_lista', filter_mode=filter_mode) }}'">Limpar Filtro</button>
+                    <button type="button" class="button" onclick="window.location.href='{{ url_for('controle.controle_lista', filter_mode=filter_mode) }}'">Limpar Filtro</button>
                     {#<button type="button" id="btnLimparFiltro" class="button">Limpar Filtro</button>#}
                     {#<a href="{{ url_for('controle_lista', filter_mode=filter_mode) }}" class="button">Limpar Filtro</a>#}
                 </div>
@@ -145,7 +145,7 @@
     <div id="recorrenteModal" class="modal-overlay">
         <div class="modal-content">
             <h3>Gerar Registros Recorrentes</h3>
-            <form method="POST" action="{{ url_for('novo_controle_recorrente') }}">
+            <form method="POST" action="{{ url_for('controle.novo_controle_recorrente') }}">
                 <div>
                     <label for="referencia_recorrente">Referência (Ex: "MM/AAAA" ou "MM"):</label>
                     <input type="text" id="referencia_recorrente" name="referencia_recorrente" placeholder="Ex: 07/2025 ou 7" required>
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
             'tabelaControle',
             'selected_controle',
             'btnDetalhes',
-            "{{ url_for('detalhes_controle', controle_id='REPLACE_ID') }}"
+            "{{ url_for('controle.detalhes_controle', controle_id='REPLACE_ID') }}"
         );
     } else {
         // MODO MOBILE: Transforma cada card em um link para a página de detalhes
@@ -322,7 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     btnSalvarColunas.addEventListener('click', () => {
         const colunasSelecionadas = Array.from(checklistContainer.querySelectorAll('input:checked')).map(cb => cb.value);
-        fetch("{{ url_for('save_column_prefs') }}", {
+        fetch("{{ url_for('core.save_column_prefs') }}", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ colunas: colunasSelecionadas })

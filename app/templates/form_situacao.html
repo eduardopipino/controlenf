@@ -39,7 +39,7 @@
     </form>
 
     {% if not novo %}
-        <form id="formExcluirSituacao" method="POST" action="{{ url_for('excluir_situacao', situacao_id=situacao._id) }}" style="display: none;"></form>
+        <form id="formExcluirSituacao" method="POST" action="{{ url_for('cadastros.excluir_situacao', situacao_id=situacao._id) }}" style="display: none;"></form>
     {% endif %}
 {% endblock %}
 
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showCustomConfirm('Cancelar Alterações?', 'Os dados não salvos serão perdidos.',
             (confirmed) => {
                 if (confirmed) {
-                    window.location.href = "{{ url_for('cadastros_situacao') }}";
+                    window.location.href = "{{ url_for('cadastros.cadastros_situacao') }}";
                 }
             }, 'Sim');
     });

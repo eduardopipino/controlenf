@@ -8,21 +8,21 @@
             <button id="btnFiltro">Filtro...</button>
             <button id="btnConfigurarColunas">Configurar Colunas</button>
             {% if page_mode == 'concluidas' %}
-                <a href="{{ url_for('exportar_pendencias_concluidas_csv') }}" class="button">Exportar Concluídas</a>
+                <a href="{{ url_for('pendencias.exportar_pendencias_concluidas_csv') }}" class="button">Exportar Concluídas</a>
             {% else %}
-                <a href="{{ url_for('exportar_pendencias_pendentes_csv') }}" class="button">Exportar Pendentes</a>
+                <a href="{{ url_for('pendencias.exportar_pendencias_pendentes_csv') }}" class="button">Exportar Pendentes</a>
             {% endif %}
         </div>
         <div class="toolbar-group-center">
             <button id="btnDetalhes" disabled>Detalhes...</button>
         </div>
         <div class="toolbar-group-right">
-            <a href="{{ url_for('nova_pendencia', origem=request.path) }}" class="button">Novo</a>
+            <a href="{{ url_for('pendencias.nova_pendencia', origem=request.path) }}" class="button">Novo</a>
         </div>
     </div>
 
     <div class="mobile-actions">
-        <a href="{{ url_for('nova_pendencia', origem=request.path) }}" class="fab" title="Nova Pendência">+</a>
+        <a href="{{ url_for('pendencias.nova_pendencia', origem=request.path) }}" class="fab" title="Nova Pendência">+</a>
         <div class="kebab-menu-container">
             <button id="btnKebab" class="kebab-menu-button">&#8942;</button>
             <div class="kebab-menu-dropdown">
@@ -30,9 +30,9 @@
                 <a href="#" id="btnConfigurarColunasMobile">Configurar Colunas</a>
                 
                 {% if page_mode == 'concluidas' %}
-                    <a href="{{ url_for('exportar_pendencias_concluidas_csv') }}">Exportar Concluídas</a>
+                    <a href="{{ url_for('pendencias.exportar_pendencias_concluidas_csv') }}">Exportar Concluídas</a>
                 {% else %}
-                    <a href="{{ url_for('exportar_pendencias_pendentes_csv') }}">Exportar Pendentes</a>
+                    <a href="{{ url_for('pendencias.exportar_pendencias_pendentes_csv') }}">Exportar Pendentes</a>
                 {% endif %}
             </div>
         </div>
@@ -87,7 +87,7 @@
     <div id="filterModal" class="modal-overlay">
         <div class="modal-content">
             <h3>Filtrar Pendências</h3>
-            <form method="POST" action="{{ url_for('pendencias_filtrar') }}">
+            <form method="POST" action="{{ url_for('pendencias.pendencias_filtrar') }}">
                 <input type="hidden" name="page_mode" value="{{ page_mode }}">
 				<div>
 					<label for="filter_n_instrumento">Nº Instrumento:</label>
@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- LÓGICA RESPONSIVA (DESKTOP vs MOBILE) ---
     if (window.innerWidth > 768) {
         // MODO DESKTOP: Inicia a tabela com seleção por radio button
-        initializeClickableTable('tabelaPendencias', 'selected_pendencia', 'btnDetalhes', "{{ url_for('detalhes_pendencia', pendencia_id='REPLACE_ID', origem=request.path) }}");
+        initializeClickableTable('tabelaPendencias', 'selected_pendencia', 'btnDetalhes', "{{ url_for('pendencias.detalhes_pendencia', pendencia_id='REPLACE_ID', origem=request.path) }}");
     } else {
         // MODO MOBILE: Transforma cada card em um link para a página de detalhes
         document.querySelectorAll('.responsive-card-table tr[data-url]').forEach(card => {
@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnLimparFiltro = document.getElementById('btnLimparFiltro');
     if (btnLimparFiltro) {
         btnLimparFiltro.addEventListener('click', () => {
-            const targetUrl = "{{ url_for('pendencias_lista', page_mode=page_mode) }}";
+            const targetUrl = "{{ url_for('pendencias.pendencias_lista', page_mode=page_mode) }}";
             window.location.href = targetUrl;
         });
     }

@@ -8,16 +8,16 @@
             <button id="btnDetalhes" disabled>Detalhes...</button>
         </div>
         <div class="toolbar-group-right">
-            <a href="{{ url_for('nova_pendencia', origem=request.path) }}" class="button">Novo</a>
+            <a href="{{ url_for('pendencias.nova_pendencia', origem=request.path) }}" class="button">Novo</a>
         </div>
     </div>
         <div class="mobile-actions">
-            <a href="{{ url_for('nova_pendencia', origem=request.path) }}" class="fab" title="Novo">+</a>
+            <a href="{{ url_for('pendencias.nova_pendencia', origem=request.path) }}" class="fab" title="Novo">+</a>
         </div>
     <br>
 
     <div class="container container-darker" style="margin-bottom: 20px; padding: 15px;">
-        <form method="GET" action="{{ url_for('pendencias_por_instrumento') }}">
+        <form method="GET" action="{{ url_for('pendencias.pendencias_por_instrumento') }}">
             <label for="instrumento_id_filtro">Filtrar por Instrumento Contratual:</label>
             <select name="instrumento_id" id="instrumento_id_filtro" onchange="this.form.submit()">
                 <option value="">-- Todos os Instrumentos --</option>
@@ -51,7 +51,7 @@
                     </thead>
                     <tbody>
                         {% for p in grupo.pendencias_vencidas %}
-                        <tr class="clickable-row pendencia-vencida" data-url="{{ url_for('detalhes_pendencia', pendencia_id=p._id) }}">
+                        <tr class="clickable-row pendencia-vencida" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id) }}">
                             <td data-label="Selecionar"><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
                             <td data-label="Pendência"><span class="card-value">{{ p.pendencia or '' }}</span></td>
                             <td data-label="Prazo"><span class="card-value">{{ p.prazo.strftime('%d/%m/%Y') }}</span></td>
@@ -61,7 +61,7 @@
                         </tr>
                         {% endfor %}
                         {% for p in grupo.pendencias_a_vencer %}
-                        <tr class="clickable-row" data-url="{{ url_for('detalhes_pendencia', pendencia_id=p._id) }}">
+                        <tr class="clickable-row" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id) }}">
                             <td data-label="Selecionar"><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
                             <td data-label="Pendência"><span class="card-value">{{ p.pendencia or '' }}</span></td>
                             <td data-label="Prazo"><span class="card-value">{{ p.prazo.strftime('%d/%m/%Y') }}</span></td>
@@ -82,7 +82,7 @@
                     </thead>
                     <tbody>
                         {% for p in grupo.pendencias_sem_prazo %}
-                        <tr class="clickable-row" data-url="{{ url_for('detalhes_pendencia', pendencia_id=p._id) }}">
+                        <tr class="clickable-row" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id) }}">
                             <td data-label="Selecionar"><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
                             <td data-label="Pendência"><span class="card-value">{{ p.pendencia or '' }}</span></td>
                             <td data-label="Responsável"><span class="card-value">{{ p.responsavel or '' }}</span></td>
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     btnDetalhes.disabled = false;
                     btnDetalhes.onclick = () => {
                         const selectedId = this.value;
-                        window.location.href = "{{ url_for('detalhes_pendencia', pendencia_id='REPLACE_ID', origem=request.path) }}".replace('REPLACE_ID', selectedId);
+                        window.location.href = "{{ url_for('pendencias.detalhes_pendencia', pendencia_id='REPLACE_ID', origem=request.path) }}".replace('REPLACE_ID', selectedId);
                     };
                 }
             });

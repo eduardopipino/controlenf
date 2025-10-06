@@ -29,7 +29,7 @@
         <div id="nav-links-container">
             <ul id="main-nav-menu">
                 {% if current_user.is_authenticated %}
-                    <li class="nav-item"><a href="{{ url_for('index') }}" class="nav-link">Início</a></li>
+                    <li class="nav-item"><a href="{{ url_for('core.index') }}" class="nav-link">Início</a></li>
                     <li class="nav-item dropdown">
                         <a href="#" class="nav-link dropbtn">Controle de Notas Fiscais</a>
                         <ul class="dropdown-menu">
@@ -54,7 +54,7 @@
                             <li><a class="dropdown-item" href="{{ url_for('cadastros_situacao') }}">Situação</a></li>
                         </ul>
                     </li>
-                    <li class="nav-item nav-item-right"><a href="{{ url_for('configuracoes') }}" class="nav-link">Configurações</a></li>
+                    <li class="nav-item nav-item-right"><a href="{{ url_for('core.configuracoes') }}" class="nav-link">Configurações</a></li>
                     <li class="nav-item dropdown">
                         <a href="#" class="nav-link dropbtn">Temas</a>
                         <ul class="dropdown-menu">
@@ -65,7 +65,7 @@
                             <li><a href="#" class="dropdown-item" data-theme="theme-dark">Escuro</a></li>
                         </ul>
                     </li>
-                    <li class="nav-item"><a href="{{ url_for('logout') }}" class="nav-link">Logout ({{ current_user.username }})</a></li>
+                    <li class="nav-item"><a href="{{ url_for('auth.logout') }}" class="nav-link">Logout ({{ current_user.username }})</a></li>
                 {% endif %}
             </ul>
         </div>

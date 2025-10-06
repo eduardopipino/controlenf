@@ -5,7 +5,7 @@
 
     <div class="container container-darker" style="border-left: 5px solid var(--primary-color); margin-bottom: 30px;">
         <h3>Dados Gerais do Instrumento</h3>
-        <form id="formInstrumento" method="POST" action="{{ url_for('gerenciar_instrumento', instrumento_id=instrumento._id) }}">
+        <form id="formInstrumento" method="POST" action="{{ url_for('instrumentos.gerenciar_instrumento', instrumento_id=instrumento._id) }}">
             <input type="hidden" name="update_instrumento" value="1">
             <div>
                 <label>Nº do Instrumento Contratual:</label>
@@ -41,7 +41,7 @@
                 </div>
             </div>
         </form>
-        <form id="formExcluirInstrumento" method="POST" action="{{ url_for('excluir_instrumento_contratual', instrumento_id=instrumento._id) }}" style="display:none;"></form>
+        <form id="formExcluirInstrumento" method="POST" action="{{ url_for('instrumentos.excluir_instrumento_contratual', instrumento_id=instrumento._id) }}" style="display:none;"></form>
     </div>
 
     <div class="container container-darker">
@@ -61,11 +61,11 @@
                     <td data-label="Frequência">{{ item.tipo_frequencia }}</td>
                     <td data-label="Ações">
                         <div class="card-actions-toolbar">
-                            <a href="{{ url_for('editar_item_instrumento', item_id=item._id) }}" class="button">Editar</a>
+                            <a href="{{ url_for('instrumentos.editar_item_instrumento', item_id=item._id) }}" class="button">Editar</a>
                             <button type="button" class="button-danger btn-excluir-item" data-item-id="{{ item._id }}" data-item-descricao="{{ item.descricao_item }}">Excluir</button>
                             <button type="button" class="button btn-novo-controle" data-item-id="{{ item._id }}" data-item-descricao="{{ item.descricao_item }}">Novo controle</button>
                         </div>
-                        <form id="formExcluirItem-{{ item._id }}" method="POST" action="{{ url_for('excluir_item_instrumento', item_id=item._id) }}" style="display: none;"></form>
+                        <form id="formExcluirItem-{{ item._id }}" method="POST" action="{{ url_for('instrumentos.excluir_item_instrumento', item_id=item._id) }}" style="display: none;"></form>
                     </td>
                 </tr>
                 {% else %}
@@ -79,7 +79,7 @@
         <br>
         
         <div class="button-toolbar">
-             <a href="{{ url_for('adicionar_item_instrumento', instrumento_id=instrumento._id) }}" class="button">Adicionar Item</a>
+             <a href="{{ url_for('instrumentos.adicionar_item_instrumento', instrumento_id=instrumento._id) }}" class="button">Adicionar Item</a>
         </div>
     </div>
 
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
             (confirmed) => { if (confirmed) { location.reload(); } }, 'Sim, Cancelar');
     };
     const acaoFechar = () => {
-        window.location.href = "{{ url_for('instrumentos_contratuais') }}";
+        window.location.href = "{{ url_for('instrumentos.instrumentos_contratuais') }}";
     };
     btnCancelar.onclick = acaoFechar;
     if(btnEditar) {
@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        fetch("{{ url_for('criar_controle_rapido') }}", {
+        fetch("{{ url_for('instrumentos.criar_controle_rapido') }}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

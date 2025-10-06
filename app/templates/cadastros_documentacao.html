@@ -2,7 +2,7 @@
 {% block content %}
     <h2>Tipos de Documento</h2>
     <div class="button-toolbar">
-        <a href="{{ url_for('novo_tipo_documento') }}" class="button">Novo</a>
+        <a href="{{ url_for('cadastros.novo_tipo_documento') }}" class="button">Novo</a>
     </div>
     <br>
     <table border="1" id="tabelaTiposDocumento">
@@ -17,7 +17,7 @@
             <tr>
                 <td>{{ doc.nome }}</td>
                 <td>
-                    <form id="formExcluirDoc-{{ doc._id }}" method="POST" action="{{ url_for('excluir_tipo_documento', doc_id=doc._id) }}" style="display: none;"></form>
+                    <form id="formExcluirDoc-{{ doc._id }}" method="POST" action="{{ url_for('cadastros.cadastros_gerais.excluir_tipo_documento', doc_id=doc._id) }}" style="display: none;"></form>
                     
                     <button type="button" class="button-danger btn-excluir-doc" 
                             data-doc-id="{{ doc._id }}" 
