@@ -17,7 +17,7 @@
             <tr>
                 <td>{{ doc.nome }}</td>
                 <td>
-                    <form id="formExcluirDoc-{{ doc._id }}" method="POST" action="{{ url_for('cadastros.cadastros_gerais.excluir_tipo_documento', doc_id=doc._id) }}" style="display: none;"></form>
+                    <form id="formExcluirDoc-{{ doc._id }}" method="POST" action="{{ url_for('cadastros.excluir_tipo_documento', doc_id=doc._id) }}" style="display: none;"></form>
                     
                     <button type="button" class="button-danger btn-excluir-doc" 
                             data-doc-id="{{ doc._id }}" 

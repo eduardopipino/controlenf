@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const controleId = this.dataset.id;
             const novaSituacao = this.value;
             const linhaDaTabela = document.getElementById(`controle-row-${controleId}`);
-            fetch("{{ url_for('update_situacao_inline') }}", {
+            fetch("{{ url_for('controle.update_situacao_inline') }}", {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ controle_id: controleId, nova_situacao: novaSituacao }),

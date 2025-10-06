@@ -56,7 +56,7 @@
         </thead>
         <tbody>
             {% for p in pendencias %}
-            <tr class="clickable-row {{ 'pendencia-vencida' if p.vencido else '' }} {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('detalhes_pendencia', pendencia_id=p._id, origem=request.path) }}">
+            <tr class="clickable-row {{ 'pendencia-vencida' if p.vencido else '' }} {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.path) }}">
                 <td data-label="Selecionar"><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
                 <td class="coluna-prioridade" data-id="{{ p._id }}"></td>
                 {% set colunas_detalhe = ['instrumento_display', 'contratada', 'observacoes'] %}
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btnSalvarColunas.addEventListener('click', () => {
             const checkboxes = checklistContainer.querySelectorAll('input:checked');
             const colunasSelecionadas = Array.from(checkboxes).map(cb => cb.value);
-            fetch("{{ url_for('save_pendencias_column_prefs') }}", {
+            fetch("{{ url_for('core.save_pendencias_column_prefs') }}", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ colunas: colunasSelecionadas })

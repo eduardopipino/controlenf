@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        fetch("{{ url_for('instrumentos.criar_controle_rapido') }}", {
+        fetch("{{ url_for('controle.criar_controle_rapido') }}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
