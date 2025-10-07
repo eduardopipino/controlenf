@@ -209,44 +209,60 @@ document.addEventListener('DOMContentLoaded', function() {
         const btnExcluir = document.getElementById('btnExcluir');
         const formExcluir = document.getElementById('formExcluirControle');
 
-        const editableFieldIds = ['referencia', 'nota_fiscal', 'carta_de_correcao', 'documentacao', 'observacoes', 'situacao'];
-        
-        // Função para habilitar/desabilitar campos
-        function toggleEditFields(enable) {
-            $('#item_id').prop('disabled', !enable);
-            editableFieldIds.forEach(id => {
+        // Função central para controlar o estado de edição
+        function alternarModoEdicao(habilitar) {
+            // Habilita/desabilita o Select2
+            $('#item_id').prop('disabled', !habilitar);
+            
+            // Habilita/desabilita os outros campos e checkboxes
+            const fieldsToToggle = ['referencia', 'nota_fiscal', 'carta_de_correcao', 'observacoes', 'situacao'];
+            fieldsToToggle.forEach(id => {
                 const field = document.getElementById(id);
-                if (field) field.disabled = !enable;
+                if (field) field.disabled = !habilitar;
             });
             document.querySelectorAll('#documentacao-checklist input[type="checkbox"]').forEach(chk => {
-                chk.disabled = !enable;
+                chk.disabled = !habilitar;
             });
+
+            // Habilita/desabilita os botões de ação
+            btnSalvar.disabled = !habilitar;
+            btnEditar.disabled = habilitar;
+            btnExcluir.disabled = habilitar;
+
+            // Muda o texto do botão Cancelar/Fechar
+            btnCancelar.textContent = habilitar ? 'Cancelar' : 'Fechar';
         }
 
-        toggleEditFields(false); // Garante que tudo comece desabilitado
+        // Garante que o estado inicial seja de visualização (tudo bloqueado)
+        alternarModoEdicao(false); 
 
-        // --- LÓGICA DOS BOTÕES ---
-        const acaoFechar = () => window.location.href = "{{ url_for('controle.controle_lista', filter_mode='pendentes') }}";
-        const acaoCancelarEdicao = () => {
-            showCustomConfirm('Cancelar Edição?', 'As alterações serão perdidas.', (confirmed) => { 
-                if (confirmed) location.reload(); 
-            }, 'Sim, Cancelar');
-        };
-
-        // Estado inicial do botão Fechar/Cancelar
-        btnCancelar.onclick = acaoFechar;
-
-        // Lógica do botão Editar
+        // --- Lógica dos Botões ---
+        // Ao clicar em EDITAR
         btnEditar.addEventListener('click', () => {
-            toggleEditFields(true);
-            btnSalvar.disabled = false;
-            btnEditar.disabled = true;
-            btnExcluir.disabled = true;
-            btnCancelar.textContent = 'Cancelar';
-            btnCancelar.onclick = acaoCancelarEdicao;
+            alternarModoEdicao(true);
         });
 
-        // Lógica do botão Excluir
+        // Ao clicar em CANCELAR ou FECHAR
+        btnCancelar.addEventListener('click', () => {
+            if (btnCancelar.textContent === 'Cancelar') {
+                showCustomConfirm(
+                    'Cancelar Edição?',
+                    'As alterações não salvas serão perdidas. Deseja continuar?',
+                    (confirmed) => {
+                        if (confirmed) {
+                            // Força o recarregamento do servidor para descartar alterações
+                            location.reload(true);
+                        }
+                    },
+                    'Sim, Descartar'
+                );
+            } else {
+                // Se estiver em modo "Fechar", volta para a lista
+                window.location.href = "{{ url_for('controle.controle_lista', filter_mode='pendentes') }}";
+            }
+        });
+
+        // Ao clicar em EXCLUIR
         btnExcluir.addEventListener('click', () => {
             showCustomConfirm(
                 'Confirma Exclusão?',
