@@ -148,53 +148,69 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
     } else {
-        // MODO EDIÇÃO/CONSULTA
-        atualizarInfoBox();
-        
-        const btnEditar = document.getElementById('btnEditar');
-        const btnSalvar = document.getElementById('btnSalvar');
-        const btnCancelar = document.getElementById('btnCancelar');
-        const btnExcluir = document.getElementById('btnExcluir');
-        const formExcluir = document.getElementById('formExcluir');
-        
-        function toggleEditFields(enable) {
-            formPendencia.querySelectorAll('input, textarea, select').forEach(field => {
-                if (field.name !== 'origem' && field.id !== 'instrumento_id') field.disabled = !enable;
+            // MODO EDIÇÃO/CONSULTA
+            atualizarInfoBox();
+           
+            const btnEditar = document.getElementById('btnEditar');
+            const btnSalvar = document.getElementById('btnSalvar');
+            const btnCancelar = document.getElementById('btnCancelar');
+            const btnExcluir = document.getElementById('btnExcluir');
+            const formExcluir = document.getElementById('formExcluir');
+
+            // Função central para controlar o estado de edição
+            function alternarModoEdicao(habilitar) {
+                // Habilita/desabilita todos os campos do formulário, exceto o de 'origem'
+                formPendencia.querySelectorAll('input, textarea, select').forEach(field => {
+                    if (field.name !== 'origem') {
+                        field.disabled = !habilitar;
+                    }
+                });
+                $('#instrumento_id').prop('disabled', !habilitar);
+
+                // Habilita/desabilita os botões de ação
+                btnSalvar.disabled = !habilitar;
+                btnEditar.disabled = habilitar;
+                btnExcluir.disabled = habilitar;
+
+                // Muda o texto do botão Cancelar/Fechar
+                btnCancelar.textContent = habilitar ? 'Cancelar' : 'Fechar';
+            }
+
+            // Estado inicial: tudo desabilitado
+            alternarModoEdicao(false);
+
+            // --- Lógica dos Botões ---
+            // Ao clicar em EDITAR
+            btnEditar.addEventListener('click', () => {
+                alternarModoEdicao(true);
             });
-            $('#instrumento_id').prop('disabled', !enable);
-        }
 
-        const acaoFechar = () => {
-            const urlOrigem = document.querySelector('input[name="origem"]').value;
-            window.location.href = urlOrigem || "{{ url_for('pendencias.pendencias_lista', page_mode='geral') }}";
-        };
+            // Ao clicar em CANCELAR ou FECHAR
+            btnCancelar.addEventListener('click', () => {
+                if (btnCancelar.textContent === 'Cancelar') {
+                    showCustomConfirm(
+                        'Cancelar Edição?',
+                        'As alterações não salvas serão perdidas. Deseja continuar?',
+                        (confirmed) => {
+                            if (confirmed) {
+                                // Força o recarregamento do servidor
+                                location.reload(true);
+                            }
+                        },
+                        'Sim, Descartar'
+                    );
+                } else {
+                    // Se estiver em modo "Fechar", volta para a página de origem
+                    const urlOrigem = document.querySelector('input[name="origem"]').value;
+                    window.location.href = urlOrigem || "{{ url_for('pendencias.pendencias_lista', page_mode='geral') }}";
+                }
+            });
 
-        const acaoCancelarEdicao = () => {
-            showCustomConfirm(
-                'Cancelar Edição?', 
-                'As alterações não salvas serão perdidas. Deseja continuar?', 
-                (confirmed) => { 
-                    if (confirmed) location.reload(); 
-                }, 
-                'Sim, Cancelar'
-            );
-        };
-
-        btnCancelar.onclick = acaoFechar;
-
-        btnEditar.addEventListener('click', () => {
-            toggleEditFields(true);
-            btnSalvar.disabled = false;
-            btnEditar.disabled = true;
-            btnExcluir.disabled = true;
-            btnCancelar.textContent = 'Cancelar';
-            btnCancelar.onclick = acaoCancelarEdicao;
-        });
-
-        btnExcluir.addEventListener('click', () => {
-            showCustomConfirm('Confirmar Exclusão?', 'A pendência será excluída permanentemente.', 
-            (c) => { if (c) formExcluir.submit(); }, 'Excluir');
-        });
+            // Ao clicar em EXCLUIR
+            btnExcluir.addEventListener('click', () => {
+                showCustomConfirm('Confirmar Exclusão?', 'A pendência será excluída permanentemente.', 
+                (c) => { if (c) formExcluir.submit(); }, 'Excluir');
+            });
     }
 });
 </script>
