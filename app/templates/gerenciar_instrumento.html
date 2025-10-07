@@ -116,23 +116,51 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnCancelar = document.getElementById('btnCancelar');
     const btnExcluir = document.getElementById('btnExcluir');
     const formExcluirInstrumento = document.getElementById('formExcluirInstrumento');
-    const acaoCancelarEdicao = () => {
-        showCustomConfirm('Cancelar Edição?', 'As alterações não salvas serão perdidas. Deseja continuar?',
-            (confirmed) => { if (confirmed) { location.reload(); } }, 'Sim, Cancelar');
-    };
-    const acaoFechar = () => {
-        window.location.href = "{{ url_for('instrumentos.instrumentos_contratuais') }}";
-    };
-    btnCancelar.onclick = acaoFechar;
-    if(btnEditar) {
+
+    // --- Funções para controlar o estado do formulário ---
+    function alternarModoEdicao(habilitar) {
+        // Habilita ou desabilita os campos do formulário
+        formFields.forEach(field => field.disabled = !habilitar);
+        
+        // Habilita ou desabilita os botões de ação
+        btnSalvar.disabled = !habilitar;
+        btnEditar.disabled = habilitar;
+        btnExcluir.disabled = habilitar;
+
+        // Muda o texto e a função do botão Cancelar/Fechar
+        btnCancelar.textContent = habilitar ? 'Cancelar' : 'Fechar';
+    }
+
+    // --- Lógica dos Botões ---
+    if (btnEditar) {
+        // Ao clicar em EDITAR, ativa o modo de edição
         btnEditar.addEventListener('click', () => {
-            formFields.forEach(field => field.disabled = false);
-            btnEditar.disabled = true;
-            btnExcluir.disabled = true;
-            btnSalvar.disabled = false;
-            btnCancelar.textContent = 'Cancelar';
-            btnCancelar.onclick = acaoCancelarEdicao;
+            alternarModoEdicao(true);
         });
+
+        // Ao clicar em CANCELAR ou FECHAR
+        btnCancelar.addEventListener('click', () => {
+            // Se o botão estiver no modo "Cancelar" (edição ativa)
+            if (btnCancelar.textContent === 'Cancelar') {
+                showCustomConfirm(
+                    'Cancelar Edição?',
+                    'As alterações não salvas serão perdidas. Deseja continuar?',
+                    (confirmed) => {
+                        if (confirmed) {
+                            // Se confirmado, recarrega a página para descartar as alterações.
+                            // Isso garante que o estado volte 100% ao original.
+                            location.reload(true);
+                        }
+                    },
+                    'Sim, Descartar'
+                );
+            } else {
+                // Se o botão estiver no modo "Fechar" (visualização), simplesmente volta.
+                window.location.href = "{{ url_for('instrumentos.instrumentos_contratuais') }}";
+            }
+        });
+
+        // Ao clicar em EXCLUIR
         btnExcluir.addEventListener('click', () => {
             showCustomConfirm(
                 'Confirmar Exclusão', 
