@@ -62,7 +62,7 @@
                 {% set colunas_detalhe = ['instrumento_display', 'contratada', 'observacoes'] %}
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
-                        <td data-label="{{ col_nome }}" class="{{ 'col-detalhe' if col_id in colunas_detalhe else '' }}">
+                        <td data-label="{{ col_nome }}" class="{{ 'col-detalhe' if col_id in colunas_detalhe else '' }} {% if col_id == 'observacoes' or col_id == 'pendencia' %}coluna-texto-longo{% endif %}">
                             <span class="card-value">
                                 {% if col_id == 'prazo' %}
                                     {{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}
