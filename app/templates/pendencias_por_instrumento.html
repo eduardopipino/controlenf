@@ -57,7 +57,7 @@
                             <td data-label="Prazo"><span class="card-value">{{ p.prazo.strftime('%d/%m/%Y') }}</span></td>
                             <td data-label="Responsável"><span class="card-value">{{ p.responsavel or '' }}</span></td>
                             <td data-label="Situação"><span class="card-value">{{ p.situacao or '' }}</span></td>
-                            <td data-label="Observações"><span class="card-value">{{ p.observacoes or '' }}</span></td>
+                            <td data-label="Observações" class="coluna-texto-longo"><span class="card-value">{{ p.observacoes or '' }}</span></td>
                         </tr>
                         {% endfor %}
                         {% for p in grupo.pendencias_a_vencer %}
@@ -67,7 +67,7 @@
                             <td data-label="Prazo"><span class="card-value">{{ p.prazo.strftime('%d/%m/%Y') }}</span></td>
                             <td data-label="Responsável"><span class="card-value">{{ p.responsavel or '' }}</span></td>
                             <td data-label="Situação"><span class="card-value">{{ p.situacao or '' }}</span></td>
-                            <td data-label="Observações"><span class="card-value">{{ p.observacoes or '' }}</span></td>
+                            <td data-label="Observações" class="coluna-texto-longo"><span class="card-value">{{ p.observacoes or '' }}</span></td>
                         </tr>
                         {% endfor %}
                     </tbody>

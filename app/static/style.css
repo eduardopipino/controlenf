@@ -1870,3 +1870,15 @@ tr.prioridade-ativa .coluna-prioridade {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23777777' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3C/svg%3E");
 }*/
 
+/* ====================================================================== */
+/* SCROLL PARA O CONTAINER DO CHANGELOG NA PÁGINA INICIAL             */
+/* ====================================================================== */
+
+.changelog-scroll-container {
+    max-height: 300px; /* Define a altura máxima. Você pode ajustar este valor. */
+    overflow-y: auto;  /* Adiciona a barra de rolagem vertical apenas quando necessário. */
+    padding: 10px;     /* Adiciona um espaçamento interno para o conteúdo não colar nas bordas. */
+    border: 1px solid var(--border-base); /* Adiciona uma borda sutil. */
+    border-radius: 8px; /* Cantos arredondados. */
+    background-color: var(--background-primary); /* Uma cor de fundo sutil do tema. */
+}
