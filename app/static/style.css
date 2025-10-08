@@ -142,6 +142,7 @@ body.theme-pink {
     --tertiary-color: #994372;  /* Rosa escuro para navegação e títulos */
 	--nav-bg-color: var(--tertiary-color);
     --accent-color: #eea2c9;    /* Rosa um pouco mais claro para hover de botões */
+	--table-hover: var(--secondary-color);
 
     /* Cores de Texto */
     --text-primary: #441a30;      /* Um cinza escuro com um toque de púrpura */
