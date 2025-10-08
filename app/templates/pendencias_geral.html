@@ -13,9 +13,7 @@
                 <a href="{{ url_for('pendencias.exportar_pendencias_pendentes_csv') }}" class="button">Exportar Pendentes</a>
             {% endif %}
         </div>
-        <div class="toolbar-group-center">
-            <button id="btnDetalhes" disabled>Detalhes...</button>
-        </div>
+        <div class="toolbar-group-center"></div>
         <div class="toolbar-group-right">
             <a href="{{ url_for('pendencias.nova_pendencia', origem=request.path) }}" class="button">Novo</a>
         </div>
@@ -43,7 +41,7 @@
     <table border="1" id="tabelaPendencias" class="responsive-card-table">
         <thead>
             <tr>
-                <th></th> <th>!</th> 
+                <th class="hide-on-mobile">Ações</th> <th>!</th> 
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
                         <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
@@ -57,8 +55,13 @@
         <tbody>
             {% for p in pendencias %}
             <tr class="clickable-row {{ 'pendencia-vencida' if p.vencido else '' }} {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.path) }}">
-                <td data-label="Selecionar"><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
-                <td class="coluna-prioridade" data-id="{{ p._id }}"></td>
+                <td data-label="Ações" class="hide-on-mobile">
+                    <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.path) }}" class="action-icon-link" title="Ver Detalhes">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
+                            <path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                        </svg>
+                    </a>
+                </td>                <td class="coluna-prioridade" data-id="{{ p._id }}"></td>
                 {% set colunas_detalhe = ['instrumento_display', 'contratada', 'observacoes'] %}
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
@@ -161,21 +164,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // --- LÓGICA RESPONSIVA (DESKTOP vs MOBILE) ---
-    if (window.innerWidth > 768) {
-        // MODO DESKTOP: Inicia a tabela com seleção por radio button
-        initializeClickableTable('tabelaPendencias', 'selected_pendencia', 'btnDetalhes', "{{ url_for('pendencias.detalhes_pendencia', pendencia_id='REPLACE_ID', origem=request.path) }}");
-    } else {
-        // MODO MOBILE: Transforma cada card em um link para a página de detalhes
-        document.querySelectorAll('.responsive-card-table tr[data-url]').forEach(card => {
-            card.addEventListener('click', function(e) {
-                // Navega apenas se o clique NÃO for em um elemento interativo dentro do card
-                if (!e.target.closest('.expand-card-btn, input')) {
+    // --- LÓGICA DE CLIQUE (DESKTOP E MOBILE) ---
+    document.querySelectorAll('#tabelaPendencias .clickable-row[data-url]').forEach(row => {
+        // LÓGICA DE CLIQUE DUPLO PARA DESKTOP
+        row.addEventListener('dblclick', function(e) {
+            if (window.innerWidth > 768) { // Só executa em telas grandes
+                if (!e.target.closest('a, button, input, .coluna-prioridade')) {
                     window.location.href = this.dataset.url;
                 }
-            });
+            }
         });
-    }
+
+    // LÓGICA DE CLIQUE SIMPLES PARA MOBILE
+    row.addEventListener('click', function(e) {
+        if (window.innerWidth <= 768) { // Só executa em telas pequenas
+            if (!e.target.closest('.action-icon-link, .expand-card-btn, input, .coluna-prioridade')) {
+                window.location.href = this.dataset.url;
+            }
+        }
+    });
+});
 
     // --- LÓGICA PARA EXPANDIR CARDS (MOBILE) ---
     document.querySelectorAll('.expand-card-btn').forEach(button => {

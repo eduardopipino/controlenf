@@ -4,9 +4,7 @@
     <h2>Pendências por Instrumento Contratual</h2>
 
     <div class="button-toolbar desktop-actions">
-        <div class="toolbar-group-center">
-            <button id="btnDetalhes" disabled>Detalhes...</button>
-        </div>
+        <div class="toolbar-group-center"></div>
         <div class="toolbar-group-right">
             <a href="{{ url_for('pendencias.nova_pendencia', origem=request.path) }}" class="button">Novo</a>
         </div>
@@ -47,12 +45,18 @@
                 <h4 class="pendencia-categoria-titulo">Pendências com Prazo</h4>
                 <table class="responsive-card-table">
                     <thead>
-                        <tr><th></th><th>Pendência</th><th>Prazo</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr>
+                        <th class="hide-on-mobile">Ações</th></th><th>Pendência</th><th>Prazo</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr>
                     </thead>
                     <tbody>
                         {% for p in grupo.pendencias_vencidas %}
                         <tr class="clickable-row pendencia-vencida" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id) }}">
-                            <td data-label="Selecionar"><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
+                            <td data-label="Ações" class="hide-on-mobile">
+                                <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.path) }}" class="action-icon-link" title="Ver Detalhes">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
+                                        <path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                                    </svg>
+                                </a>
+                            </td>
                             <td data-label="Pendência"><span class="card-value">{{ p.pendencia or '' }}</span></td>
                             <td data-label="Prazo"><span class="card-value">{{ p.prazo.strftime('%d/%m/%Y') }}</span></td>
                             <td data-label="Responsável"><span class="card-value">{{ p.responsavel or '' }}</span></td>
@@ -62,7 +66,13 @@
                         {% endfor %}
                         {% for p in grupo.pendencias_a_vencer %}
                         <tr class="clickable-row" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id) }}">
-                            <td data-label="Selecionar"><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
+                            <td data-label="Ações" class="hide-on-mobile">
+                                <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.path) }}" class="action-icon-link" title="Ver Detalhes">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
+                                        <path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                                    </svg>
+                                </a>
+                            </td>
                             <td data-label="Pendência"><span class="card-value">{{ p.pendencia or '' }}</span></td>
                             <td data-label="Prazo"><span class="card-value">{{ p.prazo.strftime('%d/%m/%Y') }}</span></td>
                             <td data-label="Responsável"><span class="card-value">{{ p.responsavel or '' }}</span></td>
@@ -83,7 +93,13 @@
                     <tbody>
                         {% for p in grupo.pendencias_sem_prazo %}
                         <tr class="clickable-row" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id) }}">
-                            <td data-label="Selecionar"><input type="radio" name="selected_pendencia" value="{{ p._id }}"></td>
+                            <td data-label="Ações" class="hide-on-mobile">
+                                <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.path) }}" class="action-icon-link" title="Ver Detalhes">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
+                                        <path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                                    </svg>
+                                </a>
+                            </td>
                             <td data-label="Pendência"><span class="card-value">{{ p.pendencia or '' }}</span></td>
                             <td data-label="Responsável"><span class="card-value">{{ p.responsavel or '' }}</span></td>
                             <td data-label="Situação"><span class="card-value">{{ p.situacao or '' }}</span></td>
@@ -103,51 +119,26 @@
 {% block page_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Lógica que decide qual interatividade aplicar com base no tamanho da tela
-    if (window.innerWidth > 768) {
-        // --- MODO DESKTOP: Habilita a seleção de linha na tabela ---
-        const btnDetalhes = document.getElementById('btnDetalhes');
-        
-        function uncheckOthers(clickedRadio) {
-            document.querySelectorAll('input[name="selected_pendencia"]').forEach(radio => {
-                if (radio !== clickedRadio) { radio.checked = false; }
-            });
-        }
-
-        document.querySelectorAll('input[name="selected_pendencia"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                if (this.checked) {
-                    uncheckOthers(this);
-                    btnDetalhes.disabled = false;
-                    btnDetalhes.onclick = () => {
-                        const selectedId = this.value;
-                        window.location.href = "{{ url_for('pendencias.detalhes_pendencia', pendencia_id='REPLACE_ID', origem=request.path) }}".replace('REPLACE_ID', selectedId);
-                    };
-                }
-            });
-        });
-
-        document.querySelectorAll('.clickable-row').forEach(row => {
-            row.addEventListener('click', () => {
-                const radioButton = row.querySelector('input[type="radio"]');
-                if (radioButton) {
-                    radioButton.checked = true;
-                    radioButton.dispatchEvent(new Event('change', { 'bubbles': true }));
-                }
-            });
-        });
-
-    } else {
-        // --- MODO MOBILE: Transforma cada card (linha da tabela) em um link ---
-        document.querySelectorAll('tr[data-url]').forEach(card => {
-            card.addEventListener('click', function(e) {
-                // Navega apenas se o clique não for em um input ou link dentro do card
-                if (!e.target.closest('input, a')) {
+    // --- LÓGICA DE CLIQUE (DESKTOP E MOBILE) ---
+    document.querySelectorAll('.clickable-row[data-url]').forEach(row => {
+        // LÓGICA DE CLIQUE DUPLO PARA DESKTOP
+        row.addEventListener('dblclick', function(e) {
+            if (window.innerWidth > 768) { // Só executa em telas grandes
+                if (!e.target.closest('a, button, input')) {
                     window.location.href = this.dataset.url;
                 }
-            });
+            }
         });
-    }
+
+        // LÓGICA DE CLIQUE SIMPLES PARA MOBILE
+        row.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768) { // Só executa em telas pequenas
+                if (!e.target.closest('.action-icon-link, input')) {
+                    window.location.href = this.dataset.url;
+                }
+            }
+        });
+    });
 });
 </script>
 {% endblock %}
