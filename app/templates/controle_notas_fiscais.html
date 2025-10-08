@@ -11,9 +11,7 @@
             <a href="{{ url_for('controle.exportar_csv', filter_mode=filter_mode) }}" class="button">Exportar</a>
         </div>
         
-        <div class="toolbar-group-center">
-            <button id="btnDetalhes" disabled>Detalhes...</button>
-        </div>
+        <div class="toolbar-group-center"></div>
                 
         <div class="toolbar-group-right">
             <button onclick="location.href='{{ url_for('controle.novo_controle') }}'">Novo</button>
@@ -40,7 +38,7 @@
     <table border="1" id="tabelaControle" class="responsive-card-table">
         <thead>
             <tr>
-                <th></th>
+                <th>Ações</th>
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
                         <th class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }}">
@@ -56,9 +54,15 @@
         </thead>
         <tbody>
             {% for controle in controles %}
-            <tr class="clickable-row" id="controle-row-{{ controle._id }}" data-id="{{ controle._id }}" data-url="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}">
-                
-                <td data-label="Selecionar"><input type="radio" name="selected_controle" value="{{ controle._id }}"></td>
+            <tr class="clickable-row" id="controle-row-{{ controle._id }}" data-id="{{ controle._id }}" data-url="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}">   
+                <td data-label="Ações">
+                    <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}" class="action-icon-link" title="Ver Detalhes">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
+                            <path d="M0 0h24v24H0V0z" fill="none"/>
+                            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                        </svg>
+                    </a>
+                </td>
                 
                 {% set colunas_longas = ['objeto', 'item_descricao', 'documentacao', 'observacoes'] %}
                 {% set colunas_detalhe = ['tipo_documento', 'n_instrumento', 'nota_fiscal', 'carta_de_correcao', 'documentacao', 'observacoes'] %}
@@ -213,27 +217,28 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('btnConfigurarColunas')?.addEventListener('click', () => configColunasModal.classList.add('active'));
     document.getElementById('btnConfigurarColunasMobile')?.addEventListener('click', () => configColunasModal.classList.add('active'));
 
-    // --- 3. LÓGICA RESPONSIVA (DESKTOP vs MOBILE) ---
-    if (window.innerWidth > 768) {
-        // MODO DESKTOP: Inicia a tabela com seleção por radio button
-        initializeClickableTable(
-            'tabelaControle',
-            'selected_controle',
-            'btnDetalhes',
-            "{{ url_for('controle.detalhes_controle', controle_id='REPLACE_ID') }}"
-        );
-    } else {
-        // MODO MOBILE: Transforma cada card em um link para a página de detalhes
-        const cards = document.querySelectorAll('.responsive-card-table tr[data-url]');
-        cards.forEach(card => {
-            card.addEventListener('click', function(e) {
-                // Navega apenas se o clique NÃO for em um elemento interativo
-                if (!e.target.closest('.expand-card-btn, .situacao-dropdown, input')) {
+    // --- 3. LÓGICA DE CLIQUE (DESKTOP E MOBILE) ---
+    document.querySelectorAll('#tabelaControle .clickable-row[data-url]').forEach(row => {
+        // LÓGICA DE CLIQUE DUPLO PARA DESKTOP
+        row.addEventListener('dblclick', function(e) {
+            if (window.innerWidth > 768) { // Só executa em telas grandes
+                // Previne a navegação se o clique for em outro elemento interativo
+                if (!e.target.closest('a, button, select, input')) {
                     window.location.href = this.dataset.url;
                 }
-            });
+            }
         });
-    }
+
+        // LÓGICA DE CLIQUE SIMPLES PARA MOBILE
+        row.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768) { // Só executa em telas pequenas
+                // Previne a navegação se o clique for em um elemento interativo
+                if (!e.target.closest('.action-icon-link, .expand-card-btn, .situacao-dropdown, input')) {
+                    window.location.href = this.dataset.url;
+                }
+            }
+        });
+    });
 
     // --- 4. LÓGICA PARA EXPANDIR CARDS (SÓ TEM EFEITO VISÍVEL NO MOBILE) ---
     document.querySelectorAll('.expand-card-btn').forEach(button => {

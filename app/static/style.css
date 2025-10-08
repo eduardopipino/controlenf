@@ -1882,3 +1882,21 @@ tr.prioridade-ativa .coluna-prioridade {
     border-radius: 8px; /* Cantos arredondados. */
     background-color: var(--background-primary); /* Uma cor de fundo sutil do tema. */
 }
+
+/* Estilo para o link do ícone de ação na tabela */
+.action-icon-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: var(--primary-color);
+    transition: background-color 0.2s ease;
+}
+.action-icon-link:hover {
+    background-color: var(--secondary-color);
+}
+body.theme-dark .action-icon-link {
+    color: var(--tertiary-color);
+}
