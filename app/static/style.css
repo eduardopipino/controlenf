@@ -552,7 +552,7 @@ td input[type="radio"] {
 
 .modal-content input[type="text"],
 .modal-content select {
-    width: calc(100% - 22px);
+    width: 100%; /* estava width: calc(100% - 20px) */
     padding: 10px;
     border: 1px solid var(--border-base);
     border-radius: 5px;

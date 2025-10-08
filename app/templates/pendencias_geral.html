@@ -110,9 +110,15 @@
                     <input type="text" name="filter_situacao" id="filter_situacao" value="{{ filter_values.get('filter_situacao', '') }}">
                 </div>
                 <div class="button-toolbar">
-                    <button type="submit">Aplicar Filtro</button>
-                    <button type="button" class="btn-cancel-modal">Cancelar</button>
-                    <button type="button" id="btnLimparFiltro" class="button">Limpar Filtro</button>
+                    <div class="toolbar-group-left">
+                        <button type="submit">Aplicar Filtro</button>
+                    </div>
+                    <div class="toolbar-group-center">
+                        <button type="button" class="btn-cancel-modal">Cancelar</button>
+                    </div>
+                    <div class="toolbar-group-right">
+                        <button type="button" id="btnLimparFiltro" class="button">Limpar Filtro</button>
+                    </div>
                 </div>
             </form>
         </div>
