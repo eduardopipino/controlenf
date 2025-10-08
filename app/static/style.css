@@ -1900,3 +1900,21 @@ tr.prioridade-ativa .coluna-prioridade {
 body.theme-dark .action-icon-link {
     color: var(--tertiary-color);
 }
+
+/* ====================================================================== */
+/* LARGURA FIXA PARA COLUNA DE AÇÕES (ÍCONE) EM TODO O SISTEMA      */
+/* ====================================================================== */
+
+/* Aplica a mesma regra para a primeira coluna (:first-child) 
+  da tabela de Controle, da tabela de Pendências Gerais e
+  das tabelas na página de Pendências por Instrumento.
+*/
+#tabelaControle th:first-child,
+#tabelaControle td:first-child,
+#tabelaPendencias th:first-child,
+#tabelaPendencias td:first-child,
+#pendenciasPorInstrumentoTabela th:first-child,
+#pendenciasPorInstrumentoTabela td:first-child {
+    width: 60px;        /* Define uma largura fixa e pequena. */
+    text-align: center; /* Centraliza o ícone e o texto do cabeçalho. */
+}

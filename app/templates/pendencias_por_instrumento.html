@@ -43,9 +43,9 @@
 
             {% if grupo.pendencias_vencidas or grupo.pendencias_a_vencer %}
                 <h4 class="pendencia-categoria-titulo">Pendências com Prazo</h4>
-                <table class="responsive-card-table">
+                <table id="pendenciasPorInstrumentoTabela" class="responsive-card-table">
                     <thead>
-                        <th class="hide-on-mobile">Ações</th></th><th>Pendência</th><th>Prazo</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr>
+                        <th>Ações</th><th>Pendência</th><th>Prazo</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr>
                     </thead>
                     <tbody>
                         {% for p in grupo.pendencias_vencidas %}
@@ -86,9 +86,9 @@
 
             {% if grupo.pendencias_sem_prazo %}
                 <h4 class="pendencia-categoria-titulo">Pendências Sem Prazo</h4>
-                <table class="responsive-card-table">
+                <table id="pendenciasPorInstrumentoTabela" class="responsive-card-table">
                     <thead>
-                        <tr><th></th><th>Pendência</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr>
+                        <tr><th>Ações</th><th>Pendência</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr>
                     </thead>
                     <tbody>
                         {% for p in grupo.pendencias_sem_prazo %}
