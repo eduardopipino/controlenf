@@ -3,6 +3,7 @@
 {% block content %}
     <h2>{{ 'Novo Registro de Controle' if novo else 'Controle Detalhado' }}</h2>
     <form id="formControle" method="POST">
+        <input type="hidden" name="origem" value="{{ request.args.get('origem', '') }}">
         <div>
             <label for="item_id">Item do Instrumento Contratual: *</label>
             <select id="item_id" name="item_id" required>
@@ -257,9 +258,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Sim, Descartar'
                 );
             } else {
-                // Se estiver em modo "Fechar", volta para a lista
-                window.location.href = "{{ url_for('controle.controle_lista', filter_mode='pendentes') }}";
-            }
+                // Se estiver em modo "Fechar", busca a URL de origem e volta para ela
+                const urlOrigem = document.querySelector('input[name="origem"]').value;
+                window.location.href = urlOrigem || "{{ url_for('controle.controle_lista', filter_mode='pendentes') }}";            }
         });
 
         // Ao clicar em EXCLUIR
