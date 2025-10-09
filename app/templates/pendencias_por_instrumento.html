@@ -106,7 +106,7 @@
                             <td data-label="Pendência"><span class="card-value">{{ p.pendencia or '' }}</span></td>
                             <td data-label="Responsável"><span class="card-value">{{ p.responsavel or '' }}</span></td>
                             <td data-label="Situação"><span class="card-value">{{ p.situacao or '' }}</span></td>
-                            <td data-label="Observações"><span class="card-value">{{ p.observacoes or '' }}</span></td>
+                            <td data-label="Observações" class="coluna-texto-longo"><span class="card-value">{{ p.observacoes or '' }}</span></td>
                         </tr>
                         {% endfor %}
                     </tbody>
