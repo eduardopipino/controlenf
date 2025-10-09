@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alternarModoEdicao(true);
         });
 
-        // Ao clicar em CANCELAR ou FECHAR
+// Ao clicar em CANCELAR ou FECHAR
         btnCancelar.addEventListener('click', () => {
             if (btnCancelar.textContent === 'Cancelar') {
                 showCustomConfirm(
@@ -260,7 +260,9 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 // Se estiver em modo "Fechar", busca a URL de origem e volta para ela
                 const urlOrigem = document.querySelector('input[name="origem"]').value;
-                window.location.href = urlOrigem || "{{ url_for('controle.controle_lista', filter_mode='pendentes') }}";            }
+                // Se houver uma URL de origem, usa-a. Senão, volta para a lista padrão.
+                window.location.href = urlOrigem || "{{ url_for('controle.controle_lista', filter_mode='pendentes') }}";
+            }
         });
 
         // Ao clicar em EXCLUIR

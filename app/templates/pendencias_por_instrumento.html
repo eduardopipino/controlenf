@@ -9,11 +9,11 @@
         </div>
         <div class="toolbar-group-center"></div>
         <div class="toolbar-group-right">
-            <a href="{{ url_for('pendencias.nova_pendencia', origem=request.path) }}" class="button">Novo</a>
+            <a href="{{ url_for('pendencias.nova_pendencia', origem=request.url) }}" class="button">Novo</a>
         </div>
     </div>
         <div class="mobile-actions">
-            <a href="{{ url_for('pendencias.nova_pendencia', origem=request.path) }}" class="fab" title="Novo">+</a>
+            <a href="{{ url_for('pendencias.nova_pendencia', origem=request.url) }}" class="fab" title="Novo">+</a>
         </div>
     <br>
 
