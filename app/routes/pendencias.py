@@ -86,6 +86,20 @@ def pendencias_lista(page_mode="geral"):
             else:
                 query_filter[clean_key] = {'$regex': value, '$options': 'i'}
 
+    # --- NOVO BLOCO PARA MENSAGEM FLASH ---
+    if filter_values:
+        nomes_amigaveis = {
+            'filter_n_instrumento': 'Nº Instrumento',
+            'filter_contratada': 'Contratada',
+            'filter_pendencia': 'Pendência',
+            'filter_responsavel': 'Responsável',
+            'filter_situacao': 'Situação'
+        }
+        filtros_aplicados = [f"{nomes_amigaveis.get(k, k.replace('filter_', ''))}: '{v}'" for k, v in filter_values.items()]
+        mensagem = "Filtro ativo! Exibindo registros onde " + ", ".join(filtros_aplicados) + "."
+        flash(mensagem, 'info')
+    # --- FIM DO NOVO BLOCO ---
+
     lista_pendencias_bruta = get_pendencias_com_detalhes(query_filter)
 
     # --- LÓGICA DE ORDENAÇÃO "4 BUCKETS" EM PYTHON ---

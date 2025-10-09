@@ -1921,3 +1921,15 @@ body.theme-dark .action-icon-link {
     width: 60px;        /* Define uma largura fixa e pequena. */
     text-align: center; /* Centraliza o ícone e o texto do cabeçalho. */
 }
+
+#tabelaControle td:first-child,
+#tabelaPendencias td:first-child,
+#pendenciasPorInstrumentoTabela td:first-child {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.action-icon-link svg {
+    width: 20px;
+    height: 20px;
+}

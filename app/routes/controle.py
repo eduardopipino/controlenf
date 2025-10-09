@@ -50,6 +50,20 @@ def controle_lista(filter_mode):
             filter_values[key] = value
             filtro_ativo = True
 
+    # --- NOVO BLOCO PARA MENSAGEM FLASH ---
+    if filtro_ativo:
+        nomes_amigaveis = {
+            'filter_n_instrumento': 'Nº Instrumento',
+            'filter_contratada': 'Contratada',
+            'filter_objeto': 'Objeto',
+            'filter_referencia': 'Referência',
+            'filter_situacao': 'Situação'
+        }
+        filtros_aplicados = [f"{nomes_amigaveis.get(k, k.replace('filter_', ''))}: '{v}'" for k, v in filter_values.items()]
+        mensagem = "Filtro ativo! Exibindo registros onde " + ", ".join(filtros_aplicados) + "."
+        flash(mensagem, 'info')
+    # --- FIM DO NOVO BLOCO ---
+
     sort_by = request.args.get('sort_by', 'data_criacao')
     order = request.args.get('order', 'asc')
     sort_order_mongo = -1 if order == 'desc' else 1
