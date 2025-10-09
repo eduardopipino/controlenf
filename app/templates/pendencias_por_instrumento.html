@@ -4,6 +4,9 @@
     <h2>Pendências por Instrumento Contratual</h2>
 
     <div class="button-toolbar desktop-actions">
+        <div class="toolbar-group-left">
+            <button id="btnToggleNotasFiscais">Exibir Notas Fiscais</button>
+        </div>
         <div class="toolbar-group-center"></div>
         <div class="toolbar-group-right">
             <a href="{{ url_for('pendencias.nova_pendencia', origem=request.path) }}" class="button">Novo</a>
@@ -108,9 +111,43 @@
                         {% endfor %}
                     </tbody>
                 </table>
-            {% endif %}
-        </div>
-        {% endfor %}
+            {% endif %} <div class="secao-notas-fiscais" style="display: none; margin-top: 20px;">
+                <h4 class="pendencia-categoria-titulo">Notas Fiscais Pendentes</h4>
+                
+                {% if grupo.controles_pendentes %}
+                    <table class="responsive-card-table">
+                        <thead>
+                            <tr>
+                                <th class="hide-on-mobile">Ações</th>
+                                <th>Contratada</th>
+                                <th>Objeto</th>
+                                <th>Item</th>
+                                <th>Referência</th>
+                                <th>Situação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for controle in grupo.controles_pendentes %}
+                                <tr class="clickable-row" data-url="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}">
+                                    <td data-label="Ações" class="hide-on-mobile">
+                                        <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}" class="action-icon-link" title="Ver Detalhes">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                                        </a>
+                                    </td>
+                                    <td data-label="Contratada"><span class="card-value">{{ controle.contratada }}</span></td>
+                                    <td data-label="Objeto"><span class="card-value">{{ controle.objeto }}</span></td>
+                                    <td data-label="Item"><span class="card-value">{{ controle.item_descricao }}</span></td>
+                                    <td data-label="Referência"><span class="card-value">{{ controle.referencia }}</span></td>
+                                    <td data-label="Situação"><span class="card-value">{{ controle.situacao }}</span></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p style="padding-left: 10px;">Nenhuma nota fiscal pendente para este instrumento.</p>
+                {% endif %}
+            </div>
+            </div> {% endfor %}
     {% endif %}
 
 {% endblock %}
@@ -139,6 +176,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    // --- NOVA LÓGICA PARA O BOTÃO DE EXIBIR/OCULTAR NOTAS FISCAIS ---
+    const btnToggle = document.getElementById('btnToggleNotasFiscais');
+    if (btnToggle) {
+        btnToggle.addEventListener('click', () => {
+            const secoesNF = document.querySelectorAll('.secao-notas-fiscais');
+            
+            // Verifica o estado da primeira seção para decidir a ação
+            const isHidden = secoesNF[0].style.display === 'none';
+
+            secoesNF.forEach(secao => {
+                secao.style.display = isHidden ? 'block' : 'none';
+            });
+
+            // Atualiza o texto e o estilo do botão
+            btnToggle.textContent = isHidden ? 'Ocultar Notas Fiscais' : 'Exibir Notas Fiscais';
+            btnToggle.classList.toggle('filtro-ativo', isHidden);
+        });
+    }
 });
 </script>
 {% endblock %}

@@ -247,4 +247,48 @@ def get_color_map_for_user():
             
     return color_map
 
+# Função para exibir tabela de controle de notas fiscais em pendências por instrumento conratual
+
+def get_controles_pendentes_por_instrumento(instrumento_id):
+    """Busca todos os registros de controle pendentes associados a um instrumento."""
+    user_id_obj = ObjectId(current_user.id)
+    instrumento_id_obj = ObjectId(instrumento_id)
+
+    # 1. Encontra todos os IDs dos itens que pertencem a este instrumento
+    itens_do_instrumento = list(itens_collection.find(
+        {'instrumento_id': instrumento_id_obj, 'user_id': user_id_obj},
+        {'_id': 1}
+    ))
+    item_ids = [item['_id'] for item in itens_do_instrumento]
+
+    # Se não houver itens, não há controles para buscar
+    if not item_ids:
+        return []
+
+    # 2. Busca as situações que arquivam um registro
+    situacoes_arquivadoras = get_situacoes_que_arquivam()
+
+    # 3. Busca os controles pendentes que pertencem a qualquer um dos itens encontrados
+    pipeline = [
+        {'$match': {
+            'user_id': user_id_obj,
+            'item_id': {'$in': item_ids},
+            'situacao': {'$nin': situacoes_arquivadoras}
+        }},
+        # Faz um join para buscar a descrição do item, que será útil no template
+        {'$lookup': {
+            'from': 'ITENS_INSTRUMENTO',
+            'localField': 'item_id',
+            'foreignField': '_id',
+            'as': 'item_info'
+        }},
+        {'$unwind': '$item_info'},
+        {'$addFields': {
+            'item_descricao': '$item_info.descricao_item'
+        }},
+        {'$sort': {'referencia': 1}}
+    ]
+    
+    return list(controle_collection.aggregate(pipeline))
+
 # fim das funções auxiliares

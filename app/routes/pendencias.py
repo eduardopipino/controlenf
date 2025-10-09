@@ -13,8 +13,8 @@ import csv
 
 # 2. Imports da nossa própria aplicação (modelos e coleções)
 from app.models import (pendencias_collection, get_pendencias_com_detalhes,
-                        get_instrumentos_para_dropdown, TODAS_AS_COLUNAS_PENDENCIAS)
-
+                        get_instrumentos_para_dropdown, TODAS_AS_COLUNAS_PENDENCIAS,
+                        get_controles_pendentes_por_instrumento)
 
 # 3. Criação do Blueprint de Pendências
 # O nome 'pendencias' será usado nos comandos url_for().
@@ -179,10 +179,17 @@ def pendencias_por_instrumento():
         grupo['pendencias_vencidas'] = [p for p in pendencias_com_prazo if p['prazo'] < hoje]
         grupo['pendencias_a_vencer'] = [p for p in pendencias_com_prazo if p['prazo'] >= hoje]
     
+    # --- NOVA LÓGICA ADICIONADA AQUI ---
+    # Para cada grupo de instrumento, busca suas notas fiscais pendentes
+    for grupo in grupos_de_pendencias:
+        grupo['controles_pendentes'] = get_controles_pendentes_por_instrumento(grupo['_id'])
+    # --- FIM DA NOVA LÓGICA ---
+
     instrumentos_para_filtro = get_instrumentos_para_dropdown()
 
     return render_template(
-        'pendencias_por_instrumento.html', grupos=grupos_de_pendencias, 
+        'pendencias_por_instrumento.html', 
+        grupos=grupos_de_pendencias, 
         instrumentos_para_filtro=instrumentos_para_filtro,
         instrumento_filtro_id=instrumento_filtro_id
     )
