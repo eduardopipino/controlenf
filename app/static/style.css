@@ -1041,6 +1041,13 @@ button.filtro-ativo:hover {
     overflow-wrap: break-word;
 }
 
+.coluna-texto-meio-longo {
+    /* Permite que o texto quebre a linha, substituindo o 'nowrap' geral da tabela */
+    white-space: normal;
+    /* Força a quebra de palavras muito longas que não caberiam na célula */
+    overflow-wrap: break-word;
+}
+
 /* Adiciona contraste ao botão desabilitado especificamente no tema escuro */
 body.theme-dark button:disabled {
     background-color: #3a3a3a; /* Fundo cinza escuro */
@@ -1928,8 +1935,6 @@ body.theme-dark .action-icon-link {
 #tabelaPendencias td:nth-child(2),
 #pendenciasPorInstrumentoTabela th:first-child,
 #pendenciasPorInstrumentoTabela td:first-child,
-#pendenciasPorInstrumentoTabela th:nth-child(2),
-#pendenciasPorInstrumentoTabela td:nth-child(2),
 #tabelaInstrumentos th:first-child,
 #tabelaInstrumentos td:first-child,
 #tabelaSituacoes th:first-child,
