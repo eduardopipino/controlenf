@@ -284,7 +284,8 @@ def get_controles_pendentes_por_instrumento(instrumento_id):
         }},
         {'$unwind': '$item_info'},
         {'$addFields': {
-            'item_descricao': '$item_info.descricao_item'
+            'item_descricao': '$item_info.descricao_item',
+            'situacao': '$situacao'
         }},
         {'$sort': {'referencia': 1}}
     ]
