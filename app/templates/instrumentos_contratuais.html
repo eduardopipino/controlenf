@@ -11,7 +11,7 @@
         </div>
 
         <div class="toolbar-group-center">
-            <button id="btnDetalhes" disabled>Detalhes...</button>
+            
         </div>
 
         <div class="toolbar-group-right">
@@ -38,7 +38,7 @@
     <table border="1" id="tabelaInstrumentos" class="responsive-card-table">
         <thead>
             <tr>
-                <th></th>
+                <th>Ações</th>
                 <th>Nº Instrumento</th>
                 <th>Tipo Documento</th>
                 <th>Contratada</th>
@@ -50,7 +50,13 @@
         <tbody>
             {% for instrumento in instrumentos %}
             <tr class="clickable-row" data-url="{{ url_for('instrumentos.gerenciar_instrumento', instrumento_id=instrumento._id) }}">
-                <td data-label="Selecionar"><input type="radio" name="selected_instrumento" value="{{ instrumento._id }}"></td>
+                <td data-label="Ações" class="hide-on-mobile">
+                    <a href="{{ url_for('instrumentos.gerenciar_instrumento', instrumento_id=instrumento._id) }}" class="action-icon-link" title="Ver Detalhes">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
+                            <path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                        </svg>
+                    </a>
+                </td>
                 <td data-label="Nº Instrumento"><span class="card-value">{{ instrumento.n_instrumento }}</span></td>
                 <td data-label="Tipo Documento"><span class="card-value">{{ instrumento.tipo_documento }}</span></td>
                 <td data-label="Contratada"><span class="card-value">{{ instrumento.contratada }}</span></td>
@@ -71,26 +77,26 @@
 {% block page_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Lógica que decide qual interatividade aplicar com base no tamanho da tela
-    if (window.innerWidth > 768) {
-        // MODO DESKTOP: Inicia a tabela com seleção por radio button
-        initializeClickableTable(
-            'tabelaInstrumentos',
-            'selected_instrumento',
-            'btnDetalhes',
-            "{{ url_for('instrumentos.gerenciar_instrumento', instrumento_id='REPLACE_ID') }}"
-        );
-    } else {
-        // MODO MOBILE: Transforma cada card (linha da tabela) em um link
-        document.querySelectorAll('.responsive-card-table tr[data-url]').forEach(card => {
-            card.addEventListener('click', function(e) {
-                // Navega apenas se o clique não for em um input dentro do card
-                if (!e.target.closest('input')) {
+    // --- LÓGICA DE CLIQUE (DESKTOP E MOBILE) ---
+    document.querySelectorAll('#tabelaInstrumentos .clickable-row[data-url]').forEach(row => {
+        // LÓGICA DE CLIQUE DUPLO PARA DESKTOP
+        row.addEventListener('dblclick', function(e) {
+            if (window.innerWidth > 768) { // Só executa em telas grandes
+                if (!e.target.closest('a, button, input')) {
                     window.location.href = this.dataset.url;
                 }
-            });
+            }
         });
-    }
+
+        // LÓGICA DE CLIQUE SIMPLES PARA MOBILE
+        row.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768) { // Só executa em telas pequenas
+                if (!e.target.closest('.action-icon-link, input')) {
+                    window.location.href = this.dataset.url;
+                }
+            }
+        });
+    });
     // --- LÓGICA DO MENU KEBAB (MOBILE) ---
     const kebabButton = document.getElementById('btnKebab');
     const kebabDropdown = document.querySelector('.kebab-menu-dropdown');

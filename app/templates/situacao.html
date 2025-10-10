@@ -4,7 +4,6 @@
     <h2>Cadastro de Situações</h2>
     <div class="button-toolbar desktop-actions">
         <button onclick="location.href='{{ url_for('cadastros.nova_situacao') }}'">Novo</button>
-        <button id="btnEditar" disabled>Editar</button>
     </div>
 
     <div class="mobile-actions">
@@ -14,7 +13,7 @@
     <table id="tabelaSituacoes" class="responsive-card-table">
         <thead>
             <tr>
-                <th></th>
+                <th>Ações</th>
                 <th>Nome da Situação *</th>
                 <th>Arquiva Registro?</th>
                 <th>Cor (Temas Claros)</th>
@@ -24,8 +23,12 @@
         <tbody>
             {% for situacao in situacoes %}
             <tr class="clickable-row" data-url="{{ url_for('cadastros.editar_situacao', situacao_id=situacao._id) }}">
-                <td data-label="Selecionar">
-                    <input type="radio" name="selected_situacao" value="{{ situacao._id }}">
+                <td data-label="Ações" class="hide-on-mobile">
+                    <a href="{{ url_for('cadastros.editar_situacao', situacao_id=situacao._id) }}" class="action-icon-link" title="Ver Detalhes">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
+                            <path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                        </svg>
+                    </a>
                 </td>
                 <td data-label="Nome da Situação">
                     <span class="card-value">{{ situacao.situacao }}</span>
@@ -52,60 +55,26 @@
 {% block page_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Lógica que decide qual interatividade aplicar com base no tamanho da tela
-    if (window.innerWidth > 768) {
-        // --- MODO DESKTOP: Mantém a lógica original de seleção ---
-        const btnEditar = document.getElementById('btnEditar');
-        const btnExcluir = document.getElementById('btnExcluir');
-        
-        document.querySelectorAll('input[name="selected_situacao"]').forEach(radio => {
-            radio.addEventListener('change', () => {
-                if (radio.checked) {
-                    const selectedId = radio.value;
-                    const situacaoNome = radio.closest('tr').children[1].textContent.trim();
-                    
-                    btnEditar.disabled = false;
-                    btnEditar.onclick = () => {
-                        window.location.href = `{{ url_for('cadastros.editar_situacao', situacao_id='REPLACE_ID') }}`.replace('REPLACE_ID', selectedId);
-                    };
-
-                    btnExcluir.disabled = false;
-                    btnExcluir.onclick = () => {
-                        showCustomConfirm('Confirmar Exclusão', `Tem certeza que deseja excluir a situação "${situacaoNome}"?`,
-                            (confirmed) => {
-                                if (confirmed) {
-                                    const deleteForm = document.createElement('form');
-                                    deleteForm.method = 'POST';
-                                    deleteForm.action = `{{ url_for('cadastros.excluir_situacao', situacao_id='REPLACE_ID') }}`.replace('REPLACE_ID', selectedId);
-                                    document.body.appendChild(deleteForm);
-                                    deleteForm.submit();
-                                }
-                            }, 'Excluir Permanentemente');
-                    };
-                }
-            });
-        });
-
-        document.querySelectorAll('.clickable-row').forEach(row => {
-            row.addEventListener('click', () => {
-                const radioButton = row.querySelector('input[type="radio"]');
-                if (radioButton) {
-                    radioButton.checked = true;
-                    radioButton.dispatchEvent(new Event('change'));
-                }
-            });
-        });
-
-    } else {
-        // --- MODO MOBILE: Transforma cada card (linha) em um link para a edição ---
-        document.querySelectorAll('tr[data-url]').forEach(card => {
-            card.addEventListener('click', function(e) {
-                if (!e.target.closest('input')) { // Previne clique no radio (que está escondido mas ainda existe)
+    // --- LÓGICA DE CLIQUE (DESKTOP E MOBILE) ---
+    document.querySelectorAll('#tabelaSituacoes .clickable-row[data-url]').forEach(row => {
+        // LÓGICA DE CLIQUE DUPLO PARA DESKTOP
+        row.addEventListener('dblclick', function(e) {
+            if (window.innerWidth > 768) { // Só executa em telas grandes
+                if (!e.target.closest('a, button, input')) {
                     window.location.href = this.dataset.url;
                 }
-            });
+            }
         });
-    }
+
+        // LÓGICA DE CLIQUE SIMPLES PARA MOBILE
+        row.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768) { // Só executa em telas pequenas
+                if (!e.target.closest('.action-icon-link, input')) {
+                    window.location.href = this.dataset.url;
+                }
+            }
+        });
+    });
 });
 </script>
 {% endblock %}
