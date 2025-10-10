@@ -459,6 +459,14 @@ input[type="radio"] {
     min-width: 200px;
 }
 
+#tabelaInstrumentos th:nth-child(5),
+#tabelaInstrumentos td:nth-child(5),
+#tabelaInstrumentos th:nth-child(6),
+#tabelaInstrumentos td:nth-child(6) {
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
+}
+
 tr:nth-child(even) {
     background-color: var(--table-stripe);
 }
