@@ -48,7 +48,7 @@
                 <h4 class="pendencia-categoria-titulo">Pendências com Prazo</h4>
                 <table id="pendenciasPorInstrumentoTabela" class="responsive-card-table">
                     <thead>
-                        <th>Ações</th><th>Pendência</th><th>Prazo</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr>
+                        <th></th><th>Pendência</th><th>Prazo</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr>
                     </thead>
                     <tbody>
                         {% for p in grupo.pendencias_vencidas %}
@@ -91,7 +91,7 @@
                 <h4 class="pendencia-categoria-titulo">Pendências Sem Prazo</h4>
                 <table id="pendenciasPorInstrumentoTabela" class="responsive-card-table">
                     <thead>
-                        <tr><th>Ações</th><th>Pendência</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr>
+                        <tr><th></th><th>Pendência</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr>
                     </thead>
                     <tbody>
                         {% for p in grupo.pendencias_sem_prazo %}
@@ -118,7 +118,7 @@
                     <table id="pendenciasPorInstrumentoTabela" class="responsive-card-table">
                         <thead>
                             <tr>
-                                <th class="hide-on-mobile">Ações</th>
+                                <th></th>
                                 <th>Contratada</th>
                                 <th>Objeto</th>
                                 <th>Item</th>

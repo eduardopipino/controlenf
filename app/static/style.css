@@ -1918,19 +1918,23 @@ body.theme-dark .action-icon-link {
 
 /* Aplica a mesma regra para a primeira coluna (:first-child) 
   da tabela de Controle, da tabela de Pendências Gerais e
-  das tabelas na página de Pendências por Instrumento.
+  das tabelas na página de Pendências por Instrumento, etc..
 */
 #tabelaControle th:first-child,
 #tabelaControle td:first-child,
 #tabelaPendencias th:first-child,
 #tabelaPendencias td:first-child,
+#tabelaPendencias th:nth-child(2),
+#tabelaPendencias td:nth-child(2),
 #pendenciasPorInstrumentoTabela th:first-child,
 #pendenciasPorInstrumentoTabela td:first-child,
+#pendenciasPorInstrumentoTabela th:nth-child(2),
+#pendenciasPorInstrumentoTabela td:nth-child(2),
 #tabelaInstrumentos th:first-child,
 #tabelaInstrumentos td:first-child,
 #tabelaSituacoes th:first-child,
 #tabelaSituacoes td:first-child {
-    width: 60px;        /* Define uma largura fixa e pequena. */
+    width: 24px;        /* Define uma largura fixa e pequena. */
     text-align: center; /* Centraliza o ícone e o texto do cabeçalho. */
 }
 
@@ -1939,8 +1943,7 @@ body.theme-dark .action-icon-link {
 #pendenciasPorInstrumentoTabela td:first-child,
 #tabelaInstrumentos td:first-child,
 #tabelaSituacoes td:first-child {
-    padding-top: 0;
-    padding-bottom: 0;
+    padding: 0;
 }
 
 .action-icon-link svg {

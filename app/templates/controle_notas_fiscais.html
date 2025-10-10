@@ -38,7 +38,7 @@
     <table border="1" id="tabelaControle" class="responsive-card-table">
         <thead>
             <tr>
-                <th>Ações</th>
+                <th></th>
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
                         <th class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }}">
