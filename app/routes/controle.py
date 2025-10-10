@@ -256,7 +256,9 @@ def excluir_controle(controle_id):
         flash('Registro de Controle excluído com sucesso!', 'success')
     else:
         flash('Erro ao excluir ou registro não encontrado.', 'error')
-    return redirect(url_for('controle.controle_lista', filter_mode='pendentes'))
+    # Linha corrigida: lê a origem diretamente do formulário
+    origem = request.form.get('origem')
+    return redirect(origem or url_for('.controle_lista', filter_mode='pendentes'))
 
 # A rota /exportar/... fica logicamente agrupada aqui, resultando na URL /controle/exportar/...
 @controle_bp.route('/exportar/<string:filter_mode>')

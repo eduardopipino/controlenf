@@ -75,7 +75,9 @@
     </form>
 
     {% if not novo %}
-    <form id="formExcluir" method="POST" action="{{ url_for('pendencias.excluir_pendencia', pendencia_id=pendencia._id) }}" style="display: none;"></form>
+    <form id="formExcluir" method="POST" action="{{ url_for('pendencias.excluir_pendencia', pendencia_id=pendencia._id) }}" style="display: none;">
+        <input type="hidden" name="origem" value="{{ origem }}">
+    </form>
     {% endif %}
 
 {% endblock %}

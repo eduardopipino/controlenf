@@ -72,7 +72,9 @@
         </div>
     </form>
     {% if not novo %}
-    <form id="formExcluirControle" method="POST" action="{{ url_for('controle.excluir_controle', controle_id=controle._id) }}" style="display: none;"></form>
+    <form id="formExcluirControle" method="POST" action="{{ url_for('controle.excluir_controle', controle_id=controle._id) }}" style="display: none;">
+        <input type="hidden" name="origem" value="{{ request.args.get('origem', '') }}">
+    </form>
     {% endif %}
 
 {% endblock %}

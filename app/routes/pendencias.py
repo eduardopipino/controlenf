@@ -226,7 +226,9 @@ def nova_pendencia():
         }
         pendencias_collection.insert_one(nova)
         flash('Nova pendência criada com sucesso!', 'success')
-        return redirect(url_for('.pendencias_lista', page_mode='geral'))
+        # Lê a URL de origem do formulário e redireciona para ela
+        origem = request.form.get('origem')
+        return redirect(origem or url_for('.pendencias_lista', page_mode='geral'))
 
     instrumentos = get_instrumentos_para_dropdown()
     instrumentos_json = json.dumps(instrumentos, default=str)
@@ -266,7 +268,9 @@ def detalhes_pendencia(pendencia_id):
 def excluir_pendencia(pendencia_id):
     pendencias_collection.delete_one({'_id': ObjectId(pendencia_id), 'user_id': ObjectId(current_user.id)})
     flash('Pendência excluída com sucesso!', 'success')
-    return redirect(url_for('.pendencias_lista', page_mode='geral'))
+    # Lê a URL de origem que veio do formulário oculto
+    origem = request.form.get('origem')
+    return redirect(origem or url_for('.pendencias_lista', page_mode='geral'))
 
 @pendencias_bp.route('/exportar/pendentes')
 @login_required
