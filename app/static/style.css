@@ -1936,7 +1936,9 @@ body.theme-dark .action-icon-link {
 
 #tabelaControle td:first-child,
 #tabelaPendencias td:first-child,
-#pendenciasPorInstrumentoTabela td:first-child {
+#pendenciasPorInstrumentoTabela td:first-child,
+#tabelaInstrumentos td:first-child,
+#tabelaSituacoes td:first-child {
     padding-top: 0;
     padding-bottom: 0;
 }
