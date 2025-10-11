@@ -1956,3 +1956,13 @@ body.theme-dark .action-icon-link {
     width: 20px;
     height: 20px;
 }
+
+#filterModal select {
+    /* Remove o padding vertical que pode estar causando o problema. */
+    padding-top: 0;
+    padding-bottom: 0;
+    
+    /* Força o texto a se alinhar verticalmente no centro da altura do campo. */
+    /* O cálculo subtrai 2px para compensar as bordas superior e inferior. */
+    line-height: calc(var(--element-height) - 2px); 
+}
