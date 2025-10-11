@@ -176,7 +176,8 @@ def pendencias_por_instrumento():
             'pendencias': {'$push': {
                 '_id': '$_id', 'pendencia': '$pendencia', 'prazo': '$prazo',
                 'responsavel': '$responsavel', 'situacao': '$situacao',
-                'observacoes': '$observacoes'
+                'observacoes': '$observacoes',
+                'prioridade': '$prioridade'
             }}
         }},
         {'$sort': {'detalhes_instrumento.n_instrumento': 1}}

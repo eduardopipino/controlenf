@@ -48,11 +48,11 @@
                 <h4 class="pendencia-categoria-titulo">Pendências com Prazo</h4>
                 <table id="pendenciasPorInstrumentoTabela" class="responsive-card-table">
                     <thead>
-                        <th></th><th>Pendência</th><th>Prazo</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr>
+                        <th></th><th>!</th><th>Pendência</th><th>Prazo</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr>
                     </thead>
                     <tbody>
                         {% for p in grupo.pendencias_vencidas %}
-                        <tr class="clickable-row pendencia-vencida" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id) }}">
+                            <tr class="clickable-row pendencia-vencida {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id) }}">
                             <td data-label="Ações" class="hide-on-mobile">
                                 <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" class="action-icon-link" title="Ver Detalhes">
                                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor">
@@ -60,6 +60,7 @@
                                     </svg>
                                 </a>
                             </td>
+                            <td class="coluna-prioridade" data-id="{{ p._id }}"></td>
                             <td data-label="Pendência" class="coluna-texto-meio-longo"><span class="card-value">{{ p.pendencia or '' }}</span></td>
                             <td data-label="Prazo"><span class="card-value">{{ p.prazo.strftime('%d/%m/%Y') }}</span></td>
                             <td data-label="Responsável"><span class="card-value">{{ p.responsavel or '' }}</span></td>
@@ -68,7 +69,7 @@
                         </tr>
                         {% endfor %}
                         {% for p in grupo.pendencias_a_vencer %}
-                        <tr class="clickable-row" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id) }}">
+                        <tr class="clickable-row {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id) }}">
                             <td data-label="Ações" class="hide-on-mobile">
                                 <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" class="action-icon-link" title="Ver Detalhes">
                                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
@@ -76,6 +77,7 @@
                                     </svg>
                                 </a>
                             </td>
+                            <td class="coluna-prioridade" data-id="{{ p._id }}"></td>
                             <td data-label="Pendência" class="coluna-texto-meio-longo"><span class="card-value">{{ p.pendencia or '' }}</span></td>
                             <td data-label="Prazo"><span class="card-value">{{ p.prazo.strftime('%d/%m/%Y') }}</span></td>
                             <td data-label="Responsável"><span class="card-value">{{ p.responsavel or '' }}</span></td>
@@ -91,11 +93,11 @@
                 <h4 class="pendencia-categoria-titulo">Pendências Sem Prazo</h4>
                 <table id="pendenciasPorInstrumentoTabela" class="responsive-card-table">
                     <thead>
-                        <tr><th></th><th>Pendência</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr>
+                        <tr><th></th><th>!</th><th>Pendência</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr>
                     </thead>
                     <tbody>
                         {% for p in grupo.pendencias_sem_prazo %}
-                        <tr class="clickable-row" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id) }}">
+                        <tr class="clickable-row {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id) }}">
                             <td data-label="Ações" class="hide-on-mobile">
                                 <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" class="action-icon-link" title="Ver Detalhes">
                                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
@@ -103,6 +105,7 @@
                                     </svg>
                                 </a>
                             </td>
+                            <td class="coluna-prioridade" data-id="{{ p._id }}"></td>
                             <td data-label="Pendência" class="coluna-texto-longo"><span class="card-value">{{ p.pendencia or '' }}</span></td>
                             <td data-label="Responsável"><span class="card-value">{{ p.responsavel or '' }}</span></td>
                             <td data-label="Situação"><span class="card-value">{{ p.situacao or '' }}</span></td>
@@ -204,6 +207,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     // --- FIM DO CÓDIGO NOVO ---
+
+    // --- LÓGICA PARA ALTERNAR PRIORIDADE ---
+    document.querySelectorAll('.coluna-prioridade').forEach(col => {
+        col.addEventListener('click', function(e) {
+            e.stopPropagation(); // Impede que o clique acione a navegação da linha
+            
+            const pendenciaId = this.dataset.id;
+            const tr = this.closest('tr');
+            
+            fetch(`/pendencias/toggle_prioridade/${pendenciaId}`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Recarrega a página para reordenar a lista conforme a prioridade
+                    location.reload(); 
+                } else {
+                    alert('Erro ao alterar a prioridade.');
+                }
+            });
+        });
+    });
 });
 </script>
 {% endblock %}
