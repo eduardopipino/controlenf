@@ -41,7 +41,11 @@
                 <th></th>
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
-                        <th class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }}">
+                        {% if col_id == 'situacao' %}
+    <th class="coluna-situacao">
+{% else %}
+    <th class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }}">
+{% endif %}
                             <a href="{{ url_for(request.endpoint, filter_mode=filter_mode, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc') }}">
                                 {{ col_nome }}
                                 {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}
@@ -72,7 +76,7 @@
 
                         {% if col_id == 'situacao' %}
                             {# Handles the 'situacao' column #}
-                            <td data-label="{{ col_nome }}" class="celula-situacao">
+                            <td data-label="{{ col_nome }}" class="celula-situacao coluna-situacao">
                                 <select class="situacao-dropdown" data-id="{{ controle._id }}">
                                     <option value="">-- Nenhuma --</option>
                                     {% for sit in situacoes_para_filtro %}

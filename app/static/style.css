@@ -453,12 +453,6 @@ input[type="radio"] {
     overflow-wrap: break-word !important;
 }
 
-/* Aumenta a largura mínima da coluna Situação (11ª coluna por padrão) */
-#tabelaControle th:nth-child(12),
-#tabelaControle td:nth-child(12) {
-    min-width: 200px;
-}
-
 #tabelaInstrumentos th:nth-child(5),
 #tabelaInstrumentos td:nth-child(5),
 #tabelaInstrumentos th:nth-child(6),
@@ -977,7 +971,7 @@ button.filtro-ativo:hover {
 
 /* Estilo para o dropdown dentro da célula da tabela */
 .situacao-dropdown {
-    width: 100%;
+    width: auto;
     padding: 5px;
     border: 1px solid var(--border-base);
     background-color: var(--background-secondary);
@@ -1975,4 +1969,9 @@ body.theme-dark .action-icon-link {
 /* Garante que o texto pendente fique legível no tema escuro */
 body.theme-dark .texto-pendente {
     color: #999;
+}
+
+.coluna-situacao {
+    /* Força o texto do cabeçalho ("Situação") a não quebrar linha */
+    white-space: nowrap;
 }
