@@ -1812,16 +1812,21 @@ th {
     font-weight: bold;
     text-transform: uppercase;
     transition: background-color 0.3s ease, color 0.3s ease;
+    text-align: center;
 }
 
 th, td {
     border: 1px solid var(--table-stripe);
-    text-align: left;
+    /* text-align: left; */
     white-space: nowrap;
     vertical-align: top;
     padding: var(--padding-table-cell); 
     /*margin-top: -1px;
     margin-left: -1px;*/
+}
+
+td {
+    text-align: left;
 }
 
 /* Arredonda as 4 células de canto para corresponder ao raio da tabela */
