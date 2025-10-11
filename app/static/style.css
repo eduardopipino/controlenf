@@ -1966,3 +1966,13 @@ body.theme-dark .action-icon-link {
     /* O cálculo subtrai 2px para compensar as bordas superior e inferior. */
     line-height: calc(var(--element-height) - 2px); 
 }
+
+.texto-pendente {
+    color: #777; /* Um cinza escuro */
+    font-style: italic; /* Opcional: deixa o texto em itálico para mais destaque */
+}
+
+/* Garante que o texto pendente fique legível no tema escuro */
+body.theme-dark .texto-pendente {
+    color: #999;
+}

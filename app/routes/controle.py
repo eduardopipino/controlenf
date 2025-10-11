@@ -186,7 +186,7 @@ def novo_controle_recorrente():
             'item_id': item['item_id'], 'n_instrumento': item['n_instrumento'],
             'tipo_documento': item['tipo_documento'], 'contratada': item['contratada'],
             'objeto': item['objeto_resumido'], 'referencia': referencia_a_usar,
-            'nota_fiscal': '', 'carta_de_correcao': '', 'relatorio': '', 'documentacao': '',
+            'nota_fiscal': '', 'carta_de_correcao': '', 'documentacao': [],
             'observacoes': f'Gerado automaticamente a partir de {referencia_digitada}',
             'situacao': '', 'data_criacao': datetime.now(), 'user_id': user_id_obj
         })

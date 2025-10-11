@@ -145,7 +145,22 @@ def get_controle_data(query_filter=None, sort_document=None):
             'nota_fiscal':      {'$ifNull': ['$nota_fiscal', ""]},
             'referencia':       {'$ifNull': ['$referencia', ""]},
             'observacoes':      {'$ifNull': ['$observacoes', ""]},
-            'documentacao':     {'$ifNull': ['$documentacao', []]} # Documentação deve ser uma lista vazia, não string
+            'documentacao':     {'$ifNull': ['$documentacao', []]}, # Documentação deve ser uma lista vazia, não string
+            'documentacao_pendente': {
+                '$ifNull': [
+                    {'$setDifference': [
+                        {'$ifNull': ['$item_join.documentos_exigidos', []]},
+                        # A MUDANÇA ESTÁ AQUI: Verifica se 'documentacao' é um array.
+                        # Se for, usa o campo. Se não for (é uma string), usa uma lista vazia [].
+                        {'$cond': {
+                            'if': {'$isArray': '$documentacao'},
+                            'then': '$documentacao',
+                            'else': []
+                        }}
+                    ]},
+                    []
+                ]
+            }
         }}
     ]
 
