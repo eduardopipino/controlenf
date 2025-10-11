@@ -1854,8 +1854,8 @@ body.theme-dark tr.prioridade-ativa {
 /* 1. Define uma largura maior e centraliza a coluna de Prioridade (a 2ª coluna) */
 #tabelaPendencias th:nth-child(2),
 #tabelaPendencias td:nth-child(2).coluna-prioridade {
-    width: 30px;
-    min-width: 30px;
+    width: 24px;
+    min-width: 24px;
     text-align: center;
 }
 
@@ -1930,6 +1930,8 @@ body.theme-dark .action-icon-link {
 #tabelaPendencias td:nth-child(2),
 #pendenciasPorInstrumentoTabela th:first-child,
 #pendenciasPorInstrumentoTabela td:first-child,
+#pendenciasPorInstrumentoTabela th:nth-child(2),
+#pendenciasPorInstrumentoTabela td:nth-child(2),
 #tabelaInstrumentos th:first-child,
 #tabelaInstrumentos td:first-child,
 #tabelaSituacoes th:first-child,
