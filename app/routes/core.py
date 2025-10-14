@@ -175,3 +175,19 @@ def save_pendencias_column_prefs():
     # Atualiza o objeto do usuário na sessão atual
     current_user.colunas_visiveis_pendencias = colunas_validas
     return {'status': 'success'}
+
+@core_bp.route('/user/set_view_preference', methods=['POST'])
+@login_required
+def set_view_preference():
+    data = request.get_json()
+    view_mode = data.get('view_mode')
+    
+    # Valida se o modo de visualização é um dos permitidos
+    if view_mode in ['table', 'cards', 'kanban']:
+        users_collection.update_one(
+            {'_id': ObjectId(current_user.id)},
+            {'$set': {'view_mode_controle': view_mode}}
+        )
+        return {'status': 'success'}
+    
+    return {'status': 'error', 'message': 'Modo de visualização inválido'}, 400

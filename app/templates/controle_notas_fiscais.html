@@ -11,7 +11,19 @@
             <a href="{{ url_for('controle.exportar_csv', filter_mode=filter_mode) }}" class="button">Exportar</a>
         </div>
         
-        <div class="toolbar-group-center"></div>
+        <div class="toolbar-group-center">
+            <div class="view-selector">
+                <button class="view-button {{ 'active' if view_mode == 'table' else '' }}" data-view="table" title="Visualizar como Tabela">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 4h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 10h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 16h4v4H4zm6 1h4v3h-4zm6 0h4v4h-4z"/></svg>
+                </button>
+                <button class="view-button {{ 'active' if view_mode == 'cards' else '' }}" data-view="cards" title="Visualizar como Cards">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 4h6v6H4zm9 0h6v6h-6zM4 14h6v6H4zm9 0h6v6h-6z"/></svg>
+                </button>
+                <button class="view-button {{ 'active' if view_mode == 'kanban' else '' }}" data-view="kanban" title="Visualizar como Kanban">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 3h6v18H3zm8 0h6v18h-6zm8 0h6v18h-6z"/></svg>
+                </button>
+            </div>
+        </div>
                 
         <div class="toolbar-group-right">
             <button onclick="location.href='{{ url_for('controle.novo_controle') }}'">Novo</button>
@@ -121,6 +133,52 @@
         </tbody>
     </table>
 
+    <div class="card-view-container">
+        <div class="card-grid">
+            {% for controle in controles %}
+                <div class="data-card">
+                    <h4>{{ controle.referencia }}</h4>
+                    <p><strong>Item:</strong> {{ controle.item_descricao }}</p>
+                    <p><strong>Contratada:</strong> {{ controle.contratada }}</p>
+                    <p><strong>Situação:</strong> {{ controle.situacao or 'Nenhuma' }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="kanban-view-container">
+        <div class="kanban-board">
+            {% for sit in situacoes_para_filtro %}
+                <div class="kanban-column">
+                    <div class="kanban-column-header">{{ sit.situacao }}</div>
+                    <div class="kanban-cards">
+                        {% for controle in controles %}
+                            {% if controle.situacao == sit.situacao %}
+                                <div class="data-card">
+                                    <h4>{{ controle.referencia }}</h4>
+                                    <p><strong>Item:</strong> {{ controle.item_descricao }}</p>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+            <div class="kanban-column">
+                <div class="kanban-column-header">Sem Situação</div>
+                <div class="kanban-cards">
+                    {% for controle in controles %}
+                        {% if not controle.situacao %}
+                            <div class="data-card">
+                                <h4>{{ controle.referencia }}</h4>
+                                <p><strong>Item:</strong> {{ controle.item_descricao }}</p>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="filterModal" class="modal-overlay">
         <div class="modal-content">
             <h3>Filtrar Registros</h3>
@@ -208,7 +266,36 @@
 {% block page_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // --- 1. LÓGICA DO SELETOR DE VISUALIZAÇÃO (NOVO) ---
+    const body = document.body;
+    const viewSelector = document.querySelector('.view-selector');
 
+    // Aplica a classe da visualização atual ao carregar a página
+    body.classList.add('view-mode-{{ view_mode }}');
+
+    if (viewSelector) {
+        viewSelector.addEventListener('click', (e) => {
+            const button = e.target.closest('.view-button');
+            if (!button) return;
+
+            const selectedView = button.dataset.view;
+
+            // Salva a preferência no backend
+            fetch("{{ url_for('core.set_view_preference') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ view_mode: selectedView })
+            });
+
+            // Atualiza a interface
+            body.classList.remove('view-mode-table', 'view-mode-cards', 'view-mode-kanban');
+            body.classList.add(`view-mode-${selectedView}`);
+
+            viewSelector.querySelectorAll('.view-button').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+        });
+    }
+    
     // --- 1. LÓGICA GERAL PARA FECHAMENTO DE MODAIS ---
     // (Este era o código que faltava)
     document.querySelectorAll('.modal-overlay').forEach(modal => {

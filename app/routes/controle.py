@@ -75,8 +75,11 @@ def controle_lista(filter_mode):
     chart_data_json = prepare_chart_data(controles)
     color_map_json = json.dumps(get_color_map_for_user())
 
+    view_mode = getattr(current_user, 'view_mode_controle', 'table')
+
     return render_template(
         'controle_notas_fiscais.html',
+        view_mode=view_mode,
         controles=list(controles),
         situacoes_para_filtro=situacoes_para_filtro,
         filter_mode=filter_mode,
