@@ -177,7 +177,8 @@ def pendencias_por_instrumento():
                 '_id': '$_id', 'pendencia': '$pendencia', 'prazo': '$prazo',
                 'responsavel': '$responsavel', 'situacao': '$situacao',
                 'observacoes': '$observacoes',
-                'prioridade': '$prioridade'
+                'prioridade': '$prioridade',
+                'cor_destaque': '$cor_destaque'
             }}
         }},
         {'$sort': {'detalhes_instrumento.n_instrumento': 1}}
@@ -299,3 +300,21 @@ def toggle_prioridade_pendencia(pendencia_id):
         {'$set': {'prioridade': nova_prioridade}}
     )
     return {'status': 'success', 'nova_prioridade': nova_prioridade}
+
+# Adicione este bloco de código no final de app/routes/pendencias.py
+
+@pendencias_bp.route('/set_cor_destaque/<string:pendencia_id>', methods=['POST'])
+@login_required
+def set_cor_destaque(pendencia_id):
+    data = request.get_json()
+    nova_cor = data.get('cor', None) # Recebe a cor ou None para limpar
+
+    result = pendencias_collection.update_one(
+        {'_id': ObjectId(pendencia_id), 'user_id': ObjectId(current_user.id)},
+        {'$set': {'cor_destaque': nova_cor}}
+    )
+
+    if result.matched_count > 0:
+        return {'status': 'success', 'message': 'Cor atualizada.'}
+    else:
+        return {'status': 'error', 'message': 'Pendência não encontrada.'}, 404

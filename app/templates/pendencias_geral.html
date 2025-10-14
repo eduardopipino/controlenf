@@ -54,7 +54,7 @@
         </thead>
         <tbody>
             {% for p in pendencias %}
-            <tr class="clickable-row {{ 'pendencia-vencida' if p.vencido else '' }} {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}">
+            <tr class="clickable-row {{ 'pendencia-vencida' if p.vencido else '' }} {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" data-id="{{ p._id }}" {% if p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
                 <td data-label="" class="hide-on-mobile">
                     <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" class="action-icon-link" title="Ver Detalhes">
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor">
@@ -137,6 +137,11 @@
             </div>
         </div>
     </div>
+    <ul id="colorContextMenu" class="context-menu">
+        <li class="context-menu-item" id="chooseColorOption">🎨 Escolher Cor...</li>
+        <li class="context-menu-item" id="clearColorOption">⚪ Limpar Cor</li>
+    </ul>
+    <input type="color" class="hidden-color-input" id="hiddenColorPicker">
 {% endblock %}
 
 {% block page_scripts %}
@@ -144,17 +149,14 @@
 document.addEventListener('DOMContentLoaded', function() {
 
     // --- LÓGICA DE MODAIS ---
-    // (Seu código original para abrir e fechar os modais)
     const filterModal = document.getElementById('filterModal');
     const configColunasModal = document.getElementById('configColunasModal');
 
-    // Liga os botões do desktop e do mobile (que você adicionou no Passo 1) aos seus modais
     document.getElementById('btnFiltro')?.addEventListener('click', () => filterModal.classList.add('active'));
     document.getElementById('btnFiltroMobile')?.addEventListener('click', () => filterModal.classList.add('active'));
     document.getElementById('btnConfigurarColunas')?.addEventListener('click', () => configColunasModal.classList.add('active'));
     document.getElementById('btnConfigurarColunasMobile')?.addEventListener('click', () => configColunasModal.classList.add('active'));
 
-    // Lógica para fechar os modais (clicando fora ou no botão Cancelar)
     document.querySelectorAll('.modal-overlay').forEach(modal => {
         modal.addEventListener('click', (e) => {
             if (e.target === modal) modal.classList.remove('active');
@@ -166,29 +168,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- LÓGICA DE CLIQUE (DESKTOP E MOBILE) ---
     document.querySelectorAll('#tabelaPendencias .clickable-row[data-url]').forEach(row => {
-        // LÓGICA DE CLIQUE DUPLO PARA DESKTOP
         row.addEventListener('dblclick', function(e) {
-            if (window.innerWidth > 768) { // Só executa em telas grandes
+            if (window.innerWidth > 768) {
                 if (!e.target.closest('a, button, input, .coluna-prioridade')) {
                     window.location.href = this.dataset.url;
                 }
             }
         });
-
-    // LÓGICA DE CLIQUE SIMPLES PARA MOBILE
-    row.addEventListener('click', function(e) {
-        if (window.innerWidth <= 768) { // Só executa em telas pequenas
-            if (!e.target.closest('.action-icon-link, .expand-card-btn, input, .coluna-prioridade')) {
-                window.location.href = this.dataset.url;
+        row.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768) {
+                if (!e.target.closest('.action-icon-link, .expand-card-btn, input, .coluna-prioridade')) {
+                    window.location.href = this.dataset.url;
+                }
             }
-        }
+        });
     });
-});
 
     // --- LÓGICA PARA EXPANDIR CARDS (MOBILE) ---
     document.querySelectorAll('.expand-card-btn').forEach(button => {
         button.addEventListener('click', function(e) {
-            e.stopPropagation(); // Impede que o clique no botão acione o clique do card
+            e.stopPropagation();
             const card = this.closest('tr');
             card.classList.toggle('card-expanded');
             this.textContent = card.classList.contains('card-expanded') ? 'Ver menos' : 'Ver mais';
@@ -203,31 +202,26 @@ document.addEventListener('DOMContentLoaded', function() {
             e.stopPropagation();
             kebabDropdown.style.display = kebabDropdown.style.display === 'block' ? 'none' : 'block';
         });
-        // Fecha o menu se clicar em qualquer outro lugar da página
         document.addEventListener('click', () => {
             if (kebabDropdown) kebabDropdown.style.display = 'none';
         });
     }
 
-    // --- LÓGICA EXISTENTE PARA CONFIGURAÇÃO DE COLUNAS E FILTRO ---
+    // --- LÓGICA PARA CONFIGURAÇÃO DE COLUNAS E FILTRO ---
     const checklistContainer = document.getElementById('colunas-checklist');
     const btnSalvarColunas = document.getElementById('btnSalvarColunas');
     if (checklistContainer && btnSalvarColunas) {
         const todasAsColunas = {{ todas_as_colunas | tojson | safe }};
         const colunasVisiveis = {{ colunas_visiveis | tojson | safe }};
-
         todasAsColunas.forEach(coluna => {
-            const col_id = coluna[0];
-            const col_nome = coluna[1];
+            const [col_id, col_nome] = coluna;
             const isChecked = colunasVisiveis.includes(col_id);
             const wrapper = document.createElement('div');
             wrapper.innerHTML = `<label><input type="checkbox" name="coluna_pref" value="${col_id}" ${isChecked ? 'checked' : ''}> ${col_nome}</label>`;
             checklistContainer.appendChild(wrapper);
         });
-
         btnSalvarColunas.addEventListener('click', () => {
-            const checkboxes = checklistContainer.querySelectorAll('input:checked');
-            const colunasSelecionadas = Array.from(checkboxes).map(cb => cb.value);
+            const colunasSelecionadas = Array.from(checklistContainer.querySelectorAll('input:checked')).map(cb => cb.value);
             fetch("{{ url_for('core.save_pendencias_column_prefs') }}", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -245,31 +239,88 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnLimparFiltro = document.getElementById('btnLimparFiltro');
     if (btnLimparFiltro) {
         btnLimparFiltro.addEventListener('click', () => {
-            const targetUrl = "{{ url_for('pendencias.pendencias_lista', page_mode=page_mode) }}";
-            window.location.href = targetUrl;
+            window.location.href = "{{ url_for('pendencias.pendencias_lista', page_mode=page_mode) }}";
         });
     }
+
     // --- LÓGICA PARA ALTERNAR PRIORIDADE ---
     document.querySelectorAll('.coluna-prioridade').forEach(col => {
         col.addEventListener('click', function(e) {
-            e.stopPropagation(); // Impede que o clique selecione a linha inteira
-            
+            e.stopPropagation();
             const pendenciaId = this.dataset.id;
             const tr = this.closest('tr');
-            
             fetch(`/pendencias/toggle_prioridade/${pendenciaId}`, { method: 'POST' })
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // Alterna a classe visual e recarrega para reordenar
-                    tr.classList.toggle('prioridade-ativa', data.nova_prioridade);
-                    location.reload(); // Recarrega para ver a nova ordem
+                    location.reload();
                 } else {
                     alert('Erro ao alterar a prioridade.');
                 }
             });
         });
     });
+
+    // --- LÓGICA PARA DESTAQUE DE COR COM CLIQUE DIREITO ---
+    const contextMenu = document.getElementById('colorContextMenu');
+    const colorPicker = document.getElementById('hiddenColorPicker');
+    const chooseColorBtn = document.getElementById('chooseColorOption');
+    const clearColorBtn = document.getElementById('clearColorOption');
+    let activeRow = null;
+
+    document.querySelectorAll('tbody .clickable-row').forEach(row => {
+        row.addEventListener('contextmenu', function(event) {
+            event.preventDefault();
+            activeRow = this;
+            let top = event.pageY;
+            let left = event.pageX;
+            contextMenu.style.display = 'block';
+            if (top + contextMenu.offsetHeight > window.innerHeight + window.scrollY) {
+                top = event.pageY - contextMenu.offsetHeight;
+            }
+            if (left + contextMenu.offsetWidth > window.innerWidth + window.scrollX) {
+                left = event.pageX - contextMenu.offsetWidth;
+            }
+            contextMenu.style.top = `${top}px`;
+            contextMenu.style.left = `${left}px`;
+        });
+    });
+
+    window.addEventListener('click', () => {
+        if (contextMenu) contextMenu.style.display = 'none';
+    });
+
+    chooseColorBtn.addEventListener('click', () => {
+        colorPicker.click();
+    });
+
+    clearColorBtn.addEventListener('click', () => {
+        if (!activeRow) return;
+        saveColor(activeRow.dataset.id, null);
+    });
+
+    colorPicker.addEventListener('change', (event) => {
+        if (!activeRow) return;
+        const newColor = event.target.value;
+        saveColor(activeRow.dataset.id, newColor);
+    });
+
+    function saveColor(pendenciaId, color) {
+        fetch(`/pendencias/set_cor_destaque/${pendenciaId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cor: color })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success' && activeRow) {
+                activeRow.style.backgroundColor = color || '';
+            } else {
+                alert('Erro ao salvar a cor.');
+            }
+        });
+    }
+
 });
 </script>
 {% endblock %}

@@ -52,7 +52,7 @@
                     </thead>
                     <tbody>
                         {% for p in grupo.pendencias_vencidas %}
-                            <tr class="clickable-row pendencia-vencida {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id) }}">
+                            <tr class="clickable-row pendencia-vencida {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id) }}" data-id="{{ p._id }}" {% if p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
                             <td data-label="Ações" class="hide-on-mobile">
                                 <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" class="action-icon-link" title="Ver Detalhes">
                                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor">
@@ -69,7 +69,7 @@
                         </tr>
                         {% endfor %}
                         {% for p in grupo.pendencias_a_vencer %}
-                        <tr class="clickable-row {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id) }}">
+                        <tr class="clickable-row {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id) }}" data-id="{{ p._id }}" {% if p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
                             <td data-label="Ações" class="hide-on-mobile">
                                 <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" class="action-icon-link" title="Ver Detalhes">
                                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
@@ -97,7 +97,7 @@
                     </thead>
                     <tbody>
                         {% for p in grupo.pendencias_sem_prazo %}
-                        <tr class="clickable-row {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id) }}">
+                        <tr class="clickable-row {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id) }}" data-id="{{ p._id }}" {% if p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
                             <td data-label="Ações" class="hide-on-mobile">
                                 <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" class="action-icon-link" title="Ver Detalhes">
                                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
@@ -152,19 +152,24 @@
             </div>
             </div> {% endfor %}
     {% endif %}
-
+    <ul id="colorContextMenu" class="context-menu">
+        <li class="context-menu-item" id="chooseColorOption">🎨 Escolher Cor...</li>
+        <li class="context-menu-item" id="clearColorOption">⚪ Limpar Cor</li>
+    </ul>
+    <input type="color" class="hidden-color-input" id="hiddenColorPicker">
 {% endblock %}
 
 
 {% block page_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+
     // --- LÓGICA DE CLIQUE (DESKTOP E MOBILE) ---
     document.querySelectorAll('.clickable-row[data-url]').forEach(row => {
         // LÓGICA DE CLIQUE DUPLO PARA DESKTOP
         row.addEventListener('dblclick', function(e) {
-            if (window.innerWidth > 768) { // Só executa em telas grandes
-                if (!e.target.closest('a, button, input')) {
+            if (window.innerWidth > 768) {
+                if (!e.target.closest('a, button, input, .coluna-prioridade')) {
                     window.location.href = this.dataset.url;
                 }
             }
@@ -172,62 +177,119 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // LÓGICA DE CLIQUE SIMPLES PARA MOBILE
         row.addEventListener('click', function(e) {
-            if (window.innerWidth <= 768) { // Só executa em telas pequenas
-                if (!e.target.closest('.action-icon-link, input')) {
+            if (window.innerWidth <= 768) {
+                if (!e.target.closest('.action-icon-link, .coluna-prioridade, input')) {
                     window.location.href = this.dataset.url;
                 }
             }
         });
     });
-    // --- NOVA LÓGICA PARA O BOTÃO DE EXIBIR/OCULTAR NOTAS FISCAIS ---
+
+    // --- LÓGICA PARA O BOTÃO DE EXIBIR/OCULTAR NOTAS FISCAIS ---
     const btnToggle = document.getElementById('btnToggleNotasFiscais');
     if (btnToggle) {
         btnToggle.addEventListener('click', () => {
             const secoesNF = document.querySelectorAll('.secao-notas-fiscais');
-            
-            // Verifica o estado da primeira seção para decidir a ação
-            const isHidden = secoesNF[0].style.display === 'none';
+            const isHidden = secoesNF.length > 0 && secoesNF[0].style.display === 'none';
 
             secoesNF.forEach(secao => {
                 secao.style.display = isHidden ? 'block' : 'none';
             });
 
-            // Atualiza o texto e o estilo do botão
             btnToggle.textContent = isHidden ? 'Ocultar Notas Fiscais' : 'Exibir Notas Fiscais';
             btnToggle.classList.toggle('filtro-ativo', isHidden);
         });
     }
-    // --- CÓDIGO NOVO ADICIONADO AQUI ---
-    // Verifica se a URL contém o parâmetro para reabrir a seção de NF
+
+    // --- VERIFICA SE A URL CONTÉM O PARÂMETRO PARA REABRIR A SEÇÃO DE NF ---
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('show_nf')) {
         if (btnToggle && btnToggle.textContent === 'Exibir Notas Fiscais') {
-            // Se o parâmetro existir e as notas estiverem ocultas, "clica" no botão para abri-las.
             btnToggle.click();
         }
     }
-    // --- FIM DO CÓDIGO NOVO ---
 
     // --- LÓGICA PARA ALTERNAR PRIORIDADE ---
     document.querySelectorAll('.coluna-prioridade').forEach(col => {
         col.addEventListener('click', function(e) {
-            e.stopPropagation(); // Impede que o clique acione a navegação da linha
-            
+            e.stopPropagation();
             const pendenciaId = this.dataset.id;
-            const tr = this.closest('tr');
-            
             fetch(`/pendencias/toggle_prioridade/${pendenciaId}`, { method: 'POST' })
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // Recarrega a página para reordenar a lista conforme a prioridade
-                    location.reload(); 
+                    location.reload();
                 } else {
                     alert('Erro ao alterar a prioridade.');
                 }
             });
         });
     });
+
+    // --- LÓGICA PARA DESTAQUE DE COR COM CLIQUE DIREITO (NOVO BLOCO) ---
+    const contextMenu = document.getElementById('colorContextMenu');
+    const colorPicker = document.getElementById('hiddenColorPicker');
+    const chooseColorBtn = document.getElementById('chooseColorOption');
+    const clearColorBtn = document.getElementById('clearColorOption');
+    let activeRow = null;
+
+    document.querySelectorAll('tbody .clickable-row').forEach(row => {
+        row.addEventListener('contextmenu', function(event) {
+            event.preventDefault();
+            activeRow = this;
+
+            let top = event.pageY;
+            let left = event.pageX;
+
+            contextMenu.style.display = 'block';
+
+            if (top + contextMenu.offsetHeight > window.innerHeight + window.scrollY) {
+                top = event.pageY - contextMenu.offsetHeight;
+            }
+            if (left + contextMenu.offsetWidth > window.innerWidth + window.scrollX) {
+                left = event.pageX - contextMenu.offsetWidth;
+            }
+
+            contextMenu.style.top = `${top}px`;
+            contextMenu.style.left = `${left}px`;
+        });
+    });
+
+    window.addEventListener('click', () => {
+        if (contextMenu) contextMenu.style.display = 'none';
+    });
+
+    chooseColorBtn.addEventListener('click', () => {
+        colorPicker.click();
+    });
+
+    clearColorBtn.addEventListener('click', () => {
+        if (!activeRow) return;
+        saveColor(activeRow.dataset.id, null);
+    });
+
+    colorPicker.addEventListener('change', (event) => {
+        if (!activeRow) return;
+        const newColor = event.target.value;
+        saveColor(activeRow.dataset.id, newColor);
+    });
+
+    function saveColor(pendenciaId, color) {
+        fetch(`/pendencias/set_cor_destaque/${pendenciaId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cor: color })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success' && activeRow) {
+                activeRow.style.backgroundColor = color || '';
+            } else {
+                alert('Erro ao salvar a cor.');
+            }
+        });
+    }
+
 });
 </script>
 {% endblock %}

@@ -1977,3 +1977,54 @@ body.theme-dark .texto-pendente {
     /* Força o texto do cabeçalho ("Situação") a não quebrar linha */
     white-space: nowrap;
 }
+
+/* ====================================================================== */
+/* ESTILOS PARA O MENU DE CONTEXTO E DESTAQUE DE LINHA                */
+/* ====================================================================== */
+
+/* O menu customizado que aparece com o clique direito */
+.context-menu {
+    display: none;
+    position: absolute;
+    z-index: 1000;
+    background-color: var(--background-secondary);
+    border: 1px solid var(--border-base);
+    border-radius: 5px;
+    box-shadow: 0 4px 12px var(--shadow-base);
+    min-width: 180px;
+    padding: 5px 0;
+    list-style: none;
+    margin: 0;
+}
+
+.context-menu-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    color: var(--text-primary);
+}
+
+.context-menu-item:hover {
+    background-color: var(--primary-color);
+    color: var(--text-secondary);
+}
+
+/* O seletor de cor que fica invisível */
+.hidden-color-input {
+    visibility: hidden;
+    position: absolute;
+    width: 0;
+    height: 0;
+}
+
+/* Efeito de hover sutil para linhas que já têm uma cor de fundo */
+tr[style*="background-color"]:hover {
+    filter: brightness(95%);
+}
+
+/* Garante que o hover padrão não sobrescreva o brilho no tema escuro */
+body.theme-dark tr[style*="background-color"]:hover {
+    background-color: initial; /* Reseta o hover padrão */
+    filter: brightness(120%);
+}
