@@ -191,3 +191,22 @@ def set_view_preference():
         return {'status': 'success'}
     
     return {'status': 'error', 'message': 'Modo de visualização inválido'}, 400
+
+# Adicione este bloco no final de app/routes/core.py
+
+@core_bp.route('/user/save_card_prefs', methods=['POST'])
+@login_required
+def save_card_prefs():
+    data = request.get_json()
+    campos = data.get('campos', [])
+
+    # Importa a lista de campos permitidos para validação
+    from app.models import TODAS_AS_COLUNAS_CARDS
+    campos_permitidos = [field[0] for field in TODAS_AS_COLUNAS_CARDS]
+    campos_validos = [c for c in campos if c in campos_permitidos]
+
+    users_collection.update_one(
+        {'_id': ObjectId(current_user.id)},
+        {'$set': {'card_fields_controle': campos_validos}}
+    )
+    return {'status': 'success'}

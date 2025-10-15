@@ -16,7 +16,7 @@ from app.models import (controle_collection, get_situacoes_que_arquivam,
                         get_controle_data, get_situacoes_para_dropdown,
                         prepare_chart_data, get_color_map_for_user,
                         get_itens_para_dropdown_js, itens_collection,
-                        instrumentos_collection, TODAS_AS_COLUNAS_CONTROLE)
+                        instrumentos_collection, TODAS_AS_COLUNAS_CONTROLE, TODAS_AS_COLUNAS_CARDS)
 
 # 3. Criação do Blueprint de Controle
 # O nome 'controle' será usado nos comandos url_for().
@@ -76,10 +76,13 @@ def controle_lista(filter_mode):
     color_map_json = json.dumps(get_color_map_for_user())
 
     view_mode = getattr(current_user, 'view_mode_controle', 'table')
+    card_fields_visiveis = getattr(current_user, 'card_fields_controle', [field[0] for field in TODAS_AS_COLUNAS_CARDS[:4]])
 
     return render_template(
         'controle_notas_fiscais.html',
         view_mode=view_mode,
+        card_fields_visiveis=card_fields_visiveis,
+        todas_as_colunas_cards=TODAS_AS_COLUNAS_CARDS,
         controles=list(controles),
         situacoes_para_filtro=situacoes_para_filtro,
         filter_mode=filter_mode,

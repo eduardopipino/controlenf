@@ -8,6 +8,7 @@
             <button id="btnFiltro" class="{{ 'filtro-ativo' if filtro_ativo else '' }}">Filtro...</button>
             <button id="btnColorCode">Identificar por cores</button>
             <button id="btnConfigurarColunas">Configurar colunas</button>
+            <button id="btnConfigurarCampos" style="display: none;">Configurar campos</button>
             <a href="{{ url_for('controle.exportar_csv', filter_mode=filter_mode) }}" class="button">Exportar</a>
         </div>
         
@@ -139,13 +140,16 @@
         <div class="card-grid">
             {% for controle in controles %}
                 <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}" class="data-card-link">
-                    <div class="data-card">
-                        <h4>Referência: {{ controle.referencia }}</h4>
-                        <p><strong>Item:</strong> {{ controle.item_descricao }}</p>
-                        <p><strong>Contrato:</strong> {{ controle.n_instrumento }}</p>
-                        <p><strong>Contratada:</strong> {{ controle.contratada }}</p>
-                        <p><strong>Situação:</strong> {{ controle.situacao or 'Nenhuma' }}</p>
-                    </div>
+                {% set card_fields_map = dict(todas_as_colunas_cards) %}
+                <div class="data-card">
+                    {% for field_id in card_fields_visiveis %}
+                        {% if loop.first %}
+                            <h4>{{ card_fields_map[field_id] }}: {{ controle[field_id] }}</h4>
+                        {% else %}
+                            <p><strong>{{ card_fields_map[field_id] }}:</strong> {{ controle[field_id] | join(', ') if field_id == 'documentacao' else (controle[field_id] or 'N/D') }}</p>
+                        {% endif %}
+                    {% endfor %}
+                </div>
                 </a>
             {% endfor %}
         </div>
@@ -161,14 +165,16 @@
                         {% for controle in controles %}
                             {% if controle.situacao == sit.situacao %}
                                 <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}" class="data-card-link">
-                                    <div class="data-card">
-                                        <h4>Referência: {{ controle.referencia }}</h4>
-                                        <p><strong>Item:</strong> {{ controle.item_descricao }}</p>
-                                        <p><strong>Contrato:</strong> {{ controle.n_instrumento }}</p>
-                                        <p><strong>Contratada:</strong> {{ controle.contratada }}</p>
-                                        <p><strong>Situação:</strong> {{ controle.situacao or 'Nenhuma' }}</p>
-                                    </div>
-                                </a>
+                                {% set card_fields_map = dict(todas_as_colunas_cards) %}
+                                <div class="data-card">
+                                    {% for field_id in card_fields_visiveis %}
+                                        {% if loop.first %}
+                                            <h4>{{ card_fields_map[field_id] }}: {{ controle[field_id] }}</h4>
+                                        {% else %}
+                                            <p><strong>{{ card_fields_map[field_id] }}:</strong> {{ controle[field_id] | join(', ') if field_id == 'documentacao' else (controle[field_id] or 'N/D') }}</p>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>                                </a>
                             {% endif %}
                         {% endfor %}
                     </div>
@@ -266,17 +272,29 @@
         </div>
     </div>
 
-<div id="configColunasModal" class="modal-overlay">
-    <div class="modal-content">
-        <h3>Selecione as colunas para exibir</h3>
-        <div id="colunas-checklist" class="modal-colunas-list">
+    <div id="configColunasModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Selecione as colunas para exibir</h3>
+            <div id="colunas-checklist" class="modal-colunas-list">
+                </div>
+            <div class="button-toolbar">
+                <button id="btnSalvarColunas">Salvar</button>
+                <button type="button" class="btn-cancel-modal">Cancelar</button>
             </div>
-        <div class="button-toolbar">
-            <button id="btnSalvarColunas">Salvar</button>
-            <button type="button" class="btn-cancel-modal">Cancelar</button>
         </div>
     </div>
-</div>
+
+    <div id="configCamposModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Selecione os campos para exibir nos cartões</h3>
+            <div id="campos-checklist" class="modal-colunas-list">
+                </div>
+            <div class="button-toolbar">
+                <button id="btnSalvarCampos">Salvar</button>
+                <button type="button" class="btn-cancel-modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
 
 {% endblock %}
 
@@ -472,6 +490,62 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // --- LÓGICA PARA ALTERNAR BOTÕES DE CONFIGURAÇÃO ---
+    const btnConfigColunas = document.getElementById('btnConfigurarColunas');
+    const btnConfigCampos = document.getElementById('btnConfigurarCampos');
+
+    function atualizarBotoesConfig() {
+        const currentView = document.body.className.includes('view-mode-table') ? 'table' : 'cards';
+        if (currentView === 'table') {
+            btnConfigColunas.style.display = 'inline-flex';
+            btnConfigCampos.style.display = 'none';
+        } else {
+            btnConfigColunas.style.display = 'none';
+            btnConfigCampos.style.display = 'inline-flex';
+        }
+    }
+    atualizarBotoesConfig(); // Executa ao carregar a página
+    // Re-chama a função quando a view muda (adicionar ao listener do viewSelector)
+    // (A lógica de reload já cuida disso, então não precisamos de mais nada aqui)
+
+
+    // --- LÓGICA PARA O NOVO MODAL DE CONFIGURAR CAMPOS ---
+    const configCamposModal = document.getElementById('configCamposModal');
+    const camposChecklist = document.getElementById('campos-checklist');
+    const btnSalvarCampos = document.getElementById('btnSalvarCampos');
+
+    document.getElementById('btnConfigurarCampos')?.addEventListener('click', () => {
+        configCamposModal.classList.add('active');
+    });
+
+    if (camposChecklist && btnSalvarCampos) {
+        const todasAsColunasCards = {{ todas_as_colunas_cards | tojson | safe }};
+        const cardFieldsVisiveis = {{ card_fields_visiveis | tojson | safe }};
+
+        todasAsColunasCards.forEach(campo => {
+            const [field_id, field_name] = campo;
+            const isChecked = cardFieldsVisiveis.includes(field_id);
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = `<label><input type="checkbox" name="campo_pref" value="${field_id}" ${isChecked ? 'checked' : ''}> ${field_name}</label>`;
+            camposChecklist.appendChild(wrapper);
+        });
+
+        btnSalvarCampos.addEventListener('click', () => {
+            const camposSelecionados = Array.from(camposChecklist.querySelectorAll('input:checked')).map(cb => cb.value);
+            fetch("{{ url_for('core.save_card_prefs') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ campos: camposSelecionados })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    location.reload();
+                } else { alert('Erro ao salvar as preferências dos cards.'); }
+            });
+        });
+    }
 
 });
 </script>

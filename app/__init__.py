@@ -74,7 +74,8 @@ def create_app():
                 colunas_visiveis_pendencias=user_data.get('colunas_visiveis_pendencias'),
                 font_size_preference=user_data.get('font_size_preference', 'media'),
                 spacing_preference=user_data.get('spacing_preference', 'regular'),
-                view_mode_controle=user_data.get('view_mode_controle')
+                view_mode_controle=user_data.get('view_mode_controle'),
+                card_fields_controle=user_data.get('card_fields_controle')
             )
         return None
 

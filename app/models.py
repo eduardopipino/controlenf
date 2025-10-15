@@ -38,6 +38,18 @@ TODAS_AS_COLUNAS_CONTROLE = [
     ['situacao', 'Situação']
 ]
 
+# --- NOVA CONSTANTE PARA OS CAMPOS DOS CARDS ---
+TODAS_AS_COLUNAS_CARDS = [
+    ['referencia', 'Referência'],
+    ['item_descricao', 'Item'],
+    ['n_instrumento', 'Contrato'],
+    ['contratada', 'Contratada'],
+    ['situacao', 'Situação'],
+    ['objeto', 'Objeto'],
+    ['nota_fiscal', 'Documento Fiscal'],
+    ['observacoes', 'Observações']
+]
+
 TODAS_AS_COLUNAS_PENDENCIAS = [
     ['instrumento_display', 'Nº / Tipo'], # <<< NOVA COLUNA
     ['contratada', 'Contratada'],         # <<< NOVA COLUNA
@@ -51,7 +63,8 @@ TODAS_AS_COLUNAS_PENDENCIAS = [
 class User(UserMixin):
     def __init__(self, username, email, password_hash, id=None, theme='theme-blue', 
                  colunas_visiveis=None, colunas_visiveis_pendencias=None, 
-                 font_size_preference=None, spacing_preference=None, view_mode_controle=None):
+                 font_size_preference=None, spacing_preference=None, view_mode_controle=None,
+                 card_fields_controle=None):
         self.username = username
         self.email = email
         self.password_hash = password_hash
@@ -63,6 +76,8 @@ class User(UserMixin):
         self.font_size_preference = font_size_preference or 'media'
         self.spacing_preference = spacing_preference or 'regular'
         self.view_mode_controle = view_mode_controle or 'table'
+        self.card_fields_controle = card_fields_controle or [field[0] for field in TODAS_AS_COLUNAS_CARDS[:4]]
+
 
     def get_id(self):
         return self.id
