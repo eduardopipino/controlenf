@@ -147,7 +147,7 @@
             {% for controle in controles %}
                 <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}" class="data-card-link">
                 {% set card_fields_map = dict(todas_as_colunas_cards) %}
-               <div class="data-card" data-situacao="{{ controle.situacao or '' }}" 
+               <div class="data-card" data-situacao="{{ controle.situacao or '' }}" data-id="{{ controle._id }}"
                     {% if color_coding_active and controle.situacao in color_map %}
                         style="background-color: {{ color_map[controle.situacao] }};"
                     {% endif %}>
@@ -307,6 +307,12 @@
             </div>
         </div>
     </div>
+
+    <ul id="situacaoContextMenu" class="context-menu">
+        <li style="padding: 8px 15px; font-weight: bold; border-bottom: 1px solid var(--border-base);">Alterar Situação para:</li>
+        <div id="situacao-options-container">
+        </div>
+    </ul>
 
 {% endblock %}
 
@@ -516,7 +522,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // --- LÓGICA PARA O NOVO MODAL DE CONFIGURAR CAMPOS ---
+    // --- 10. LÓGICA PARA O NOVO MODAL DE CONFIGURAR CAMPOS ---
     const configCamposModal = document.getElementById('configCamposModal');
     const camposChecklist = document.getElementById('campos-checklist');
     const btnSalvarCampos = document.getElementById('btnSalvarCampos');
@@ -552,6 +558,93 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    // --- 11. LÓGICA DO MENU DE CONTEXTO PARA SITUAÇÃO NOS CARDS ---
+    const situacaoContextMenu = document.getElementById('situacaoContextMenu');
+    const situacaoOptionsContainer = document.getElementById('situacao-options-container');
+    const todasAsSituacoes = {{ situacoes_para_filtro | tojson | safe }};
+    let activeCard = null;
+
+    // Função para popular o menu com as opções de situação
+    function popularMenuSituacao() {
+        situacaoOptionsContainer.innerHTML = ''; // Limpa as opções antigas
+        todasAsSituacoes.forEach(sit => {
+            const li = document.createElement('li');
+            li.className = 'context-menu-item';
+            li.textContent = sit.situacao;
+            li.dataset.situacao = sit.situacao;
+            situacaoOptionsContainer.appendChild(li);
+        });
+    }
+
+    // Adiciona o evento de clique direito apenas nos cards do "Modo Cards"
+    document.querySelectorAll('.card-view-container .data-card').forEach(card => {
+        card.addEventListener('contextmenu', function(event) {
+            event.preventDefault();
+            activeCard = this; // Guarda o card que foi clicado
+
+            popularMenuSituacao(); // Popula o menu com os dados mais recentes
+
+            let top = event.pageY;
+            let left = event.pageX;
+            
+            situacaoContextMenu.style.display = 'block';
+
+            if (top + situacaoContextMenu.offsetHeight > window.innerHeight + window.scrollY) {
+                top = event.pageY - situacaoContextMenu.offsetHeight;
+            }
+            if (left + situacaoContextMenu.offsetWidth > window.innerWidth + window.scrollX) {
+                left = event.pageX - situacaoContextMenu.offsetWidth;
+            }
+            
+            situacaoContextMenu.style.top = `${top}px`;
+            situacaoContextMenu.style.left = `${left}px`;
+        });
+    });
+
+    // Adiciona o evento de clique aos itens do menu
+    situacaoContextMenu.addEventListener('click', (event) => {
+        const menuItem = event.target.closest('.context-menu-item');
+        if (!menuItem || !activeCard) return;
+
+        const novaSituacao = menuItem.dataset.situacao;
+        const controleId = activeCard.dataset.id;
+
+        // Chama a API para salvar a nova situação
+        fetch(`/controle/set_situacao/${controleId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ situacao: novaSituacao })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Atualiza o texto da situação no card (LÓGICA CORRIGIDA)
+                const allParagraphs = activeCard.querySelectorAll('p');
+                allParagraphs.forEach(p => {
+                    const strong = p.querySelector('strong');
+                    if (strong && strong.textContent.includes('Situação:')) {
+                        p.innerHTML = `<strong>Situação:</strong> ${novaSituacao || 'Nenhuma'}`;
+                    }
+                });
+
+                // Atualiza o data-attribute para a colorização funcionar
+                activeCard.dataset.situacao = novaSituacao || '';
+
+                // Se a colorização estiver ativa, atualiza a cor do card
+                if (document.getElementById('btnColorCode')?.classList.contains('filtro-ativo')) {
+                    activeCard.style.backgroundColor = colorMap[novaSituacao] || '';
+                }
+            } else {
+                alert('Erro ao atualizar a situação.');
+            }
+        });
+    });
+
+    // Esconde o menu se clicar em qualquer outro lugar
+    window.addEventListener('click', () => {
+        if (situacaoContextMenu) situacaoContextMenu.style.display = 'none';
+    });
 
 });
 </script>

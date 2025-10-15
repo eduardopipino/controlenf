@@ -72,6 +72,10 @@ def controle_lista(filter_mode):
     controles = get_controle_data(query_filter, sort_document=sort_document)
     
     situacoes_para_filtro = get_situacoes_para_dropdown()
+    # Converte o ObjectId de cada situação para uma string, tornando-a "JSON serializable"
+    for sit in situacoes_para_filtro:
+        sit['_id'] = str(sit['_id'])
+    
     chart_data_json = prepare_chart_data(controles)
     color_map = get_color_map_for_user()
 
@@ -376,3 +380,24 @@ def criar_controle_rapido():
     except Exception as e:
         print(f"Erro na criação rápida de controle: {e}")
         return {'status': 'error', 'message': 'Ocorreu um erro interno no servidor.'}, 500
+
+# Adicione este novo bloco de código no final de app/routes/controle.py
+
+@controle_bp.route('/set_situacao/<string:controle_id>', methods=['POST'])
+@login_required
+def set_situacao_card(controle_id):
+    data = request.get_json()
+    nova_situacao = data.get('situacao')
+
+    if nova_situacao is None:
+        return {'status': 'error', 'message': 'Nenhuma situação fornecida'}, 400
+
+    result = controle_collection.update_one(
+        {'_id': ObjectId(controle_id), 'user_id': ObjectId(current_user.id)},
+        {'$set': {'situacao': nova_situacao, 'data_ultima_atualizacao': datetime.now()}}
+    )
+
+    if result.matched_count > 0:
+        return {'status': 'success', 'message': 'Situação atualizada.'}
+    else:
+        return {'status': 'error', 'message': 'Registro não encontrado.'}, 404
