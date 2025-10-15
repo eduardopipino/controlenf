@@ -144,7 +144,7 @@
             {% for controle in controles %}
                 <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}" class="data-card-link">
                 {% set card_fields_map = dict(todas_as_colunas_cards) %}
-                <div class="data-card">
+               <div class="data-card" data-situacao="{{ controle.situacao or '' }}">
                     {% for field_id in card_fields_visiveis %}
                         {% if loop.first %}
                             <h4>{{ card_fields_map[field_id] }}: {{ controle[field_id] }}</h4>
@@ -169,7 +169,7 @@
                             {% if controle.situacao == sit.situacao %}
                                 <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}" class="data-card-link">
                                 {% set card_fields_map = dict(todas_as_colunas_cards) %}
-                                <div class="data-card">
+                                <div class="data-card" data-situacao="{{ controle.situacao or '' }}">
                                     {% for field_id in card_fields_visiveis %}
                                         {% if loop.first %}
                                             <h4>{{ card_fields_map[field_id] }}: {{ controle[field_id] }}</h4>
@@ -414,9 +414,22 @@ document.addEventListener('DOMContentLoaded', function() {
     let colorsActive = false;
     function toggleColorCoding() {
         colorsActive = !colorsActive;
+        // Lógica original para a tabela (continua igual)
         document.querySelectorAll('.situacao-dropdown').forEach(select => {
             const cor = colorsActive ? (colorMap[select.value] || 'transparent') : '';
             select.style.backgroundColor = cor;
+        });
+        // --- NOVA LÓGICA PARA OS CARDS ---
+        document.querySelectorAll('.data-card').forEach(card => {
+            if (colorsActive) {
+                const situacao = card.dataset.situacao;
+                // Busca a cor no mapa. Se não encontrar, reverte para a cor padrão do CSS ('').
+                const cor = colorMap[situacao] || ''; 
+                card.style.backgroundColor = cor;
+            } else {
+                // Se o botão for desativado, remove a cor de fundo para voltar ao padrão do tema.
+                card.style.backgroundColor = '';
+            }
         });
         const btnDesktop = document.getElementById('btnColorCode');
         if(btnDesktop) btnDesktop.classList.toggle('filtro-ativo', colorsActive);

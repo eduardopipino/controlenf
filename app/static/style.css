@@ -2146,3 +2146,22 @@ a.data-card-link {
     text-decoration: none;
     color: inherit;
 }
+
+/* ====================================================================== */
+/* AJUSTE DE COR DE TEXTO PARA CARDS COM FUNDO COLORIDO               */
+/* ====================================================================== */
+
+/* Quando um card tem uma cor de fundo aplicada via JavaScript... */
+.data-card[style*="background-color"] h4,
+.data-card[style*="background-color"] p,
+.data-card[style*="background-color"] strong {
+    /* Força o texto a ser preto, para melhor contraste em fundos claros */
+    color: #000;
+}
+
+/* No tema escuro, força o texto a ser branco para contraste em fundos escuros */
+body.theme-dark .data-card[style*="background-color"] h4,
+body.theme-dark .data-card[style*="background-color"] p,
+body.theme-dark .data-card[style*="background-color"] strong {
+    color: #fff;
+}
