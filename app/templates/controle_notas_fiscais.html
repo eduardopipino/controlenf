@@ -47,6 +47,7 @@
     </div>
     
     <br>
+    {% if view_mode == 'table' %}
     <table border="1" id="tabelaControle" class="responsive-card-table">
         <thead>
             <tr>
@@ -54,10 +55,10 @@
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
                         {% if col_id == 'situacao' %}
-    <th class="coluna-situacao">
-{% else %}
-    <th class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }}">
-{% endif %}
+                            <th class="coluna-situacao">
+                        {% else %}
+                            <th class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }}">
+                        {% endif %}
                             <a href="{{ url_for(request.endpoint, filter_mode=filter_mode, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc') }}">
                                 {{ col_nome }}
                                 {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}
@@ -133,6 +134,7 @@
         </tbody>
     </table>
 
+    {% elif view_mode == 'cards' %}
     <div class="card-view-container">
         <div class="card-grid">
             {% for controle in controles %}
@@ -149,6 +151,7 @@
         </div>
     </div>
 
+    {% elif view_mode == 'kanban' %}
     <div class="kanban-view-container">
         <div class="kanban-board">
             {% for sit in situacoes_para_filtro %}
@@ -191,6 +194,7 @@
             </div>
         </div>
     </div>
+    {% endif %}
 
     <div id="filterModal" class="modal-overlay">
         <div class="modal-content">
@@ -279,33 +283,33 @@
 {% block page_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // --- 1. LÓGICA DO SELETOR DE VISUALIZAÇÃO (NOVO) ---
-    const body = document.body;
+    // --- 1. LÓGICA DO SELETOR DE VISUALIZAÇÃO (ATUALIZADA) ---
     const viewSelector = document.querySelector('.view-selector');
-
-    // Aplica a classe da visualização atual ao carregar a página
-    body.classList.add('view-mode-{{ view_mode }}');
 
     if (viewSelector) {
         viewSelector.addEventListener('click', (e) => {
             const button = e.target.closest('.view-button');
-            if (!button) return;
+            // Não faz nada se clicar no botão que já está ativo
+            if (!button || button.classList.contains('active')) return;
 
             const selectedView = button.dataset.view;
 
-            // Salva a preferência no backend
+            // Salva a preferência no backend e, em caso de sucesso, recarrega a página
             fetch("{{ url_for('core.set_view_preference') }}", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ view_mode: selectedView })
-            });
-
-            // Atualiza a interface
-            body.classList.remove('view-mode-table', 'view-mode-cards', 'view-mode-kanban');
-            body.classList.add(`view-mode-${selectedView}`);
-
-            viewSelector.querySelectorAll('.view-button').forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Recarrega a página. O servidor irá renderizar a visualização correta.
+                    window.location.reload();
+                } else {
+                    alert('Erro ao salvar a preferência de visualização.');
+                }
+            })
+            .catch(error => console.error('Erro ao salvar preferência:', error));
         });
     }
     

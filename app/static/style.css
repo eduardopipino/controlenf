@@ -2065,9 +2065,7 @@ body.theme-dark tr[style*="background-color"]:hover {
 }
 
 /* --- Layout de Cards --- */
-.card-view-container {
-    display: none; /* Escondido por padrão */
-}
+
 .card-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -2102,12 +2100,7 @@ body.theme-dark tr[style*="background-color"]:hover {
 }
 
 /* --- Layout Kanban --- */
-.kanban-view-container {
-    display: none; /* Escondido por padrão */
-    width: 100%;
-    overflow-x: auto; /* Permite rolagem horizontal */
-    padding-bottom: 15px;
-}
+
 .kanban-board {
     display: flex;
     gap: 15px;
@@ -2142,16 +2135,11 @@ body.theme-dark tr[style*="background-color"]:hover {
 
 /* --- Controle de Visibilidade --- */
 /* Apenas em telas grandes */
+
 @media (min-width: 769px) {
     .view-selector { display: flex; }
 
-    /* Esconde a tabela se o modo 'cards' estiver ativo */
-    body.view-mode-cards .responsive-card-table { display: none; }
-    body.view-mode-cards .card-view-container { display: block; }
-
-    /* Esconde a tabela se o modo 'kanban' estiver ativo */
-    body.view-mode-kanban .responsive-card-table { display: none; }
-    body.view-mode-kanban .kanban-view-container { display: block; }
+    /* As outras regras de body.view-mode-* foram removidas */
 }
 
 a.data-card-link {
