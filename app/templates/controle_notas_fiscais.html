@@ -7,8 +7,11 @@
         <div class="toolbar-group-left">
             <button id="btnFiltro" class="{{ 'filtro-ativo' if filtro_ativo else '' }}">Filtro...</button>
             <button id="btnColorCode">Identificar por cores</button>
-            <button id="btnConfigurarColunas">Configurar colunas</button>
-            <button id="btnConfigurarCampos" style="display: none;">Configurar campos</button>
+            {% if view_mode == 'table' %}
+                <button id="btnConfigurarColunas">Configurar colunas</button>
+            {% else %}
+                <button id="btnConfigurarCampos">Configurar campos</button>
+            {% endif %}
             <a href="{{ url_for('controle.exportar_csv', filter_mode=filter_mode) }}" class="button">Exportar</a>
         </div>
         
@@ -490,25 +493,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-
-    // --- LÓGICA PARA ALTERNAR BOTÕES DE CONFIGURAÇÃO ---
-    const btnConfigColunas = document.getElementById('btnConfigurarColunas');
-    const btnConfigCampos = document.getElementById('btnConfigurarCampos');
-
-    function atualizarBotoesConfig() {
-        const currentView = document.body.className.includes('view-mode-table') ? 'table' : 'cards';
-        if (currentView === 'table') {
-            btnConfigColunas.style.display = 'inline-flex';
-            btnConfigCampos.style.display = 'none';
-        } else {
-            btnConfigColunas.style.display = 'none';
-            btnConfigCampos.style.display = 'inline-flex';
-        }
-    }
-    atualizarBotoesConfig(); // Executa ao carregar a página
-    // Re-chama a função quando a view muda (adicionar ao listener do viewSelector)
-    // (A lógica de reload já cuida disso, então não precisamos de mais nada aqui)
-
 
     // --- LÓGICA PARA O NOVO MODAL DE CONFIGURAR CAMPOS ---
     const configCamposModal = document.getElementById('configCamposModal');
