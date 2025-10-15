@@ -2165,3 +2165,19 @@ body.theme-dark .data-card[style*="background-color"] p,
 body.theme-dark .data-card[style*="background-color"] strong {
     color: #fff;
 }
+
+/* ====================================================================== */
+/* ESTILOS PARA ARRASTAR E SOLTAR NO KANBAN                           */
+/* ====================================================================== */
+
+/* Estilo do card enquanto está sendo arrastado */
+.dragging-card {
+    opacity: 0.8;
+    transform: rotate(3deg);
+    box-shadow: 0 8px 20px var(--shadow-base) !important;
+}
+
+/* Estilo da coluna quando um card está sendo arrastado sobre ela */
+.kanban-column-hover {
+    background-color: var(--secondary-color) !important;
+}

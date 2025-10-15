@@ -24,13 +24,15 @@ from app.models import (controle_collection, get_situacoes_que_arquivam,
 # quando ele for registrado em app/__init__.py.
 controle_bp = Blueprint('controle', __name__)
 
-
 @controle_bp.route('/<string:filter_mode>')
 @login_required
 def controle_lista(filter_mode):
+    
+    situacoes_arquivadoras = get_situacoes_que_arquivam()
+    
     # O conteúdo desta função permanece idêntico ao original.
     # A única mudança é no decorador acima (@controle_bp.route).
-    situacoes_arquivadoras = get_situacoes_que_arquivam()
+
     query_filter = {}
     if filter_mode == 'pendentes':
         query_filter['situacao'] = {'$nin': situacoes_arquivadoras}
@@ -50,7 +52,6 @@ def controle_lista(filter_mode):
             filter_values[key] = value
             filtro_ativo = True
 
-    # --- NOVO BLOCO PARA MENSAGEM FLASH ---
     if filtro_ativo:
         nomes_amigaveis = {
             'filter_n_instrumento': 'Nº Instrumento',
@@ -62,7 +63,6 @@ def controle_lista(filter_mode):
         filtros_aplicados = [f"{nomes_amigaveis.get(k, k.replace('filter_', ''))}: '{v}'" for k, v in filter_values.items()]
         mensagem = "Filtro ativo! Exibindo registros onde " + ", ".join(filtros_aplicados) + "."
         flash(mensagem, 'info')
-    # --- FIM DO NOVO BLOCO ---
 
     sort_by = request.args.get('sort_by', 'data_criacao')
     order = request.args.get('order', 'asc')
@@ -72,12 +72,14 @@ def controle_lista(filter_mode):
     controles = get_controle_data(query_filter, sort_document=sort_document)
     
     situacoes_para_filtro = get_situacoes_para_dropdown()
+    chart_data_json = prepare_chart_data(controles)
+    color_map = get_color_map_for_user()
+    
+    situacoes_kanban = [s for s in situacoes_para_filtro if s['situacao'] not in situacoes_arquivadoras]
+    
     # Converte o ObjectId de cada situação para uma string, tornando-a "JSON serializable"
     for sit in situacoes_para_filtro:
         sit['_id'] = str(sit['_id'])
-    
-    chart_data_json = prepare_chart_data(controles)
-    color_map = get_color_map_for_user()
 
     view_mode = getattr(current_user, 'view_mode_controle', 'table')
     card_fields_visiveis = getattr(current_user, 'card_fields_controle', [field[0] for field in TODAS_AS_COLUNAS_CARDS[:4]])
@@ -89,6 +91,7 @@ def controle_lista(filter_mode):
         todas_as_colunas_cards=TODAS_AS_COLUNAS_CARDS,
         controles=list(controles),
         situacoes_para_filtro=situacoes_para_filtro,
+        situacoes_kanban=situacoes_kanban,
         filter_mode=filter_mode,
         filter_values=filter_values,
         chart_data=chart_data_json,

@@ -167,18 +167,42 @@
     {% elif view_mode == 'kanban' %}
     <div class="kanban-view-container">
         <div class="kanban-board">
-            {% for sit in situacoes_para_filtro %}
-                <div class="kanban-column">
+            {% for sit in situacoes_kanban %}
+                <div class="kanban-column" data-situacao="{{ sit.situacao }}">
                     <div class="kanban-column-header">{{ sit.situacao }}</div>
                     <div class="kanban-cards">
                         {% for controle in controles %}
                             {% if controle.situacao == sit.situacao %}
-                                <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}" class="data-card-link">
-                                {% set card_fields_map = dict(todas_as_colunas_cards) %}
-                                <div class="data-card" data-situacao="{{ controle.situacao or '' }}" 
-                                    {% if color_coding_active and controle.situacao in color_map %}
-                                        style="background-color: {{ color_map[controle.situacao] }};"
-                                    {% endif %}>
+                                <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id, origem=request.full_path) }}" class="data-card-link">
+                                    <div class="data-card" data-situacao="{{ controle.situacao or '' }}" data-id="{{ controle._id }}"
+                                        {% if color_coding_active and controle.situacao in color_map %}
+                                            style="background-color: {{ color_map[controle.situacao] }};"
+                                        {% endif %}>
+                                        
+                                        {% set card_fields_map = dict(todas_as_colunas_cards) %}
+                                        {% for field_id in card_fields_visiveis %}
+                                            {% if loop.first %}
+                                                <h4>{{ card_fields_map[field_id] }}: {{ controle[field_id] }}</h4>
+                                            {% else %}
+                                                <p><strong>{{ card_fields_map[field_id] }}:</strong> {{ controle[field_id] | join(', ') if field_id == 'documentacao' else (controle[field_id] or 'N/D') }}</p>
+                                            {% endif %}
+                                        {% endfor %}
+                                        </div>
+                                </a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+            <div class="kanban-column" data-situacao="">
+                <div class="kanban-column-header">Sem Situação</div>
+                <div class="kanban-cards">
+                    {% for controle in controles %}
+                        {% if not controle.situacao %}
+                            <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id, origem=request.full_path) }}" class="data-card-link">
+                                <div class="data-card" data-situacao="" data-id="{{ controle._id }}"
+                                    {% if color_coding_active %} style="background-color: '';" {% endif %}>
+                                    {% set card_fields_map = dict(todas_as_colunas_cards) %}
                                     {% for field_id in card_fields_visiveis %}
                                         {% if loop.first %}
                                             <h4>{{ card_fields_map[field_id] }}: {{ controle[field_id] }}</h4>
@@ -186,24 +210,6 @@
                                             <p><strong>{{ card_fields_map[field_id] }}:</strong> {{ controle[field_id] | join(', ') if field_id == 'documentacao' else (controle[field_id] or 'N/D') }}</p>
                                         {% endif %}
                                     {% endfor %}
-                                </div>                                </a>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-            {% endfor %}
-            <div class="kanban-column">
-                <div class="kanban-column-header">Sem Situação</div>
-                <div class="kanban-cards">
-                    {% for controle in controles %}
-                        {% if not controle.situacao %}
-                            <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}" class="data-card-link">
-                                <div class="data-card">
-                                    <h4>Referência: {{ controle.referencia }}</h4>
-                                    <p><strong>Item:</strong> {{ controle.item_descricao }}</p>
-                                    <p><strong>Contrato:</strong> {{ controle.n_instrumento }}</p>
-                                    <p><strong>Contratada:</strong> {{ controle.contratada }}</p>
-                                    <p><strong>Situação:</strong> {{ controle.situacao or 'Nenhuma' }}</p>
                                 </div>
                             </a>
                         {% endif %}
@@ -212,7 +218,7 @@
             </div>
         </div>
     </div>
-    {% endif %}
+{% endif %}
 
     <div id="filterModal" class="modal-overlay">
         <div class="modal-content">
@@ -644,6 +650,71 @@ document.addEventListener('DOMContentLoaded', function() {
     // Esconde o menu se clicar em qualquer outro lugar
     window.addEventListener('click', () => {
         if (situacaoContextMenu) situacaoContextMenu.style.display = 'none';
+    });
+
+    // --- 12. LÓGICA DO DRAG-AND-DROP PARA O KANBAN ---
+    const kanbanColumns = document.querySelectorAll('.kanban-cards');
+    kanbanColumns.forEach(column => {
+        new Sortable(column, {
+            group: 'kanban', // Permite mover cards entre colunas
+            animation: 150,
+            ghostClass: 'dragging-card', // Classe para o "fantasma" do card
+
+            // Evento disparado quando o arraste termina
+            onEnd: function (evt) {
+                const card = evt.item; // O elemento do card que foi movido
+                const newColumn = evt.to; // A coluna onde ele foi solto
+                
+                const controleId = card.querySelector('.data-card').dataset.id;
+                const novaSituacao = newColumn.parentElement.dataset.situacao;
+
+                // Chama a API para salvar a nova situação
+                fetch(`/controle/set_situacao/${controleId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ situacao: novaSituacao })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Atualiza os dados no card movido
+                        const dataCard = card.querySelector('.data-card');
+                        dataCard.dataset.situacao = novaSituacao;
+                        
+                        // Atualiza o texto da situação no card, se ele estiver visível
+                        const situacaoP = Array.from(dataCard.querySelectorAll('p')).find(p => p.textContent.includes('Situação:'));
+                        if (situacaoP) {
+                            situacaoP.innerHTML = `<strong>Situação:</strong> ${novaSituacao || 'Nenhuma'}`;
+                        }
+
+                        // Se a colorização estiver ativa, atualiza a cor
+                        if (colorCodingIsActive) {
+                            dataCard.style.backgroundColor = colorMap[novaSituacao] || '';
+                        }
+                        
+                        // Se a nova situação for uma de arquivamento, faz o card desaparecer
+                        if (situacoesArquivadoras.includes(novaSituacao)) {
+                            card.style.transition = 'opacity 0.5s ease';
+                            card.style.opacity = '0';
+                            setTimeout(() => card.remove(), 500);
+                        }
+
+                    } else {
+                        alert('Erro ao atualizar a situação. A página será recarregada.');
+                        location.reload(); // Recarrega para reverter a mudança visual
+                    }
+                });
+            },
+
+            // Evento para dar feedback visual ao arrastar sobre uma coluna
+            onMove: function (evt) {
+                document.querySelectorAll('.kanban-column').forEach(col => col.classList.remove('kanban-column-hover'));
+                evt.to.parentElement.classList.add('kanban-column-hover');
+            },
+            onUnchoose: function() {
+                 document.querySelectorAll('.kanban-column').forEach(col => col.classList.remove('kanban-column-hover'));
+            }
+        });
     });
 
 });
