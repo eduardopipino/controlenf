@@ -33,7 +33,8 @@ def login():
                 password_hash=user_data['password_hash'], id=user_data['_id'],
                 theme=user_data.get('theme', 'theme-blue'),
                 font_size_preference=user_data.get('font_size_preference', 'media'),
-                spacing_preference=user_data.get('spacing_preference', 'regular')
+                spacing_preference=user_data.get('spacing_preference', 'regular'),
+                view_mode_controle=user_data.get('view_mode_controle')
             )
             login_user(user)
             flash('Login realizado com sucesso!', 'success')

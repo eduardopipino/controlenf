@@ -51,7 +51,7 @@ TODAS_AS_COLUNAS_PENDENCIAS = [
 class User(UserMixin):
     def __init__(self, username, email, password_hash, id=None, theme='theme-blue', 
                  colunas_visiveis=None, colunas_visiveis_pendencias=None, 
-                 font_size_preference=None, spacing_preference=None): # <--- PARÂMETROS ADICIONADOS AQUI
+                 font_size_preference=None, spacing_preference=None, view_mode_controle=None):
         self.username = username
         self.email = email
         self.password_hash = password_hash
@@ -62,6 +62,7 @@ class User(UserMixin):
         # LINHAS CORRIGIDAS ABAIXO
         self.font_size_preference = font_size_preference or 'media'
         self.spacing_preference = spacing_preference or 'regular'
+        self.view_mode_controle = view_mode_controle or 'table'
 
     def get_id(self):
         return self.id
