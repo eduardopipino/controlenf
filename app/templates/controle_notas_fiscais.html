@@ -136,12 +136,15 @@
     <div class="card-view-container">
         <div class="card-grid">
             {% for controle in controles %}
-                <div class="data-card">
-                    <h4>{{ controle.referencia }}</h4>
-                    <p><strong>Item:</strong> {{ controle.item_descricao }}</p>
-                    <p><strong>Contratada:</strong> {{ controle.contratada }}</p>
-                    <p><strong>Situação:</strong> {{ controle.situacao or 'Nenhuma' }}</p>
-                </div>
+                <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}" class="data-card-link">
+                    <div class="data-card">
+                        <h4>Referência: {{ controle.referencia }}</h4>
+                        <p><strong>Item:</strong> {{ controle.item_descricao }}</p>
+                        <p><strong>Contrato:</strong> {{ controle.n_instrumento }}</p>
+                        <p><strong>Contratada:</strong> {{ controle.contratada }}</p>
+                        <p><strong>Situação:</strong> {{ controle.situacao or 'Nenhuma' }}</p>
+                    </div>
+                </a>
             {% endfor %}
         </div>
     </div>
@@ -154,10 +157,15 @@
                     <div class="kanban-cards">
                         {% for controle in controles %}
                             {% if controle.situacao == sit.situacao %}
-                                <div class="data-card">
-                                    <h4>{{ controle.referencia }}</h4>
-                                    <p><strong>Item:</strong> {{ controle.item_descricao }}</p>
-                                </div>
+                                <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}" class="data-card-link">
+                                    <div class="data-card">
+                                        <h4>Referência: {{ controle.referencia }}</h4>
+                                        <p><strong>Item:</strong> {{ controle.item_descricao }}</p>
+                                        <p><strong>Contrato:</strong> {{ controle.n_instrumento }}</p>
+                                        <p><strong>Contratada:</strong> {{ controle.contratada }}</p>
+                                        <p><strong>Situação:</strong> {{ controle.situacao or 'Nenhuma' }}</p>
+                                    </div>
+                                </a>
                             {% endif %}
                         {% endfor %}
                     </div>
@@ -168,10 +176,15 @@
                 <div class="kanban-cards">
                     {% for controle in controles %}
                         {% if not controle.situacao %}
-                            <div class="data-card">
-                                <h4>{{ controle.referencia }}</h4>
-                                <p><strong>Item:</strong> {{ controle.item_descricao }}</p>
-                            </div>
+                            <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}" class="data-card-link">
+                                <div class="data-card">
+                                    <h4>Referência: {{ controle.referencia }}</h4>
+                                    <p><strong>Item:</strong> {{ controle.item_descricao }}</p>
+                                    <p><strong>Contrato:</strong> {{ controle.n_instrumento }}</p>
+                                    <p><strong>Contratada:</strong> {{ controle.contratada }}</p>
+                                    <p><strong>Situação:</strong> {{ controle.situacao or 'Nenhuma' }}</p>
+                                </div>
+                            </a>
                         {% endif %}
                     {% endfor %}
                 </div>

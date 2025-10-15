@@ -2114,7 +2114,9 @@ body.theme-dark tr[style*="background-color"]:hover {
     min-height: 60vh;
 }
 .kanban-column {
-    flex: 0 0 300px; /* Largura fixa para cada coluna */
+    flex: 1; /* Permite que a coluna cresça */
+    min-width: 200px; /* Largura mínima */
+    max-width: 350px; /* Largura máxima */
     background-color: var(--background-primary);
     border-radius: 8px;
     padding: 10px;
@@ -2150,4 +2152,9 @@ body.theme-dark tr[style*="background-color"]:hover {
     /* Esconde a tabela se o modo 'kanban' estiver ativo */
     body.view-mode-kanban .responsive-card-table { display: none; }
     body.view-mode-kanban .kanban-view-container { display: block; }
+}
+
+a.data-card-link {
+    text-decoration: none;
+    color: inherit;
 }
