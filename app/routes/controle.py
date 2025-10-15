@@ -73,7 +73,7 @@ def controle_lista(filter_mode):
     
     situacoes_para_filtro = get_situacoes_para_dropdown()
     chart_data_json = prepare_chart_data(controles)
-    color_map_json = json.dumps(get_color_map_for_user())
+    color_map = get_color_map_for_user()
 
     view_mode = getattr(current_user, 'view_mode_controle', 'table')
     card_fields_visiveis = getattr(current_user, 'card_fields_controle', [field[0] for field in TODAS_AS_COLUNAS_CARDS[:4]])
@@ -88,13 +88,14 @@ def controle_lista(filter_mode):
         filter_mode=filter_mode,
         filter_values=filter_values,
         chart_data=chart_data_json,
-        color_map_json=color_map_json,
+        color_map=color_map,
         filtro_ativo=filtro_ativo,
         arquivadores_json=json.dumps(situacoes_arquivadoras),
         sort_by=sort_by,
         order=order,
         todas_as_colunas=TODAS_AS_COLUNAS_CONTROLE,
-        colunas_visiveis=current_user.colunas_visiveis
+        colunas_visiveis=current_user.colunas_visiveis,
+        color_coding_active=getattr(current_user, 'color_coding_controle', False)
     )
 
 @controle_bp.route('/novo', methods=['GET', 'POST'])

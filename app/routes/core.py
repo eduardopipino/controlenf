@@ -210,3 +210,15 @@ def save_card_prefs():
         {'$set': {'card_fields_controle': campos_validos}}
     )
     return {'status': 'success'}
+
+@core_bp.route('/user/toggle_color_coding', methods=['POST'])
+@login_required
+def toggle_color_coding():
+    # Pega o estado atual e inverte (se for True vira False, e vice-versa)
+    novo_estado = not getattr(current_user, 'color_coding_controle', False)
+    
+    users_collection.update_one(
+        {'_id': ObjectId(current_user.id)},
+        {'$set': {'color_coding_controle': novo_estado}}
+    )
+    return {'status': 'success'}
