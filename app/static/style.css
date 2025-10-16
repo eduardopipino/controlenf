@@ -2221,3 +2221,22 @@ body.theme-dark .data-card[style*="background-color"] strong {
     min-width: 350px; /* Mais largo que o Kanban de controle */
     max-width: 400px;
 }
+
+/* ====================================================================== */
+/* ESTILO PARA O ÍCONE DE PRIORIDADE NO TÍTULO DA SEÇÃO               */
+/* ====================================================================== */
+
+.priority-section h4 .priority-icon {
+    /* Transforma o <span> num container flexível para alinhar o ícone */
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle; /* Alinha o container com o texto */
+    margin-right: 8px;
+}
+
+/* A regra principal: aplica o tamanho diretamente ao elemento SVG */
+.priority-section h4 .priority-icon svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor; /* Faz o ícone herdar a cor do título */
+}
