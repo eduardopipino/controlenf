@@ -6,7 +6,14 @@
     <div class="button-toolbar desktop-actions">
         <div class="toolbar-group-left">
             <button id="btnFiltro">Filtro...</button>
-            <button id="btnConfigurarColunas">Configurar Colunas</button>
+			
+            <!-- Botão de Configuração Condicional -->
+            {% if view_mode == 'table' %}
+                <button id="btnConfigurarColunas">Configurar Colunas</button>
+            {% else %}
+                <button id="btnConfigurarCampos">Configurar Campos</button>
+            {% endif %}
+			
             {% if page_mode == 'concluidas' %}
                 <a href="{{ url_for('pendencias.exportar_pendencias_concluidas_csv') }}" class="button">Exportar Concluídas</a>
             {% else %}
@@ -198,6 +205,17 @@
         </div>
     </div>
 
+    <div id="configCamposModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Selecione os Campos para Exibir nos Cards</h3>
+            <div id="campos-checklist-pendencias" class="modal-colunas-list"></div>
+            <div class="button-toolbar">
+                <button id="btnSalvarCamposPendencias">Salvar</button>
+                <button type="button" class="btn-cancel-modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <ul id="colorContextMenu" class="context-menu">
         <li class="context-menu-item" id="chooseColorOption">🎨 Escolher Cor...</li>
         <li class="context-menu-item" id="clearColorOption">⚪ Limpar Cor</li>
@@ -263,10 +281,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- LÓGICA DE MODAIS ---
     const filterModal = document.getElementById('filterModal');
     const configColunasModal = document.getElementById('configColunasModal');
+    const configCamposModal = document.getElementById('configCamposModal');
 
     document.getElementById('btnFiltro')?.addEventListener('click', () => filterModal.classList.add('active'));
     document.getElementById('btnFiltroMobile')?.addEventListener('click', () => filterModal.classList.add('active'));
     document.getElementById('btnConfigurarColunas')?.addEventListener('click', () => configColunasModal.classList.add('active'));
+    document.getElementById('btnConfigurarCampos')?.addEventListener('click', () => configCamposModal.classList.add('active'));
     document.getElementById('btnConfigurarColunasMobile')?.addEventListener('click', () => configColunasModal.classList.add('active'));
 
     document.querySelectorAll('.modal-overlay').forEach(modal => {
@@ -373,30 +393,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // --- LÓGICA PARA DESTAQUE DE COR COM CLIQUE DIREITO ---
+    // --- LÓGICA DO MENU DE CONTEXTO PARA COR ---
     const contextMenu = document.getElementById('colorContextMenu');
     const colorPicker = document.getElementById('hiddenColorPicker');
     const chooseColorBtn = document.getElementById('chooseColorOption');
     const clearColorBtn = document.getElementById('clearColorOption');
     let activeRow = null;
 
-    document.querySelectorAll('tbody .clickable-row').forEach(row => {
-        row.addEventListener('contextmenu', function(event) {
-            event.preventDefault();
-            activeRow = this;
-            let top = event.pageY;
-            let left = event.pageX;
-            contextMenu.style.display = 'block';
-            if (top + contextMenu.offsetHeight > window.innerHeight + window.scrollY) {
-                top = event.pageY - contextMenu.offsetHeight;
-            }
-            if (left + contextMenu.offsetWidth > window.innerWidth + window.scrollX) {
-                left = event.pageX - contextMenu.offsetWidth;
-            }
-            contextMenu.style.top = `${top}px`;
-            contextMenu.style.left = `${left}px`;
+    document.querySelectorAll('tbody .clickable-row, .data-card').forEach(item => {
+            item.addEventListener('contextmenu', function(event) {
+                event.preventDefault();
+                activeItem = this; // Usando um nome mais genérico
+
+                // Simplesmente posiciona o menu no local do clique
+                contextMenu.style.top = `${event.pageY}px`;
+                contextMenu.style.left = `${event.pageX}px`;
+                contextMenu.style.display = 'block';
+            });
         });
-    });
 
     window.addEventListener('click', () => {
         if (contextMenu) contextMenu.style.display = 'none';
