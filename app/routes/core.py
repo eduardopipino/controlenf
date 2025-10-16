@@ -222,3 +222,34 @@ def toggle_color_coding():
         {'$set': {'color_coding_controle': novo_estado}}
     )
     return {'status': 'success'}
+
+# Adicione estes dois blocos no final de app/routes/core.py
+
+@core_bp.route('/user/set_view_preference_pendencias', methods=['POST'])
+@login_required
+def set_view_preference_pendencias():
+    data = request.get_json()
+    view_mode = data.get('view_mode')
+    if view_mode in ['table', 'cards', 'kanban']:
+        users_collection.update_one(
+            {'_id': ObjectId(current_user.id)},
+            {'$set': {'view_mode_pendencias': view_mode}}
+        )
+        return {'status': 'success'}
+    return {'status': 'error', 'message': 'Modo de visualização inválido'}, 400
+
+@core_bp.route('/user/save_card_prefs_pendencias', methods=['POST'])
+@login_required
+def save_card_prefs_pendencias():
+    data = request.get_json()
+    campos = data.get('campos', [])
+
+    # Validação (usando a lista de colunas de pendências)
+    campos_permitidos = [field[0] for field in TODAS_AS_COLUNAS_PENDENCIAS]
+    campos_validos = [c for c in campos if c in campos_permitidos]
+
+    users_collection.update_one(
+        {'_id': ObjectId(current_user.id)},
+        {'$set': {'card_fields_pendencias': campos_validos}}
+    )
+    return {'status': 'success'}

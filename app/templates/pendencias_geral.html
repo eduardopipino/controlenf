@@ -13,7 +13,19 @@
                 <a href="{{ url_for('pendencias.exportar_pendencias_pendentes_csv') }}" class="button">Exportar Pendentes</a>
             {% endif %}
         </div>
-        <div class="toolbar-group-center"></div>
+        <div class="toolbar-group-center">
+            <div class="view-selector">
+            <button class="view-button {{ 'active' if view_mode == 'table' else '' }}" data-view="table" title="Visualizar como Tabela">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 4h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 10h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 16h4v4H4zm6 1h4v3h-4zm6 0h4v4h-4z"/></svg>
+            </button>
+            <button class="view-button {{ 'active' if view_mode == 'cards' else '' }}" data-view="cards" title="Visualizar como Cards">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 4h6v6H4zm9 0h6v6h-6zM4 14h6v6H4zm9 0h6v6h-6z"/></svg>
+            </button>
+            <button class="view-button {{ 'active' if view_mode == 'kanban' else '' }}" data-view="kanban" title="Visualizar como Kanban">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 3h6v18H3zm8 0h6v18h-6zm8 0h6v18h-6z"/></svg>
+            </button>
+        </div>
+        </div>
         <div class="toolbar-group-right">
             <a href="{{ url_for('pendencias.nova_pendencia', origem=request.full_path) }}" class="button">Novo</a>
         </div>
@@ -38,54 +50,96 @@
 
     <br>
 
-    <table border="1" id="tabelaPendencias" class="responsive-card-table">
-        <thead>
-            <tr>
-                <th></th> <th>!</th> 
-                {% for col_id, col_nome in todas_as_colunas %}
-                    {% if col_id in colunas_visiveis %}
-                        <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
-                            <a href="{{ url_for(request.endpoint, page_mode=page_mode, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc') }}">{{ col_nome }} {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}</a>
-                        </th>
-                    {% endif %}
-                {% endfor %}
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for p in pendencias %}
-            <tr class="clickable-row {{ 'pendencia-vencida' if p.vencido else '' }} {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" data-id="{{ p._id }}" {% if p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
-                <td data-label="" class="hide-on-mobile">
-                    <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" class="action-icon-link" title="Ver Detalhes">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor">
-                            <path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                        </svg>
-                    </a>
-                </td>                <td class="coluna-prioridade" data-id="{{ p._id }}"></td>
-                {% set colunas_detalhe = ['instrumento_display', 'contratada', 'observacoes'] %}
-                {% for col_id, col_nome in todas_as_colunas %}
-                    {% if col_id in colunas_visiveis %}
-                        <td data-label="{{ col_nome }}" class="{{ 'col-detalhe' if col_id in colunas_detalhe else '' }} {% if col_id == 'observacoes' or col_id == 'pendencia' %}coluna-texto-longo{% endif %}">
-                            <span class="card-value">
-                                {% if col_id == 'prazo' %}
-                                    {{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}
-                                {% else %}
-                                    {{ p[col_id] or '' }}
-                                {% endif %}
-                            </span>
-                        </td>
-                    {% endif %}
-                {% endfor %}
+    <!-- ====================================================================== -->
+    <!-- LÓGICA DE RENDERIZAÇÃO CONDICIONAL DA VISUALIZAÇÃO                 -->
+    <!-- ====================================================================== -->
+    {% set card_fields_map = dict(todas_as_colunas_cards) %}
 
-                <td><button class="expand-card-btn">Ver mais</button></td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="{{ colunas_visiveis|length + 2 }}">Nenhuma pendência encontrada.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    {% if view_mode == 'table' %}
+        {# A sua tabela original, sem alterações #}
+        <table border="1" id="tabelaPendencias" class="responsive-card-table">
+            <thead>
+                <tr>
+                    <th class="hide-on-mobile">Ações</th> <th>!</th>
+                    {% for col_id, col_nome in todas_as_colunas %}
+                        {% if col_id in colunas_visiveis %}
+                            <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
+                                <a href="{{ url_for(request.endpoint, page_mode=page_mode, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc') }}">{{ col_nome }} {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}</a>
+                            </th>
+                        {% endif %}
+                    {% endfor %}
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in pendencias %}
+                <tr class="clickable-row {{ 'pendencia-vencida' if p.vencido else '' }} {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" data-id="{{ p._id }}" {% if p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
+                    <td data-label="Ações" class="hide-on-mobile">
+                        <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" class="action-icon-link" title="Ver Detalhes">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                        </a>
+                    </td>
+                    <td class="coluna-prioridade" data-id="{{ p._id }}"></td>
+                    {% for col_id, col_nome in todas_as_colunas %}
+                        {% if col_id in colunas_visiveis %}
+                            <td data-label="{{ col_nome }}" class="{{ 'coluna-texto-longo' if col_id in ['observacoes', 'pendencia'] else '' }}">
+                                <span class="card-value">
+                                    {% if col_id == 'prazo' %}{{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}{% else %}{{ p[col_id] or '' }}{% endif %}
+                                </span>
+                            </td>
+                        {% endif %}
+                    {% endfor %}
+                    <td><button class="expand-card-btn">Ver mais</button></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="{{ colunas_visiveis|length + 3 }}">Nenhuma pendência encontrada.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    {% elif view_mode == 'cards' %}
+        <div class="card-view-container">
+            <!-- SEÇÃO DE PRIORIDADES -->
+            <div class="priority-section">
+                <h4>⭐ Prioridades</h4>
+                <div class="card-grid">
+                    {% for p in pendencias if p.prioridade %}
+                        {% include 'partials/_pendencia_card.html' %}
+                    {% endfor %}
+                </div>
+            </div>
+            <!-- SEÇÃO GERAL -->
+            <div class="card-grid">
+                {% for p in pendencias if not p.prioridade %}
+                    {% include 'partials/_pendencia_card.html' %}
+                {% endfor %}
+            </div>
+        </div>
+
+    {% elif view_mode == 'kanban' %}
+        <div class="kanban-view-container">
+            <div class="kanban-board kanban-board-wide">
+                <div class="kanban-column">
+                    <div class="kanban-column-header">Sem Prazo ({{ pendencias_sem_prazo|length }})</div>
+                    <div class="kanban-cards">
+                        {% for p in pendencias_sem_prazo %}{% include 'partials/_pendencia_card.html' %}{% endfor %}
+                    </div>
+                </div>
+                <div class="kanban-column">
+                    <div class="kanban-column-header">Prazo a Vencer ({{ pendencias_a_vencer|length }})</div>
+                    <div class="kanban-cards">
+                        {% for p in pendencias_a_vencer %}{% include 'partials/_pendencia_card.html' %}{% endfor %}
+                    </div>
+                </div>
+                <div class="kanban-column">
+                    <div class="kanban-column-header">Prazo Vencido ({{ pendencias_vencidas|length }})</div>
+                    <div class="kanban-cards">
+                        {% for p in pendencias_vencidas %}{% include 'partials/_pendencia_card.html' %}{% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
     
     <div id="filterModal" class="modal-overlay">
         <div class="modal-content">
@@ -137,16 +191,68 @@
             </div>
         </div>
     </div>
+
     <ul id="colorContextMenu" class="context-menu">
         <li class="context-menu-item" id="chooseColorOption">🎨 Escolher Cor...</li>
         <li class="context-menu-item" id="clearColorOption">⚪ Limpar Cor</li>
     </ul>
     <input type="color" class="hidden-color-input" id="hiddenColorPicker">
+
 {% endblock %}
 
 {% block page_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+
+    // --- LÓGICA DO SELETOR DE VISUALIZAÇÃO ---
+    const viewSelector = document.querySelector('.view-selector');
+    if (viewSelector) {
+        viewSelector.addEventListener('click', (e) => {
+            const button = e.target.closest('.view-button');
+            if (!button || button.classList.contains('active')) return;
+            fetch("{{ url_for('core.set_view_preference_pendencias') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ view_mode: button.dataset.view })
+            }).then(r => r.json()).then(d => { if(d.status === 'success') window.location.reload(); });
+        });
+    }
+
+    // --- LÓGICA DO NOVO MODAL "CONFIGURAR CAMPOS" ---
+    const camposChecklist = document.getElementById('campos-checklist-pendencias');
+    const btnSalvarCampos = document.getElementById('btnSalvarCamposPendencias');
+    if (camposChecklist && btnSalvarCampos) {
+        const todasAsColunasCards = {{ todas_as_colunas_cards | tojson | safe }};
+        const cardFieldsVisiveis = {{ card_fields_visiveis | tojson | safe }};
+        todasAsColunasCards.forEach(campo => {
+            const [field_id, field_name] = campo;
+            if (field_name) { // Garante que campos vazios não sejam adicionados
+                const isChecked = cardFieldsVisiveis.includes(field_id);
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = `<label><input type="checkbox" name="campo_pref" value="${field_id}" ${isChecked ? 'checked' : ''}> ${field_name}</label>`;
+                camposChecklist.appendChild(wrapper);
+            }
+        });
+        btnSalvarCampos.addEventListener('click', () => {
+            const camposSelecionados = Array.from(camposChecklist.querySelectorAll('input:checked')).map(cb => cb.value);
+            fetch("{{ url_for('core.save_card_prefs_pendencias') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ campos: camposSelecionados })
+            }).then(r => r.json()).then(d => { if(d.status === 'success') location.reload(); });
+        });
+    }
+
+    // --- LÓGICA DE PRIORIDADE (TABELA E CARDS) ---
+    const priorityElements = document.querySelectorAll('.coluna-prioridade, .card-priority-toggle');
+    priorityElements.forEach(el => {
+        el.addEventListener('click', function(e) {
+            e.preventDefault(); e.stopPropagation();
+            const pendenciaId = this.dataset.id;
+            fetch(`/pendencias/toggle_prioridade/${pendenciaId}`, { method: 'POST' })
+            .then(r => r.json()).then(d => { if(d.status === 'success') location.reload(); });
+        });
+    });
 
     // --- LÓGICA DE MODAIS ---
     const filterModal = document.getElementById('filterModal');
@@ -244,7 +350,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- LÓGICA PARA ALTERNAR PRIORIDADE ---
-    document.querySelectorAll('.coluna-prioridade').forEach(col => {
+    /*document.querySelectorAll('.coluna-prioridade').forEach(col => {
         col.addEventListener('click', function(e) {
             e.stopPropagation();
             const pendenciaId = this.dataset.id;
@@ -259,7 +365,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
-    });
+    });*/
 
     // --- LÓGICA PARA DESTAQUE DE COR COM CLIQUE DIREITO ---
     const contextMenu = document.getElementById('colorContextMenu');

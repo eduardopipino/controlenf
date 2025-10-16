@@ -36,7 +36,9 @@ def login():
                 spacing_preference=user_data.get('spacing_preference', 'regular'),
                 view_mode_controle=user_data.get('view_mode_controle'),
                 card_fields_controle=user_data.get('card_fields_controle'),
-                color_coding_controle=user_data.get('color_coding_controle', False)
+                color_coding_controle=user_data.get('color_coding_controle', False),
+                view_mode_pendencias=user_data.get('view_mode_pendencias'),
+                card_fields_pendencias=user_data.get('card_fields_pendencias')
             )
             login_user(user)
             flash('Login realizado com sucesso!', 'success')

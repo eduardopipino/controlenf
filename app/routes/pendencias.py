@@ -131,6 +131,21 @@ def pendencias_lista(page_mode="geral"):
     for p in lista_pendencias:
         p['vencido'] = p.get('prazo') and p.get('prazo') < hoje
 
+    # --- NOVA LÓGICA PARA PREPARAR DADOS PARA O KANBAN ---
+        hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        pendencias_vencidas = []
+        pendencias_a_vencer = []
+        pendencias_sem_prazo = []
+        for p in lista_pendencias:
+            p['vencido'] = p.get('prazo') and p.get('prazo') < hoje
+            if p['vencido']:
+                pendencias_vencidas.append(p)
+            elif p.get('prazo'):
+                pendencias_a_vencer.append(p)
+            else:
+                pendencias_sem_prazo.append(p)
+        # --- FIM DA NOVA LÓGICA ---
+
     colunas_para_exibir = TODAS_AS_COLUNAS_PENDENCIAS
     if page_mode == 'diversas':
         colunas_a_remover = ['instrumento_display', 'contratada']
@@ -138,10 +153,24 @@ def pendencias_lista(page_mode="geral"):
     
     colunas_visiveis = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in colunas_para_exibir])
     
+    # --- NOVAS VARIÁVEIS PARA O TEMPLATE ---
+    view_mode = getattr(current_user, 'view_mode_pendencias', 'table')
+    card_fields_visiveis = getattr(current_user, 'card_fields_pendencias', ['pendencia', 'responsavel', 'prazo'])
+
     return render_template(
-        'pendencias_geral.html', pendencias=lista_pendencias,
-        sort_by=sort_by, order=order, filter_values=filter_values,
-        todas_as_colunas=colunas_para_exibir, colunas_visiveis=colunas_visiveis,
+        'pendencias_geral.html',
+        pendencias=lista_pendencias,
+        pendencias_vencidas=pendencias_vencidas,
+        pendencias_a_vencer=pendencias_a_vencer,
+        pendencias_sem_prazo=pendencias_sem_prazo,
+        view_mode=view_mode,
+        card_fields_visiveis=card_fields_visiveis,
+        todas_as_colunas_cards=TODAS_AS_COLUNAS_PENDENCIAS,
+        sort_by=sort_by,
+        order=order,
+        filter_values=filter_values,
+        todas_as_colunas=colunas_para_exibir,
+        colunas_visiveis=colunas_visiveis,
         page_mode=page_mode
     )
 
