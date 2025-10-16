@@ -1,0 +1,27 @@
+{% set card_fields_map = dict(todas_as_colunas_cards) %}
+
+<a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" class="data-card-link">
+    <div class="data-card" 
+         data-id="{{ p._id }}"
+         {% if p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
+
+        <span class="card-priority-toggle {{ 'active' if p.prioridade else '' }}" 
+              data-id="{{ p._id }}" 
+              title="Alternar Prioridade">★</span>
+
+        {% for field_id in card_fields_visiveis %}
+            {% if loop.first %}
+                <h4 class="{{ 'pendencia-vencida' if p.vencido else '' }}">{{ card_fields_map[field_id] }}: {{ p[field_id] or 'N/D' }}</h4>
+            {% else %}
+                <p class="{{ 'pendencia-vencida' if p.vencido and field_id == 'prazo' else '' }}">
+                    <strong>{{ card_fields_map[field_id] }}:</strong>
+                    {% if field_id == 'prazo' %}
+                        {{ p.prazo.strftime('%d/%m/%Y') if p.prazo else 'N/D' }}
+                    {% else %}
+                        {{ p[field_id] or 'N/D' }}
+                    {% endif %}
+                </p>
+            {% endif %}
+        {% endfor %}
+    </div>
+</a>
