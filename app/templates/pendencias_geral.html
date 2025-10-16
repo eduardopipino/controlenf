@@ -350,7 +350,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- LÓGICA PARA ALTERNAR PRIORIDADE ---
-    /*document.querySelectorAll('.coluna-prioridade').forEach(col => {
+    document.querySelectorAll('.coluna-prioridade').forEach(col => {
         col.addEventListener('click', function(e) {
             e.stopPropagation();
             const pendenciaId = this.dataset.id;
@@ -365,7 +365,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
-    });*/
+    });
 
     // --- LÓGICA PARA DESTAQUE DE COR COM CLIQUE DIREITO ---
     const contextMenu = document.getElementById('colorContextMenu');
