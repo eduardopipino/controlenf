@@ -146,17 +146,30 @@ def pendencias_lista(page_mode="geral"):
                 pendencias_sem_prazo.append(p)
         # --- FIM DA NOVA LÓGICA ---
 
+    # Define a lista completa de campos como padrão
+    todas_opcoes_cards = TODAS_AS_COLUNAS_PENDENCIAS
     colunas_para_exibir = TODAS_AS_COLUNAS_PENDENCIAS
-    if page_mode == 'diversas':
-        colunas_a_remover = ['instrumento_display', 'contratada']
-        colunas_para_exibir = [col for col in colunas_para_exibir if col[0] not in colunas_a_remover]
-    
+
+    # Carrega as preferências do usuário
     colunas_visiveis = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in colunas_para_exibir])
+    card_fields_visiveis = getattr(current_user, 'card_fields_pendencias', ['pendencia', 'responsavel', 'prazo'])
+
+    # Se estiver no modo 'diversas', filtra TODAS as listas relevantes
+    if page_mode == 'diversas':
+        campos_a_remover = ['instrumento_display', 'contratada']
+        # Filtra as colunas da tabela
+        colunas_para_exibir = [col for col in colunas_para_exibir if col[0] not in campos_a_remover]
+        colunas_visiveis = [col for col in colunas_visiveis if col not in campos_a_remover]
+        # Filtra as opções para o modal "Configurar Campos"
+        todas_opcoes_cards = [opt for opt in todas_opcoes_cards if opt[0] not in campos_a_remover]
+        # Filtra os campos que serão de fato exibidos nos cards
+        card_fields_visiveis = [field for field in card_fields_visiveis if field not in campos_a_remover]
+
+    view_mode = getattr(current_user, 'view_mode_pendencias', 'table')
     
     # --- NOVAS VARIÁVEIS PARA O TEMPLATE ---
-    view_mode = getattr(current_user, 'view_mode_pendencias', 'table')
-    card_fields_visiveis = getattr(current_user, 'card_fields_pendencias', ['pendencia', 'responsavel', 'prazo'])
     color_map = get_color_map_for_user()
+    opcoes_campos_cards = [field for field in TODAS_AS_COLUNAS_PENDENCIAS if field[0] != 'pendencia']
 
     return render_template(
         'pendencias_geral.html',
@@ -165,13 +178,12 @@ def pendencias_lista(page_mode="geral"):
         pendencias_a_vencer=pendencias_a_vencer,
         pendencias_sem_prazo=pendencias_sem_prazo,
         view_mode=view_mode,
-        card_fields_visiveis=card_fields_visiveis,
-        todas_as_colunas_cards=TODAS_AS_COLUNAS_PENDENCIAS,
-        sort_by=sort_by,
+        todas_as_colunas=colunas_para_exibir, # Usa a lista filtrada para a tabela
+        colunas_visiveis=colunas_visiveis,     # Usa a lista filtrada para a tabela
+        todas_as_colunas_cards=todas_opcoes_cards, # Usa a lista filtrada para o modal de cards
+        card_fields_visiveis=card_fields_visiveis, # Usa a lista filtrada para os cards
         order=order,
         filter_values=filter_values,
-        todas_as_colunas=colunas_para_exibir,
-        colunas_visiveis=colunas_visiveis,
         page_mode=page_mode,
         color_map=color_map,
         color_coding_active=getattr(current_user, 'color_coding_pendencias', False)

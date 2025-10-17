@@ -151,12 +151,16 @@
                     {% if color_coding_active and controle.situacao in color_map %}
                         style="background-color: {{ color_map[controle.situacao] }};"
                     {% endif %}>
+                    {# O título agora é sempre o campo 'referencia', com o rótulo fixo #}
+                    <h4>Referência: {{ controle.referencia or 'N/D' }}</h4>
+
+                    {# Loop para renderizar os outros campos que foram configurados pelo usuário #}
                     {% for field_id in card_fields_visiveis %}
-                        {% if loop.first %}
-                            <h4>{{ card_fields_map[field_id] }}: {{ controle[field_id] }}</h4>
-                        {% else %}
-                            <p><strong>{{ card_fields_map[field_id] }}:</strong> {{ controle[field_id] | join(', ') if field_id == 'documentacao' else (controle[field_id] or 'N/D') }}</p>
-                        {% endif %}
+                        <p>
+                            <strong>{{ card_fields_map[field_id] }}:</strong>
+                            {# Lógica para formatar o campo 'documentacao' como uma lista #}
+                            {{ controle[field_id] | join(', ') if field_id == 'documentacao' else (controle[field_id] or 'N/D') }}
+                        </p>
                     {% endfor %}
                 </div>
                 </a>
@@ -180,12 +184,16 @@
                                         {% endif %}>
                                         
                                         {% set card_fields_map = dict(todas_as_colunas_cards) %}
+                                        {# O título agora é sempre o campo 'referencia', com o rótulo fixo #}
+                                        <h4>Referência: {{ controle.referencia or 'N/D' }}</h4>
+
+                                        {# Loop para renderizar os outros campos que foram configurados pelo usuário #}
                                         {% for field_id in card_fields_visiveis %}
-                                            {% if loop.first %}
-                                                <h4>{{ card_fields_map[field_id] }}: {{ controle[field_id] }}</h4>
-                                            {% else %}
-                                                <p><strong>{{ card_fields_map[field_id] }}:</strong> {{ controle[field_id] | join(', ') if field_id == 'documentacao' else (controle[field_id] or 'N/D') }}</p>
-                                            {% endif %}
+                                            <p>
+                                                <strong>{{ card_fields_map[field_id] }}:</strong>
+                                                {# Lógica para formatar o campo 'documentacao' como uma lista #}
+                                                {{ controle[field_id] | join(', ') if field_id == 'documentacao' else (controle[field_id] or 'N/D') }}
+                                            </p>
                                         {% endfor %}
                                         </div>
                                 </a>
@@ -203,12 +211,16 @@
                                 <div class="data-card" data-situacao="" data-id="{{ controle._id }}"
                                     {% if color_coding_active %} style="background-color: '';" {% endif %}>
                                     {% set card_fields_map = dict(todas_as_colunas_cards) %}
+                                    {# O título agora é sempre o campo 'referencia', com o rótulo fixo #}
+                                    <h4>Referência: {{ controle.referencia or 'N/D' }}</h4>
+
+                                    {# Loop para renderizar os outros campos que foram configurados pelo usuário #}
                                     {% for field_id in card_fields_visiveis %}
-                                        {% if loop.first %}
-                                            <h4>{{ card_fields_map[field_id] }}: {{ controle[field_id] }}</h4>
-                                        {% else %}
-                                            <p><strong>{{ card_fields_map[field_id] }}:</strong> {{ controle[field_id] | join(', ') if field_id == 'documentacao' else (controle[field_id] or 'N/D') }}</p>
-                                        {% endif %}
+                                        <p>
+                                            <strong>{{ card_fields_map[field_id] }}:</strong>
+                                            {# Lógica para formatar o campo 'documentacao' como uma lista #}
+                                            {{ controle[field_id] | join(', ') if field_id == 'documentacao' else (controle[field_id] or 'N/D') }}
+                                        </p>
                                     {% endfor %}
                                 </div>
                             </a>

@@ -1,20 +1,24 @@
 {% set card_fields_map = dict(todas_as_colunas_cards) %}
 
 <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" class="data-card-link">
-    <div class="data-card" 
+    <div class="data-card"
          data-id="{{ p._id }}"
          {% if color_coding_active and p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
 
-        <span class="card-priority-toggle {{ 'active' if p.prioridade else '' }}" 
-              data-id="{{ p._id }}" 
+        <span class="card-priority-toggle {{ 'active' if p.prioridade else '' }}"
+              data-id="{{ p._id }}"
               title="Alternar Prioridade">★</span>
 
+        {# O título agora é sempre o campo 'pendencia' #}
+        <h4 class="{{ 'pendencia-vencida' if p.vencido else '' }}">{{ p.pendencia or 'Pendência sem título' }}</h4>
+
+        {# Loop para renderizar os campos restantes do corpo do card #}
         {% for field_id in card_fields_visiveis %}
-            {% if loop.first %}
-                <h4 class="{{ 'pendencia-vencida' if p.vencido else '' }}">{{ card_fields_map[field_id] }}: {{ p[field_id] or 'N/D' }}</h4>
-            {% else %}
+            {# Condição para pular o campo 'pendencia' no corpo, pois ele já é o título #}
+            {% if field_id != 'pendencia' %}
                 <p class="{{ 'pendencia-vencida' if p.vencido and field_id == 'prazo' else '' }}">
-                    <strong>{{ card_fields_map[field_id] }}:</strong>
+                    <strong>{{ card_fields_map.get(field_id, field_id)|replace('_', ' ')|capitalize }}:</strong>
+                    {# Lógica especial para formatar o campo 'prazo' #}
                     {% if field_id == 'prazo' %}
                         {{ p.prazo.strftime('%d/%m/%Y') if p.prazo else 'N/D' }}
                     {% else %}

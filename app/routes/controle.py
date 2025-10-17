@@ -83,12 +83,13 @@ def controle_lista(filter_mode):
 
     view_mode = getattr(current_user, 'view_mode_controle', 'table')
     card_fields_visiveis = getattr(current_user, 'card_fields_controle', [field[0] for field in TODAS_AS_COLUNAS_CARDS[:4]])
+    opcoes_campos_cards_controle = [field for field in TODAS_AS_COLUNAS_CARDS if field[0] != 'referencia']
 
     return render_template(
         'controle_notas_fiscais.html',
         view_mode=view_mode,
         card_fields_visiveis=card_fields_visiveis,
-        todas_as_colunas_cards=TODAS_AS_COLUNAS_CARDS,
+        todas_as_colunas_cards=opcoes_campos_cards_controle,
         controles=list(controles),
         situacoes_para_filtro=situacoes_para_filtro,
         situacoes_kanban=situacoes_kanban,
