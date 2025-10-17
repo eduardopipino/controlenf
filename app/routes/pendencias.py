@@ -14,7 +14,7 @@ import csv
 # 2. Imports da nossa própria aplicação (modelos e coleções)
 from app.models import (pendencias_collection, get_pendencias_com_detalhes,
                         get_instrumentos_para_dropdown, TODAS_AS_COLUNAS_PENDENCIAS,
-                        get_controles_pendentes_por_instrumento)
+                        get_controles_pendentes_por_instrumento, get_color_map_for_user)
 
 # 3. Criação do Blueprint de Pendências
 # O nome 'pendencias' será usado nos comandos url_for().
@@ -156,6 +156,7 @@ def pendencias_lista(page_mode="geral"):
     # --- NOVAS VARIÁVEIS PARA O TEMPLATE ---
     view_mode = getattr(current_user, 'view_mode_pendencias', 'table')
     card_fields_visiveis = getattr(current_user, 'card_fields_pendencias', ['pendencia', 'responsavel', 'prazo'])
+    color_map = get_color_map_for_user()
 
     return render_template(
         'pendencias_geral.html',
@@ -171,7 +172,9 @@ def pendencias_lista(page_mode="geral"):
         filter_values=filter_values,
         todas_as_colunas=colunas_para_exibir,
         colunas_visiveis=colunas_visiveis,
-        page_mode=page_mode
+        page_mode=page_mode,
+        color_map=color_map,
+        color_coding_active=getattr(current_user, 'color_coding_pendencias', False)
     )
 
 @pendencias_bp.route('/filtrar', methods=['POST'])
@@ -329,8 +332,6 @@ def toggle_prioridade_pendencia(pendencia_id):
         {'$set': {'prioridade': nova_prioridade}}
     )
     return {'status': 'success', 'nova_prioridade': nova_prioridade}
-
-# Adicione este bloco de código no final de app/routes/pendencias.py
 
 @pendencias_bp.route('/set_cor_destaque/<string:pendencia_id>', methods=['POST'])
 @login_required

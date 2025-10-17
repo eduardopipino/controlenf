@@ -3,7 +3,7 @@
 <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" class="data-card-link">
     <div class="data-card" 
          data-id="{{ p._id }}"
-         {% if p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
+         {% if color_coding_active and p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
 
         <span class="card-priority-toggle {{ 'active' if p.prioridade else '' }}" 
               data-id="{{ p._id }}" 

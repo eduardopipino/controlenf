@@ -6,12 +6,12 @@
     <div class="button-toolbar desktop-actions">
         <div class="toolbar-group-left">
             <button id="btnFiltro">Filtro...</button>
-			
+            <button id="btnColorCode">Identificar por cores</button>
             <!-- Botão de Configuração Condicional -->
             {% if view_mode == 'table' %}
-                <button id="btnConfigurarColunas">Configurar Colunas</button>
+                <button id="btnConfigurarColunas">Configurar colunas</button>
             {% else %}
-                <button id="btnConfigurarCampos">Configurar Campos</button>
+                <button id="btnConfigurarCampos">Configurar campos</button>
             {% endif %}
 			
             {% if page_mode == 'concluidas' %}
@@ -80,7 +80,7 @@
             </thead>
             <tbody>
                 {% for p in pendencias %}
-                <tr class="clickable-row {{ 'pendencia-vencida' if p.vencido else '' }} {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" data-id="{{ p._id }}" {% if p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
+                <tr class="clickable-row {{ 'pendencia-vencida' if p.vencido else '' }} {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" data-id="{{ p._id }}" {% if color_coding_active and p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
                     <td data-label="Ações" class="hide-on-mobile">
                         <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" class="action-icon-link" title="Ver Detalhes">
                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
@@ -90,6 +90,7 @@
                     {% for col_id, col_nome in todas_as_colunas %}
                         {% if col_id in colunas_visiveis %}
                             <td data-label="{{ col_nome }}" class="{{ 'coluna-texto-longo' if col_id in ['observacoes', 'pendencia'] else '' }}">
+
                                 <span class="card-value">
                                     {% if col_id == 'prazo' %}{{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}{% else %}{{ p[col_id] or '' }}{% endif %}
                                 </span>
@@ -240,6 +241,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({ view_mode: button.dataset.view })
             }).then(r => r.json()).then(d => { if(d.status === 'success') window.location.reload(); });
         });
+    }
+
+    // --- LÓGICA DE IDENTIFICAR POR CORES (PERMANENTE) ---
+    function handleToggleColor() {
+        fetch("{{ url_for('core.toggle_color_coding_pendencias') }}", { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                window.location.reload(); // Recarrega a página para aplicar a nova preferência
+            } else {
+                alert('Erro ao salvar a preferência de cores.');
+            }
+        });
+    }
+    document.getElementById('btnColorCode')?.addEventListener('click', handleToggleColor);
+    // Adicione o listener para o botão mobile também, se você o criou.
+
+    // Ativa o estilo do botão se a colorização estiver ativa na carga da página
+    if ({{ color_coding_active | tojson }}) {
+        document.getElementById('btnColorCode')?.classList.add('filtro-ativo');
     }
 
     // --- LÓGICA DO NOVO MODAL "CONFIGURAR CAMPOS" ---

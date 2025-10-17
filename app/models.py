@@ -15,7 +15,7 @@ from app import db
 
 # Coleções
 instrumentos_collection = db['INSTRUMENTOCONTRATUAL']
-itens_collection = db['ITENS_INSTRUMENTO'] # <<< NOVA COLEÇÃO
+itens_collection = db['ITENS_INSTRUMENTO']
 situacao_collection = db['SITUACAO']
 controle_collection = db['CONTROLE']
 users_collection = db['users']
@@ -63,9 +63,9 @@ TODAS_AS_COLUNAS_PENDENCIAS = [
 class User(UserMixin):
     def __init__(self, username, email, password_hash, id=None, theme='theme-blue', 
                  colunas_visiveis=None, colunas_visiveis_pendencias=None, 
-                 font_size_preference=None, spacing_preference=None, view_mode_controle=None,
-                 card_fields_controle=None, color_coding_controle=None,
-                 view_mode_pendencias=None, card_fields_pendencias=None):
+                 font_size_preference=None, spacing_preference=None,
+                 view_mode_controle=None, card_fields_controle=None,
+                 color_coding_controle=None, view_mode_pendencias=None, card_fields_pendencias=None,color_coding_pendencias=None):
         self.username = username
         self.email = email
         self.password_hash = password_hash
@@ -81,6 +81,7 @@ class User(UserMixin):
         self.color_coding_controle = color_coding_controle or False
         self.view_mode_pendencias = view_mode_pendencias or 'table'
         self.card_fields_pendencias = card_fields_pendencias or ['pendencia', 'responsavel', 'prazo']
+        self.color_coding_pendencias = color_coding_pendencias or False
 
     def get_id(self):
         return self.id

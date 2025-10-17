@@ -253,3 +253,15 @@ def save_card_prefs_pendencias():
         {'$set': {'card_fields_pendencias': campos_validos}}
     )
     return {'status': 'success'}
+
+# Adicione este bloco no final de app/routes/core.py
+
+@core_bp.route('/user/toggle_color_coding_pendencias', methods=['POST'])
+@login_required
+def toggle_color_coding_pendencias():
+    novo_estado = not getattr(current_user, 'color_coding_pendencias', False)
+    users_collection.update_one(
+        {'_id': ObjectId(current_user.id)},
+        {'$set': {'color_coding_pendencias': novo_estado}}
+    )
+    return {'status': 'success'}
