@@ -398,7 +398,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const colorPicker = document.getElementById('hiddenColorPicker');
     const chooseColorBtn = document.getElementById('chooseColorOption');
     const clearColorBtn = document.getElementById('clearColorOption');
-    let activeRow = null;
+    let activeItem = null;
 
     document.querySelectorAll('tbody .clickable-row, .data-card').forEach(item => {
             item.addEventListener('contextmenu', function(event) {
@@ -421,14 +421,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     clearColorBtn.addEventListener('click', () => {
-        if (!activeRow) return;
-        saveColor(activeRow.dataset.id, null);
+        if (!activeItem) return;
+        saveColor(activeItem.dataset.id, null);
     });
 
     colorPicker.addEventListener('change', (event) => {
-        if (!activeRow) return;
+        if (!activeItem) return;
         const newColor = event.target.value;
-        saveColor(activeRow.dataset.id, newColor);
+        saveColor(activeItem.dataset.id, newColor);
     });
 
     function saveColor(pendenciaId, color) {
@@ -439,8 +439,8 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            if (data.status === 'success' && activeRow) {
-                activeRow.style.backgroundColor = color || '';
+            if (data.status === 'success' && activeItem) {
+                activeItem.style.backgroundColor = color || '';
             } else {
                 alert('Erro ao salvar a cor.');
             }
