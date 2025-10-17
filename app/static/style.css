@@ -2195,7 +2195,7 @@ body.theme-dark .data-card[style*="background-color"] strong {
 }
 .priority-section h4 {
     margin-top: 0;
-    color: #e74c3c;
+    /* color: #e74c3c; */
     border-bottom: none;
 }
 
@@ -2238,5 +2238,5 @@ body.theme-dark .data-card[style*="background-color"] strong {
 .priority-section h4 .priority-icon svg {
     width: 20px;
     height: 20px;
-    fill: currentColor; /* Faz o ícone herdar a cor do título */
+    fill: #e74c3c; /* Faz o ícone herdar a cor do título */
 }
