@@ -2205,8 +2205,8 @@ body.theme-dark .data-card[style*="background-color"] strong {
     position: absolute;
     top: 10px;
     right: 10px; /* Pequeno ajuste para melhor alinhamento */
-    width: 24px;   /* Define um tamanho fixo para a área clicável */
-    height: 24px;
+    width: 20px;   /* Define um tamanho fixo para a área clicável */
+    height: 20px;
     cursor: pointer;
     transition: transform 0.2s ease;
 }
