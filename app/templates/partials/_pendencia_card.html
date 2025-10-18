@@ -24,9 +24,9 @@
                     <strong>{{ card_fields_map.get(field_id, field_id)|replace('_', ' ')|capitalize }}:</strong>
                     {# Lógica especial para formatar o campo 'prazo' #}
                     {% if field_id == 'prazo' %}
-                        {{ p.prazo.strftime('%d/%m/%Y') if p.prazo else 'N/D' }}
+                        {{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}
                     {% else %}
-                        {{ p[field_id] or 'N/D' }}
+                        {{ p[field_id] or '' }}
                     {% endif %}
                 </p>
             {% endif %}
