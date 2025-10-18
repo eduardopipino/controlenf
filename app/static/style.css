@@ -2072,6 +2072,7 @@ body.theme-dark tr[style*="background-color"]:hover {
     gap: 20px;
 }
 .data-card {
+    position: relative;
     background-color: var(--background-secondary);
     border: 1px solid var(--border-base);
     border-left: 5px solid var(--primary-color);
@@ -2203,17 +2204,28 @@ body.theme-dark .data-card[style*="background-color"] strong {
 .card-priority-toggle {
     position: absolute;
     top: 10px;
-    right: 10px;
+    right: 10px; /* Pequeno ajuste para melhor alinhamento */
+    width: 24px;   /* Define um tamanho fixo para a área clicável */
+    height: 24px;
     cursor: pointer;
-    font-size: 24px;
-    color: #ccc;
-    transition: color 0.2s, transform 0.2s;
+    transition: transform 0.2s ease;
 }
+
 .card-priority-toggle:hover {
-    transform: scale(1.2);
+    transform: scale(1.1);
 }
-.card-priority-toggle.active {
-    color: #f1c40f; /* Cor de estrela/prioridade */
+
+/* Estilo para o ícone SVG dentro do botão */
+.card-priority-toggle svg {
+    width: 100%;
+    height: 100%;
+    fill: #ccc; /* Cor CINZA padrão para o ícone INATIVO */
+    transition: fill 0.2s ease;
+}
+
+/* Quando o botão tem a classe 'active', muda a cor do SVG para vermelho */
+.card-priority-toggle.active svg {
+    fill: #e74c3c; /* Cor VERMELHA para o ícone ATIVO */
 }
 
 /* --- Colunas Largas para o Novo Kanban --- */

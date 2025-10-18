@@ -6,8 +6,12 @@
          {% if color_coding_active and p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
 
         <span class="card-priority-toggle {{ 'active' if p.prioridade else '' }}"
-              data-id="{{ p._id }}"
-              title="Alternar Prioridade">★</span>
+            data-id="{{ p._id }}"
+            title="Alternar Prioridade">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+        </span>
 
         {# O título agora é sempre o campo 'pendencia' #}
         <h4 class="{{ 'pendencia-vencida' if p.vencido else '' }}">{{ p.pendencia or 'Pendência sem título' }}</h4>
