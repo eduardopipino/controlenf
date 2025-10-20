@@ -50,7 +50,19 @@
                 <h4 class="pendencia-categoria-titulo">Pendências com Prazo</h4>
                 <table id="pendenciasPorInstrumentoTabela" class="responsive-card-table">
                     <thead>
-                        <th></th><th>!</th><th>Pendência</th><th>Prazo</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr>
+                        <tr> {# Adicionado <tr> para envolver os th #}
+                            <th class="hide-on-mobile"></th> {# Ações #}
+                            <th>!</th> {# Prioridade #}
+                            {% for col_id, col_nome in todas_as_colunas_pendencias %}
+                                {% if col_id in colunas_visiveis_pendencias %}
+                                    {# Adiciona classe para colunas longas e remove ordenação por simplicidade aqui #}
+                                    <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
+                                        {{ col_nome }}
+                                    </th>
+                                {% endif %}
+                            {% endfor %}
+                            <th></th> {# Botão Ver Mais (Mobile) #}
+                        </tr>
                     </thead>
                     <tbody>
                         {% for p in grupo.pendencias_vencidas %}
@@ -63,11 +75,17 @@
                                 </a>
                             </td>
                             <td class="coluna-prioridade" data-id="{{ p._id }}"></td>
-                            <td data-label="Pendência" class="coluna-texto-meio-longo"><span class="card-value">{{ p.pendencia or '' }}</span></td>
-                            <td data-label="Prazo"><span class="card-value">{{ p.prazo.strftime('%d/%m/%Y') }}</span></td>
-                            <td data-label="Responsável"><span class="card-value">{{ p.responsavel or '' }}</span></td>
-                            <td data-label="Situação"><span class="card-value">{{ p.situacao or '' }}</span></td>
-                            <td data-label="Observações" class="coluna-texto-longo"><span class="card-value">{{ p.observacoes or '' }}</span></td>
+                            {# Loop dinâmico para as colunas #}
+                            {% for col_id, col_nome in todas_as_colunas_pendencias %}
+                                {% if col_id in colunas_visiveis_pendencias %}
+                                    <td data-label="{{ col_nome }}" class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
+                                        <span class="card-value">
+                                            {% if col_id == 'prazo' %}{{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}{% else %}{{ p[col_id] or '' }}{% endif %}
+                                        </span>
+                                    </td>
+                                {% endif %}
+                            {% endfor %}
+                            <td><button class="expand-card-btn">Ver mais</button></td> {# Botão Ver Mais (Mobile) #}
                         </tr>
                         {% endfor %}
                         {% for p in grupo.pendencias_a_vencer %}
@@ -80,12 +98,18 @@
                                 </a>
                             </td>
                             <td class="coluna-prioridade" data-id="{{ p._id }}"></td>
-                            <td data-label="Pendência" class="coluna-texto-meio-longo"><span class="card-value">{{ p.pendencia or '' }}</span></td>
-                            <td data-label="Prazo"><span class="card-value">{{ p.prazo.strftime('%d/%m/%Y') }}</span></td>
-                            <td data-label="Responsável"><span class="card-value">{{ p.responsavel or '' }}</span></td>
-                            <td data-label="Situação"><span class="card-value">{{ p.situacao or '' }}</span></td>
-                            <td data-label="Observações" class="coluna-texto-longo"><span class="card-value">{{ p.observacoes or '' }}</span></td>
-                        </tr>
+                            {# Loop dinâmico para as colunas #}
+                            {% for col_id, col_nome in todas_as_colunas_pendencias %}
+                                {% if col_id in colunas_visiveis_pendencias %}
+                                    <td data-label="{{ col_nome }}" class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
+                                        <span class="card-value">
+                                            {% if col_id == 'prazo' %}{{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}{% else %}{{ p[col_id] or '' }}{% endif %}
+                                        </span>
+                                    </td>
+                                {% endif %}
+                            {% endfor %}
+                            <td><button class="expand-card-btn">Ver mais</button></td> {# Botão Ver Mais (Mobile) #}
+                            </tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -95,7 +119,19 @@
                 <h4 class="pendencia-categoria-titulo">Pendências Sem Prazo</h4>
                 <table id="pendenciasPorInstrumentoTabela" class="responsive-card-table">
                     <thead>
-                        <tr><th></th><th>!</th><th>Pendência</th><th>Responsável</th><th>Situação</th><th>Observações</th></tr>
+                        <tr>
+                            <th class="hide-on-mobile"></th> {# Ações #}
+                            <th>!</th> {# Prioridade #}
+                            {% for col_id, col_nome in todas_as_colunas_pendencias %}
+                                {# Pula a coluna 'prazo' explicitamente aqui #}
+                                {% if col_id in colunas_visiveis_pendencias and col_id != 'prazo' %}
+                                    <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
+                                        {{ col_nome }}
+                                    </th>
+                                {% endif %}
+                            {% endfor %}
+                            <th></th> {# Botão Ver Mais (Mobile) #}
+                        </tr>
                     </thead>
                     <tbody>
                         {% for p in grupo.pendencias_sem_prazo %}
@@ -108,10 +144,16 @@
                                 </a>
                             </td>
                             <td class="coluna-prioridade" data-id="{{ p._id }}"></td>
-                            <td data-label="Pendência" class="coluna-texto-longo"><span class="card-value">{{ p.pendencia or '' }}</span></td>
-                            <td data-label="Responsável"><span class="card-value">{{ p.responsavel or '' }}</span></td>
-                            <td data-label="Situação"><span class="card-value">{{ p.situacao or '' }}</span></td>
-                            <td data-label="Observações" class="coluna-texto-longo"><span class="card-value">{{ p.observacoes or '' }}</span></td>
+                            {# Loop dinâmico para as colunas #}
+                            {% for col_id, col_nome in todas_as_colunas_pendencias %}
+                                {# Pula a coluna 'prazo' #}
+                                {% if col_id in colunas_visiveis_pendencias and col_id != 'prazo' %}
+                                    <td data-label="{{ col_nome }}" class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
+                                        <span class="card-value">{{ p[col_id] or '' }}</span>
+                                    </td>
+                                {% endif %}
+                            {% endfor %}
+                            <td><button class="expand-card-btn">Ver mais</button></td> {# Botão Ver Mais (Mobile) #}
                         </tr>
                         {% endfor %}
                     </tbody>

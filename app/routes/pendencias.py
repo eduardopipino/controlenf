@@ -15,7 +15,7 @@ import csv
 from app.models import (pendencias_collection, get_pendencias_com_detalhes,
                         get_instrumentos_para_dropdown, TODAS_AS_COLUNAS_PENDENCIAS,
                         get_controles_pendentes_por_instrumento, get_color_map_for_user,
-                        users_collection)
+                        users_collection, TODAS_AS_COLUNAS_CONTROLE)
 
 # 3. Criação do Blueprint de Pendências
 # O nome 'pendencias' será usado nos comandos url_for().
@@ -249,12 +249,21 @@ def pendencias_por_instrumento():
     user_prefs = users_collection.find_one({'_id': ObjectId(current_user.id)}, {'show_nf_pendencias_instrumento': 1})
     show_nf_preference = user_prefs.get('show_nf_pendencias_instrumento', False) # Default False
 
+    colunas_visiveis_pendencias = getattr(current_user, 'colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
+    # Para a tabela de NFs, vamos usar as colunas visíveis de CONTROLE (assumindo que existam no current_user)
+    # Se não existir, use as de pendencias como fallback, mas idealmente deveria ter sua própria config.
+    colunas_visiveis_controle = getattr(current_user, 'colunas_visiveis_controle', colunas_visiveis_pendencias)
+
     return render_template(
         'pendencias_por_instrumento.html', 
         grupos=grupos_de_pendencias, 
         instrumentos_para_filtro=instrumentos_para_filtro,
         instrumento_filtro_id=instrumento_filtro_id,
-        show_nf_preference=show_nf_preference
+        show_nf_preference=show_nf_preference,
+        colunas_visiveis_pendencias=colunas_visiveis_pendencias,
+        todas_as_colunas_pendencias=TODAS_AS_COLUNAS_PENDENCIAS,
+        colunas_visiveis_controle=colunas_visiveis_controle,
+        todas_as_colunas_controle=TODAS_AS_COLUNAS_CONTROLE
     )
 
 @pendencias_bp.route('/novo', methods=['GET', 'POST'])
