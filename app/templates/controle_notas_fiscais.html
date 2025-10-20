@@ -159,26 +159,7 @@
                     <div class="kanban-cards">
                         {% for controle in controles %}
                             {% if controle.situacao == sit.situacao %}
-                                <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id, origem=request.full_path) }}" class="data-card-link">
-                                    <div class="data-card" data-situacao="{{ controle.situacao or '' }}" data-id="{{ controle._id }}"
-                                        {% if color_coding_active and controle.situacao in color_map %}
-                                            style="background-color: {{ color_map[controle.situacao] }};"
-                                        {% endif %}>
-                                        
-                                        {% set card_fields_map = dict(todas_as_colunas_cards) %}
-                                        {# O título agora é sempre o campo 'referencia', com o rótulo fixo #}
-                                        <h4>Referência: {{ controle.referencia or 'N/D' }}</h4>
-
-                                        {# Loop para renderizar os outros campos que foram configurados pelo usuário #}
-                                        {% for field_id in card_fields_visiveis %}
-                                            <p>
-                                                <strong>{{ card_fields_map[field_id] }}:</strong>
-                                                {# Lógica para formatar o campo 'documentacao' como uma lista #}
-                                                {{ controle[field_id] | join(', ') if field_id == 'documentacao' else (controle[field_id] or 'N/D') }}
-                                            </p>
-                                        {% endfor %}
-                                        </div>
-                                </a>
+                                {% include 'partials/_controle_card.html' %}
                             {% endif %}
                         {% endfor %}
                     </div>
@@ -189,23 +170,7 @@
                 <div class="kanban-cards">
                     {% for controle in controles %}
                         {% if not controle.situacao %}
-                            <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id, origem=request.full_path) }}" class="data-card-link">
-                                <div class="data-card" data-situacao="" data-id="{{ controle._id }}"
-                                    {% if color_coding_active %} style="background-color: '';" {% endif %}>
-                                    {% set card_fields_map = dict(todas_as_colunas_cards) %}
-                                    {# O título agora é sempre o campo 'referencia', com o rótulo fixo #}
-                                    <h4>Referência: {{ controle.referencia or 'N/D' }}</h4>
-
-                                    {# Loop para renderizar os outros campos que foram configurados pelo usuário #}
-                                    {% for field_id in card_fields_visiveis %}
-                                        <p>
-                                            <strong>{{ card_fields_map[field_id] }}:</strong>
-                                            {# Lógica para formatar o campo 'documentacao' como uma lista #}
-                                            {{ controle[field_id] | join(', ') if field_id == 'documentacao' else (controle[field_id] or 'N/D') }}
-                                        </p>
-                                    {% endfor %}
-                                </div>
-                            </a>
+                            {% include 'partials/_controle_card.html' %}
                         {% endif %}
                     {% endfor %}
                 </div>

@@ -5,14 +5,14 @@
         style="background-color: {{ color_map[controle.situacao] }};"
     {% endif %}>
     {# O título agora é sempre o campo 'referencia', com o rótulo fixo #}
-    <h4>Referência: {{ controle.referencia or 'N/D' }}</h4>
+    <h4>Referência: {{ controle.referencia or '' }}</h4>
 
     {# Loop para renderizar os outros campos que foram configurados pelo usuário #}
     {% for field_id in card_fields_visiveis %}
         <p>
             <strong>{{ card_fields_map[field_id] }}:</strong>
             {# Lógica para formatar o campo 'documentacao' como uma lista #}
-            {{ controle[field_id] | join(', ') if field_id == 'documentacao' else (controle[field_id] or 'N/D') }}
+            {{ controle[field_id] | join(', ') if field_id == 'documentacao' else (controle[field_id] or '') }}
         </p>
     {% endfor %}
 </div>
