@@ -223,8 +223,6 @@ def toggle_color_coding():
     )
     return {'status': 'success'}
 
-# Adicione estes dois blocos no final de app/routes/core.py
-
 @core_bp.route('/user/set_view_preference_pendencias', methods=['POST'])
 @login_required
 def set_view_preference_pendencias():
@@ -254,8 +252,6 @@ def save_card_prefs_pendencias():
     )
     return {'status': 'success'}
 
-# Adicione este bloco no final de app/routes/core.py
-
 @core_bp.route('/user/toggle_color_coding_pendencias', methods=['POST'])
 @login_required
 def toggle_color_coding_pendencias():
@@ -265,3 +261,24 @@ def toggle_color_coding_pendencias():
         {'$set': {'color_coding_pendencias': novo_estado}}
     )
     return {'status': 'success'}
+
+@core_bp.route('/user/toggle_nf_pendencias_instrumento', methods=['POST'])
+@login_required
+def toggle_nf_pendencias_instrumento():
+    """ Salva a preferência do usuário para exibir/ocultar NFs na tela por instrumento. """
+    try:
+        user_data = users_collection.find_one({'_id': ObjectId(current_user.id)}, {'show_nf_pendencias_instrumento': 1})
+        current_state = user_data.get('show_nf_pendencias_instrumento', False) # Default é False (oculto)
+        new_state = not current_state
+
+        users_collection.update_one(
+            {'_id': ObjectId(current_user.id)},
+            {'$set': {'show_nf_pendencias_instrumento': new_state}}
+        )
+        # Atualiza o objeto do usuário na sessão atual, se necessário (boa prática)
+        # Note: Isso pode não ser refletido imediatamente sem recarregar o usuário em algumas configurações.
+        current_user.show_nf_pendencias_instrumento = new_state
+        return {'status': 'success', 'newState': new_state}
+    except Exception as e:
+        print(f"Erro ao salvar preferência show_nf_pendencias_instrumento: {e}")
+        return {'status': 'error', 'message': 'Erro ao salvar preferência.'}, 500

@@ -14,7 +14,8 @@ import csv
 # 2. Imports da nossa própria aplicação (modelos e coleções)
 from app.models import (pendencias_collection, get_pendencias_com_detalhes,
                         get_instrumentos_para_dropdown, TODAS_AS_COLUNAS_PENDENCIAS,
-                        get_controles_pendentes_por_instrumento, get_color_map_for_user)
+                        get_controles_pendentes_por_instrumento, get_color_map_for_user,
+                        users_collection)
 
 # 3. Criação do Blueprint de Pendências
 # O nome 'pendencias' será usado nos comandos url_for().
@@ -238,19 +239,22 @@ def pendencias_por_instrumento():
         grupo['pendencias_vencidas'] = [p for p in pendencias_com_prazo if p['prazo'] < hoje]
         grupo['pendencias_a_vencer'] = [p for p in pendencias_com_prazo if p['prazo'] >= hoje]
     
-    # --- NOVA LÓGICA ADICIONADA AQUI ---
     # Para cada grupo de instrumento, busca suas notas fiscais pendentes
     for grupo in grupos_de_pendencias:
         grupo['controles_pendentes'] = get_controles_pendentes_por_instrumento(grupo['_id'])
-    # --- FIM DA NOVA LÓGICA ---
 
     instrumentos_para_filtro = get_instrumentos_para_dropdown()
+
+    # Busca a preferência do usuário diretamente (poderia vir de current_user se load_user fosse atualizado)
+    user_prefs = users_collection.find_one({'_id': ObjectId(current_user.id)}, {'show_nf_pendencias_instrumento': 1})
+    show_nf_preference = user_prefs.get('show_nf_pendencias_instrumento', False) # Default False
 
     return render_template(
         'pendencias_por_instrumento.html', 
         grupos=grupos_de_pendencias, 
         instrumentos_para_filtro=instrumentos_para_filtro,
-        instrumento_filtro_id=instrumento_filtro_id
+        instrumento_filtro_id=instrumento_filtro_id,
+        show_nf_preference=show_nf_preference
     )
 
 @pendencias_bp.route('/novo', methods=['GET', 'POST'])

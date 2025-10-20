@@ -5,7 +5,9 @@
 
     <div class="button-toolbar desktop-actions">
         <div class="toolbar-group-left">
-            <button id="btnToggleNotasFiscais">Exibir Notas Fiscais</button>
+            <button id="btnToggleNotasFiscais" class="{{ 'filtro-ativo' if show_nf_preference else '' }}">
+                {{ 'Ocultar' if show_nf_preference else 'Exibir' }} Notas Fiscais
+            </button>
         </div>
         <div class="toolbar-group-center"></div>
         <div class="toolbar-group-right">
@@ -114,7 +116,7 @@
                         {% endfor %}
                     </tbody>
                 </table>
-            {% endif %} <div class="secao-notas-fiscais" style="display: none; margin-top: 20px;">
+            {% endif %} <div class="secao-notas-fiscais" style="display: {{ 'block' if show_nf_preference else 'none' }}; margin-top: 20px;">
                 <h4 class="pendencia-categoria-titulo">Notas Fiscais Pendentes</h4>
                 
                 {% if grupo.controles_pendentes %}
@@ -185,28 +187,51 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // --- LÓGICA PARA O BOTÃO DE EXIBIR/OCULTAR NOTAS FISCAIS ---
+    // --- NOVA LÓGICA PERSISTENTE PARA O BOTÃO DE EXIBIR/OCULTAR NOTAS FISCAIS ---
     const btnToggle = document.getElementById('btnToggleNotasFiscais');
     if (btnToggle) {
         btnToggle.addEventListener('click', () => {
-            const secoesNF = document.querySelectorAll('.secao-notas-fiscais');
-            const isHidden = secoesNF.length > 0 && secoesNF[0].style.display === 'none';
+            // Determina o NOVO estado desejado (inverso do atual)
+            const newState = !btnToggle.classList.contains('filtro-ativo'); // Se NÃO tem a classe, o novo estado é EXIBIR (true)
 
-            secoesNF.forEach(secao => {
-                secao.style.display = isHidden ? 'block' : 'none';
+            // Chama a API para salvar a preferência
+            fetch("{{ url_for('core.toggle_nf_pendencias_instrumento') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Adicionar CSRF token se você estiver usando Flask-WTF com CSRF
+                }
+                // Não precisa enviar body, a rota sabe que é para alternar
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    // Atualiza a interface APENAS se o backend confirmar
+                    const secoesNF = document.querySelectorAll('.secao-notas-fiscais');
+                    const shouldShow = data.newState; // Usa o estado retornado pelo backend
+
+                    secoesNF.forEach(secao => {
+                        secao.style.display = shouldShow ? 'block' : 'none';
+                    });
+
+                    btnToggle.textContent = shouldShow ? 'Ocultar Notas Fiscais' : 'Exibir Notas Fiscais';
+                    btnToggle.classList.toggle('filtro-ativo', shouldShow);
+                } else {
+                    // Informa o usuário sobre o erro
+                    alert('Erro ao salvar a preferência: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro na requisição fetch:', error);
+                alert('Não foi possível salvar a preferência. Verifique sua conexão.');
+                // Opcional: Reverter a mudança visual se a API falhar (não implementado aqui)
             });
-
-            btnToggle.textContent = isHidden ? 'Ocultar Notas Fiscais' : 'Exibir Notas Fiscais';
-            btnToggle.classList.toggle('filtro-ativo', isHidden);
         });
-    }
-
-    // --- VERIFICA SE A URL CONTÉM O PARÂMETRO PARA REABRIR A SEÇÃO DE NF ---
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('show_nf')) {
-        if (btnToggle && btnToggle.textContent === 'Exibir Notas Fiscais') {
-            btnToggle.click();
-        }
     }
 
     // --- LÓGICA PARA ALTERNAR PRIORIDADE ---
