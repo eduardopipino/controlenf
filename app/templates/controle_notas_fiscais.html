@@ -533,6 +533,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Função para popular o menu com as opções de situação
     function popularMenuSituacao() {
         situacaoOptionsContainer.innerHTML = ''; // Limpa as opções antigas
+        // --- Adiciona a opção "Nenhuma" ---
+        const nenhumaLi = document.createElement('li');
+        nenhumaLi.className = 'context-menu-item';
+        nenhumaLi.textContent = '-- Nenhuma --';
+        nenhumaLi.dataset.situacao = ''; // Define o valor como string vazia
+        situacaoOptionsContainer.appendChild(nenhumaLi);
+        // --- 
         todasAsSituacoes.forEach(sit => {
             const li = document.createElement('li');
             li.className = 'context-menu-item';
