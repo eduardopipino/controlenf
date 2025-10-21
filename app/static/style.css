@@ -2281,3 +2281,37 @@ body.theme-dark #tabelaControle td.editable-cell textarea {
     background-color: #000000;
     border-color: #555;
 }
+
+/* --- OPÇÃO 2: Indicador Visual Editável (Ícone no Hover) --- */
+#tabelaControle td.editable-cell {
+    position: relative; /* Necessário para posicionar o ícone ::after */ /* <<< LINHA ADICIONADA */
+    cursor: default; /* Cursor padrão na célula */ /* <<< LINHA ADICIONADA (Opcional) */
+}
+
+#tabelaControle td.editable-cell::after {
+    content: '✏️'; /* Ícone de lápis unicode */ /* <<< LINHA ADICIONADA */
+    position: absolute; /* Posicionamento relativo à célula */ /* <<< LINHA ADICIONADA */
+    right: 5px; /* Posição à direita */ /* <<< LINHA ADICIONADA */
+    top: 50%; /* Centraliza verticalmente */ /* <<< LINHA ADICIONADA */
+    transform: translateY(-50%); /* Ajuste fino da centralização vertical */ /* <<< LINHA ADICIONADA */
+    font-size: 0.8em; /* Tamanho pequeno para o ícone */ /* <<< LINHA ADICIONADA */
+    opacity: 0; /* Começa invisível */ /* <<< LINHA ADICIONADA */
+    transition: opacity 0.2s ease-in-out; /* Transição suave */ /* <<< LINHA ADICIONADA */
+    pointer-events: none; /* Ícone não interfere com cliques */ /* <<< LINHA ADICIONADA */
+    color: #aaaaaa; /* Cor do ícone */ /* <<< LINHA ADICIONADA */
+}
+
+/* Mostra o ícone quando o mouse passa sobre a CÉLULA editável */
+#tabelaControle td.editable-cell:hover::after {
+    opacity: 1; /* Torna visível no hover */ /* <<< LINHA ADICIONADA */
+}
+
+/* Esconde o ícone se a célula já estiver em modo de edição (contém input) */
+#tabelaControle td.editable-cell:has(input[type="text"])::after,
+#tabelaControle td.editable-cell:has(textarea)::after {
+    opacity: 0 !important; /* Força a invisibilidade durante a edição */ /* <<< LINHA ADICIONADA */
+}
+
+body.theme-dark #tabelaControle td.editable-cell::after {
+    color: #555555; /* <<< COR ALTERADA PARA CINZA ESCURO NO TEMA DARK */
+}
