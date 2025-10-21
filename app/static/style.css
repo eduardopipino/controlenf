@@ -2080,6 +2080,7 @@ body.theme-dark tr[style*="background-color"]:hover {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    transition: background-color 0.3s ease;
 }
 .data-card h4 {
     margin: 0;
