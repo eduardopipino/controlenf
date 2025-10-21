@@ -542,8 +542,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Adiciona o evento de clique direito apenas nos cards do "Modo Cards"
-    document.querySelectorAll('.card-view-container .data-card').forEach(card => {
+    // Adiciona o evento de clique direito aos cards do "Modo Cards" E do "Modo Kanban"
+    document.querySelectorAll('.card-view-container .data-card, .kanban-view-container .data-card').forEach(card => {
         card.addEventListener('contextmenu', function(event) {
             event.preventDefault();
             activeCard = this; // Guarda o card que foi clicado
@@ -584,7 +584,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                // Atualiza o texto da situação no card (LÓGICA CORRIGIDA)
+                // Atualiza o texto da situação no card
                 const allParagraphs = activeCard.querySelectorAll('p');
                 allParagraphs.forEach(p => {
                     const strong = p.querySelector('strong');
@@ -600,6 +600,63 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (document.getElementById('btnColorCode')?.classList.contains('filtro-ativo')) {
                     activeCard.style.backgroundColor = colorMap[novaSituacao] || '';
                 }
+
+                // --- LÓGICA ESPECIAL PARA KANBAN ---
+                 const isInKanban = activeCard.closest('.kanban-view-container');
+                 if (isInKanban) {
+                     const cardElement = activeCard.closest('a'); // O elemento <a> que contém o card
+                     const currentColumnSituacao = activeCard.closest('.kanban-column')?.dataset.situacao ?? ""; // Pega situação da coluna atual ou ""
+                     const situacoesArquivadoras = JSON.parse('{{ arquivadores_json | default("[]") | safe }}');
+                     const targetSituacao = novaSituacao || ""; // Usa "" se novaSituacao for nula/vazia
+
+                     // 1. Se for uma situação de ARQUIVAMENTO (e está visível no Kanban)
+                     if (situacoesArquivadoras.includes(novaSituacao)) {
+                         // Faz o card desaparecer suavemente e o remove do DOM
+                         cardElement.style.transition = 'opacity 0.5s ease, height 0.5s ease, margin 0.5s ease, padding 0.5s ease';
+                         cardElement.style.opacity = '0';
+                         // Adiciona estilos para colapsar antes de remover
+                         cardElement.style.height = '0';
+                         cardElement.style.margin = '0';
+                         cardElement.style.padding = '0';
+                         cardElement.style.border = 'none'; // Esconde bordas durante a animação
+                         setTimeout(() => cardElement.remove(), 500); // Remove após a animação
+                     }
+                     // 2. Se a situação mudou para uma COLUNA DIFERENTE (e não é arquivamento)
+                     else if (targetSituacao !== currentColumnSituacao) {
+                         // Encontra a coluna de destino
+                         const targetColumn = document.querySelector(`.kanban-column[data-situacao="${targetSituacao}"]`);
+                         if (targetColumn) {
+                             const targetCardContainer = targetColumn.querySelector('.kanban-cards');
+                             if (targetCardContainer) {
+                                 // Move o elemento card (o <a>) para a nova coluna
+                                 targetCardContainer.appendChild(cardElement);
+                                 // Opcional: Adicionar um efeito visual rápido para destacar a movimentação
+                                 cardElement.style.transition = 'none'; // Remove transição temporariamente
+                                 cardElement.style.backgroundColor = 'rgba(0, 255, 0, 0.3)'; // Verde claro rápido
+                                 setTimeout(() => {
+                                      // Remove o destaque e restaura a cor original (se houver color coding)
+                                     cardElement.style.transition = ''; // Restaura transições CSS
+                                     if (document.getElementById('btnColorCode')?.classList.contains('filtro-ativo')) {
+                                          activeCard.style.backgroundColor = colorMap[novaSituacao] || '';
+                                     } else {
+                                          activeCard.style.backgroundColor = ''; // Remove cor se não houver color coding
+                                     }
+                                 }, 300);
+                             } else {
+                                 console.error("Container de cards não encontrado na coluna de destino:", targetSituacao);
+                                 // Fallback: remover como antes para evitar inconsistência visual
+                                 cardElement.remove();
+                             }
+                         } else {
+                             console.error("Coluna de destino não encontrada para situação:", targetSituacao);
+                             // Fallback: remover como antes
+                             cardElement.remove();
+                         }
+                     }
+                     // 3. Se a situação mudou mas permaneceu na MESMA coluna (não faz nada de movimentação)
+                 }
+                 // --- FIM LÓGICA KANBAN ---
+
             } else {
                 alert('Erro ao atualizar a situação.');
             }
