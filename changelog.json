@@ -1,5 +1,10 @@
 [
   {
+    "versao": "2.0",
+    "data": "xx/10/2025",
+    "descricao": "Implantação inicial de modo cards e kanban (Controle Notas Fiscais e Pendências)."
+  },
+  {
     "versao": "1.11",
     "data": "11/10/2025",
     "descricao": "Refatoração em MVC, alteração da forma de visualização dos registros e diversos ajustes."

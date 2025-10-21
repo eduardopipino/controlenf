@@ -1353,15 +1353,13 @@ td .card-value {
     word-wrap: break-word; /* quebra texto longo */
 }
 
-/* Esconde a última coluna (que contém o botão "Ver mais") na tabela do desktop */
+/* Esconde a última coluna (que contém o botão "Ver mais") nas tabelas do desktop */
 #tabelaControle th:last-child,
-#tabelaControle tbody td:last-child {
-    display: none;
-}
-
-/* Esconde a última coluna (do botão "Ver mais") na tabela de Pendências no desktop */
+#tabelaControle tbody td:last-child,
 #tabelaPendencias th:last-child,
-#tabelaPendencias tbody td:last-child {
+#tabelaPendencias tbody td:last-child,
+#pendenciasPorInstrumentoTabela th:last-child,
+#pendenciasPorInstrumentoTabela tbody td:last-child {
     display: none;
 }
 
