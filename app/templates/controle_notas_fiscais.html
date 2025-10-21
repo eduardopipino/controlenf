@@ -622,39 +622,56 @@ document.addEventListener('DOMContentLoaded', function() {
                          setTimeout(() => cardElement.remove(), 500); // Remove após a animação
                      }
                      // 2. Se a situação mudou para uma COLUNA DIFERENTE (e não é arquivamento)
-                     else if (targetSituacao !== currentColumnSituacao) {
+else if (targetSituacao !== currentColumnSituacao) {
                          // Encontra a coluna de destino
                          const targetColumn = document.querySelector(`.kanban-column[data-situacao="${targetSituacao}"]`);
                          if (targetColumn) {
                              const targetCardContainer = targetColumn.querySelector('.kanban-cards');
                              if (targetCardContainer) {
-                                 // Move o elemento card (o <a>) para a nova coluna
-                                 targetCardContainer.appendChild(cardElement);
-                                 // Opcional: Adicionar um efeito visual rápido para destacar a movimentação
-                                 cardElement.style.transition = 'none'; // Remove transição temporariamente
-                                 cardElement.style.backgroundColor = 'rgba(0, 255, 0, 0.3)'; // Verde claro rápido
+                                 // --- INÍCIO: Adiciona Fade Out ---
+                                 cardElement.style.transition = 'opacity 0.3s ease-out'; // Define a transição de fade
+                                 cardElement.style.opacity = '0'; // Começa o fade out
+
+                                 // Espera o fade out terminar antes de mover
                                  setTimeout(() => {
-                                      // Remove o destaque e restaura a cor original (se houver color coding)
-                                     cardElement.style.transition = ''; // Restaura transições CSS
-                                     if (document.getElementById('btnColorCode')?.classList.contains('filtro-ativo')) {
-                                          activeCard.style.backgroundColor = colorMap[novaSituacao] || '';
-                                     } else {
-                                          activeCard.style.backgroundColor = ''; // Remove cor se não houver color coding
-                                     }
-                                 }, 300);
+                                     // Move o elemento card (o <a>) para a nova coluna
+                                     targetCardContainer.appendChild(cardElement);
+
+                                     // --- INÍCIO: Adiciona Fade In ---
+                                     // Força o navegador a recalcular o layout antes de aplicar o fade in
+                                     // Isso é uma pequena "trapaça" para garantir que a transição funcione após o appendChild
+                                     requestAnimationFrame(() => {
+                                         cardElement.style.transition = 'opacity 0.3s ease-in'; // Define a transição de fade in
+                                         cardElement.style.opacity = '1'; // Começa o fade in
+
+                                          // Limpa o estilo de transição após o fade in completar
+                                         // para não interferir com outras animações (ex: drag-drop)
+                                         setTimeout(() => {
+                                             cardElement.style.transition = '';
+                                              // Restaura a cor correta (caso tenha sido alterada pelo destaque anterior)
+                                             // Esta parte pode ser removida se você não quiser mais o destaque verde rápido
+                                            //  if (document.getElementById('btnColorCode')?.classList.contains('filtro-ativo')) {
+                                            //       activeCard.style.backgroundColor = colorMap[novaSituacao] || '';
+                                            //  } else {
+                                            //       activeCard.style.backgroundColor = '';
+                                            //  }
+                                         }, 300); // Mesmo tempo da transição de fade in
+                                     });
+                                     // --- FIM: Adiciona Fade In ---
+
+                                 }, 300); // Mesmo tempo da transição de fade out
+                                 // --- FIM: Adiciona Fade Out ---
+
                              } else {
                                  console.error("Container de cards não encontrado na coluna de destino:", targetSituacao);
-                                 // Fallback: remover como antes para evitar inconsistência visual
-                                 cardElement.remove();
+                                 cardElement.remove(); // Fallback
                              }
                          } else {
                              console.error("Coluna de destino não encontrada para situação:", targetSituacao);
-                             // Fallback: remover como antes
-                             cardElement.remove();
+                             cardElement.remove(); // Fallback
                          }
                      }
-                     // 3. Se a situação mudou mas permaneceu na MESMA coluna (não faz nada de movimentação)
-                 }
+                    }
                  // --- FIM LÓGICA KANBAN ---
 
             } else {
