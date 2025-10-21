@@ -96,6 +96,14 @@ document.addEventListener('DOMContentLoaded', function() {
         placeholder: 'Selecione um instrumento para vincular (opcional)'
     });
 
+    // Adiciona placeholder na caixa de busca interna do Select2 quando ele abre
+    $('#instrumento_id').on('select2:open', function (e) {
+        const searchInput = document.querySelector('.select2-search__field');
+        if (searchInput) {
+            searchInput.placeholder = 'Digite aqui para filtrar a lista...';
+        }
+    });
+
     const instrumentosData = JSON.parse('{{ instrumentos_json | default("[]") | safe }}');
     const infoBox = document.getElementById('info-instrumento-box');
     const infoCompleto = document.getElementById('info_instrumento_completo');
