@@ -110,7 +110,7 @@
                             <td data-label="{{ col_nome }}" class="coluna-texto-longo {{ 'col-detalhe' if col_id in colunas_detalhe else '' }}">
                                 <span class="card-value">
                                     {{ controle.documentacao | join(', ') }}
-                                    {% if controle.documentacao and controle.documentacao_pendente %}, {% endif %}
+                                    {%- if controle.documentacao and controle.documentacao_pendente %}, {% endif %}
                                     {% if controle.documentacao_pendente %}
                                         <span class="texto-pendente">
                                             (pendente: {{ controle.documentacao_pendente | join(', ') }})
