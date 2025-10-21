@@ -121,7 +121,10 @@
 
                         {% else %}
                             {# Handles all OTHER standard columns #}
-                            <td data-label="{{ col_nome }}" class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }} {{ 'col-detalhe' if col_id in colunas_detalhe else '' }}">
+                            {% set is_editable = col_id in ['referencia', 'nota_fiscal', 'carta_de_correcao', 'observacoes'] %} {# Define se é editável #}
+                            <td data-label="{{ col_nome }}"
+                                class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }} {{ 'col-detalhe' if col_id in colunas_detalhe else '' }} {{ 'editable-cell' if is_editable else '' }}" {# Adiciona classe se editável #}
+                                {% if is_editable %}data-field-name="{{ col_id }}"{% endif %}> {# Adiciona data-attribute se editável #}
                                 <span class="card-value">
                                     {{ controle[col_id] }}
                                 </span>
@@ -287,6 +290,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- DEFINIÇÃO DE CONSTANTES GLOBAIS PARA O SCRIPT ---
     const colorMap = {{ color_map | tojson | safe }};
     const colorCodingIsActive = {{ color_coding_active | tojson }};
+    const editableFields = ['referencia', 'nota_fiscal', 'carta_de_correcao', 'observacoes'];
 
     // --- 1. LÓGICA DO SELETOR DE VISUALIZAÇÃO (ATUALIZADA) ---
     const viewSelector = document.querySelector('.view-selector');
@@ -350,14 +354,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- 4. LÓGICA DE CLIQUE (DESKTOP E MOBILE) ---
     document.querySelectorAll('#tabelaControle .clickable-row[data-url]').forEach(row => {
         // LÓGICA DE CLIQUE DUPLO PARA DESKTOP
-        row.addEventListener('dblclick', function(e) {
+        /*row.addEventListener('dblclick', function(e) {
             if (window.innerWidth > 768) { // Só executa em telas grandes
+                const targetTd = e.target.closest('td'); // Encontra a célula clicada
                 // Previne a navegação se o clique for em outro elemento interativo
                 if (!e.target.closest('a, button, select, input')) {
                     window.location.href = this.dataset.url;
                 }
             }
-        });
+        });*/
 
         // LÓGICA DE CLIQUE SIMPLES PARA MOBILE
         row.addEventListener('click', function(e) {
@@ -756,6 +761,129 @@ else if (targetSituacao !== currentColumnSituacao) {
             }
         });
     });
+
+    // --- 13. LÓGICA DE EDIÇÃO INLINE NA TABELA ---
+    const tableBody = document.querySelector('#tabelaControle tbody');
+
+    if (tableBody && "{{ view_mode }}" === "table") { // Só ativa no modo tabela
+        let currentEditInput = null; // Guarda referência ao input ativo
+
+        // Função para reverter a célula ao estado original
+        function cancelInlineEdit(td, inputElement, originalValue) {
+            if (!td || !inputElement) return;
+            const span = document.createElement('span');
+            span.className = 'card-value';
+            span.textContent = originalValue;
+            td.innerHTML = ''; // Limpa a célula
+            td.appendChild(span); // Adiciona o span de volta
+            currentEditInput = null; // Limpa a referência
+        }
+
+        // Função para salvar a edição
+        function saveInlineEdit(td, inputElement, fieldName, originalValue) {
+            const newValue = inputElement.value.trim();
+            const controleId = td.closest('tr').dataset.id; // Pega o ID da linha
+
+            // Se não houve mudança, apenas cancela
+            if (newValue === originalValue) {
+                cancelInlineEdit(td, inputElement, originalValue);
+                return;
+            }
+
+            // Prepara para enviar para a API
+            fetch(`/controle/update_field_inline/${controleId}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ field: fieldName, value: newValue })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Sucesso: Atualiza visualmente com o novo valor retornado (pode ter sido trimado no backend)
+                    const updatedValue = data.newValue;
+                    const span = document.createElement('span');
+                    span.className = 'card-value';
+                    span.textContent = updatedValue;
+                    td.innerHTML = '';
+                    td.appendChild(span);
+                    currentEditInput = null;
+                    // Feedback visual rápido
+                    td.style.backgroundColor = 'rgba(0, 255, 0, 0.3)';
+                    setTimeout(() => { td.style.backgroundColor = ''; }, 1000);
+                } else {
+                    // Erro: Informa o usuário e reverte
+                    alert(`Erro ao salvar: ${data.message}`);
+                    cancelInlineEdit(td, inputElement, originalValue); // Reverte para o original
+                }
+            })
+            .catch(error => {
+                console.error('Erro de rede ao salvar:', error);
+                alert('Erro de rede ao salvar. A alteração foi cancelada.');
+                cancelInlineEdit(td, inputElement, originalValue); // Reverte para o original
+            });
+        }
+
+        // Listener principal delegado ao tbody
+        tableBody.addEventListener('dblclick', function(e) {
+            const td = e.target.closest('td.editable-cell'); // Só ativa em células editáveis
+            if (!td) return; // Se não for célula editável, sai
+
+            // Previne editar se já houver um input na célula (ou em outra)
+            if (td.querySelector('input, textarea') || currentEditInput) {
+            if(currentEditInput) currentEditInput.focus(); // Foca no input já existente
+            return;
+            }
+
+            const span = td.querySelector('span.card-value');
+            if (!span) return; // Não encontrou o span interno
+
+            const originalValue = span.textContent.trim();
+            const fieldName = td.dataset.fieldName;
+            let inputElement;
+
+            // Cria o input apropriado
+            if (fieldName === 'observacoes') {
+                inputElement = document.createElement('textarea');
+                inputElement.style.height = Math.max(span.offsetHeight, 60) + 'px'; // Ajusta altura inicial
+                inputElement.style.resize = 'vertical'; // Permite redimensionar verticalmente
+            } else {
+                inputElement = document.createElement('input');
+                inputElement.type = 'text';
+            }
+
+            inputElement.value = originalValue;
+            inputElement.style.width = '100%'; // Ocupa a célula
+            inputElement.style.boxSizing = 'border-box'; // Evita estourar o layout
+            currentEditInput = inputElement; // Guarda a referência
+
+            // Substitui o span pelo input
+            td.innerHTML = '';
+            td.appendChild(inputElement);
+            inputElement.focus();
+            // Seleciona o texto (opcional, bom para inputs de texto)
+            if(inputElement.select) inputElement.select();
+
+            // Listener para Enter e Escape NO INPUT ATUAL
+            inputElement.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault(); // Previne nova linha em textarea
+                    saveInlineEdit(td, inputElement, fieldName, originalValue);
+                } else if (event.key === 'Escape') {
+                    cancelInlineEdit(td, inputElement, originalValue);
+                }
+            });
+
+            // Listener para Blur (clicar fora) NO INPUT ATUAL
+            inputElement.addEventListener('blur', function() {
+                // Adiciona um pequeno delay para permitir que o Enter seja processado primeiro se necessário
+                // Neste caso, como blur sempre cancela, não precisamos do delay complexo.
+                // Se o input ainda existe (não foi removido pelo save/cancel do Enter/Esc), cancela.
+                if (document.body.contains(inputElement)) {
+                    cancelInlineEdit(td, inputElement, originalValue);
+                }
+            });
+        });
+    }
 
 });
 </script>

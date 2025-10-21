@@ -18,6 +18,8 @@ from app.models import (controle_collection, get_situacoes_que_arquivam,
                         get_itens_para_dropdown_js, itens_collection,
                         instrumentos_collection, TODAS_AS_COLUNAS_CONTROLE, TODAS_AS_COLUNAS_CARDS)
 
+EDITABLE_FIELDS = ['referencia', 'nota_fiscal', 'carta_de_correcao', 'observacoes']
+
 # 3. Criação do Blueprint de Controle
 # O nome 'controle' será usado nos comandos url_for().
 # O prefixo '/controle' será adicionado a todas as URLs deste blueprint
@@ -405,3 +407,43 @@ def set_situacao_card(controle_id):
         return {'status': 'success', 'message': 'Situação atualizada.'}
     else:
         return {'status': 'error', 'message': 'Registro não encontrado.'}, 404
+
+@controle_bp.route('/update_field_inline/<string:controle_id>', methods=['POST'])
+@login_required
+def update_field_inline(controle_id):
+    """ Atualiza um campo específico de um registro de controle via edição inline. """
+    data = request.get_json()
+    field_name = data.get('field')
+    new_value = data.get('value', '').strip() # Pega valor, default '', remove espaços extras
+
+    if not controle_id or not field_name:
+        return {'status': 'error', 'message': 'Dados incompletos (ID ou campo faltando).'}, 400
+
+    # Validação: Verifica se o campo está na lista de editáveis
+    if field_name not in EDITABLE_FIELDS:
+        return {'status': 'error', 'message': f'Campo "{field_name}" não é editável inline.'}, 403 # Forbidden
+
+    try:
+        # Prepara o update (apenas o campo recebido)
+        update_data = {
+            field_name: new_value,
+            'data_ultima_atualizacao': datetime.now()
+        }
+
+        result = controle_collection.update_one(
+            {'_id': ObjectId(controle_id), 'user_id': ObjectId(current_user.id)},
+            {'$set': update_data}
+        )
+
+        if result.matched_count > 0:
+            if result.modified_count > 0:
+                return {'status': 'success', 'message': 'Campo atualizado.', 'newValue': new_value}
+            else:
+                # Encontrou mas não modificou (valor era o mesmo)
+                return {'status': 'success', 'message': 'Nenhuma alteração detectada.', 'newValue': new_value}
+        else:
+            return {'status': 'error', 'message': 'Registro não encontrado ou não pertence ao usuário.'}, 404
+
+    except Exception as e:
+        print(f"Erro ao atualizar campo inline: {e}") # Log do erro no servidor
+        return {'status': 'error', 'message': 'Erro interno ao salvar.'}, 500

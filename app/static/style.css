@@ -2251,3 +2251,33 @@ body.theme-dark .data-card[style*="background-color"] strong {
     height: 20px;
     fill: #e74c3c; /* Faz o ícone herdar a cor do título */
 }
+
+/* --- Estilos para Edição Inline na Tabela --- */
+#tabelaControle td.editable-cell input[type="text"],
+#tabelaControle td.editable-cell textarea {
+    font-size: inherit; /* Usa o tamanho da fonte da tabela */
+    font-family: inherit; /* Usa a fonte da tabela */
+    padding: 2px 4px;   /* Menor padding que os inputs de formulário */
+    margin: 0;          /* Remove margens */
+    border: 1px solid var(--primary-color); /* Borda para indicar edição */
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    background-color: var(--background-secondary); /* Cor de fundo padrão */
+    color: var(--text-primary); /* Cor de texto padrão */
+    /* Garante que o input não quebre a linha da tabela */
+    vertical-align: middle;
+    display: block; /* Para textarea ocupar a largura */
+    width: calc(100% - 2px); /* Tenta compensar a borda explicitamente */
+    box-sizing: border-box; /* evitar alteração da largura */
+    white-space: normal;
+}
+
+#tabelaControle td.editable-cell textarea {
+     min-height: 40px; /* Altura mínima para textarea */
+     overflow: auto; /* Controla barra de rolagem interna */
+}
+/* Ajuste no tema escuro se necessário */
+body.theme-dark #tabelaControle td.editable-cell input[type="text"],
+body.theme-dark #tabelaControle td.editable-cell textarea {
+    background-color: #000000;
+    border-color: #555;
+}
