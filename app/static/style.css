@@ -2329,3 +2329,8 @@ body.theme-dark #tabelaControle td.editable-cell textarea {
 body.theme-dark #tabelaControle td.editable-cell::after {
     background-color: #555555; /* <<< ALTERADO PARA background-color */
 }
+
+/* --- Classe para Transição de Feedback --- */ /* <<< NOVO BLOCO >>> */
+#tabelaControle td.td-feedback-flash {
+    transition: background-color 0.3s ease-in-out; /* Aplica fade à cor de fundo */ /* <<< LINHA ADICIONADA */
+}

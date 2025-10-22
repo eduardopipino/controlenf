@@ -808,8 +808,20 @@ else if (targetSituacao !== currentColumnSituacao) {
                     td.appendChild(span);
                     currentEditInput = null;
                     // Feedback visual rápido
-                    td.style.backgroundColor = 'rgba(0, 255, 0, 0.3)';
-                    setTimeout(() => { td.style.backgroundColor = ''; }, 1000);
+                    const isDarkTheme = document.body.classList.contains('theme-dark');
+                    const feedbackColor = isDarkTheme ? '#3a3a3a' : '#e0e0e0'; // Define a cor
+
+                    td.classList.add('td-feedback-flash'); // <<< LINHA ADICIONADA: Ativa a transição CSS
+                    td.style.backgroundColor = feedbackColor; // <<< LINHA ALTERADA: Aplica a cor (inicia fade in)
+
+                    // Define timeout para remover a cor E a classe de transição
+                    setTimeout(() => {
+                        td.style.backgroundColor = ''; // <<< MANTIDO: Inicia fade out (a classe ainda aplica a transição)
+                        // Remove a classe DEPOIS que a transição de fade out (300ms) terminar
+                        setTimeout(() => { // <<< NOVO setTimeout INTERNO >>>
+                            td.classList.remove('td-feedback-flash'); // <<< LINHA ADICIONADA >>>
+                        }, 300); // Duração da transição CSS
+                    }, 700); // Tempo que a cor fica visível (1000ms total - 300ms fade out)
                 } else {
                     // Erro: Informa o usuário e reverte
                     alert(`Erro ao salvar: ${data.message}`);
