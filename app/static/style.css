@@ -2334,3 +2334,84 @@ body.theme-dark #tabelaControle td.editable-cell::after {
 #tabelaControle td.td-feedback-flash {
     transition: background-color 0.3s ease-in-out; /* Aplica fade à cor de fundo */ /* <<< LINHA ADICIONADA */
 }
+
+/* --- Indicador Visual Editável (Ícone no Hover) PARA CARDS --- */
+.data-card .editable-card-field {
+    position: relative; /* Necessário para posicionar o ícone ::after */
+    cursor: default;
+}
+
+.data-card .editable-card-field::after {
+    content: ''; /* Essencial */
+    display: inline-block;
+    position: absolute;
+    right: 0px; /* Ajustado para alinhar dentro do card */
+    top: 4px; /* Ajustado para alinhar melhor com o texto */
+    /* transform: translateY(-50%); */ /* Removido - ajustado com top */
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    pointer-events: none;
+    width: 12px;
+    height: 12px;
+    background-color: #aaaaaa; /* Cor padrão cinza claro */
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/%3E%3C/svg%3E");
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+}
+
+/* Mostra o ícone no hover do CAMPO editável do card */
+.data-card .editable-card-field:hover::after {
+    opacity: 1;
+}
+
+/* Esconde o ícone se o campo já estiver em modo de edição */
+.data-card .editable-card-field:has(input[type="text"])::after,
+.data-card .editable-card-field:has(textarea)::after {
+    opacity: 0 !important;
+}
+
+/* Ajuste Tema Escuro para Ícone no Card */
+body.theme-dark .data-card .editable-card-field::after {
+    background-color: #555555;
+}
+
+/* --- Estilos para Edição Inline NOS CARDS --- */
+.data-card .editable-card-field input[type="text"],
+.data-card .editable-card-field textarea {
+    font-size: inherit;
+    font-family: inherit;
+    padding: 1px 3px; /* Padding mínimo */
+    margin: 0;
+    border: 1px solid var(--primary-color);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    vertical-align: baseline; /* Alinha com o texto (label) */
+    width: 100%; /* Ocupa o espaço disponível no card */
+    box-sizing: border-box;
+    white-space: normal; /* Permite quebra de linha em textarea */
+    display: block; /* Garante que ocupe a linha */
+}
+
+.data-card .editable-card-field textarea {
+    min-height: 40px;
+    resize: vertical; /* Permite redimensionar verticalmente */
+    margin-top: 4px; /* Pequeno espaço acima da textarea */
+}
+
+/* Ajuste Tema Escuro para Inputs no Card */
+body.theme-dark .data-card .editable-card-field input[type="text"],
+body.theme-dark .data-card .editable-card-field textarea {
+    background-color: #000000;
+    border-color: #555;
+}
+
+/* --- Classe para Transição de Feedback NOS CARDS --- */
+.data-card.card-feedback-flash {
+    transition: background-color 0.3s ease-in-out;
+}

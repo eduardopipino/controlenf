@@ -897,6 +897,161 @@ else if (targetSituacao !== currentColumnSituacao) {
         });
     }
 
+    // --- 14. LÓGICA DE EDIÇÃO INLINE NOS CARDS (Cards e Kanban) --- <<< NOVO BLOCO >>>
+    const cardContainers = document.querySelectorAll('.card-view-container, .kanban-view-container');
+
+    if (cardContainers.length > 0 && "{{ view_mode }}" !== "table") { // Só ativa nos modos card/kanban
+        let currentCardEditInput = null; // Guarda referência ao input ativo (separado da tabela)
+        let originalCardContent = null; // Guarda o conteúdo original do span/h4
+        let activeCardFieldElement = null; // Guarda a referência ao elemento <p> ou <h4> sendo editado
+
+        // Função para reverter o campo do card ao estado original
+        function cancelInlineEditCard() {
+            if (!activeCardFieldElement || !currentCardEditInput) return;
+            // Restaura o conteúdo original (que era o span)
+            activeCardFieldElement.innerHTML = originalCardContent;
+            currentCardEditInput = null;
+            originalCardContent = null;
+            activeCardFieldElement = null;
+        }
+
+        // Função para salvar a edição do card
+        function saveInlineEditCard() {
+            if (!activeCardFieldElement || !currentCardEditInput) return;
+
+            const newValue = currentCardEditInput.value.trim();
+            const fieldName = activeCardFieldElement.dataset.fieldName;
+            const cardDiv = activeCardFieldElement.closest('.data-card');
+            const controleId = cardDiv.dataset.id;
+            const originalValueSpan = document.createElement('div'); // Div temporária para extrair texto
+            originalValueSpan.innerHTML = originalCardContent;
+            const originalValueText = originalValueSpan.querySelector('.card-field-value')?.textContent.trim() || '';
+
+            // Se não houve mudança, apenas cancela
+            if (newValue === originalValueText) {
+                cancelInlineEditCard();
+                return;
+            }
+
+            // Prepara para enviar para a API (mesma rota da tabela)
+            fetch(`/controle/update_field_inline/${controleId}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ field: fieldName, value: newValue })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Sucesso: Atualiza visualmente
+                    const updatedValue = data.newValue;
+                    // Recria o span com o novo valor
+                    const labelHtml = activeCardFieldElement.querySelector('strong') ? activeCardFieldElement.querySelector('strong').outerHTML : '';
+                    activeCardFieldElement.innerHTML = `${labelHtml} <span class="card-field-value">${updatedValue}</span>`;
+
+                    currentCardEditInput = null;
+                    originalCardContent = null;
+                    activeCardFieldElement = null;
+
+                    // Feedback visual rápido com fade no card
+                    const isDarkTheme = document.body.classList.contains('theme-dark');
+                    const feedbackColor = isDarkTheme ? '#3a3a3a' : '#e0e0e0';
+                    cardDiv.classList.add('card-feedback-flash');
+                    const originalCardBg = cardDiv.style.backgroundColor; // Guarda bg original (pode ser da situação)
+                    cardDiv.style.backgroundColor = feedbackColor;
+                    setTimeout(() => {
+                        cardDiv.style.backgroundColor = originalCardBg || ''; // Restaura bg original ou remove
+                        setTimeout(() => {
+                            cardDiv.classList.remove('card-feedback-flash');
+                        }, 300); // Remove classe após fade out
+                    }, 700); // Tempo visível
+
+                } else {
+                    // Erro: Informa o usuário e reverte
+                    alert(`Erro ao salvar: ${data.message}`);
+                    cancelInlineEditCard();
+                }
+            })
+            .catch(error => {
+                console.error('Erro de rede ao salvar card:', error);
+                alert('Erro de rede ao salvar. A alteração foi cancelada.');
+                cancelInlineEditCard();
+            });
+        }
+
+        // Listener principal delegado aos containers de cards
+        cardContainers.forEach(container => {
+            container.addEventListener('dblclick', function(e) {
+                // Encontra o elemento editável mais próximo (h4 ou p)
+                const fieldElement = e.target.closest('.editable-card-field');
+                if (!fieldElement) return; // Não clicou em campo editável
+
+                e.stopPropagation(); // IMPEDE a navegação do link <a> pai
+
+                // Previne editar se já estiver editando este ou outro campo
+                if (fieldElement.querySelector('input, textarea') || currentCardEditInput) {
+                    if (currentCardEditInput) currentCardEditInput.focus();
+                    return;
+                }
+
+                activeCardFieldElement = fieldElement; // Guarda referência ao <p> ou <h4>
+                const valueSpan = fieldElement.querySelector('.card-field-value');
+                const labelElement = fieldElement.querySelector('strong'); // Pega o <strong> se existir
+                if (!valueSpan && fieldElement.tagName !== 'H4') return; // Segurança: Se não for H4 e não tiver span, sai
+
+                const originalValue = valueSpan ? valueSpan.textContent.trim() : fieldElement.textContent.replace(labelElement ? labelElement.textContent : '', '').trim(); // Pega valor do span ou do h4
+                originalCardContent = fieldElement.innerHTML; // Guarda TODO o HTML interno (label + span)
+                const fieldName = fieldElement.dataset.fieldName;
+                let inputElement;
+
+                // Cria input/textarea
+                if (fieldName === 'observacoes') {
+                    inputElement = document.createElement('textarea');
+                    inputElement.style.height = '60px'; // Altura inicial para textarea no card
+                } else {
+                    inputElement = document.createElement('input');
+                    inputElement.type = 'text';
+                }
+
+                inputElement.value = originalValue;
+                currentCardEditInput = inputElement; // Guarda a referência
+
+                // Substitui o conteúdo pelo input (mantendo o label)
+                fieldElement.innerHTML = ''; // Limpa o elemento
+                if (labelElement) {
+                    fieldElement.appendChild(labelElement); // Readiciona o <strong>
+                }
+                    // Adiciona espaço após o label se houver
+                if (labelElement && fieldElement.tagName === 'P') {
+                    fieldElement.appendChild(document.createTextNode(' '));
+                }
+                fieldElement.appendChild(inputElement); // Adiciona o input/textarea
+                inputElement.focus();
+                if(inputElement.select) inputElement.select();
+
+                // Listeners para Enter/Esc no input atual
+                inputElement.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        saveInlineEditCard();
+                    } else if (event.key === 'Escape') {
+                        cancelInlineEditCard();
+                    }
+                });
+
+                // Listener para Blur no input atual
+                inputElement.addEventListener('blur', function() {
+                    // Adiciona um pequeno delay para evitar conflito com Enter/Esc
+                    setTimeout(() => {
+                        // Se o input ainda existe (não foi removido pelo save/cancel), cancela.
+                        if (document.body.contains(inputElement) && currentCardEditInput === inputElement) {
+                            cancelInlineEditCard();
+                        }
+                    }, 150); // Delay de 150ms
+                });
+            });
+        }); // Fim do forEach cardContainers
+    } // Fim do if (cardContainers.length > 0)
+
 });
 </script>
 {% endblock %}

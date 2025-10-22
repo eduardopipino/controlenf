@@ -5,14 +5,21 @@
         style="background-color: {{ color_map[controle.situacao] }};"
     {% endif %}>
     {# O título agora é sempre o campo 'referencia', com o rótulo fixo #}
-    <h4>Referência: {{ controle.referencia or '' }}</h4>
+    <h4 class="editable-card-field" data-field-name="referencia"><Referência: {{ controle.referencia or '' }}</h4>
 
     {# Loop para renderizar os outros campos que foram configurados pelo usuário #}
     {% for field_id in card_fields_visiveis %}
-        <p>
+        {# Define se é editável inline (exclui 'situacao' e 'documentacao' daqui) #}
+        {% set is_editable_card = field_id in ['nota_fiscal', 'carta_de_correcao', 'observacoes'] %}
+        <p {% if is_editable_card %}class="editable-card-field" data-field-name="{{ field_id }}"{% endif %}>
             <strong>{{ card_fields_map[field_id] }}:</strong>
-            {# Lógica para formatar o campo 'documentacao' como uma lista #}
-            {{ controle[field_id] | join(', ') if field_id == 'documentacao' else (controle[field_id] or '') }}
+            {# Envolve o valor em span se for editável, senão imprime direto #}
+            {% if is_editable_card %}
+                <span class="card-field-value">{{ controle[field_id] or '' }}</span>
+            {% else %}
+                {# Lógica original para campos não editáveis como documentacao #}
+                {{ controle[field_id] | join(', ') if field_id == 'documentacao' else (controle[field_id] or 'N/D') }}
+            {% endif %}
         </p>
     {% endfor %}
 </div>
