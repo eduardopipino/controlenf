@@ -985,7 +985,7 @@ else if (targetSituacao !== currentColumnSituacao) {
                 const fieldElement = e.target.closest('.editable-card-field');
                 if (!fieldElement) return; // Não clicou em campo editável
 
-                e.stopPropagation(); // IMPEDE a navegação do link <a> pai
+                //e.stopPropagation(); // IMPEDE a navegação do link <a> pai
 
                 // Previne editar se já estiver editando este ou outro campo
                 if (fieldElement.querySelector('input, textarea') || currentCardEditInput) {
@@ -1051,6 +1051,43 @@ else if (targetSituacao !== currentColumnSituacao) {
             });
         }); // Fim do forEach cardContainers
     } // Fim do if (cardContainers.length > 0)
+
+    // --- 15. LÓGICA DE NAVEGAÇÃO POR CLIQUE SIMPLES NOS CARDS --- <<< BLOCO AJUSTADO >>>
+    cardContainers.forEach(container => {
+        container.addEventListener('click', function(e) {
+            const cardElement = e.target.closest('.data-card');
+            if (!cardElement) return;
+
+            // Verifica se o clique ocorreu DENTRO de um campo que ESTÁ SENDO EDITADO
+            const currentEditingField = cardElement.querySelector('.editable-card-field input, .editable-card-field textarea'); // <<< LINHA ADICIONADA: Procura input/textarea ativo DENTRO do card clicado
+
+            if (currentEditingField && currentEditingField.contains(e.target)) { // <<< CONDIÇÃO ALTERADA: Verifica se clique foi NO input/textarea ATIVO
+                // O clique foi DENTRO do input/textarea ativo. Não faz nada.
+                // console.log("Click inside active input."); // Debug
+                return;
+            }
+
+            // Se existe um input ativo (currentCardEditInput global) MAS o clique NÃO foi nele (verificação acima)
+            // significa que clicamos fora do input durante a edição. Nesse caso, NÃO navegamos
+            // e deixamos o evento 'blur' do input cancelar a edição.
+            if (currentCardEditInput) { // <<< VERIFICA A VARIÁVEL GLOBAL
+                // console.log("Click outside active input, blur should handle cancel. Preventing navigation."); // Debug
+                return;
+            }
+
+
+            // Se chegamos aqui, nenhuma edição está ativa ou o clique foi fora da área de edição.
+            // Pode navegar.
+            const url = cardElement.dataset.url;
+            if (url) {
+                // console.log("Navigating to:", url); // Debug
+                window.location.href = url;
+            } else {
+                // console.log("No URL found on card."); // Debug
+            }
+        });
+    }); // Fim do forEach cardContainers (do click listener)
+    // --- FIM DO BLOCO DE NAVEGAÇÃO POR CLIQUE SIMPLES ---
 
 });
 </script>

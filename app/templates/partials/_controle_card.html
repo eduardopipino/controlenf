@@ -1,6 +1,4 @@
-<a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}" class="data-card-link">
 {% set card_fields_map = dict(todas_as_colunas_cards) %}
-{# --- LINHA ADICIONADA: Define campos editáveis (exceto 'referencia' que é tratada no h4) --- #}
 {% set editable_fields_in_card = ['nota_fiscal', 'carta_de_correcao', 'observacoes'] %}
 <div class="data-card" data-situacao="{{ controle.situacao or '' }}" data-id="{{ controle._id }}"
     {% if color_coding_active and controle.situacao in color_map %}
@@ -35,4 +33,3 @@
             {% endif %} {# Fim do if field_id in card_fields_visiveis #} {# <<< LINHA ADICIONADA #}
         {% endfor %} {# Fim do loop por todas_as_colunas_cards #} {# <<< LINHA ALTERADA #}
 </div>
-</a>

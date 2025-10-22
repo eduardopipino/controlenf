@@ -2081,6 +2081,7 @@ body.theme-dark tr[style*="background-color"]:hover {
     flex-direction: column;
     gap: 10px;
     transition: background-color 0.3s ease;
+    cursor: pointer;
 }
 .data-card h4 {
     margin: 0;
