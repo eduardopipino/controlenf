@@ -2343,7 +2343,9 @@ body.theme-dark #tabelaControle td.editable-cell::after {
 .data-card .editable-card-field {
     position: relative; /* Necessário para posicionar o ícone ::after */
     cursor: default;
-}
+    display: flex; /* <<< LINHA ADICIONADA: Torna o <p> ou <h4> um container flex */
+    align-items: baseline; /* <<< LINHA ADICIONADA: Alinha a linha de base do texto do label e do input */
+    gap: 4px; /* Opcional: Adiciona um pequeno espaço entre label e input */}
 
 .data-card .editable-card-field::after {
     content: ''; /* Essencial */
@@ -2396,10 +2398,10 @@ body.theme-dark .data-card .editable-card-field::after {
     background-color: var(--background-secondary);
     color: var(--text-primary);
     vertical-align: baseline; /* Alinha com o texto (label) */
-    width: 100%; /* Ocupa o espaço disponível no card */
     box-sizing: border-box;
     white-space: normal; /* Permite quebra de linha em textarea */
-    display: block; /* Garante que ocupe a linha */
+    flex-grow: 1; /* <<< LINHA ADICIONADA: Faz o input ocupar o espaço restante */
+    min-width: 50px; /* Opcional: Evita que o input fique muito pequeno */
 }
 
 .data-card .editable-card-field textarea {
@@ -2463,5 +2465,12 @@ body.theme-dark .card-details-link:hover {
     background-color: var(--secondary-color); /* Fundo mais escuro no hover */
     color: var(--text-primary); /* Ícone mais claro no hover */
 }
+
+/* Ajusta o rótulo dentro do campo editável do card */ /* <<< NOVO BLOCO >>> */
+.data-card .editable-card-field > strong {
+    flex-shrink: 0; /* Impede que o label encolha */   /* <<< LINHA ADICIONADA */
+    /* margin-right: 5px; */ /* Alternativa ao 'gap' no pai */
+}
+
 /* --- FIM Estilo Botão/Link Detalhes --- */
 
