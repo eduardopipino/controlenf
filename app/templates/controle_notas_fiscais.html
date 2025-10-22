@@ -1009,19 +1009,24 @@ else if (targetSituacao !== currentColumnSituacao) {
                 }
 
                 inputElement.value = originalValue;
-                currentCardEditInput = inputElement; // Guarda a referência
+                    currentCardEditInput = inputElement; // Guarda a referência
 
-                // Substitui o conteúdo pelo input (mantendo o label)
-                fieldElement.innerHTML = ''; // Limpa o elemento
-                if (labelElement) {
-                    fieldElement.appendChild(labelElement); // Readiciona o <strong>
-                }
-                    // Adiciona espaço após o label se houver
-                if (labelElement && fieldElement.tagName === 'P') {
-                    fieldElement.appendChild(document.createTextNode(' '));
-                }
-                fieldElement.appendChild(inputElement); // Adiciona o input/textarea
-                inputElement.focus();
+                    // Substitui o conteúdo pelo input (mantendo o label)
+                    fieldElement.innerHTML = ''; // Limpa o elemento
+
+                    // --- BLOCO ALTERADO ---
+                    if (fieldElement.tagName === 'H4') {
+                        // Para o H4 (Referência), adiciona o texto do rótulo manualmente
+                        fieldElement.appendChild(document.createTextNode('Referência: ')); // <<< ADICIONADO TEXTO
+                    } else if (labelElement) {
+                        // Para outros campos (<p>), readiciona o <strong>
+                        fieldElement.appendChild(labelElement);
+                        fieldElement.appendChild(document.createTextNode(' ')); // Espaço após o label no <p>
+                    }
+                    // --- FIM DO BLOCO ALTERADO ---
+
+                    fieldElement.appendChild(inputElement); // Adiciona o input/textarea
+                    inputElement.focus();
                 if(inputElement.select) inputElement.select();
 
                 // Listeners para Enter/Esc no input atual
