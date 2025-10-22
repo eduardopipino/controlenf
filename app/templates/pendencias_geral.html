@@ -438,7 +438,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }; // <<< FIM NOVO BLOCO >>>
 
     // Inicializa Coloris uma vez (sem vincular a input específico)
-    Coloris.init(); // <<< LINHA ADICIONADA
+    // Inicializa Coloris AQUI, dentro do DOMContentLoaded
+    try { // Adiciona try/catch para depuração
+       Coloris.init(); // <<< ADICIONE ESTA LINHA AQUI
+       console.log("Coloris initialized successfully."); // Log de sucesso
+    } catch (e) {
+       console.error("Error initializing Coloris:", e); // Log de erro
+    }
 
     document.querySelectorAll('tbody .clickable-row, .data-card').forEach(item => {
             item.addEventListener('contextmenu', function(event) {
@@ -463,8 +469,6 @@ document.addEventListener('DOMContentLoaded', function() {
         contextMenu.style.display = 'none'; // Esconde o menu de contexto
 
         // Define o elemento de referência e abre o Coloris
-        // Usaremos o próprio item do menu como referência para posicionamento
-        colorisOptions.el = e.target; // <<< LINHA ADICIONADA
         // Abre o Coloris usando coordenadas e anexando ao body
         Coloris({               // <<< CHAMADA ALTERADA
             ...colorisOptions,  // Copia as opções padrão
@@ -476,6 +480,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Ou, para tentar posicionar onde o menu estava:
         // Coloris({ ...colorisOptions, el: document.body, x: lastContextMenuPosition.x, y: lastContextMenuPosition.y });
     });
+
+
 
     clearColorBtn.addEventListener('click', () => {
         if (!activeItem) return;
