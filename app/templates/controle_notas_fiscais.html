@@ -624,56 +624,57 @@ document.addEventListener('DOMContentLoaded', function() {
                          setTimeout(() => cardElement.remove(), 500); // Remove após a animação
                      }
                      // 2. Se a situação mudou para uma COLUNA DIFERENTE (e não é arquivamento)
-else if (targetSituacao !== currentColumnSituacao) {
-                         // Encontra a coluna de destino
-                         const targetColumn = document.querySelector(`.kanban-column[data-situacao="${targetSituacao}"]`);
-                         if (targetColumn) {
-                             const targetCardContainer = targetColumn.querySelector('.kanban-cards');
-                             if (targetCardContainer) {
-                                 // --- INÍCIO: Adiciona Fade Out ---
-                                 cardElement.style.transition = 'opacity 0.3s ease-out'; // Define a transição de fade
-                                 cardElement.style.opacity = '0'; // Começa o fade out
+                    else if (targetSituacao !== currentColumnSituacao) {
+                             // Encontra a coluna de destino pelo data-situacao
+                             const targetColumn = document.querySelector(`.kanban-column[data-situacao="${targetSituacao}"]`);
+                             if (targetColumn) {
+                                 // Encontra o container de cards dentro da coluna de destino
+                                 const targetCardContainer = targetColumn.querySelector('.kanban-cards');
+                                 if (targetCardContainer) {
+                                     // --- MOVIMENTAÇÃO DIRETA ---
+                                    // --- INÍCIO: Adiciona Fade Out ---
+                                     activeCard.style.transition = 'opacity 0.3s ease-out'; // Define transição
+                                     activeCard.style.opacity = '0'; // Inicia fade out
 
-                                 // Espera o fade out terminar antes de mover
-                                 setTimeout(() => {
-                                     // Move o elemento card (o <a>) para a nova coluna
-                                     targetCardContainer.appendChild(cardElement);
+                                     // Espera o fade out terminar antes de mover
+                                     setTimeout(() => {
+                                         // Move o elemento card para a nova coluna
+                                         targetCardContainer.appendChild(activeCard);
 
-                                     // --- INÍCIO: Adiciona Fade In ---
-                                     // Força o navegador a recalcular o layout antes de aplicar o fade in
-                                     // Isso é uma pequena "trapaça" para garantir que a transição funcione após o appendChild
-                                     requestAnimationFrame(() => {
-                                         cardElement.style.transition = 'opacity 0.3s ease-in'; // Define a transição de fade in
-                                         cardElement.style.opacity = '1'; // Começa o fade in
+                                         // --- INÍCIO: Adiciona Fade In ---
+                                         // Força recalcular layout antes do fade in
+                                         requestAnimationFrame(() => {
+                                             activeCard.style.transition = 'opacity 0.3s ease-in'; // Define transição
+                                             activeCard.style.opacity = '1'; // Inicia fade in
 
-                                          // Limpa o estilo de transição após o fade in completar
-                                         // para não interferir com outras animações (ex: drag-drop)
-                                         setTimeout(() => {
-                                             cardElement.style.transition = '';
-                                              // Restaura a cor correta (caso tenha sido alterada pelo destaque anterior)
-                                             // Esta parte pode ser removida se você não quiser mais o destaque verde rápido
-                                            //  if (document.getElementById('btnColorCode')?.classList.contains('filtro-ativo')) {
-                                            //       activeCard.style.backgroundColor = colorMap[novaSituacao] || '';
-                                            //  } else {
-                                            //       activeCard.style.backgroundColor = '';
-                                            //  }
-                                         }, 300); // Mesmo tempo da transição de fade in
-                                     });
-                                     // --- FIM: Adiciona Fade In ---
+                                             // Limpa o estilo de transição após o fade in
+                                             setTimeout(() => {
+                                                 activeCard.style.transition = '';
+                                             }, 300); // Duração do fade in
+                                         });
+                                         // --- FIM: Adiciona Fade In ---
 
-                                 }, 300); // Mesmo tempo da transição de fade out
-                                 // --- FIM: Adiciona Fade Out ---
+                                         // Opcional: Scroll suave para o card movido
+                                         // activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
+                                     }, 300); // Duração do fade out
+                                     // --- FIM: Adiciona Fade Out ---                                     // --- FIM MOVIMENTAÇÃO ---
+
+                                     // Opcional: Adicionar um breve flash ou scroll se desejar, mas o principal é mover.
+                                     // Ex: Scroll suave para o card movido (se a coluna for longa)
+                                     // activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                 } else {
+                                     console.error("Container de cards '.kanban-cards' não encontrado na coluna de destino:", targetSituacao);
+                                     // Não removemos mais, apenas logamos o erro. O card fica visualmente na coluna errada,
+                                     // mas os dados estão corretos e um reload corrigirá.
+                                 }
                              } else {
-                                 console.error("Container de cards não encontrado na coluna de destino:", targetSituacao);
-                                 cardElement.remove(); // Fallback
+                                 console.error("Coluna de destino '.kanban-column' não encontrada para situação:", targetSituacao);
+                                 // Não removemos.
                              }
-                         } else {
-                             console.error("Coluna de destino não encontrada para situação:", targetSituacao);
-                             cardElement.remove(); // Fallback
                          }
+                         // 3. Se a situação mudou mas permaneceu na MESMA coluna (Não faz nada de movimentação - OK)
                      }
-                    }
                  // --- FIM LÓGICA KANBAN ---
 
             } else {
@@ -694,16 +695,23 @@ else if (targetSituacao !== currentColumnSituacao) {
             group: 'kanban', // Permite mover cards entre colunas
             animation: 150,
             ghostClass: 'dragging-card', // Classe para o "fantasma" do card
+            draggable: '.data-card',
 
             // Evento disparado quando o arraste termina
             onEnd: function (evt) {
-                const card = evt.item; // O elemento do card que foi movido
-                const newColumn = evt.to; // A coluna onde ele foi solto
-                
-                const controleId = card.querySelector('.data-card').dataset.id;
-                const novaSituacao = newColumn.parentElement.dataset.situacao;
+                const cardElement = evt.item; // cardElement AGORA É a div.data-card que foi movida
+                const newColumn = evt.to;     // A coluna (.kanban-cards) onde ele foi solto
 
-                // Chama a API para salvar a nova situação
+                // --- LINHAS ALTERADAS ---
+                if (!cardElement.classList.contains('data-card')) { // Segurança: Verifica se é mesmo o card
+                     console.error("Elemento arrastado não é um data-card:", cardElement);
+                     return; // Sai se não for o card esperado
+                }
+                const controleId = cardElement.dataset.id; // Pega o ID diretamente do card movido
+                const novaSituacao = newColumn.parentElement.dataset.situacao || ""; // Pega situação da nova coluna ou ""
+                // --- FIM LINHAS ALTERADAS ---
+
+                // Chama a API para salvar a nova situação (Fetch continua igual)
                 fetch(`/controle/set_situacao/${controleId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -712,34 +720,65 @@ else if (targetSituacao !== currentColumnSituacao) {
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        // Atualiza os dados no card movido
-                        const dataCard = card.querySelector('.data-card');
-                        dataCard.dataset.situacao = novaSituacao;
-                        
-                        // Atualiza o texto da situação no card, se ele estiver visível
-                        const situacaoP = Array.from(dataCard.querySelectorAll('p')).find(p => p.textContent.includes('Situação:'));
-                        if (situacaoP) {
-                            situacaoP.innerHTML = `<strong>Situação:</strong> ${novaSituacao || 'Nenhuma'}`;
+                        // --- LÓGICA DE ATUALIZAÇÃO VISUAL REFORÇADA ---
+                        cardElement.dataset.situacao = novaSituacao;
+
+                        // 1. Garante que card_fields_map está acessível (já deve estar do passo anterior)
+                        //    Se não estiver, mova a definição `const card_fields_map = ...` para fora/antes desta função onEnd.
+
+                        // 2. Atualiza o texto da situação SOMENTE SE o campo existir E o map estiver acessível
+                        try { // Adiciona try/catch para isolar potencial erro
+                            const situacaoP = Array.from(cardElement.querySelectorAll('p')).find(p => {
+                                const strong = p.querySelector('strong');
+                                // Verifica se existe strong E se o texto corresponde a "Situação:"
+                                return strong && strong.textContent.trim() === 'Situação:';
+                            });
+                            if (situacaoP && typeof card_fields_map !== 'undefined') { // <<< Verifica se situacaoP existe E se map está definido
+                                const labelText = card_fields_map['situacao'] || 'Situação'; // Usa 'situacao' diretamente
+                                situacaoP.innerHTML = `<strong>${labelText}:</strong> <span class="card-field-value">${novaSituacao || 'Nenhuma'}</span>`;
+                            }
+                        } catch (e) {
+                            console.error("Erro ao atualizar texto da situação no card:", e);
+                            // Não impede o resto da atualização visual
                         }
 
-                        // Se a colorização estiver ativa, atualiza a cor
-                        if (colorCodingIsActive) {
-                            dataCard.style.backgroundColor = colorMap[novaSituacao] || '';
+
+                        // 3. Atualiza a cor SOMENTE SE as variáveis estiverem acessíveis
+                        try { // Adiciona try/catch
+                            if (typeof colorCodingIsActive !== 'undefined' && colorCodingIsActive && typeof colorMap !== 'undefined') { // <<< Verifica se variáveis existem
+                                cardElement.style.backgroundColor = colorMap[novaSituacao] || '';
+                            } else if (typeof colorCodingIsActive !== 'undefined' && !colorCodingIsActive) {
+                                 // Garante que a cor seja removida se color coding foi desativado
+                                 cardElement.style.backgroundColor = '';
+                            }
+                        } catch (e) {
+                             console.error("Erro ao atualizar cor do card:", e);
                         }
-                        
-                        // Se a nova situação for uma de arquivamento, faz o card desaparecer
+
+
+                        // 4. Lógica de remoção (mantida igual)
+                        const situacoesArquivadoras = JSON.parse('{{ arquivadores_json | default("[]") | safe }}');
                         if (situacoesArquivadoras.includes(novaSituacao)) {
-                            card.style.transition = 'opacity 0.5s ease';
-                            card.style.opacity = '0';
-                            setTimeout(() => card.remove(), 500);
+                            cardElement.style.transition = 'opacity 0.5s ease, height 0.5s ease, margin 0.5s ease, padding 0.5s ease';
+                            cardElement.style.opacity = '0';
+                            cardElement.style.height = '0';
+                            cardElement.style.margin = '0';
+                            cardElement.style.padding = '0';
+                            cardElement.style.border = 'none';
+                            setTimeout(() => cardElement.remove(), 500);
                         }
-
-                    } else {
+                        // --- FIM ATUALIZAÇÃO VISUAL ---
+                    } else { // if data.status === 'success'
                         alert('Erro ao atualizar a situação. A página será recarregada.');
                         location.reload(); // Recarrega para reverter a mudança visual
                     }
+                })
+                .catch(error => { // Adiciona tratamento de erro de rede
+                    console.error("Erro de rede ao salvar situação via drag-drop:", error);
+                    alert('Erro de rede ao salvar a situação. A página será recarregada.');
+                    location.reload(); // Recarrega para reverter
                 });
-            },
+            }, // Fim do onEnd
 
             // Evento para dar feedback visual ao arrastar sobre uma coluna
             onMove: function (evt) {
@@ -1009,24 +1048,23 @@ else if (targetSituacao !== currentColumnSituacao) {
                 }
 
                 inputElement.value = originalValue;
-                    currentCardEditInput = inputElement; // Guarda a referência
+                currentCardEditInput = inputElement; // Guarda a referência
 
-                    // Substitui o conteúdo pelo input (mantendo o label)
-                    fieldElement.innerHTML = ''; // Limpa o elemento
+                // Substitui o conteúdo pelo input (mantendo o label)
+                fieldElement.innerHTML = ''; // Limpa o elemento
 
-                    // --- BLOCO ALTERADO ---
-                    if (fieldElement.tagName === 'H4') {
-                        // Para o H4 (Referência), adiciona o texto do rótulo manualmente
-                        fieldElement.appendChild(document.createTextNode('Referência: ')); // <<< ADICIONADO TEXTO
-                    } else if (labelElement) {
-                        // Para outros campos (<p>), readiciona o <strong>
-                        fieldElement.appendChild(labelElement);
-                        fieldElement.appendChild(document.createTextNode(' ')); // Espaço após o label no <p>
-                    }
-                    // --- FIM DO BLOCO ALTERADO ---
+                if (fieldElement.tagName === 'H4') {
+                    // Para o H4 (Referência), adiciona o texto do rótulo manualmente
+                    fieldElement.appendChild(document.createTextNode('Referência: ')); // <<< ADICIONADO TEXTO
+                } else if (labelElement) {
+                    // Para outros campos (<p>), readiciona o <strong>
+                    fieldElement.appendChild(labelElement);
+                    fieldElement.appendChild(document.createTextNode(' ')); // Espaço após o label no <p>
+                }
 
-                    fieldElement.appendChild(inputElement); // Adiciona o input/textarea
-                    inputElement.focus();
+                fieldElement.appendChild(inputElement); // Adiciona o input/textarea
+                inputElement.focus();
+                
                 if(inputElement.select) inputElement.select();
 
                 // Listeners para Enter/Esc no input atual
