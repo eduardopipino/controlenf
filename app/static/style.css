@@ -2080,7 +2080,6 @@ body.theme-dark tr[style*="background-color"]:hover {
     flex-direction: column;
     gap: 10px;
     transition: background-color 0.3s ease;
-    cursor: pointer;
 }
 .data-card h4 {
     margin: 0;
@@ -2330,6 +2329,11 @@ body.theme-dark #tabelaControle td.editable-cell::after {
     background-color: #555555; /* <<< ALTERADO PARA background-color */
 }
 
+/* --- Cursor Pointer para VALORES Editáveis na Tabela --- */ /* <<< NOVO BLOCO >>> */
+#tabelaControle td.editable-cell > span.card-value {
+    cursor: pointer; /* Mãozinha apenas no valor editável */ /* <<< LINHA ADICIONADA */
+}
+
 /* --- Classe para Transição de Feedback --- */ /* <<< NOVO BLOCO >>> */
 #tabelaControle td.td-feedback-flash {
     transition: background-color 0.3s ease-in-out; /* Aplica fade à cor de fundo */ /* <<< LINHA ADICIONADA */
@@ -2411,6 +2415,11 @@ body.theme-dark .data-card .editable-card-field textarea {
     border-color: #555;
 }
 
+/* --- Cursor Pointer para VALORES Editáveis nos Cards --- */ /* <<< NOVO BLOCO >>> */
+.data-card .editable-card-field > span.card-field-value {
+    cursor: pointer; /* Mãozinha apenas no valor editável do card */ /* <<< LINHA ADICIONADA */
+}
+
 /* --- Classe para Transição de Feedback NOS CARDS --- */
 .data-card.card-feedback-flash {
     transition: background-color 0.3s ease-in-out;
@@ -2455,3 +2464,4 @@ body.theme-dark .card-details-link:hover {
     color: var(--text-primary); /* Ícone mais claro no hover */
 }
 /* --- FIM Estilo Botão/Link Detalhes --- */
+
