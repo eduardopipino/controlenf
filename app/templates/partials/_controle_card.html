@@ -16,7 +16,7 @@
     {# --- FIM DO LINK/BOTÃO --- #}
 
     {# Título H4 (permanece igual) #}
-    <h4 class="editable-card-field" data-field-name="referencia"><strong>Referência:</strong> <span class="card-field-value">{{ controle.referencia or '' }}</span></h4>
+    <h4 class="editable-card-field" data-field-name="referencia">Referência: <span class="card-field-value">{{ controle.referencia or '' }}</span></h4>
     {# Loop pela lista MESTRA de campos (já na ordem correta, sem 'referencia') #}
         {% for field_data in todas_as_colunas_cards %} {# <<< LINHA ALTERADA: Itera sobre a lista mestra #}
             {% set field_id = field_data[0] %} {# Pega o ID (ex: 'contratada') #} {# <<< LINHA ADICIONADA #}
