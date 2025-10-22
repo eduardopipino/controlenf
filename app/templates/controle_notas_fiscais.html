@@ -832,6 +832,7 @@ else if (targetSituacao !== currentColumnSituacao) {
                 console.error('Erro de rede ao salvar:', error);
                 alert('Erro de rede ao salvar. A alteração foi cancelada.');
                 cancelInlineEdit(td, inputElement, originalValue); // Reverte para o original
+                isEditingCard = false; // <<< LINHA ADICIONADA: Garante desativação no erro
             });
         }
 
@@ -904,6 +905,7 @@ else if (targetSituacao !== currentColumnSituacao) {
         let currentCardEditInput = null; // Guarda referência ao input ativo (separado da tabela)
         let originalCardContent = null; // Guarda o conteúdo original do span/h4
         let activeCardFieldElement = null; // Guarda a referência ao elemento <p> ou <h4> sendo editado
+        let isEditingCard = false; // <<< LINHA ADICIONADA: Flag para controlar estado de edição
 
         // Função para reverter o campo do card ao estado original
         function cancelInlineEditCard() {
@@ -913,6 +915,7 @@ else if (targetSituacao !== currentColumnSituacao) {
             currentCardEditInput = null;
             originalCardContent = null;
             activeCardFieldElement = null;
+            isEditingCard = false; // <<< LINHA ADICIONADA: Desativa a flag
         }
 
         // Função para salvar a edição do card
@@ -951,6 +954,7 @@ else if (targetSituacao !== currentColumnSituacao) {
                     currentCardEditInput = null;
                     originalCardContent = null;
                     activeCardFieldElement = null;
+                    isEditingCard = false; // <<< LINHA ADICIONADA: Desativa a flag no sucesso
 
                     // Feedback visual rápido com fade no card
                     const isDarkTheme = document.body.classList.contains('theme-dark');
@@ -974,6 +978,7 @@ else if (targetSituacao !== currentColumnSituacao) {
             .catch(error => {
                 console.error('Erro de rede ao salvar card:', error);
                 alert('Erro de rede ao salvar. A alteração foi cancelada.');
+                isEditingCard = false; // <<< LINHA ADICIONADA: Garante desativação no erro
                 cancelInlineEditCard();
             });
         }
@@ -1002,6 +1007,7 @@ else if (targetSituacao !== currentColumnSituacao) {
                 originalCardContent = fieldElement.innerHTML; // Guarda TODO o HTML interno (label + span)
                 const fieldName = fieldElement.dataset.fieldName;
                 let inputElement;
+                isEditingCard = true; // <<< LINHA ADICIONADA: Ativa a flag
 
                 // Cria input/textarea
                 if (fieldName === 'observacoes') {
@@ -1067,18 +1073,20 @@ else if (targetSituacao !== currentColumnSituacao) {
                 return;
             }
 
-            // Se existe um input ativo (currentCardEditInput global) MAS o clique NÃO foi nele (verificação acima)
-            // significa que clicamos fora do input durante a edição. Nesse caso, NÃO navegamos
-            // e deixamos o evento 'blur' do input cancelar a edição.
-            if (currentCardEditInput) { // <<< VERIFICA A VARIÁVEL GLOBAL
-                // console.log("Click outside active input, blur should handle cancel. Preventing navigation."); // Debug
-                return;
+            // *** IMPORTANTE: Verifica se a FLAG de edição está ativa ***
+            if (isEditingCard) { // <<< CONDIÇÃO ALTERADA: Usa a flag
+                // Se a edição está ativa (isEditingCard = true), simplesmente não faz nada.
+                // O evento 'blur' no input cuidará de chamar cancelInlineEditCard,
+                // que por sua vez setará isEditingCard = false.
+                // Não precisamos verificar se o clique foi dentro ou fora do input aqui.
+                return; // Impede navegação se a flag de edição estiver ativa
             }
 
 
             // Se chegamos aqui, nenhuma edição está ativa ou o clique foi fora da área de edição.
             // Pode navegar.
             const url = cardElement.dataset.url;
+
             if (url) {
                 // console.log("Navigating to:", url); // Debug
                 window.location.href = url;
