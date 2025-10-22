@@ -221,7 +221,6 @@
         <li class="context-menu-item" id="chooseColorOption">🎨 Escolher Cor...</li>
         <li class="context-menu-item" id="clearColorOption">⚪ Limpar Cor</li>
     </ul>
-    <input type="color" class="hidden-color-input" id="hiddenColorPicker">
 
 {% endblock %}
 
@@ -416,16 +415,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- LÓGICA DO MENU DE CONTEXTO PARA COR ---
     const contextMenu = document.getElementById('colorContextMenu');
-    const colorPicker = document.getElementById('hiddenColorPicker');
     const chooseColorBtn = document.getElementById('chooseColorOption');
     const clearColorBtn = document.getElementById('clearColorOption');
     let activeItem = null;
+    let lastContextMenuPosition = { x: 0, y: 0 }; // <<< LINHA ADICIONADA: Guarda posição
+
+    // Configurações do Coloris (podem ser ajustadas)
+    const colorisOptions = { // <<< NOVO BLOCO >>>
+        themeMode: document.body.classList.contains('theme-dark') ? 'dark' : 'light', // Adapta ao tema
+        alpha: false, // Sem canal alfa
+        swatches: [ // Cores pré-definidas (ajuste conforme necessário)
+          '#264653', '#2a9d8f', '#e9c46a', '#f4a261', '#e76f51',
+          '#d62828', '#f77f00', '#fcbf49', '#eae2b7', '#003049',
+          '#ffffff', '#cccccc', '#999999', '#666666', '#333333', '#000000'
+        ],
+        // Posicionamento: 'default', 'inline', 'left', 'right'
+        // Vamos usar o posicionamento padrão relativo ao elemento 'el'
+        // que definiremos dinamicamente.
+        // Ou podemos tentar 'parent' se quisermos que ele siga o menu.
+        // parent: contextMenu, // Exemplo: Tenta anexar ao menu
+         format: 'hex' // Formato da cor retornada
+    }; // <<< FIM NOVO BLOCO >>>
+
+    // Inicializa Coloris uma vez (sem vincular a input específico)
+    Coloris.init(); // <<< LINHA ADICIONADA
 
     document.querySelectorAll('tbody .clickable-row, .data-card').forEach(item => {
             item.addEventListener('contextmenu', function(event) {
                 event.preventDefault();
                 activeItem = this; // Usando um nome mais genérico
-
+                lastContextMenuPosition = { x: event.pageX, y: event.pageY }; // <<< LINHA ADICIONADA
                 // Simplesmente posiciona o menu no local do clique
                 contextMenu.style.top = `${event.pageY}px`;
                 contextMenu.style.left = `${event.pageX}px`;
@@ -435,10 +454,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.addEventListener('click', () => {
         if (contextMenu) contextMenu.style.display = 'none';
+        Coloris.close(); // Fecha o Coloris se clicar fora // <<< LINHA ADICIONADA
     });
 
-    chooseColorBtn.addEventListener('click', () => {
-        colorPicker.click();
+    chooseColorBtn.addEventListener('click', (e) => { // <<< Listener MODIFICADO >>>
+        e.stopPropagation(); // Impede fechar o menu imediatamente
+        if (!activeItem) return;
+        contextMenu.style.display = 'none'; // Esconde o menu de contexto
+
+        // Define o elemento de referência e abre o Coloris
+        // Usaremos o próprio item do menu como referência para posicionamento
+        colorisOptions.el = e.target; // <<< LINHA ADICIONADA
+        // Abre o Coloris usando coordenadas e anexando ao body
+        Coloris({               // <<< CHAMADA ALTERADA
+            ...colorisOptions,  // Copia as opções padrão
+            parent: document.body, // Anexa ao body para posicionamento absoluto na página
+            x: lastContextMenuPosition.x, // Usa a posição X guardada do clique direito
+            y: lastContextMenuPosition.y  // Usa a posição Y guardada do clique direito
+        });                     // <<< FIM DA CHAMADA ALTERADA
+
+        // Ou, para tentar posicionar onde o menu estava:
+        // Coloris({ ...colorisOptions, el: document.body, x: lastContextMenuPosition.x, y: lastContextMenuPosition.y });
     });
 
     clearColorBtn.addEventListener('click', () => {
@@ -446,11 +482,14 @@ document.addEventListener('DOMContentLoaded', function() {
         saveColor(activeItem.dataset.id, null);
     });
 
-    colorPicker.addEventListener('change', (event) => {
-        if (!activeItem) return;
-        const newColor = event.target.value;
-        saveColor(activeItem.dataset.id, newColor);
+    // --- NOVO Listener para o evento 'color' do Coloris --- <<< NOVO BLOCO >>>
+    document.addEventListener('coloris:pick', event => {
+    if (activeItem) {
+        saveColor(activeItem.dataset.id, event.detail.color);
+    }
+    // Coloris.close(); // Fecha automaticamente por padrão, não precisa chamar
     });
+    // --- FIM NOVO Listener --- <<< FIM NOVO BLOCO >>>
 
     function saveColor(pendenciaId, color) {
         fetch(`/pendencias/set_cor_destaque/${pendenciaId}`, {

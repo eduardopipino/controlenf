@@ -9,6 +9,8 @@
     
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
+    <link rel="stylesheet" href="https://unpkg.com/@melloware/coloris@0.25.0/dist/coloris.min.css"/> {# <<< ALTERADO para unpkg.com #}
+
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v=datetime.now().timestamp()) }}">
 </head>
 <body class="{{ current_user.theme if current_user.is_authenticated else 'theme-blue' }} font-size-{{ current_user.font_size_preference or 'media' }} spacing-{{ current_user.spacing_preference or 'regular' }}">
@@ -102,6 +104,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script src="https://unpkg.com/@melloware/coloris@0.25.0/dist/coloris.min.js"></script> {# <<< ALTERADO para unpkg.com #}
     <script>
         function showCustomConfirm(title, message, onConfirmCallback, confirmButtonText = 'Confirmar') {
             const modalOverlay = document.getElementById('customConfirmModal');
