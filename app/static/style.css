@@ -2289,16 +2289,30 @@ body.theme-dark #tabelaControle td.editable-cell textarea {
 }
 
 #tabelaControle td.editable-cell::after {
-    content: '✏️'; /* Ícone de lápis unicode */ /* <<< LINHA ADICIONADA */
-    position: absolute; /* Posicionamento relativo à célula */ /* <<< LINHA ADICIONADA */
-    right: 5px; /* Posição à direita */ /* <<< LINHA ADICIONADA */
-    top: 50%; /* Centraliza verticalmente */ /* <<< LINHA ADICIONADA */
-    transform: translateY(-50%); /* Ajuste fino da centralização vertical */ /* <<< LINHA ADICIONADA */
-    font-size: 0.8em; /* Tamanho pequeno para o ícone */ /* <<< LINHA ADICIONADA */
-    opacity: 0; /* Começa invisível */ /* <<< LINHA ADICIONADA */
-    transition: opacity 0.2s ease-in-out; /* Transição suave */ /* <<< LINHA ADICIONADA */
-    pointer-events: none; /* Ícone não interfere com cliques */ /* <<< LINHA ADICIONADA */
-    color: #aaaaaa; /* Cor do ícone */ /* <<< LINHA ADICIONADA */
+    content: ''; /* <<< LINHA ADICIONADA: Essencial para renderizar o pseudo-elemento */
+    display: inline-block; /* Necessário para aplicar width/height */ /* <<< LINHA ADICIONADA */
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    /* font-size: 0.8em; */ /* <<< REMOVIDO */
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    pointer-events: none;
+    /* --- Propriedades do Ícone SVG como Máscara --- */
+    width: 12px; /* Define a largura do ícone */ /* <<< LINHA ADICIONADA */
+    height: 12px; /* Define a altura do ícone */ /* <<< LINHA ADICIONADA */
+    background-color: #aaaaaa; /* Cor padrão cinza claro PARA O BACKGROUND */ /* <<< LINHA ADICIONADA/MODIFICADA */
+    /* SVG de Lápis simples (codificado para URL) */
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/%3E%3C/svg%3E"); /* <<< LINHA ADICIONADA */
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/%3E%3C/svg%3E"); /* <<< LINHA ADICIONADA */
+    -webkit-mask-size: contain; /* <<< LINHA ADICIONADA */
+    mask-size: contain; /* <<< LINHA ADICIONADA */
+    -webkit-mask-repeat: no-repeat; /* <<< LINHA ADICIONADA */
+    mask-repeat: no-repeat; /* <<< LINHA ADICIONADA */
+    -webkit-mask-position: center; /* <<< LINHA ADICIONADA */
+    mask-position: center; /* <<< LINHA ADICIONADA */
+    /* --- Fim das propriedades da máscara --- */
 }
 
 /* Mostra o ícone quando o mouse passa sobre a CÉLULA editável */
@@ -2313,5 +2327,5 @@ body.theme-dark #tabelaControle td.editable-cell textarea {
 }
 
 body.theme-dark #tabelaControle td.editable-cell::after {
-    color: #555555; /* <<< COR ALTERADA PARA CINZA ESCURO NO TEMA DARK */
+    background-color: #555555; /* <<< ALTERADO PARA background-color */
 }
