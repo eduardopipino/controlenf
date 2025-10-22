@@ -467,7 +467,6 @@ tr:nth-child(even) {
 
 tr:hover.clickable-row {
     background-color: var(--table-hover);
-    cursor: pointer;
 }
 
 td input[type="radio"] {
@@ -2416,3 +2415,43 @@ body.theme-dark .data-card .editable-card-field textarea {
 .data-card.card-feedback-flash {
     transition: background-color 0.3s ease-in-out;
 }
+
+/* --- Estilo para o Botão/Link de Detalhes no Card --- */ /* <<< NOVO BLOCO >>> */
+.card-details-link {
+    position: absolute; /* Posicionamento no canto */
+    top: 8px;           /* Distância do topo */
+    right: 8px;         /* Distância da direita */
+    width: 30px;        /* Largura do botão */
+    height: 30px;       /* Altura do botão */
+    display: flex;      /* Para centralizar o SVG */
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%; /* Faz o botão redondo */
+    background-color: transparent; /* Fundo transparente por padrão */
+    color: var(--primary-color); /* Cor do ícone herda a cor primária */
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease; /* Transição suave */
+    cursor: pointer; /* Garante a mãozinha */
+    z-index: 5; /* Garante que fique acima de outros elementos se houver sobreposição */
+}
+
+.card-details-link svg {
+    width: 18px; /* Tamanho do ícone SVG */
+    height: 18px;
+    fill: currentColor; /* Faz o SVG usar a 'color' do link pai (<a>) */
+}
+
+.card-details-link:hover {
+    background-color: var(--secondary-color); /* Fundo suave no hover */
+    color: var(--tertiary-color); /* Escurece um pouco o ícone no hover */
+}
+
+/* Ajuste para Tema Escuro */
+body.theme-dark .card-details-link {
+    color: var(--tertiary-color); /* Cor mais clara no tema escuro */
+}
+body.theme-dark .card-details-link:hover {
+    background-color: var(--secondary-color); /* Fundo mais escuro no hover */
+    color: var(--text-primary); /* Ícone mais claro no hover */
+}
+/* --- FIM Estilo Botão/Link Detalhes --- */

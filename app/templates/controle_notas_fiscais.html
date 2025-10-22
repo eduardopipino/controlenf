@@ -353,16 +353,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- 4. LÓGICA DE CLIQUE (DESKTOP E MOBILE) ---
     document.querySelectorAll('#tabelaControle .clickable-row[data-url]').forEach(row => {
-        // LÓGICA DE CLIQUE DUPLO PARA DESKTOP
-        /*row.addEventListener('dblclick', function(e) {
-            if (window.innerWidth > 768) { // Só executa em telas grandes
-                const targetTd = e.target.closest('td'); // Encontra a célula clicada
-                // Previne a navegação se o clique for em outro elemento interativo
-                if (!e.target.closest('a, button, select, input')) {
-                    window.location.href = this.dataset.url;
-                }
-            }
-        });*/
 
         // LÓGICA DE CLIQUE SIMPLES PARA MOBILE
         row.addEventListener('click', function(e) {
@@ -1057,45 +1047,6 @@ else if (targetSituacao !== currentColumnSituacao) {
             });
         }); // Fim do forEach cardContainers
     } // Fim do if (cardContainers.length > 0)
-
-    // --- 15. LÓGICA DE NAVEGAÇÃO POR CLIQUE SIMPLES NOS CARDS --- <<< BLOCO AJUSTADO >>>
-    cardContainers.forEach(container => {
-        container.addEventListener('click', function(e) {
-            const cardElement = e.target.closest('.data-card');
-            if (!cardElement) return;
-
-            // Verifica se o clique ocorreu DENTRO de um campo que ESTÁ SENDO EDITADO
-            const currentEditingField = cardElement.querySelector('.editable-card-field input, .editable-card-field textarea'); // <<< LINHA ADICIONADA: Procura input/textarea ativo DENTRO do card clicado
-
-            if (currentEditingField && currentEditingField.contains(e.target)) { // <<< CONDIÇÃO ALTERADA: Verifica se clique foi NO input/textarea ATIVO
-                // O clique foi DENTRO do input/textarea ativo. Não faz nada.
-                // console.log("Click inside active input."); // Debug
-                return;
-            }
-
-            // *** IMPORTANTE: Verifica se a FLAG de edição está ativa ***
-            if (isEditingCard) { // <<< CONDIÇÃO ALTERADA: Usa a flag
-                // Se a edição está ativa (isEditingCard = true), simplesmente não faz nada.
-                // O evento 'blur' no input cuidará de chamar cancelInlineEditCard,
-                // que por sua vez setará isEditingCard = false.
-                // Não precisamos verificar se o clique foi dentro ou fora do input aqui.
-                return; // Impede navegação se a flag de edição estiver ativa
-            }
-
-
-            // Se chegamos aqui, nenhuma edição está ativa ou o clique foi fora da área de edição.
-            // Pode navegar.
-            const url = cardElement.dataset.url;
-
-            if (url) {
-                // console.log("Navigating to:", url); // Debug
-                window.location.href = url;
-            } else {
-                // console.log("No URL found on card."); // Debug
-            }
-        });
-    }); // Fim do forEach cardContainers (do click listener)
-    // --- FIM DO BLOCO DE NAVEGAÇÃO POR CLIQUE SIMPLES ---
 
 });
 </script>
