@@ -1,26 +1,38 @@
 <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}" class="data-card-link">
 {% set card_fields_map = dict(todas_as_colunas_cards) %}
+{# --- LINHA ADICIONADA: Define campos editáveis (exceto 'referencia' que é tratada no h4) --- #}
+{% set editable_fields_in_card = ['nota_fiscal', 'carta_de_correcao', 'observacoes'] %}
 <div class="data-card" data-situacao="{{ controle.situacao or '' }}" data-id="{{ controle._id }}"
     {% if color_coding_active and controle.situacao in color_map %}
         style="background-color: {{ color_map[controle.situacao] }};"
     {% endif %}>
-    {# O título agora é sempre o campo 'referencia', com o rótulo fixo #}
-    <h4 class="editable-card-field" data-field-name="referencia"><Referência: {{ controle.referencia or '' }}</h4>
+    {# O título ('referencia') é editável #}
+    <h4 class="editable-card-field" data-field-name="referencia"><strong>Referência:</strong> <span class="card-field-value">{{ controle.referencia or '' }}</span></h4>
 
-    {# Loop para renderizar os outros campos que foram configurados pelo usuário #}
-    {% for field_id in card_fields_visiveis %}
-        {# Define se é editável inline (exclui 'situacao' e 'documentacao' daqui) #}
-        {% set is_editable_card = field_id in ['nota_fiscal', 'carta_de_correcao', 'observacoes'] %}
-        <p {% if is_editable_card %}class="editable-card-field" data-field-name="{{ field_id }}"{% endif %}>
-            <strong>{{ card_fields_map[field_id] }}:</strong>
-            {# Envolve o valor em span se for editável, senão imprime direto #}
-            {% if is_editable_card %}
-                <span class="card-field-value">{{ controle[field_id] or '' }}</span>
-            {% else %}
-                {# Lógica original para campos não editáveis como documentacao #}
-                {{ controle[field_id] | join(', ') if field_id == 'documentacao' else (controle[field_id] or 'N/D') }}
-            {% endif %}
-        </p>
-    {% endfor %}
+    {# Loop pela lista MESTRA de campos (já na ordem correta, sem 'referencia') #}
+        {% for field_data in todas_as_colunas_cards %} {# <<< LINHA ALTERADA: Itera sobre a lista mestra #}
+            {% set field_id = field_data[0] %} {# Pega o ID (ex: 'contratada') #} {# <<< LINHA ADICIONADA #}
+            {% set field_name = field_data[1] %} {# Pega o Nome (ex: 'Contratada') #} {# <<< LINHA ADICIONADA #}
+
+            {# Verifica se este campo deve ser VISÍVEL de acordo com a preferência do usuário #}
+            {% if field_id in card_fields_visiveis %} {# <<< CONDIÇÃO ADICIONADA #}
+
+                {# Verifica se o campo visível é EDITÁVEL #}
+                {% if field_id in editable_fields_in_card %}
+                    <p class="editable-card-field" data-field-name="{{ field_id }}">
+                        <strong>{{ field_name }}:</strong> {# Usa field_name da lista mestra #} {# <<< ALTERADO de card_fields_map[field_id] #}
+                        <span class="card-field-value">{{ controle[field_id] or '' }}</span>
+                    </p>
+                {% else %}
+                    {# Renderiza campos visíveis mas NÃO editáveis #}
+                    <p>
+                        <strong>{{ field_name }}:</strong> {# Usa field_name da lista mestra #} {# <<< ALTERADO de card_fields_map[field_id] #}
+                        {# Lógica para formatar o campo 'documentacao' como uma lista #}
+                        {{ controle[field_id] | join(', ') if field_id == 'documentacao' else (controle[field_id] or 'N/D') }}
+                    </p>
+                {% endif %}
+
+            {% endif %} {# Fim do if field_id in card_fields_visiveis #} {# <<< LINHA ADICIONADA #}
+        {% endfor %} {# Fim do loop por todas_as_colunas_cards #} {# <<< LINHA ALTERADA #}
 </div>
 </a>

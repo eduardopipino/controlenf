@@ -41,13 +41,15 @@ TODAS_AS_COLUNAS_CONTROLE = [
 # --- NOVA CONSTANTE PARA OS CAMPOS DOS CARDS ---
 TODAS_AS_COLUNAS_CARDS = [
     ['referencia', 'Referência'],
-    ['item_descricao', 'Item'],
+    ['tipo_documento', 'Tipo Documento'],
     ['n_instrumento', 'Contrato'],
     ['contratada', 'Contratada'],
-    ['situacao', 'Situação'],
     ['objeto', 'Objeto'],
+    ['item_descricao', 'Item'],
     ['nota_fiscal', 'Documento Fiscal'],
-    ['observacoes', 'Observações']
+    ['carta_de_correcao', 'Carta de Correção'],
+    ['observacoes', 'Observações'],
+    ['situacao', 'Situação']
 ]
 
 TODAS_AS_COLUNAS_PENDENCIAS = [
