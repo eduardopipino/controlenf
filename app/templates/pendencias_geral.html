@@ -413,63 +413,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // --- LÓGICA DO MENU DE CONTEXTO PARA COR (COM PICKR) --- <<< NOVO BLOCO >>>
-    const contextMenuPickr = document.getElementById('colorContextMenu'); // Renomeado para evitar conflito se houver outro
+    // --- LÓGICA DO MENU DE CONTEXTO PARA COR (COM PICKR - Criação Sob Demanda) ---
+    const contextMenuPickr = document.getElementById('colorContextMenu');
     const chooseColorBtnPickr = document.getElementById('chooseColorOption');
     const clearColorBtnPickr = document.getElementById('clearColorOption');
     let activeItemPickr = null;
     let lastContextMenuPositionPickr = { x: 0, y: 0 };
+    let pickrInstance = null; // <<< VARIÁVEL MANTIDA (INICIALIZADA COMO NULL)
+    let pickerRootElement = null; // <<< VARIÁVEL MANTIDA (INICIALIZADA COMO NULL)
 
     // 1. Inicializa Pickr uma vez, sem botão de referência inicial
-    const proxyInputElement = document.getElementById('coloris-proxy-input'); // <<< DECLARAÇÃO PRIMEIRO
-    const pickrInstance = Pickr.create({
-        el: proxyInputElement, // <<< LINHA ALTERADA: Usa a variável do elemento DOM   
-        theme: 'classic', // Ou 'nano'
-        appClass: 'pickr-context-menu', // Classe customizada para CSS (opcional)
-        useAsButton: false, // Não vamos usar um botão para abrir/fechar inicialmente
-        position: 'top-start', // Posição relativa ao ponto de abertura (ajustaremos)
-        default: '#FFFFFF', // Cor inicial padrão
-
-        swatches: [ // Cores pré-definidas
-        '#264653', '#2a9d8f', '#e9c46a', '#f4a261', '#e76f51',
-        '#d62828', '#f77f00', '#fcbf49', '#eae2b7', '#003049',
-        '#ffffff', '#cccccc', '#999999', '#666666', '#333333', '#000000',
-        null // Representa a opção 'sem cor' ou 'limpar'
-        ],
-
-        components: {
-            // Define as partes visíveis do picker
-            preview: true,
-            // opacity: false, // Opacidade desabilitada por padrão em Pickr 1.x
-            hue: true,
-
-            // Controles de interação: input, clear, save
-            interaction: {
-                hex: true,
-                // rgba: true, // Desabilitado
-                // hsla: true, // Desabilitado
-                // hsva: true, // Desabilitado
-                // cmyk: true, // Desabilitado
-                input: true,
-                clear: true, // Botão para limpar a cor
-                save: true  // Botão para confirmar a cor
-            }
-        },
-
-        // Strings (opcional, para tradução)
-        strings: {
-        save: 'Aplicar',
-        clear: 'Limpar',
-        // ... outras strings
-        }
-    });
-
-    // Pega a referência ao elemento raiz do Pickr para posicionamento e verificação
-    const pickerRootElement = pickrInstance.getRoot().root;
-    pickerRootElement.style.zIndex = '1001'; // Garante que fique acima do menu
-
-    // Esconde o Pickr inicialmente
-    pickrInstance.hide();
 
     // 2. Listener para o clique direito (mostrar menu de contexto)
     document.querySelectorAll('tbody .clickable-row, .data-card').forEach(item => {
@@ -504,32 +457,113 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 4. Listener para o botão "Escolher Cor..." do menu
     chooseColorBtnPickr.addEventListener('click', (e) => {
-        e.stopPropagation(); // Impede fechar o menu imediatamente
-        if (!activeItemPickr) return;
+        e.stopPropagation();
+        if (!activeItemPickr) {
+             console.log("chooseColorBtn clicked, but no activeItemPickr found.");
+             return;
+        }
+        console.log("chooseColorBtn clicked for item:", activeItemPickr.dataset.id);
         contextMenuPickr.style.display = 'none'; // Esconde o menu
 
-        // Pega a cor atual do item para definir no Pickr
-        let currentColor = '#FFFFFF'; // Default
-        try {
-            const computedStyle = getComputedStyle(activeItemPickr);
-            const bgColor = computedStyle.backgroundColor;
-            if (bgColor && bgColor !== 'rgba(0, 0, 0, 0)' && bgColor !== 'transparent') {
-                // Pickr entende rgb, não precisa converter para hex necessariamente
-                currentColor = bgColor;
-            }
-        } catch (err) { console.warn("Could not get current bg color:", err); }
+        try { // <<< BLOCO ALTERADO >>>
+            const proxyInputElement = document.getElementById('coloris-proxy-input');
+            if (!proxyInputElement) throw new Error("Proxy input #coloris-proxy-input not found!");
 
-        // Define a cor atual no Pickr
-        pickrInstance.setColor(currentColor);
+            // Cria a instância do Pickr SOMENTE na primeira vez
+            if (!pickrInstance) {
+                console.log("Creating Pickr instance for the first time...");
+                pickrInstance = Pickr.create({
+                    el: proxyInputElement, // Vincula ao proxy
+                    theme: 'classic',
+                    appClass: 'pickr-context-menu',
+                    useAsButton: true, // IMPORTANTE: Trata o 'el' como o botão que abre
+                    position: 'top-start', // Posição relativa ao 'el' (proxy)
+                    default: '#FFFFFF',
+                    swatches: [ /* ... sua lista de cores ... */ ],
+                    components: { preview: true, hue: true, interaction: { hex: true, input: true, clear: true, save: true } },
+                    strings: { save: 'Aplicar', clear: 'Limpar' }
+                });
 
-        // Reposiciona o elemento raiz do Pickr
-        pickerRootElement.style.position = 'absolute'; // Garante
-        pickerRootElement.style.left = `${lastContextMenuPositionPickr.x}px`;
-        pickerRootElement.style.top = `${lastContextMenuPositionPickr.y}px`;
+                pickerRootElement = pickrInstance.getRoot().root;
+                pickerRootElement.style.zIndex = '1001';
 
-        // Mostra o Pickr
-        pickrInstance.show();
-    });
+                // Configura os listeners de evento UMA VEZ
+                pickrInstance.on('save', (color, instance) => {
+                    console.log('Pickr save event:', color);
+                     if (activeItemPickr) {
+                        let selectedColor = color ? color.toHEXA().toString(0) : null;
+                        console.log('Saving color:', selectedColor, 'for item:', activeItemPickr.dataset.id);
+                        activeItemPickr.style.backgroundColor = selectedColor || '';
+                        saveColorPickr(activeItemPickr.dataset.id, selectedColor);
+                     } else { console.log('activeItemPickr is NULL on pickr save!'); }
+                     instance.hide(); // Esconde após salvar
+                });
+
+                pickrInstance.on('clear', (instance) => {
+                     console.log('Pickr clear event');
+                     if (activeItemPickr) {
+                        activeItemPickr.style.backgroundColor = '';
+                        saveColorPickr(activeItemPickr.dataset.id, null);
+                     }
+                     instance.hide(); // Esconde após limpar
+                });
+
+                 // Listener para fechar quando muda de cor (alternativa ao save/clear)
+                 // pickrInstance.on('change', (color, source, instance) => {
+                 //    console.log('Pickr change event:', color);
+                 //    if (activeItemPickr && source !== 'input') { // Não fecha se estiver digitando
+                 //       let selectedColor = color ? color.toHEXA().toString(0) : null;
+                 //       activeItemPickr.style.backgroundColor = selectedColor || '';
+                 //       saveColorPickr(activeItemPickr.dataset.id, selectedColor);
+                 //       instance.hide();
+                 //    }
+                 // });
+
+                // Esconde imediatamente após criar (ele pode aparecer brevemente)
+                pickrInstance.hide();
+                console.log("Pickr instance created and configured.");
+            } // Fim do if (!pickrInstance)
+
+            // --- Lógica para ABRIR e POSICIONAR ---
+            // Pega a cor atual do item
+            let currentColor = '#FFFFFF';
+            try { /* ... (código para pegar cor atual - SEM ALTERAÇÃO) ... */
+                const computedStyle = getComputedStyle(activeItemPickr);
+                const bgColor = computedStyle.backgroundColor;
+                if (bgColor && bgColor !== 'rgba(0, 0, 0, 0)' && bgColor !== 'transparent') {
+                   currentColor = bgColor;
+                }
+            } catch (err) { console.warn("Could not get current bg color:", err); }
+
+            // Define a cor atual no Pickr e no input proxy (importante)
+            pickrInstance.setColor(currentColor);
+            proxyInputElement.value = pickrInstance.getColor().toHEXA().toString(0); // Sincroniza valor do input
+            console.log("Pickr color set to:", currentColor);
+
+            // Reposiciona o INPUT PROXY para o local do clique direito
+            proxyInputElement.style.position = 'absolute';
+            proxyInputElement.style.left = `${lastContextMenuPositionPickr.x}px`;
+            proxyInputElement.style.top = `${lastContextMenuPositionPickr.y}px`;
+            console.log("Positioning proxy input at:", lastContextMenuPositionPickr);
+
+            // Força o foco no input proxy - Pickr deve abrir ancorado a ele
+            proxyInputElement.focus();
+            console.log("Proxy input focused.");
+
+            // Adicional: Forçar o picker a se reposicionar se necessário
+            // (Pode não ser preciso, mas é uma segurança)
+            setTimeout(() => {
+                pickrInstance.show(); // Garante que esteja visível após o foco
+                console.log("pickrInstance.show() called.");
+                 // pickrInstance.rePosition(); // Tenta forçar o reposicionamento (se show() não for suficiente)
+                 // console.log("pickrInstance.rePosition() called.");
+            }, 0); // Pequeno delay
+
+
+        } catch (e) {
+            console.error("Error creating or showing Pickr:", e);
+        }
+    }); // <<< FIM DO LISTENER ALTERADO >>>
 
     // 5. Listener para o botão "Limpar Cor" do menu
     clearColorBtnPickr.addEventListener('click', () => {
