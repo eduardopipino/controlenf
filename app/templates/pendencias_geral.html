@@ -466,19 +466,43 @@ document.addEventListener('DOMContentLoaded', function() {
     chooseColorBtn.addEventListener('click', (e) => { // <<< Listener MODIFICADO >>>
         e.stopPropagation(); // Impede fechar o menu imediatamente
         if (!activeItem) return;
+        console.log("chooseColorBtn clicked for item:", activeItem.dataset.id); // <<< Log 1: Confirma clique e item
         contextMenu.style.display = 'none'; // Esconde o menu de contexto
 
         // Define o elemento de referência e abre o Coloris
         // Abre o Coloris usando coordenadas e anexando ao body
-        Coloris({               // <<< CHAMADA ALTERADA
-            ...colorisOptions,  // Copia as opções padrão
-            parent: document.body, // Anexa ao body para posicionamento absoluto na página
-            x: lastContextMenuPosition.x, // Usa a posição X guardada do clique direito
-            y: lastContextMenuPosition.y  // Usa a posição Y guardada do clique direito
-        });                     // <<< FIM DA CHAMADA ALTERADA
+        try {
+               const optionsForLog = { // Apenas para o log
+                   ...colorisOptions,
+                   parent: 'body', // Representação em string para o log
+                   x: lastContextMenuPosition.x,
+                   y: lastContextMenuPosition.y
+               };
+               console.log("Attempting to open Coloris with options:", optionsForLog); // Log 1: Mostra opções
 
-        // Ou, para tentar posicionar onde o menu estava:
-        // Coloris({ ...colorisOptions, el: document.body, x: lastContextMenuPosition.x, y: lastContextMenuPosition.y });
+               // Abre o Coloris usando coordenadas e anexando ao body
+               Coloris({                  // <<< CHAMADA CORRIGIDA >>>
+                   ...colorisOptions,     // Copia as opções padrão (swatches, themeMode, etc)
+                   parent: 'body',  // Define o body como container pai para posicionamento
+                   //x: lastContextMenuPosition.x, // Usa a posição X guardada
+                   //y: lastContextMenuPosition.y  // Usa a posição Y guardada
+               });                       // <<< FIM DA CHAMADA CORRIGIDA >>>
+
+               console.log("Coloris() function called successfully."); // Log 2: Confirma chamada
+
+               // Adicional: Log para verificar o display DEPOIS da chamada
+               setTimeout(() => {
+                    const picker = document.getElementById('clr-picker');
+                    if (picker) {
+                        console.log("Picker style after call:", getComputedStyle(picker).display, getComputedStyle(picker).visibility, getComputedStyle(picker).opacity); // Log 3: Verifica estilo
+                    } else {
+                        console.log("Picker element not found after call."); // Log 4: Verifica se foi criado
+                    }
+               }, 50); // Pequeno delay para dar tempo de renderizar
+
+           } catch (e) {
+               console.error("Error calling Coloris():", e); // Log 5: Captura erro
+           }
     });
 
 
