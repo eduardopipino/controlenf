@@ -17,6 +17,8 @@ from app.models import (pendencias_collection, get_pendencias_com_detalhes,
                         get_controles_pendentes_por_instrumento, get_color_map_for_user,
                         users_collection, TODAS_AS_COLUNAS_CONTROLE)
 
+EDITABLE_FIELDS_PENDENCIAS = ['pendencia', 'prazo', 'responsavel', 'situacao', 'observacoes']
+
 # 3. Criação do Blueprint de Pendências
 # O nome 'pendencias' será usado nos comandos url_for().
 # O prefixo '/pendencias' será adicionado às URLs deste blueprint
@@ -372,3 +374,60 @@ def set_cor_destaque(pendencia_id):
         return {'status': 'success', 'message': 'Cor atualizada.'}
     else:
         return {'status': 'error', 'message': 'Pendência não encontrada.'}, 404
+
+@pendencias_bp.route('/update_field_inline/<string:pendencia_id>', methods=['POST'])
+@login_required
+def update_field_inline_pendencia(pendencia_id):
+    """ Atualiza um campo específico de um registro de pendência via edição inline. """
+    data = request.get_json()
+    field_name = data.get('field')
+    new_value = data.get('value', '').strip()
+
+    if not pendencia_id or not field_name:
+        return {'status': 'error', 'message': 'Dados incompletos (ID ou campo faltando).'}, 400
+
+    # Validação: Verifica se o campo está na lista de editáveis
+    if field_name not in EDITABLE_FIELDS_PENDENCIAS:
+        return {'status': 'error', 'message': f'Campo "{field_name}" não é editável inline.'}, 403
+
+    update_value = new_value
+    formatted_value = new_value # Valor a ser retornado para o JS
+
+    try:
+        # Lógica especial para o campo 'prazo'
+        if field_name == 'prazo':
+            if new_value: # Se o usuário digitou algo
+                try:
+                    # Tenta parsear o formato DD/MM/AAAA
+                    update_value = datetime.strptime(new_value, '%d/%m/%Y')
+                    formatted_value = new_value # Mantém o formato digitado
+                except ValueError:
+                    # Tenta parsear o formato AAAA-MM-DD (se o input date for usado)
+                    try:
+                        update_value = datetime.strptime(new_value, '%Y-%m-%d')
+                        formatted_value = update_value.strftime('%d/%m/%Y') # Formata de volta para DD/MM/AAAA
+                    except ValueError:
+                        return {'status': 'error', 'message': 'Formato de data inválido. Use DD/MM/AAAA.'}, 400
+            else:
+                update_value = None # Permite limpar a data
+                formatted_value = ''
+
+        # Prepara o update
+        update_data = {
+            field_name: update_value,
+            'data_ultima_atualizacao': datetime.now()
+        }
+
+        result = pendencias_collection.update_one(
+            {'_id': ObjectId(pendencia_id), 'user_id': ObjectId(current_user.id)},
+            {'$set': update_data}
+        )
+
+        if result.matched_count > 0:
+            return {'status': 'success', 'message': 'Campo atualizado.', 'newValue': formatted_value}
+        else:
+            return {'status': 'error', 'message': 'Pendência não encontrada ou não pertence ao usuário.'}, 404
+
+    except Exception as e:
+        print(f"Erro ao atualizar campo de pendência inline: {e}")
+        return {'status': 'error', 'message': 'Erro interno ao salvar.'}, 500

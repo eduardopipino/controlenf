@@ -15,9 +15,9 @@
             {% endif %}
 			
             {% if page_mode == 'concluidas' %}
-                <a href="{{ url_for('pendencias.exportar_pendencias_concluidas_csv') }}" class="button">Exportar Concluídas</a>
+                <a href="{{ url_for('pendencias.exportar_pendencias_concluidas_csv') }}" class="button">Exportar</a>
             {% else %}
-                <a href="{{ url_for('pendencias.exportar_pendencias_pendentes_csv') }}" class="button">Exportar Pendentes</a>
+                <a href="{{ url_for('pendencias.exportar_pendencias_pendentes_csv') }}" class="button">Exportar</a>
             {% endif %}
         </div>
         <div class="toolbar-group-center">
@@ -87,9 +87,13 @@
                         </a>
                     </td>
                     <td class="coluna-prioridade" data-id="{{ p._id }}"></td>
+                    {% set editable_fields_pendencias = ['pendencia', 'prazo', 'responsavel', 'situacao', 'observacoes'] %}
                     {% for col_id, col_nome in todas_as_colunas %}
                         {% if col_id in colunas_visiveis %}
-                            <td data-label="{{ col_nome }}" class="{{ 'coluna-texto-longo' if col_id in ['observacoes', 'pendencia'] else '' }}">
+                            {% set is_editable = col_id in editable_fields_pendencias %}
+                            <td data-label="{{ col_nome }}"
+                                class="{{ 'coluna-texto-longo' if col_id in ['observacoes', 'pendencia'] else '' }} {{ 'editable-cell' if is_editable else '' }}"
+                                {% if is_editable %}data-field-name="{{ col_id }}"{% endif %}> {# <<< LINHAS MODIFICADAS/ADICIONADAS >>> #}
 
                                 <span class="card-value">
                                     {% if col_id == 'prazo' %}{{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}{% else %}{{ p[col_id] or '' }}{% endif %}
@@ -321,13 +325,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- LÓGICA DE CLIQUE (DESKTOP E MOBILE) ---
     document.querySelectorAll('#tabelaPendencias .clickable-row[data-url]').forEach(row => {
-        row.addEventListener('dblclick', function(e) {
-            if (window.innerWidth > 768) {
-                if (!e.target.closest('a, button, input, .coluna-prioridade')) {
-                    window.location.href = this.dataset.url;
-                }
-            }
-        });
+
         row.addEventListener('click', function(e) {
             if (window.innerWidth <= 768) {
                 if (!e.target.closest('.action-icon-link, .expand-card-btn, input, .coluna-prioridade')) {
@@ -508,6 +506,125 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error("Fetch error saving color:", err);
             alert('Erro de rede ao salvar a cor.');
             // activeItem = null; // Considerar re-adicionar
+        });
+    }
+
+    // --- 13. LÓGICA DE EDIÇÃO INLINE NA TABELA (PENDENCIAS) --- <<< NOVO BLOCO ADICIONADO >>>
+    const tableBodyPendencias = document.querySelector('#tabelaPendencias tbody');
+    const editableFieldsPendencias = ['pendencia', 'prazo', 'responsavel', 'situacao', 'observacoes'];
+
+    if (tableBodyPendencias && "{{ view_mode }}" === "table") {
+        let currentEditInput = null;
+
+        function cancelInlineEdit(td, inputElement, originalValue) {
+            if (!td || !inputElement) return;
+            const span = document.createElement('span');
+            span.className = 'card-value';
+            span.textContent = originalValue;
+            td.innerHTML = '';
+            td.appendChild(span);
+            currentEditInput = null;
+        }
+
+        function saveInlineEdit(td, inputElement, fieldName, originalValue) {
+            const newValue = inputElement.value.trim();
+            const pendenciaId = td.closest('tr').dataset.id; // <<< Alterado para pendenciaId
+
+            if (newValue === originalValue) {
+                cancelInlineEdit(td, inputElement, originalValue);
+                return;
+            }
+
+            fetch(`/pendencias/update_field_inline/${pendenciaId}`, { // <<< URL Alterada
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ field: fieldName, value: newValue })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const updatedValue = data.newValue;
+                    const span = document.createElement('span');
+                    span.className = 'card-value';
+                    span.textContent = updatedValue;
+                    td.innerHTML = '';
+                    td.appendChild(span);
+                    currentEditInput = null;
+                    // Feedback visual (cinza)
+                    const isDarkTheme = document.body.classList.contains('theme-dark');
+                    td.style.backgroundColor = isDarkTheme ? '#3a3a3a' : '#e0e0e0';
+                    td.classList.add('td-feedback-flash'); // Adiciona classe para transição
+                    setTimeout(() => {
+                        td.style.backgroundColor = '';
+                        setTimeout(() => {
+                            td.classList.remove('td-feedback-flash');
+                        }, 300);
+                    }, 700);
+                } else {
+                    alert(`Erro ao salvar: ${data.message}`);
+                    cancelInlineEdit(td, inputElement, originalValue);
+                }
+            })
+            .catch(error => {
+                console.error('Erro de rede ao salvar:', error);
+                alert('Erro de rede ao salvar. A alteração foi cancelada.');
+                cancelInlineEdit(td, inputElement, originalValue);
+            });
+        }
+
+        tableBodyPendencias.addEventListener('dblclick', function(e) {
+            const td = e.target.closest('td.editable-cell');
+            if (!td) return;
+            if (td.querySelector('input, textarea') || currentEditInput) {
+               if(currentEditInput) currentEditInput.focus();
+               return;
+            }
+
+            const span = td.querySelector('span.card-value');
+            if (!span) return;
+
+            const originalValue = span.textContent.trim();
+            const fieldName = td.dataset.fieldName;
+            let inputElement;
+
+            // --- Lógica de criação de input específica ---
+            if (fieldName === 'observacoes') {
+                inputElement = document.createElement('textarea');
+                inputElement.style.height = Math.max(span.offsetHeight, 60) + 'px';
+                inputElement.style.resize = 'vertical';
+            } else if (fieldName === 'prazo') {
+                inputElement = document.createElement('input');
+                inputElement.type = 'text'; // Usar texto para aceitar DD/MM/AAAA
+                inputElement.placeholder = 'DD/MM/AAAA';
+            } else {
+                inputElement = document.createElement('input');
+                inputElement.type = 'text';
+            }
+            // --- Fim da lógica específica ---
+
+            inputElement.value = originalValue;
+            // Aplica estilos CSS (são aplicados via CSS)
+            currentEditInput = inputElement;
+
+            td.innerHTML = '';
+            td.appendChild(inputElement);
+            inputElement.focus();
+            if(inputElement.select) inputElement.select();
+
+            inputElement.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    saveInlineEdit(td, inputElement, fieldName, originalValue);
+                } else if (event.key === 'Escape') {
+                    cancelInlineEdit(td, inputElement, originalValue);
+                }
+            });
+
+            inputElement.addEventListener('blur', function() {
+                 if (document.body.contains(inputElement)) {
+                      cancelInlineEdit(td, inputElement, originalValue);
+                 }
+            });
         });
     }
 

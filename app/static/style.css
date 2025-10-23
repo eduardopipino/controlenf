@@ -2253,7 +2253,9 @@ body.theme-dark .data-card[style*="background-color"] strong {
 
 /* --- Estilos para Edição Inline na Tabela --- */
 #tabelaControle td.editable-cell input[type="text"],
-#tabelaControle td.editable-cell textarea {
+#tabelaControle td.editable-cell textarea,
+#tabelaPendencias td.editable-cell input[type="text"],
+#tabelaPendencias td.editable-cell textarea {
     font-size: inherit; /* Usa o tamanho da fonte da tabela */
     font-family: inherit; /* Usa a fonte da tabela */
     padding: 0 4px;   /* Menor padding que os inputs de formulário */
@@ -2271,13 +2273,17 @@ body.theme-dark .data-card[style*="background-color"] strong {
     line-height: 1;
 }
 
-#tabelaControle td.editable-cell textarea {
+#tabelaControle td.editable-cell textarea,
+#tabelaPendencias td.editable-cell textarea {
      min-height: 40px; /* Altura mínima para textarea */
      overflow: auto; /* Controla barra de rolagem interna */
+     padding-top: 4px; /* Adiciona espaço no topo do textarea */
 }
 /* Ajuste no tema escuro se necessário */
 body.theme-dark #tabelaControle td.editable-cell input[type="text"],
-body.theme-dark #tabelaControle td.editable-cell textarea {
+body.theme-dark #tabelaControle td.editable-cell textarea,
+body.theme-dark #tabelaPendencias td.editable-cell input[type="text"],
+body.theme-dark #tabelaPendencias td.editable-cell textarea {
     background-color: #000000;
     border-color: #555;
 }
@@ -2288,7 +2294,8 @@ body.theme-dark #tabelaControle td.editable-cell textarea {
     cursor: default; /* Cursor padrão na célula */ /* <<< LINHA ADICIONADA (Opcional) */
 }
 
-#tabelaControle td.editable-cell::after {
+#tabelaControle td.editable-cell::after,
+#tabelaPendencias td.editable-cell::after {
     content: ''; /* <<< LINHA ADICIONADA: Essencial para renderizar o pseudo-elemento */
     display: inline-block; /* Necessário para aplicar width/height */ /* <<< LINHA ADICIONADA */
     position: absolute;
@@ -2316,30 +2323,41 @@ body.theme-dark #tabelaControle td.editable-cell textarea {
 }
 
 /* Mostra o ícone quando o mouse passa sobre a CÉLULA editável */
-#tabelaControle td.editable-cell:hover::after {
+#tabelaControle td.editable-cell:hover::after,
+#tabelaPendencias td.editable-cell:hover::after {
     opacity: 1; /* Torna visível no hover */ /* <<< LINHA ADICIONADA */
 }
 
 /* Esconde o ícone se a célula já estiver em modo de edição (contém input) */
 #tabelaControle td.editable-cell:has(input[type="text"])::after,
-#tabelaControle td.editable-cell:has(textarea)::after {
+#tabelaControle td.editable-cell:has(textarea)::after,
+#tabelaPendencias td.editable-cell:has(input[type="text"])::after,
+#tabelaPendencias td.editable-cell:has(textarea)::after {
     opacity: 0 !important; /* Força a invisibilidade durante a edição */ /* <<< LINHA ADICIONADA */
 }
 
-body.theme-dark #tabelaControle td.editable-cell::after {
+body.theme-dark #tabelaControle td.editable-cell::after,
+body.theme-dark #tabelaPendencias td.editable-cell::after {
     background-color: #555555; /* <<< ALTERADO PARA background-color */
 }
 
 /* --- Cursor Pointer para VALORES Editáveis na Tabela --- */ /* <<< NOVO BLOCO >>> */
-#tabelaControle td.editable-cell > span.card-value {
+#tabelaControle td.editable-cell > span.card-value,
+#tabelaPendencias td.editable-cell > span.card-value {
     cursor: pointer; /* Mãozinha apenas no valor editável */ /* <<< LINHA ADICIONADA */
     display: block; /* <<< LINHA ADICIONADA: Faz o span ocupar a largura */
     min-height: 1em; /* Opcional: Garante altura mínima se o span estiver vazio */
 }
 
 /* --- Classe para Transição de Feedback --- */ /* <<< NOVO BLOCO >>> */
-#tabelaControle td.td-feedback-flash {
+#tabelaControle td.td-feedback-flash,
+#tabelaPendencias td.td-feedback-flash {
     transition: background-color 0.3s ease-in-out; /* Aplica fade à cor de fundo */ /* <<< LINHA ADICIONADA */
+}
+
+#tabelaControle tr.clickable-row,
+#tabelaPendencias tr.clickable-row { /* <<< LINHA ADICIONADA */
+    cursor: default;
 }
 
 /* --- Indicador Visual Editável (Ícone no Hover) PARA CARDS --- */
@@ -2530,8 +2548,3 @@ body.theme-dark .card-details-link:hover {
 }
 
 /* --- FIM Estilo Botão/Link Detalhes --- */
-
-/* --- Z-index para Pickr (garante que fique acima) --- */ /* <<< NOVO BLOCO >>> */
-.pickr .pcr-app { /* Seletor para o elemento raiz do Pickr */
-    z-index: 1001 !important; /* Mesmo z-index ou maior que o menu */
-}
