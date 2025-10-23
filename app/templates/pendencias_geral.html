@@ -221,7 +221,7 @@
         <li class="context-menu-item" id="chooseColorOption">🎨 Escolher Cor...</li>
         <li class="context-menu-item" id="clearColorOption">⚪ Limpar Cor</li>
     </ul>
-    <input type="text" id="coloris-proxy-input" style="display: none;" aria-hidden="true"> {# <<< LINHA ADICIONADA >>> #}
+    <input type="text" id="coloris-proxy-input" style="position: absolute; left: -9999px;">
 
 {% endblock %}
 
@@ -414,38 +414,35 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // --- LÓGICA DO MENU DE CONTEXTO PARA COR ---
+    // --- LÓGICA DO MENU DE CONTEXTO PARA COR (COM COLORIS setInstance) ---
     const contextMenu = document.getElementById('colorContextMenu');
     const chooseColorBtn = document.getElementById('chooseColorOption');
     const clearColorBtn = document.getElementById('clearColorOption');
     let activeItem = null;
-    let lastContextMenuPosition = { x: 0, y: 0 }; // <<< LINHA ADICIONADA: Guarda posição
+    let lastContextMenuPosition = { x: 0, y: 0 };
 
-    // Configurações do Coloris (podem ser ajustadas)
-    const colorisOptions = { // <<< NOVO BLOCO >>>
-        themeMode: document.body.classList.contains('theme-dark') ? 'dark' : 'light', // Adapta ao tema
-        alpha: false, // Sem canal alfa
-        swatches: [ // Cores pré-definidas (ajuste conforme necessário)
-          '#264653', '#2a9d8f', '#e9c46a', '#f4a261', '#e76f51',
-          '#d62828', '#f77f00', '#fcbf49', '#eae2b7', '#003049',
-          '#ffffff', '#cccccc', '#999999', '#666666', '#333333', '#000000'
-        ],
-        // Posicionamento: 'default', 'inline', 'left', 'right'
-        // Vamos usar o posicionamento padrão relativo ao elemento 'el'
-        // que definiremos dinamicamente.
-        // Ou podemos tentar 'parent' se quisermos que ele siga o menu.
-        // parent: contextMenu, // Exemplo: Tenta anexar ao menu
-         format: 'hex' // Formato da cor retornada
-    }; // <<< FIM NOVO BLOCO >>>
-
-    // Inicializa Coloris uma vez (sem vincular a input específico)
-    // Inicializa Coloris AQUI, dentro do DOMContentLoaded
-    try { // Adiciona try/catch para depuração
-       //Coloris.init(); // <<< ADICIONE ESTA LINHA AQUI
-       console.log("Coloris initialized successfully."); // Log de sucesso
+    // --- BLOCO ADICIONADO: Configura a instância Coloris para o input proxy ---
+    try {
+        Coloris.setInstance('#coloris-proxy-input', {
+            themeMode: document.body.classList.contains('theme-dark') ? 'dark' : 'light',
+            alpha: false,
+            swatches: [ // Cores pré-definidas (ajuste conforme necessário)
+              '#264653', '#2a9d8f', '#e9c46a', '#f4a261', '#e76f51',
+              '#d62828', '#f77f00', '#fcbf49', '#eae2b7', '#003049',
+              '#ffffff', '#cccccc', '#999999', '#666666', '#333333', '#000000'
+            ],
+            format: 'hex',
+            // Não precisamos de 'el' ou 'parent' aqui, pois está vinculado ao seletor '#coloris-proxy-input'
+        });
+        console.log("Coloris instance set for #coloris-proxy-input.");
     } catch (e) {
-       console.error("Error initializing Coloris:", e); // Log de erro
+        console.error("Error setting Coloris instance:", e);
     }
+    // --- FIM BLOCO ADICIONADO ---
+
+
+    document.querySelectorAll('tbody .clickable-row, .data-card').forEach(item => { // Listener contextmenu (sem alteração)
+    // <<< FIM BLOCO >>>
 
     document.querySelectorAll('tbody .clickable-row, .data-card').forEach(item => {
             item.addEventListener('contextmenu', function(event) {
@@ -464,50 +461,66 @@ document.addEventListener('DOMContentLoaded', function() {
         Coloris.close(); // Fecha o Coloris se clicar fora // <<< LINHA ADICIONADA
     });
 
-    chooseColorBtn.addEventListener('click', (e) => { // <<< Listener MODIFICADO >>>
-        e.stopPropagation(); // Impede fechar o menu imediatamente
-        if (!activeItem) return;
-        console.log("chooseColorBtn clicked for item:", activeItem.dataset.id); // <<< Log 1: Confirma clique e item
-        contextMenu.style.display = 'none'; // Esconde o menu de contexto
+    chooseColorBtn.addEventListener('click', (e) => { // <<< LISTENER ALTERADO >>>
+        e.stopPropagation();
+        if (!activeItem) {
+            console.log("chooseColorBtn clicked, but no activeItem found.");
+            return;
+        }
+        console.log("chooseColorBtn clicked for item:", activeItem.dataset.id);
+        contextMenu.style.display = 'none'; // Esconde o menu
 
-        // Define o elemento de referência e abre o Coloris
-        // Abre o Coloris usando coordenadas e anexando ao body
-        try {
-               const optionsForLog = { // Apenas para o log
-                   ...colorisOptions,
-                   //parent: 'body', // Representação em string para o log
-                   x: lastContextMenuPosition.x,
-                   y: lastContextMenuPosition.y
-               };
-               console.log("Attempting to open Coloris with options:", optionsForLog); // Log 1: Mostra opções
+        try { // <<< BLOCO ALTERADO >>>
+            // Pega a referência ao input proxy
+            const colorInput = document.getElementById('coloris-proxy-input');
+            if (!colorInput) {
+                console.error("Proxy input #coloris-proxy-input not found!");
+                return;
+            }
 
-               // Abre o Coloris usando coordenadas e anexando ao body
-               Coloris({                  // <<< CHAMADA CORRIGIDA >>>
-                   ...colorisOptions,     // Copia as opções padrão (swatches, themeMode, etc)
-                   //parent: 'body',  // Define o body como container pai para posicionamento
-                   //el: document.body,      // <<< LINHA ADICIONADA: Define o body como elemento de referência
-                   el: '#coloris-proxy-input', // <<< LINHA ADICIONADA: Usa o seletor do input oculto
-                   x: lastContextMenuPosition.x, // Usa a posição X guardada
-                   y: lastContextMenuPosition.y  // Usa a posição Y guardada
-               });                       // <<< FIM DA CHAMADA CORRIGIDA >>>
+            // Reposiciona o input proxy ABSOLUTO para o local do clique direito
+            colorInput.style.position = 'absolute'; // Garante que é absoluto
+            colorInput.style.left = `${lastContextMenuPosition.x}px`;
+            colorInput.style.top = `${lastContextMenuPosition.y}px`;
 
-               console.log("Coloris() function called successfully."); // Log 2: Confirma chamada
+            // Define o valor atual do input (opcional, mas bom para Coloris iniciar com a cor certa)
+            // Tenta pegar a cor de fundo do item, senão usa branco
+            let currentColor = '';
+            try {
+                // Usa getComputedStyle para pegar a cor real, mesmo que venha de uma classe CSS
+                const computedStyle = getComputedStyle(activeItem);
+                const bgColor = computedStyle.backgroundColor;
+                // Converte rgb() para hex se necessário (Coloris lida bem com rgb, mas hex é mais limpo)
+                if (bgColor && bgColor !== 'rgba(0, 0, 0, 0)' && bgColor !== 'transparent') {
+                   // Simple RGB to Hex (pode precisar de função mais robusta se usar rgba)
+                   if (bgColor.startsWith('rgb')) {
+                       const rgb = bgColor.match(/\d+/g);
+                       if (rgb && rgb.length >= 3) {
+                           currentColor = "#" + ((1 << 24) + (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2])).toString(16).slice(1).toUpperCase();
+                       } else {
+                            currentColor = '#FFFFFF'; // Fallback
+                       }
+                   } else {
+                       currentColor = bgColor; // Assume que já é um formato válido (hex, nome)
+                   }
+                } else {
+                    currentColor = '#FFFFFF'; // Default branco se não houver cor
+                }
+            } catch (err) {
+                console.warn("Could not get current background color:", err);
+                currentColor = '#FFFFFF'; // Fallback
+            }
+            colorInput.value = currentColor;
+            console.log("Setting proxy input value to:", currentColor);
 
-               // Adicional: Log para verificar o display DEPOIS da chamada
-               setTimeout(() => {
-                    const picker = document.getElementById('clr-picker');
-                    if (picker) {
-                        picker.style.display = 'block'; // <<< FORÇA O DISPLAY
-                        console.log("Picker display forced to block. Current styles:", getComputedStyle(picker).display, getComputedStyle(picker).visibility, getComputedStyle(picker).opacity); // Log 3 (modificado)
-                    } else {
-                        console.log("Picker element not found after call, cannot force display."); // Log 4 (modificado)
-                    }
-               }, 0); // Delay mínimo (0ms) para executar após a pilha de chamadas atual
-
-           } catch (e) {
-               console.error("Error calling Coloris():", e); // Log 5: Captura erro
-           }
-    });
+            // Força o foco no input proxy - Isso DEVE acionar o Coloris a abrir
+            colorInput.focus();
+            console.log("Proxy input focused.");
+            // --- FIM DO BLOCO ALTERADO ---
+        } catch (e) {
+            console.error("Error preparing or focusing proxy input:", e);
+        }
+    }); // <<< FIM DO LISTENER ALTERADO >>>
 
 
 
@@ -518,13 +531,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Listener para o evento 'coloris:pick' do Coloris (MODIFICADO) ---
     document.addEventListener('coloris:pick', event => {
-    console.log('Coloris pick event triggered:', event.detail.color); // <<< Log 1: Verifica se o evento dispara
+    console.log('Coloris pick event triggered:', event.detail.color);
     if (activeItem) {
-        console.log('activeItem found:', activeItem.dataset.id); // <<< Log 2: Verifica se activeItem ainda existe
-        saveColor(activeItem.dataset.id, event.detail.color);
-        // activeItem = null; // Opcional: Limpar activeItem após uso? Pode ser mais seguro.
+        console.log('activeItem found:', activeItem.dataset.id);
+        const color = event.detail.color; // Pega a cor selecionada
+        activeItem.style.backgroundColor = color || ''; // <<< LINHA ADICIONADA: Aplica a cor imediatamente
+        saveColor(activeItem.dataset.id, color); // Salva no backend
+        // activeItem = null; // Considerar descomentar se houver problemas de estado
     } else {
-        console.log('activeItem is NULL when coloris:pick triggered!'); // <<< Log 3: Indica problema com activeItem
+        console.log('activeItem is NULL when coloris:pick triggered!');
     }
     try {
         Coloris.close(true); // <<< LINHA ADICIONADA: Força o fechamento (true para fechar imediatamente)
