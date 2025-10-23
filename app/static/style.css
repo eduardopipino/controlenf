@@ -2531,8 +2531,7 @@ body.theme-dark .card-details-link:hover {
 
 /* --- FIM Estilo Botão/Link Detalhes --- */
 
-/* --- Estilos para Forçar Posicionamento e Camada do Coloris --- */ /* <<< NOVO BLOCO >>> */
-#clr-picker {
-    position: absolute !important; /* Garante posicionamento absoluto */
-    z-index: 1001 !important; /* Garante que fique acima de outros elementos (ex: menu de contexto z-index 1000) */
+/* --- Z-index para Pickr (garante que fique acima) --- */ /* <<< NOVO BLOCO >>> */
+.pickr .pcr-app { /* Seletor para o elemento raiz do Pickr */
+    z-index: 1001 !important; /* Mesmo z-index ou maior que o menu */
 }
