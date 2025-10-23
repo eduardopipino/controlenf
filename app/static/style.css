@@ -2289,7 +2289,8 @@ body.theme-dark #tabelaPendencias td.editable-cell textarea {
 }
 
 /* --- OPÇÃO 2: Indicador Visual Editável (Ícone no Hover) --- */
-#tabelaControle td.editable-cell {
+#tabelaControle td.editable-cell,
+#tabelaPendencias td.editable-cell {
     position: relative; /* Necessário para posicionar o ícone ::after */ /* <<< LINHA ADICIONADA */
     cursor: default; /* Cursor padrão na célula */ /* <<< LINHA ADICIONADA (Opcional) */
 }
