@@ -221,7 +221,7 @@
         <li class="context-menu-item" id="chooseColorOption">🎨 Escolher Cor...</li>
         <li class="context-menu-item" id="clearColorOption">⚪ Limpar Cor</li>
     </ul>
-    <input type="text" id="coloris-proxy-input" style="position: absolute; left: -9999px;">
+    <input type="text" id="coloris-proxy-input" style="position: absolute; left: -9999px;" aria-hidden="true" data-coloris> {# <<< ATRIBUTO ADICIONADO >>> #}
 
 {% endblock %}
 
@@ -423,20 +423,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- BLOCO ADICIONADO: Configura a instância Coloris para o input proxy ---
     try {
-        Coloris.setInstance('#coloris-proxy-input', {
+        // Define as opções padrão para QUALQUER instância Coloris na página
+        Coloris.setOptions({ // <<< ALTERADO de setInstance para setOptions >>>
             themeMode: document.body.classList.contains('theme-dark') ? 'dark' : 'light',
             alpha: false,
-            swatches: [ // Cores pré-definidas (ajuste conforme necessário)
+            swatches: [ // Cores pré-definidas
               '#264653', '#2a9d8f', '#e9c46a', '#f4a261', '#e76f51',
               '#d62828', '#f77f00', '#fcbf49', '#eae2b7', '#003049',
               '#ffffff', '#cccccc', '#999999', '#666666', '#333333', '#000000'
             ],
-            format: 'hex',
-            // Não precisamos de 'el' ou 'parent' aqui, pois está vinculado ao seletor '#coloris-proxy-input'
+            format: 'hex'
+            // Opções de posicionamento não são definidas globalmente aqui
         });
-        console.log("Coloris instance set for #coloris-proxy-input.");
+        console.log("Coloris default options set.");
+
+        // Inicializa Coloris para encontrar inputs com data-coloris
+        Coloris.init(); // <<< REINTRODUZIDO >>>
+        console.log("Coloris initialized successfully.");
+
     } catch (e) {
-        console.error("Error setting Coloris instance:", e);
+        console.error("Error setting Coloris options or initializing:", e);
     }
     // --- FIM BLOCO ADICIONADO ---
 
