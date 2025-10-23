@@ -484,8 +484,8 @@ document.addEventListener('DOMContentLoaded', function() {
                Coloris({                  // <<< CHAMADA CORRIGIDA >>>
                    ...colorisOptions,     // Copia as opções padrão (swatches, themeMode, etc)
                    parent: 'body',  // Define o body como container pai para posicionamento
-                   //x: lastContextMenuPosition.x, // Usa a posição X guardada
-                   //y: lastContextMenuPosition.y  // Usa a posição Y guardada
+                   x: lastContextMenuPosition.x, // Usa a posição X guardada
+                   y: lastContextMenuPosition.y  // Usa a posição Y guardada
                });                       // <<< FIM DA CHAMADA CORRIGIDA >>>
 
                console.log("Coloris() function called successfully."); // Log 2: Confirma chamada
@@ -494,11 +494,12 @@ document.addEventListener('DOMContentLoaded', function() {
                setTimeout(() => {
                     const picker = document.getElementById('clr-picker');
                     if (picker) {
-                        console.log("Picker style after call:", getComputedStyle(picker).display, getComputedStyle(picker).visibility, getComputedStyle(picker).opacity); // Log 3: Verifica estilo
+                        picker.style.display = 'block'; // <<< FORÇA O DISPLAY
+                        console.log("Picker display forced to block. Current styles:", getComputedStyle(picker).display, getComputedStyle(picker).visibility, getComputedStyle(picker).opacity); // Log 3 (modificado)
                     } else {
-                        console.log("Picker element not found after call."); // Log 4: Verifica se foi criado
+                        console.log("Picker element not found after call, cannot force display."); // Log 4 (modificado)
                     }
-               }, 50); // Pequeno delay para dar tempo de renderizar
+               }, 0); // Delay mínimo (0ms) para executar após a pilha de chamadas atual
 
            } catch (e) {
                console.error("Error calling Coloris():", e); // Log 5: Captura erro
