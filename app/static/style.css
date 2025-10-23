@@ -2529,7 +2529,10 @@ body.theme-dark .card-details-link:hover {
     /* margin-right: 5px; */ /* Alternativa ao 'gap' no pai */
 }
 
-
-
 /* --- FIM Estilo Botão/Link Detalhes --- */
 
+/* --- Estilos para Forçar Posicionamento e Camada do Coloris --- */ /* <<< NOVO BLOCO >>> */
+#clr-picker {
+    position: absolute !important; /* Garante posicionamento absoluto */
+    z-index: 1001 !important; /* Garante que fique acima de outros elementos (ex: menu de contexto z-index 1000) */
+}

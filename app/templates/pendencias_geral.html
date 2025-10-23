@@ -221,6 +221,7 @@
         <li class="context-menu-item" id="chooseColorOption">🎨 Escolher Cor...</li>
         <li class="context-menu-item" id="clearColorOption">⚪ Limpar Cor</li>
     </ul>
+    <input type="text" id="coloris-proxy-input" style="display: none;" aria-hidden="true"> {# <<< LINHA ADICIONADA >>> #}
 
 {% endblock %}
 
@@ -440,7 +441,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Inicializa Coloris uma vez (sem vincular a input específico)
     // Inicializa Coloris AQUI, dentro do DOMContentLoaded
     try { // Adiciona try/catch para depuração
-       Coloris.init(); // <<< ADICIONE ESTA LINHA AQUI
+       //Coloris.init(); // <<< ADICIONE ESTA LINHA AQUI
        console.log("Coloris initialized successfully."); // Log de sucesso
     } catch (e) {
        console.error("Error initializing Coloris:", e); // Log de erro
@@ -474,7 +475,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
                const optionsForLog = { // Apenas para o log
                    ...colorisOptions,
-                   parent: 'body', // Representação em string para o log
+                   //parent: 'body', // Representação em string para o log
                    x: lastContextMenuPosition.x,
                    y: lastContextMenuPosition.y
                };
@@ -483,7 +484,9 @@ document.addEventListener('DOMContentLoaded', function() {
                // Abre o Coloris usando coordenadas e anexando ao body
                Coloris({                  // <<< CHAMADA CORRIGIDA >>>
                    ...colorisOptions,     // Copia as opções padrão (swatches, themeMode, etc)
-                   parent: 'body',  // Define o body como container pai para posicionamento
+                   //parent: 'body',  // Define o body como container pai para posicionamento
+                   //el: document.body,      // <<< LINHA ADICIONADA: Define o body como elemento de referência
+                   el: '#coloris-proxy-input', // <<< LINHA ADICIONADA: Usa o seletor do input oculto
                    x: lastContextMenuPosition.x, // Usa a posição X guardada
                    y: lastContextMenuPosition.y  // Usa a posição Y guardada
                });                       // <<< FIM DA CHAMADA CORRIGIDA >>>
@@ -513,14 +516,24 @@ document.addEventListener('DOMContentLoaded', function() {
         saveColor(activeItem.dataset.id, null);
     });
 
-    // --- NOVO Listener para o evento 'color' do Coloris --- <<< NOVO BLOCO >>>
+    // --- Listener para o evento 'coloris:pick' do Coloris (MODIFICADO) ---
     document.addEventListener('coloris:pick', event => {
+    console.log('Coloris pick event triggered:', event.detail.color); // <<< Log 1: Verifica se o evento dispara
     if (activeItem) {
+        console.log('activeItem found:', activeItem.dataset.id); // <<< Log 2: Verifica se activeItem ainda existe
         saveColor(activeItem.dataset.id, event.detail.color);
+        // activeItem = null; // Opcional: Limpar activeItem após uso? Pode ser mais seguro.
+    } else {
+        console.log('activeItem is NULL when coloris:pick triggered!'); // <<< Log 3: Indica problema com activeItem
     }
-    // Coloris.close(); // Fecha automaticamente por padrão, não precisa chamar
+    try {
+        Coloris.close(true); // <<< LINHA ADICIONADA: Força o fechamento (true para fechar imediatamente)
+        console.log('Coloris.close(true) called.'); // <<< Log 4: Confirma chamada de fechamento
+    } catch(e) {
+        console.error('Error calling Coloris.close():', e); // <<< Log 5: Erro ao fechar
+    }
     });
-    // --- FIM NOVO Listener --- <<< FIM NOVO BLOCO >>>
+    // --- FIM Listener Modificado ---
 
     function saveColor(pendenciaId, color) {
         fetch(`/pendencias/set_cor_destaque/${pendenciaId}`, {
