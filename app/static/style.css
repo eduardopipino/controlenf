@@ -960,7 +960,7 @@ button.filtro-ativo:hover {
 
 /* Cor de fundo para sucesso */
 #tabelaControle tbody tr.update-success {
-    background-color: #d4edda; /* Verde claro */
+    background-color: #e0e0e0; /* Verde claro */
 }
 
 /* Cor de fundo para erro */
@@ -1236,7 +1236,7 @@ body.theme-dark .select2-container--default.select2-container--disabled .select2
 
 /* Define uma cor de fundo escura e sutil para o feedback de SUCESSO no tema escuro */
 body.theme-dark #tabelaControle tbody tr.update-success {
-    background-color: #082f12; /* Um verde bem escuro, quase cinza */
+    background-color: #3a3a3a; /* Um verde bem escuro, quase cinza */
 }
 
 /* Define uma cor de fundo escura e sutil para o feedback de ERRO no tema escuro */
