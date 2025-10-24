@@ -735,6 +735,13 @@ document.addEventListener('DOMContentLoaded', function() {
                                                 cardElement.style.opacity = '1';
                                                 setTimeout(() => {
                                                     cardElement.style.transition = '';
+                                                    // Verifica se o card tem um ícone de prioridade ATIVO
+                                                    const priorityIcon = cardElement.querySelector('.card-priority-toggle');
+                                                    if (priorityIcon && priorityIcon.classList.contains('active')) {
+                                                        targetCardContainer.prepend(cardElement); // Mover para o TOPO
+                                                    } else {
+                                                        targetCardContainer.appendChild(cardElement); // Mover para o FIM
+                                                    }
                                                 }, 300);
                                             });
                                         }, 300);
