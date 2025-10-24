@@ -57,9 +57,9 @@
                 <p class="{{ 'pendencia-vencida' if p.vencido and field_id == 'prazo' else '' }}">
                     <strong>{{ field_name }}:</strong>
                     {% if field_id == 'prazo' %}
-                        {{ p.prazo.strftime('%d/%m/%Y') if p.prazo else 'N/D' }}
+                        {{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}
                     {% else %}
-                        {{ p[field_id] or 'N/D' }}
+                        {{ p[field_id] or '' }}
                     {% endif %}
                 </p>
             {% endif %}

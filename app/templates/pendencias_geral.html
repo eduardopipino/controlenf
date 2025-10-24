@@ -233,7 +233,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
 
-    const card_fields_map = {{ card_fields_map | tojson | safe }}; // <<< LINHA ADICIONADA AQUI
+    const card_fields_map = {{ dict(todas_as_colunas_cards) | tojson | safe }}; // <<< LINHA CORRIGIDA
 
     // --- LÓGICA DO SELETOR DE VISUALIZAÇÃO ---
     const viewSelector = document.querySelector('.view-selector');
