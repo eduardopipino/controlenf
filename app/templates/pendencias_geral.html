@@ -396,75 +396,94 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- LÓGICA PARA ALTERNAR PRIORIDADE ---
-    document.querySelectorAll('.coluna-prioridade, .card-priority-toggle').forEach(col => {
-        col.addEventListener('click', function(e) {
-            e.stopPropagation();
+    // --- LÓGICA PARA ALTERNAR PRIORIDADE (Otimista) --- <<< BLOCO MODIFICADO >>>
+    document.querySelectorAll('.coluna-prioridade, .card-priority-toggle').forEach(el => {
+        el.addEventListener('click', function(e) {
+            e.preventDefault(); e.stopPropagation();
             const pendenciaId = this.dataset.id;
-            const tr = this.closest('tr');
+            const clickedElement = this;
+            const animationDuration = 400;
+
+            // 1. Determina o estado futuro e aplica a animação IMEDIATAMENTE (Otimista)
+            const isActivating = !clickedElement.classList.contains('active') && !clickedElement.closest('tr')?.classList.contains('prioridade-ativa');
+
+            // Limpa animações antigas
+            clickedElement.classList.remove('anim-icon-pulse', 'anim-icon-shrink');
+            void clickedElement.offsetWidth; // Força reflow
+
+            if (isActivating) {
+                // --- ATIVANDO PRIORIDADE (Otimista) ---
+                clickedElement.classList.add('anim-icon-pulse');
+                if (clickedElement.classList.contains('card-priority-toggle')) {
+                    clickedElement.classList.add('active');
+                } else if (clickedElement.classList.contains('coluna-prioridade')) {
+                    clickedElement.closest('tr').classList.add('prioridade-ativa');
+                }
+            } else {
+                // --- DESATIVANDO PRIORIDADE (Otimista) ---
+                clickedElement.classList.add('anim-icon-shrink');
+                if (clickedElement.classList.contains('card-priority-toggle')) {
+                    clickedElement.classList.remove('active');
+                } else if (clickedElement.classList.contains('coluna-prioridade')) {
+                    clickedElement.closest('tr').classList.remove('prioridade-ativa');
+                }
+            }
+
+            // 2. Remove a classe de animação após terminar
+            setTimeout(() => {
+                clickedElement.classList.remove('anim-icon-pulse', 'anim-icon-shrink');
+            }, animationDuration);
+
+            // 3. Envia o Fetch para o backend EM SEGUNDO PLANO
             fetch(`/pendencias/toggle_prioridade/${pendenciaId}`, { method: 'POST' })
             .then(response => response.json())
-            .then(data => { // <<< TODO O CONTEÚDO DE 'then' FOI SUBSTITUÍDO >>>
+            .then(data => {
                 if (data.status === 'success') {
-                    const clickedElement = this; // 'this' é o elemento clicado (ícone ou <td>)
-                    const animationDuration = 400; // Duração (300ms) + buffer (100ms)
+                    // Sucesso: A mudança otimista estava correta.
+                    // Apenas agenda o reload para buscar a nova ordem.
+                    setTimeout(() => {
+                        location.reload();
+                    }, animationDuration); // Espera a animação terminar antes de recarregar
 
-                    // 1. Limpa animações antigas (segurança)
-                    clickedElement.classList.remove('anim-icon-pulse');
-                    void clickedElement.offsetWidth; // Força o navegador a "ver" a remoção
-
-                    // data.nova_prioridade é o *novo* estado retornado pelo backend
-                    if (data.nova_prioridade === true) {
-                        // ATIVANDO PRIORIDADE (Cenário 1: Pulso + Fade de Cor)
-
-                        // Adiciona animação de pulso
-                        clickedElement.classList.add('anim-icon-pulse');
-
-                        // Adiciona classes ativas (CSS cuidará do fade de cor/borda)
+                } else {
+                    // Falha no Backend: Reverte a mudança otimista
+                    alert('Erro ao alterar a prioridade. Revertendo.');
+                    if (isActivating) { // Se tentamos ativar, desativa
                         if (clickedElement.classList.contains('card-priority-toggle')) {
-                            clickedElement.classList.add('active'); // Para o ícone do card (muda para vermelho)
-                        } else if (clickedElement.classList.contains('coluna-prioridade')) {
-                            // Para a tabela, a classe na linha muda o background-image
-                            clickedElement.closest('tr').classList.add('prioridade-ativa');
-                        }
-
-                    } else {
-                        // DESATIVANDO PRIORIDADE (Cenário 2: Simples Fade de Cor)
-
-                        // Adiciona animação de "encolher"
-                        clickedElement.classList.add('anim-icon-shrink'); // <<< LINHA ADICIONADA
-
-                        // Remove classes ativas (CSS cuidará do fade de cor/borda)
-                        if (clickedElement.classList.contains('card-priority-toggle')) {
-                            clickedElement.classList.remove('active'); // Para o ícone do card (muda para cinza)
+                            clickedElement.classList.remove('active');
                         } else if (clickedElement.classList.contains('coluna-prioridade')) {
                             clickedElement.closest('tr').classList.remove('prioridade-ativa');
                         }
-
-                        // Nenhuma animação de 'transform' necessária para desativar
+                    } else { // Se tentamos desativar, reativa
+                        if (clickedElement.classList.contains('card-priority-toggle')) {
+                            clickedElement.classList.add('active');
+                        } else if (clickedElement.classList.contains('coluna-prioridade')) {
+                            clickedElement.closest('tr').classList.add('prioridade-ativa');
+                        }
                     }
-
-                    // 2. Remove a classe de animação após terminar (para futuros cliques)
-                    setTimeout(() => {
-                        clickedElement.classList.remove('anim-icon-pulse');
-                        clickedElement.classList.remove('anim-icon-shrink'); // <<< LINHA ADICIONADA
-                    }, animationDuration);
-
-                    // 3. Atraso para recarregar a página (para mover o item de lugar)
-                    setTimeout(() => {
-                        location.reload();
-                    }, animationDuration);
-
-                } else {
-                    alert('Erro ao alterar a prioridade.');
                 }
-            }) // <<< FIM DA SUBSTITUIÇÃO DO 'then' >>>
-            .catch(error => { // Adiciona um catch para erros de rede
+            })
+            .catch(error => {
+                // Falha de Rede: Reverte a mudança otimista
                 console.error('Erro no fetch da prioridade:', error);
-                alert('Erro de rede ao alterar prioridade.');
+                alert('Erro de rede ao alterar prioridade. Revertendo.');
+                if (isActivating) { // Se tentamos ativar, desativa
+                    if (clickedElement.classList.contains('card-priority-toggle')) {
+                        clickedElement.classList.remove('active');
+                    } else if (clickedElement.classList.contains('coluna-prioridade')) {
+                        clickedElement.closest('tr').classList.remove('prioridade-ativa');
+                    }
+                } else { // Se tentamos desativar, reativa
+                    if (clickedElement.classList.contains('card-priority-toggle')) {
+                        clickedElement.classList.add('active');
+                    } else if (clickedElement.classList.contains('coluna-prioridade')) {
+                        clickedElement.closest('tr').classList.add('prioridade-ativa');
+                    }
+                }
             });
-                });
-            });
+        });
+    });
+    // --- FIM LÓGICA DE PRIORIDADE (Otimista) ---
 
     // --- LÓGICA DO MENU DE CONTEXTO PARA COR (Nativa) --- <<< BLOCO RESTAURADO >>>
     const contextMenu = document.getElementById('colorContextMenu');
