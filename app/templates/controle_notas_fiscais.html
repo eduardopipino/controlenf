@@ -434,12 +434,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         this.style.backgroundColor = colorMap[novaSituacao] || '';
                     }
                     
-                    if (situacoesArquivadoras.includes(novaSituacao) && "{{ filter_mode }}" === "pendentes") {
+                    /*if (situacoesArquivadoras.includes(novaSituacao) && "{{ filter_mode }}" === "pendentes") {
                         setTimeout(() => {
                             linhaDaTabela.style.opacity = '0';
                             setTimeout(() => linhaDaTabela.remove(), 500);
                         }, 500);
-                    }
+                    }*/
                 } else {
                     linhaDaTabela.classList.add('update-error');
                     setTimeout(() => { linhaDaTabela.classList.remove('update-error'); }, 2000);
