@@ -596,15 +596,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 inputElement.style.resize = 'vertical';
             } else if (fieldName === 'prazo') {
                 inputElement = document.createElement('input');
-                inputElement.type = 'text'; // Usar texto para aceitar DD/MM/AAAA
-                inputElement.placeholder = 'DD/MM/AAAA';
+                inputElement.type = 'date'; // <<< LINHA ALTERADA
+                // inputElement.placeholder = 'DD/MM/AAAA'; // <<< LINHA REMOVIDA
             } else {
                 inputElement = document.createElement('input');
                 inputElement.type = 'text';
             }
             // --- Fim da lógica específica ---
 
-            inputElement.value = originalValue;
+            if (fieldName === 'prazo') {
+                inputElement.value = convertDateToISO(originalValue); // <<< USA A FUNÇÃO DE CONVERSÃO
+            } else {
+                inputElement.value = originalValue;
+            }
             // Aplica estilos CSS (são aplicados via CSS)
             currentEditInput = inputElement;
 
@@ -747,14 +751,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     inputElement.style.height = '60px';
                 } else if (fieldName === 'prazo') {
                     inputElement = document.createElement('input');
-                    inputElement.type = 'text'; // Usar texto para aceitar DD/MM/AAAA
-                    inputElement.placeholder = 'DD/MM/AAAA';
+                    inputElement.type = 'date'; // <<< LINHA ALTERADA
+                    // inputElement.placeholder = 'DD/MM/AAAA'; // <<< LINHA REMOVIDA
                 } else {
                     inputElement = document.createElement('input');
                     inputElement.type = 'text';
                 }
 
-                inputElement.value = originalValue;
+                if (fieldName === 'prazo') {
+                    inputElement.value = convertDateToISO(originalValue); // <<< USA A FUNÇÃO DE CONVERSÃO
+                } else {
+                    inputElement.value = originalValue;
+                }
+
                 currentCardEditInput = inputElement;
                 isEditingCard = true; // Ativa a flag
 
@@ -794,6 +803,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }); // Fim do forEach cardContainers (dblclick)
     } // Fim do if (cardContainers.length > 0)
     // --- FIM DO BLOCO DE EDIÇÃO INLINE NOS CARDS ---
+
+    /**
+     * Converte data de DD/MM/AAAA para YYYY-MM-DD
+     */
+    function convertDateToISO(dateString) {
+        if (!dateString) return ''; // Retorna vazio se não houver data
+        const parts = dateString.split('/');
+        if (parts.length === 3 && parts[2] && parts[1] && parts[0]) {
+            // parts[0] = DD, parts[1] = MM, parts[2] = YYYY
+            return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+        return ''; // Retorna vazio se o formato for inválido
+    }
 
 });
 </script>
