@@ -431,6 +431,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else {
                         // DESATIVANDO PRIORIDADE (Cenário 2: Simples Fade de Cor)
 
+                        // Adiciona animação de "encolher"
+                        clickedElement.classList.add('anim-icon-shrink'); // <<< LINHA ADICIONADA
+
                         // Remove classes ativas (CSS cuidará do fade de cor/borda)
                         if (clickedElement.classList.contains('card-priority-toggle')) {
                             clickedElement.classList.remove('active'); // Para o ícone do card (muda para cinza)
@@ -444,6 +447,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // 2. Remove a classe de animação após terminar (para futuros cliques)
                     setTimeout(() => {
                         clickedElement.classList.remove('anim-icon-pulse');
+                        clickedElement.classList.remove('anim-icon-shrink'); // <<< LINHA ADICIONADA
                     }, animationDuration);
 
                     // 3. Atraso para recarregar a página (para mover o item de lugar)

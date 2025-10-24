@@ -2577,3 +2577,15 @@ body.theme-dark .card-details-link:hover {
     /* Aplica a animação. 'transform' não está em transition, então não há conflito. */
     animation: pulse-icon-anim 0.3s ease-in-out;
 }
+
+/* --- Animação de Encolher (Prioridade Desativar) --- */ /* <<< NOVO BLOCO >>> */
+@keyframes shrink-icon-anim {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.5); } /* Encolhe */
+    100% { transform: scale(1); } /* Volta ao normal */
+}
+
+/* Classe que aplica a animação */
+.anim-icon-shrink {
+    animation: shrink-icon-anim 0.3s ease-in-out;
+}
