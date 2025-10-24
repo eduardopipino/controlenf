@@ -1822,8 +1822,6 @@ table thead tr:first-child th:last-child { border-top-right-radius: 8px; }
 table tbody tr:last-child td:first-child { border-bottom-left-radius: 8px; }
 table tbody tr:last-child td:last-child { border-bottom-right-radius: 8px; }
 
-/* ADICIONE ESTAS NOVAS REGRAS */
-
 /* Estilo para a linha quando a prioridade está ativa */
 tr.prioridade-ativa {
     /* A barra vermelha vertical */
@@ -2199,7 +2197,8 @@ body.theme-dark .data-card[style*="background-color"] strong {
 }
 
 /* --- Ícone de Prioridade no Card --- */
-div.data-card .card-priority-toggle.card-action-icon:not(.active) { /* <<< LINHA ALTERADA: Adicionado div.data-card */
+div.data-card .card-priority-toggle.card-action-icon:not(.active), /* <<< LINHA ALTERADA: Adicionado div.data-card */
+div.data-card .card-priority-toggle.card-action-icon:not(.active):hover { /* <<< LINHA ADICIONADA/MODIFICADA */
     /* position: absolute; */ /* REMOVIDO */
     /* top: 10px; */ /* REMOVIDO */
     /* right: 10px; */ /* REMOVIDO */
@@ -2229,12 +2228,14 @@ div.data-card .card-priority-toggle.card-action-icon:hover { /* <<< LINHA ALTERA
 }*/
 
 /* Quando o botão tem a classe 'active', muda a cor do SVG para vermelho */
-div.data-card .card-priority-toggle.card-action-icon.active { /* <<< LINHA ALTERADA: Adicionado div.data-card */
+div.data-card .card-priority-toggle.card-action-icon.active, /* <<< LINHA ALTERADA: Adicionado div.data-card */
+div.data-card .card-priority-toggle.card-action-icon.active:hover { /* <<< LINHA ADICIONADA/MODIFICADA */
     color: #e74c3c; /* <<< COR VERMELHA ATIVA (para o SVG via currentColor) */
 }
 
 /* Ajuste para tema escuro se o ícone ativo ficar ruim */
-body.theme-dark div.data-card .card-priority-toggle.card-action-icon.active { /* <<< LINHA ALTERADA: Adicionado div.data-card */
+body.theme-dark div.data-card .card-priority-toggle.card-action-icon.active, /* <<< LINHA ALTERADA: Adicionado div.data-card */
+body.theme-dark div.data-card .card-priority-toggle.card-action-icon.active:hover { /* <<< LINHA ADICIONADA/MODIFICADA */
     color: #ff5252; /* Vermelho mais brilhante no escuro */
 }
 
@@ -2502,7 +2503,6 @@ body.theme-dark .data-card .editable-card-field textarea {
 
 .card-action-icon:hover {
     background-color: var(--secondary-color);
-    color: var(--tertiary-color);
 }
 
 /* Ajustes Tema Escuro para Ações no Canto */
