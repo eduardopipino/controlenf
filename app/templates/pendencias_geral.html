@@ -137,19 +137,19 @@
     {% elif view_mode == 'kanban' %}
         <div class="kanban-view-container">
             <div class="kanban-board kanban-board-wide">
-                <div class="kanban-column">
+                <div class="kanban-column" id="kanban-column-sem-prazo">
                     <div class="kanban-column-header">Sem Prazo ({{ pendencias_sem_prazo|length }})</div>
                     <div class="kanban-cards">
                         {% for p in pendencias_sem_prazo %}{% include 'partials/_pendencia_card.html' %}{% endfor %}
                     </div>
                 </div>
-                <div class="kanban-column">
+                <div class="kanban-column" id="kanban-column-a-vencer">
                     <div class="kanban-column-header">Prazo a Vencer ({{ pendencias_a_vencer|length }})</div>
                     <div class="kanban-cards">
                         {% for p in pendencias_a_vencer %}{% include 'partials/_pendencia_card.html' %}{% endfor %}
                     </div>
                 </div>
-                <div class="kanban-column">
+                <div class="kanban-column" id="kanban-column-vencido">
                     <div class="kanban-column-header">Prazo Vencido ({{ pendencias_vencidas|length }})</div>
                     <div class="kanban-cards">
                         {% for p in pendencias_vencidas %}{% include 'partials/_pendencia_card.html' %}{% endfor %}
@@ -679,34 +679,87 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    const updatedValue = data.newValue; // Backend retorna valor formatado (ex: data)
+                        const updatedValue = data.newValue;
 
-                    // Recria o HTML interno corretamente
-                    if (activeCardFieldElement.tagName === 'H4') {
-                        activeCardFieldElement.innerHTML = `<span class="card-field-value">${updatedValue || 'Pendência sem título'}</span>`;
-                    } else {
-                        const fieldNameFromData = activeCardFieldElement.dataset.fieldName;
-                        const labelText = card_fields_map[fieldNameFromData] || fieldNameFromData;
-                        activeCardFieldElement.innerHTML = `<strong>${labelText}:</strong> <span class="card-field-value">${updatedValue || ''}</span>`;
-                    }
+                        // Recria o HTML interno corretamente
+                        if (activeCardFieldElement.tagName === 'H4') {
+                            activeCardFieldElement.innerHTML = `<span class="card-field-value">${updatedValue || 'Pendência sem título'}</span>`;
+                        } else {
+                            const fieldNameFromData = activeCardFieldElement.dataset.fieldName;
+                            const labelText = card_fields_map[fieldNameFromData] || fieldNameFromData;
+                            activeCardFieldElement.innerHTML = `<strong>${labelText}:</strong> <span class="card-field-value">${updatedValue || ''}</span>`;
+                        }
 
-                    currentCardEditInput = null;
-                    originalCardContent = null;
-                    activeCardFieldElement = null;
-                    isEditingCard = false;
+                        // Limpa variáveis de estado da edição
+                        currentCardEditInput = null;
+                        originalCardContent = null;
+                        activeCardFieldElement = null;
+                        isEditingCard = false;
 
-                    // Feedback visual (cinza)
-                    const isDarkTheme = document.body.classList.contains('theme-dark');
-                    const feedbackColor = isDarkTheme ? '#3a3a3a' : '#e0e0e0';
-                    cardDiv.classList.add('card-feedback-flash');
-                    const originalCardBg = cardDiv.style.backgroundColor;
-                    cardDiv.style.backgroundColor = feedbackColor;
-                    setTimeout(() => {
-                        cardDiv.style.backgroundColor = originalCardBg || '';
-                        setTimeout(() => {
-                            cardDiv.classList.remove('card-feedback-flash');
-                        }, 300);
-                    }, 700);
+                        // --- LÓGICA DE ANIMAÇÃO CORRIGIDA ---
+                        let moved = false; // Flag para saber se a movimentação ocorrerá
+                        const cardElement = cardDiv; // cardDiv é o .data-card
+
+                        // 1. Verifica se a movimentação KANBAN é necessária
+                        if (fieldName === 'prazo' && "{{ view_mode }}" === "kanban") {
+                            const currentCol = cardElement.closest('.kanban-column');
+                            if (currentCol) {
+                                const hoje = new Date();
+                                hoje.setHours(0, 0, 0, 0);
+                                const newPrazoDate = parseDateFromDDMMYYYY(data.newValue); // Usa a função auxiliar
+
+                                let targetColumnId = '';
+                                if (!newPrazoDate) {
+                                    targetColumnId = 'kanban-column-sem-prazo';
+                                } else if (newPrazoDate < hoje) {
+                                    targetColumnId = 'kanban-column-vencido';
+                                } else {
+                                    targetColumnId = 'kanban-column-a-vencer';
+                                }
+
+                                // Verifica se a coluna de destino é DIFERENTE da atual
+                                if (currentCol.id !== targetColumnId) {
+                                    const targetColumn = document.getElementById(targetColumnId);
+                                    const targetCardContainer = targetColumn ? targetColumn.querySelector('.kanban-cards') : null;
+
+                                    if (targetCardContainer) {
+                                        moved = true; // <<< SINALIZA QUE VAI MOVER
+
+                                        // --- Execute a animação de FADE/MOVIMENTO ---
+                                        cardElement.style.transition = 'opacity 0.3s ease-out';
+                                        cardElement.style.opacity = '0';
+                                        setTimeout(() => {
+                                            targetCardContainer.appendChild(cardElement); // Mover
+                                            requestAnimationFrame(() => {
+                                                cardElement.style.transition = 'opacity 0.3s ease-in';
+                                                cardElement.style.opacity = '1';
+                                                setTimeout(() => {
+                                                    cardElement.style.transition = '';
+                                                }, 300);
+                                            });
+                                        }, 300);
+                                    } else {
+                                        console.error("Kanban move: Target column container not found for ID:", targetColumnId);
+                                    }
+                                }
+                            } // Fim if (currentCol)
+                        } // Fim if (fieldName === 'prazo' && kanban)
+
+                        // 2. Se NÃO houve movimentação, execute o FLASH CINZA
+                        if (!moved) { // <<< CONDIÇÃO ADICIONADA
+                            const isDarkTheme = document.body.classList.contains('theme-dark');
+                            const feedbackColor = isDarkTheme ? '#3a3a3a' : '#e0e0e0';
+                            cardDiv.classList.add('card-feedback-flash');
+                            const originalCardBg = cardDiv.style.backgroundColor; // Salva cor (ex: da situação)
+                            cardDiv.style.backgroundColor = feedbackColor;
+                            setTimeout(() => {
+                                cardDiv.style.backgroundColor = originalCardBg || ''; // Restaura cor original
+                                setTimeout(() => {
+                                    cardDiv.classList.remove('card-feedback-flash');
+                                }, 300);
+                            }, 700);
+                        }
+                        // --- FIM DA LÓGICA DE ANIMAÇÃO CORRIGIDA ---
 
                 } else {
                     alert(`Erro ao salvar: ${data.message}`);
@@ -816,6 +869,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return ''; // Retorna vazio se o formato for inválido
     }
+
+    /**
+     * Converte data de DD/MM/AAAA para um objeto Date (à meia-noite)
+     */
+    function parseDateFromDDMMYYYY(dateString) {
+        if (!dateString) return null;
+        const parts = dateString.split('/');
+        if (parts.length === 3) {
+            // parts[0] = DD, parts[1] = MM (0-11), parts[2] = YYYY
+            // O MÊS EM JAVASCRIPT É BASEADO EM ZERO (0 = Jan, 11 = Dez)
+            const date = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0])); // <<< BUG ESTÁ AQUI
+            date.setHours(0, 0, 0, 0);
+            return date;
+        }
+        return null;
+}
 
 });
 </script>
