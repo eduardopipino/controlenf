@@ -71,7 +71,9 @@
                     {% for col_id, col_nome in todas_as_colunas %}
                         {% if col_id in colunas_visiveis %}
                             <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
-                                <a href="{{ url_for(request.endpoint, page_mode=page_mode, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc') }}">{{ col_nome }} {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}</a>
+                               <a href="{{ url_for(request.endpoint, page_mode=page_mode, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc') }}">
+                                    {{ col_nome }} {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}
+                                </a>
                             </th>
                         {% endif %}
                     {% endfor %}

@@ -185,6 +185,7 @@ def pendencias_lista(page_mode="geral"):
         todas_as_colunas_cards=opcoes_campos_cards, # <-- Passa a lista duplamente filtrada
         card_fields_visiveis=card_fields_visiveis, # Usa a lista filtrada para os cards
         order=order,
+        sort_by=sort_by,
         filter_values=filter_values,
         page_mode=page_mode,
         color_map=color_map,
