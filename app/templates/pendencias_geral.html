@@ -234,6 +234,7 @@
 document.addEventListener('DOMContentLoaded', function() {
 
     const card_fields_map = {{ dict(todas_as_colunas_cards) | tojson | safe }}; // <<< LINHA CORRIGIDA
+    let isPriorityFetchLocked = false; // <<< LINHA ADICIONADA: Flag de bloqueio
 
     // --- LÓGICA DO SELETOR DE VISUALIZAÇÃO ---
     const viewSelector = document.querySelector('.view-selector');
@@ -401,6 +402,13 @@ document.addEventListener('DOMContentLoaded', function() {
         el.addEventListener('click', function(e) {
             e.preventDefault(); e.stopPropagation();
             const pendenciaId = this.dataset.id;
+            // --- INÍCIO DO BLOCO DE LOCK ---
+            if (isPriorityFetchLocked) { // <<< LINHA ADICIONADA
+                console.log("Fetch já em andamento, clique ignorado.");
+                return; // <<< LINHA ADICIONADA: Ignora cliques rápidos
+            }
+            isPriorityFetchLocked = true; // <<< LINHA ADICIONADA: Bloqueia novos cliques
+            // --- FIM DO BLOCO DE LOCK ---
             const clickedElement = this;
             const animationDuration = 400;
 
@@ -461,6 +469,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             clickedElement.closest('tr').classList.add('prioridade-ativa');
                         }
                     }
+                    isPriorityFetchLocked = false; // <<< LINHA ADICIONADA: Libera o lock
                 }
             })
             .catch(error => {
@@ -480,6 +489,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         clickedElement.closest('tr').classList.add('prioridade-ativa');
                     }
                 }
+                isPriorityFetchLocked = false; // <<< LINHA ADICIONADA: Libera o lock
             });
         });
     });
