@@ -233,6 +233,8 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
 
+    const card_fields_map = {{ card_fields_map | tojson | safe }}; // <<< LINHA ADICIONADA AQUI
+
     // --- LÓGICA DO SELETOR DE VISUALIZAÇÃO ---
     const viewSelector = document.querySelector('.view-selector');
     if (viewSelector) {
@@ -627,6 +629,171 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    // --- 14. LÓGICA DE EDIÇÃO INLINE NOS CARDS (COPIADO E ADAPTADO) --- <<< NOVO BLOCO >>>
+    const cardContainers = document.querySelectorAll('.card-view-container, .kanban-view-container');
+
+    if (cardContainers.length > 0 && "{{ view_mode }}" !== "table") {
+        let currentCardEditInput = null;
+        let originalCardContent = null;
+        let activeCardFieldElement = null;
+        let isEditingCard = false;
+
+        // Função para reverter o campo do card ao estado original
+        function cancelInlineEditCard() {
+            if (!activeCardFieldElement || !currentCardEditInput) return;
+            activeCardFieldElement.innerHTML = originalCardContent;
+            currentCardEditInput = null;
+            originalCardContent = null;
+            activeCardFieldElement = null;
+            isEditingCard = false;
+        }
+
+        // Função para salvar a edição do card
+        function saveInlineEditCard() {
+            if (!activeCardFieldElement || !currentCardEditInput) return;
+
+            const newValue = currentCardEditInput.value.trim();
+            const fieldName = activeCardFieldElement.dataset.fieldName;
+            const cardDiv = activeCardFieldElement.closest('.data-card');
+            const pendenciaId = cardDiv.dataset.id; // <<< USA ID DA PENDÊNCIA
+            const originalValueSpan = document.createElement('div');
+            originalValueSpan.innerHTML = originalCardContent;
+            const originalValueText = originalValueSpan.querySelector('.card-field-value')?.textContent.trim() || '';
+
+            if (newValue === originalValueText && fieldName !== 'prazo') { // Permite salvar 'prazo' mesmo se igual (para re-formatar)
+                cancelInlineEditCard();
+                return;
+            }
+
+            // *** API ENDPOINT ALTERADO ***
+            fetch(`/pendencias/update_field_inline/${pendenciaId}`, { // <<< URL ALTERADA
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ field: fieldName, value: newValue })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const updatedValue = data.newValue; // Backend retorna valor formatado (ex: data)
+
+                    // Recria o HTML interno corretamente
+                    if (activeCardFieldElement.tagName === 'H4') {
+                        activeCardFieldElement.innerHTML = `<span class="card-field-value">${updatedValue || 'Pendência sem título'}</span>`;
+                    } else {
+                        const fieldNameFromData = activeCardFieldElement.dataset.fieldName;
+                        const labelText = card_fields_map[fieldNameFromData] || fieldNameFromData;
+                        activeCardFieldElement.innerHTML = `<strong>${labelText}:</strong> <span class="card-field-value">${updatedValue || ''}</span>`;
+                    }
+
+                    currentCardEditInput = null;
+                    originalCardContent = null;
+                    activeCardFieldElement = null;
+                    isEditingCard = false;
+
+                    // Feedback visual (cinza)
+                    const isDarkTheme = document.body.classList.contains('theme-dark');
+                    const feedbackColor = isDarkTheme ? '#3a3a3a' : '#e0e0e0';
+                    cardDiv.classList.add('card-feedback-flash');
+                    const originalCardBg = cardDiv.style.backgroundColor;
+                    cardDiv.style.backgroundColor = feedbackColor;
+                    setTimeout(() => {
+                        cardDiv.style.backgroundColor = originalCardBg || '';
+                        setTimeout(() => {
+                            cardDiv.classList.remove('card-feedback-flash');
+                        }, 300);
+                    }, 700);
+
+                } else {
+                    alert(`Erro ao salvar: ${data.message}`);
+                    isEditingCard = false;
+                    cancelInlineEditCard();
+                }
+            })
+            .catch(error => {
+                console.error('Erro de rede ao salvar card:', error);
+                alert('Erro de rede ao salvar. A alteração foi cancelada.');
+                isEditingCard = false;
+                cancelInlineEditCard();
+            });
+        }
+
+        // Listener principal delegado aos containers de cards
+        cardContainers.forEach(container => {
+            container.addEventListener('dblclick', function(e) {
+                const fieldElement = e.target.closest('.editable-card-field');
+                if (!fieldElement) return;
+
+                // NÃO precisa de e.stopPropagation() pois <a> foi removido
+
+                if (fieldElement.querySelector('input, textarea') || currentCardEditInput) {
+                   if (currentCardEditInput) currentCardEditInput.focus();
+                   return;
+                }
+
+                activeCardFieldElement = fieldElement;
+                const valueSpan = fieldElement.querySelector('.card-field-value');
+                const labelElement = fieldElement.querySelector('strong');
+                if (!valueSpan) return; // Segurança (só edita se tiver span)
+
+                const originalValue = valueSpan.textContent.trim();
+                originalCardContent = fieldElement.innerHTML;
+                const fieldName = fieldElement.dataset.fieldName;
+                let inputElement;
+
+                // Cria input/textarea
+                if (fieldName === 'observacoes') {
+                    inputElement = document.createElement('textarea');
+                    inputElement.style.height = '60px';
+                } else if (fieldName === 'prazo') {
+                    inputElement = document.createElement('input');
+                    inputElement.type = 'text'; // Usar texto para aceitar DD/MM/AAAA
+                    inputElement.placeholder = 'DD/MM/AAAA';
+                } else {
+                    inputElement = document.createElement('input');
+                    inputElement.type = 'text';
+                }
+
+                inputElement.value = originalValue;
+                currentCardEditInput = inputElement;
+                isEditingCard = true; // Ativa a flag
+
+                // Substitui o conteúdo
+                fieldElement.innerHTML = '';
+                if (labelElement) {
+                    fieldElement.appendChild(labelElement);
+                    fieldElement.appendChild(document.createTextNode(' '));
+                }
+                // (Se for H4, labelElement é null, input preenche tudo)
+                if (fieldElement.tagName === 'H4') {
+                     inputElement.value = originalValue; // Garante valor no H4
+                }
+                fieldElement.appendChild(inputElement);
+                inputElement.focus();
+                if(inputElement.select) inputElement.select();
+
+                // Listeners para Enter/Esc
+                inputElement.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        saveInlineEditCard();
+                    } else if (event.key === 'Escape') {
+                        cancelInlineEditCard();
+                    }
+                });
+
+                // Listener para Blur
+                inputElement.addEventListener('blur', function() {
+                    setTimeout(() => {
+                        if (document.body.contains(inputElement) && currentCardEditInput === inputElement) {
+                            cancelInlineEditCard();
+                        }
+                    }, 150);
+                });
+            });
+        }); // Fim do forEach cardContainers (dblclick)
+    } // Fim do if (cardContainers.length > 0)
+    // --- FIM DO BLOCO DE EDIÇÃO INLINE NOS CARDS ---
 
 });
 </script>
