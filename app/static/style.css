@@ -2209,7 +2209,7 @@ body.theme-dark .data-card[style*="background-color"] strong {
     cursor: pointer;
 
     /* Propriedades de Cor e Transição Próprias */
-    transition: transform 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+    transition: color 0.2s ease, background-color 0.2s ease; /* <<< LINHA ALTERADA (transform removido) */
     color: #aaaaaa; /* <<< Cor Padrão (INATIVA): Cinza */
 }
 
@@ -2563,4 +2563,17 @@ body.theme-dark .card-details-link:hover {
 #tabelaPendencias th:has(a[href*="sort_by=prazo"]), /* Seleciona o cabeçalho 'Prazo' */
 #tabelaPendencias td[data-label="Prazo"] { /* Seleciona as células 'Prazo' */
     text-align: center; /* <<< LINHA ADICIONADA */
+}
+
+/* --- Animação de Pulso (Prioridade) --- */ /* <<< NOVO BLOCO >>> */
+@keyframes pulse-icon-anim {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.5); } /* Aumenta o tamanho */
+    100% { transform: scale(1); } /* Volta ao normal */
+}
+
+/* Classe que aplica a animação */
+.anim-icon-pulse {
+    /* Aplica a animação. 'transform' não está em transition, então não há conflito. */
+    animation: pulse-icon-anim 0.3s ease-in-out;
 }
