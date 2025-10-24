@@ -2199,7 +2199,7 @@ body.theme-dark .data-card[style*="background-color"] strong {
 }
 
 /* --- Ícone de Prioridade no Card --- */
-.card-priority-toggle {
+div.data-card .card-priority-toggle.card-action-icon:not(.active) { /* <<< LINHA ALTERADA: Adicionado div.data-card */
     /* position: absolute; */ /* REMOVIDO */
     /* top: 10px; */ /* REMOVIDO */
     /* right: 10px; */ /* REMOVIDO */
@@ -2210,7 +2210,7 @@ body.theme-dark .data-card[style*="background-color"] strong {
     color: #aaaaaa; /* <<< COR PADRÃO CINZA (para o SVG via currentColor) */
 }
 
-.card-priority-toggle:hover {
+div.data-card .card-priority-toggle.card-action-icon:hover { /* <<< LINHA ALTERADA: Adicionado div.data-card */
     transform: scale(1.1);
     /* O hover padrão de .card-action-icon já se aplica (fundo) */
 }
@@ -2229,12 +2229,12 @@ body.theme-dark .data-card[style*="background-color"] strong {
 }*/
 
 /* Quando o botão tem a classe 'active', muda a cor do SVG para vermelho */
-.card-priority-toggle.active {
+div.data-card .card-priority-toggle.card-action-icon.active { /* <<< LINHA ALTERADA: Adicionado div.data-card */
     color: #e74c3c; /* <<< COR VERMELHA ATIVA (para o SVG via currentColor) */
 }
 
 /* Ajuste para tema escuro se o ícone ativo ficar ruim */
-body.theme-dark .card-priority-toggle.active {
+body.theme-dark div.data-card .card-priority-toggle.card-action-icon.active { /* <<< LINHA ALTERADA: Adicionado div.data-card */
     color: #ff5252; /* Vermelho mais brilhante no escuro */
 }
 
