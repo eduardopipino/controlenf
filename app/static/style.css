@@ -2558,3 +2558,9 @@ body.theme-dark .card-details-link:hover {
 }
 
 /* --- FIM Estilo Botão/Link Detalhes --- */
+
+/* --- Define largura mínima para a coluna Prazo em Pendências --- */ /* <<< NOVO BLOCO >>> */
+#tabelaPendencias th:has(a[href*="sort_by=prazo"]), /* Seleciona o cabeçalho 'Prazo' */
+#tabelaPendencias td[data-label="Prazo"] { /* Seleciona as células 'Prazo' */
+    text-align: center; /* <<< LINHA ADICIONADA */
+}
