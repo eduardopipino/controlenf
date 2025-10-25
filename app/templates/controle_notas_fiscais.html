@@ -733,10 +733,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 // Verifica se existe strong E se o texto corresponde a "Situação:"
                                 return strong && strong.textContent.trim() === 'Situação:';
                             });
-                            if (situacaoP && typeof card_fields_map !== 'undefined') { // <<< Verifica se situacaoP existe E se map está definido
-                                const labelText = card_fields_map['situacao'] || 'Situação'; // Usa 'situacao' diretamente
-                                situacaoP.innerHTML = `<strong>${labelText}:</strong> <span class="card-field-value">${novaSituacao || 'Nenhuma'}</span>`;
-                            }
+                            if (situacaoP && typeof card_fields_map_global !== 'undefined') { // <<< CORRIGIDO
+                            const labelText = card_fields_map_global['situacao'] || 'Situação'; // <<< CORRIGIDO
+                            situacaoP.innerHTML = `<strong>${labelText}:</strong> <span class="card-field-value">${novaSituacao || ''}</span>`; // '' para consistência
+                        }
                         } catch (e) {
                             console.error("Erro ao atualizar texto da situação no card:", e);
                             // Não impede o resto da atualização visual
