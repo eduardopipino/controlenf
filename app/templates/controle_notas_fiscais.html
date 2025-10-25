@@ -291,6 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const colorMap = {{ color_map | tojson | safe }};
     const colorCodingIsActive = {{ color_coding_active | tojson }};
     const editableFields = ['referencia', 'nota_fiscal', 'carta_de_correcao', 'observacoes'];
+    const card_fields_map_global = {{ dict(todas_as_colunas_cards) | tojson | safe }}; // <<< LINHA ADICIONADA AQUI
 
     // --- 1. LÓGICA DO SELETOR DE VISUALIZAÇÃO (ATUALIZADA) ---
     const viewSelector = document.querySelector('.view-selector');
