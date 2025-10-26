@@ -48,6 +48,7 @@ TODAS_AS_COLUNAS_CARDS = [
     ['item_descricao', 'Item'],
     ['nota_fiscal', 'Documento Fiscal'],
     ['carta_de_correcao', 'Carta de Correção'],
+    ['documentacao', 'Documentação'],
     ['observacoes', 'Observações'],
     ['situacao', 'Situação']
 ]

@@ -1107,7 +1107,47 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Cria input/textarea
                 if (fieldName === 'observacoes') {
                     inputElement = document.createElement('textarea');
-                    inputElement.style.height = '60px'; // Altura inicial para textarea no card
+                    inputElement.style.height = '60px';
+                } else if (fieldName === 'documentacao') { // <<< BLOCO 'else if' ADICIONADO
+                    // --- LÓGICA PARA ABRIR O MODAL DE DOCUMENTAÇÃO (CARDS) ---
+                    const controleId = fieldElement.closest('.data-card').dataset.id; // Pega ID do card
+                    console.log("Abrindo modal de documentação para (card):", controleId);
+
+                    // Limpa modal antigo e armazena ID
+                    docChecklist.innerHTML = '<p>Carregando opções...</p>';
+                    docModalControleId.value = controleId; // Armazena o ID no input oculto do modal
+                    docModal.classList.add('active'); // Mostra o modal
+
+                    // Busca as opções e valores salvos (mesma rota da tabela)
+                    fetch(`/controle/get_documentacao/${controleId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                docChecklist.innerHTML = '';
+                                if (data.opcoes.length === 0) {
+                                    docChecklist.innerHTML = '<p>Nenhuma opção de documentação cadastrada para este item.</p>';
+                                    return;
+                                }
+
+                                // Cria os checkboxes
+                                data.opcoes.forEach(opcao => {
+                                    const isChecked = data.salvos.includes(opcao);
+                                    const wrapper = document.createElement('div');
+                                    wrapper.innerHTML = `<label><input type="checkbox" name="doc_inline_pref" value="${opcao}" ${isChecked ? 'checked' : ''}> ${opcao}</label>`;
+                                    docChecklist.appendChild(wrapper);
+                                });
+                            } else {
+                                docChecklist.innerHTML = `<p style="color: red;">Erro: ${data.message}</p>`;
+                            }
+                        })
+                        .catch(err => {
+                            console.error("Erro ao buscar documentação:", err);
+                            docChecklist.innerHTML = `<p style="color: red;">Erro de rede ao buscar opções.</p>`;
+                        });
+
+                    isEditingCard = false; // Cancela o estado de edição de input
+                    return; // Impede que o código de criação de input abaixo seja executado
+                    // --- FIM DA LÓGICA DO MODAL (CARDS) ---
                 } else {
                     inputElement = document.createElement('input');
                     inputElement.type = 'text';
@@ -1178,34 +1218,61 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // Atualiza a célula da tabela
-                    const td = document.querySelector(`#tabelaControle tr[data-id="${controleId}"] td[data-field-name="documentacao"]`);
-                    if (td) {
-                        const spanValue = td.querySelector('span.card-value');
-                        if (spanValue) {
-                            // Recria o HTML da célula com os novos dados
-                            let html = data.novos_documentos.join(', ');
-                            if (data.novos_documentos.length > 0 && data.novos_pendentes.length > 0) {
-                                html += ', ';
-                            }
-                            if (data.novos_pendentes.length > 0) {
-                                html += `<span class="texto-pendente">(pendente: ${data.novos_pendentes.join(', ')})</span>`;
-                            }
-                            spanValue.innerHTML = html;
-                        }
+                    // --- BLOCO DE ATUALIZAÇÃO VISUAL (TABELA OU CARD) ---
+                    let updatedElement = null; // Elemento a ser "flashado" (td ou cardDiv)
+                    let spanToUpdate = null; // Span a ter o HTML atualizado
 
-                        // Aplica feedback flash
+                    // Tenta encontrar na Tabela (se view_mode for table)
+                    if ("{{ view_mode }}" === "table") {
+                        updatedElement = document.querySelector(`#tabelaControle tr[data-id="${controleId}"] td[data-field-name="documentacao"]`);
+                        if (updatedElement) {
+                            spanToUpdate = updatedElement.querySelector('span.card-value');
+                        }
+                    } else { // Procura no Card (se view_mode for cards ou kanban)
+                        // Encontra o card visível com o ID correto
+                        const cardDiv = document.querySelector(`.data-card[data-id="${controleId}"]`);
+                        if (cardDiv) {
+                            updatedElement = cardDiv; // O feedback flash será no card
+                            // Encontra o <p> da documentação dentro do card
+                            const pElement = cardDiv.querySelector('p[data-field-name="documentacao"]');
+                            if (pElement) {
+                                spanToUpdate = pElement.querySelector('span.card-field-value');
+                            }
+                        }
+                    }
+
+                    // Se encontrou o span para atualizar
+                    if (spanToUpdate) {
+                        // Recria o HTML (mesma lógica de antes)
+                        let html = data.novos_documentos.join(', ');
+                        if (data.novos_documentos.length > 0 && data.novos_pendentes.length > 0) {
+                            html += ', ';
+                        }
+                        if (data.novos_pendentes.length > 0) {
+                            html += `<span class="texto-pendente">(pendente: ${data.novos_pendentes.join(', ')})</span>`;
+                        }
+                        spanToUpdate.innerHTML = html;
+                    }
+
+                    // Se encontrou o elemento para aplicar feedback
+                    if (updatedElement) {
                         const isDarkTheme = document.body.classList.contains('theme-dark');
                         const feedbackColor = isDarkTheme ? '#3a3a3a' : '#e0e0e0';
-                        td.classList.add('td-feedback-flash');
-                        td.style.backgroundColor = feedbackColor;
+
+                        // Adiciona a classe flash correta (td ou card)
+                        const flashClass = (updatedElement.tagName === 'TD') ? 'td-feedback-flash' : 'card-feedback-flash';
+
+                        updatedElement.classList.add(flashClass);
+                        const originalCardBg = updatedElement.style.backgroundColor; // Guarda bg original
+                        updatedElement.style.backgroundColor = feedbackColor;
                         setTimeout(() => {
-                            td.style.backgroundColor = '';
+                            updatedElement.style.backgroundColor = originalCardBg || ''; // Restaura
                             setTimeout(() => {
-                                td.classList.remove('td-feedback-flash');
+                                updatedElement.classList.remove(flashClass);
                             }, 300);
                         }, 700);
                     }
+                    // --- FIM DO BLOCO DE ATUALIZAÇÃO VISUAL ---
 
                     docModal.classList.remove('active'); // Fecha o modal
                 } else {

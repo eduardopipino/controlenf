@@ -28,18 +28,29 @@
             {# Verifica se este campo deve ser VISÍVEL de acordo com a preferência do usuário #}
             {% if field_id in card_fields_visiveis %} {# <<< CONDIÇÃO ADICIONADA #}
 
-                {# Verifica se o campo visível é EDITÁVEL #}
+                {# Verifica se o campo visível é EDITÁVEL (TEXTO) #}
                 {% if field_id in editable_fields_in_card %}
                     <p class="editable-card-field" data-field-name="{{ field_id }}">
-                        <strong>{{ field_name }}:</strong> {# Usa field_name da lista mestra #} {# <<< ALTERADO de card_fields_map[field_id] #}
+                        <strong>{{ field_name }}:</strong>
                         <span class="card-field-value">{{ controle[field_id] or '' }}</span>
                     </p>
+                {# Verifica se é EDITÁVEL (MODAL) #}
+                {% elif field_id == 'documentacao' %}
+                    <p class="editable-card-field" data-field-name="documentacao"> {# <<< CLASSE E DATA-* ADICIONADOS #}
+                        <strong>{{ field_name }}:</strong>
+                        <span class="card-field-value"> {# <<< SPAN ADICIONADO >>> #}
+                            {{ controle.documentacao | join(', ') }}
+                            {%- if controle.documentacao and controle.documentacao_pendente %}, {% endif %}
+                            {% if controle.documentacao_pendente %}
+                                <span class="texto-pendente">(pendente: {{ controle.documentacao_pendente | join(', ') }})</span>
+                            {% endif %}
+                        </span>
+                    </p>
                 {% else %}
-                    {# Renderiza campos visíveis mas NÃO editáveis #}
+                    {# Renderiza campos visíveis mas NÃO editáveis (ex: Situação) #}
                     <p>
-                        <strong>{{ field_name }}:</strong> {# Usa field_name da lista mestra #} {# <<< ALTERADO de card_fields_map[field_id] #}
-                        {# Lógica para formatar o campo 'documentacao' como uma lista #}
-                        {{ controle[field_id] | join(', ') if field_id == 'documentacao' else (controle[field_id] or '') }}
+                        <strong>{{ field_name }}:</strong>
+                        {{ controle[field_id] or '' }} {# Simplificado, pois 'documentacao' está no 'elif' #}
                     </p>
                 {% endif %}
 
