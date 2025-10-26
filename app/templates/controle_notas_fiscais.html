@@ -107,7 +107,9 @@
 
                         {% elif col_id == 'documentacao' %}
                             {# NEW: Handles ONLY the 'documentacao' column #}
-                            <td data-label="{{ col_nome }}" class="coluna-texto-longo {{ 'col-detalhe' if col_id in colunas_detalhe else '' }}">
+                            <td data-label="{{ col_nome }}"
+                                class="coluna-texto-longo {{ 'col-detalhe' if col_id in colunas_detalhe else '' }} editable-cell"
+                                data-field-name="documentacao"> {# <<< LINHAS MODIFICADAS >>> #}
                                 <span class="card-value">
                                     {{ controle.documentacao | join(', ') }}
                                     {%- if controle.documentacao and controle.documentacao_pendente %}, {% endif %}
@@ -282,6 +284,23 @@
         </div>
     </ul>
 
+    <div id="documentacaoModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Editar Documentação</h3>
+            <small id="documentacaoModalInfo">Marcando os documentos recebidos.</small>
+            <input type="hidden" id="documentacaoModalControleId" value="">
+
+            <div id="documentacao-checklist" class="modal-colunas-list" style="margin-top: 15px; max-height: 300px; overflow-y: auto;">
+                <p>Carregando opções...</p>
+            </div>
+
+            <div class="button-toolbar">
+                <button id="btnSalvarDocumentacao">Salvar</button>
+                <button type="button" class="btn-cancel-modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}
 
 {% block page_scripts %}
@@ -292,6 +311,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const colorCodingIsActive = {{ color_coding_active | tojson }};
     const editableFields = ['referencia', 'nota_fiscal', 'carta_de_correcao', 'observacoes'];
     const card_fields_map_global = {{ dict(todas_as_colunas_cards) | tojson | safe }}; // <<< LINHA ADICIONADA AQUI
+    const docModal = document.getElementById('documentacaoModal');
+    const docChecklist = document.getElementById('documentacao-checklist');
+    const btnSalvarDoc = document.getElementById('btnSalvarDocumentacao');
+    const docModalControleId = document.getElementById('documentacaoModalControleId');
 
     // --- 1. LÓGICA DO SELETOR DE VISUALIZAÇÃO (ATUALIZADA) ---
     const viewSelector = document.querySelector('.view-selector');
@@ -889,6 +912,48 @@ document.addEventListener('DOMContentLoaded', function() {
                 inputElement = document.createElement('textarea');
                 inputElement.style.height = Math.max(span.offsetHeight, 60) + 'px'; // Ajusta altura inicial
                 inputElement.style.resize = 'vertical'; // Permite redimensionar verticalmente
+            } else if (fieldName !== 'documentacao') { // <<< LINHA MODIFICADA
+        inputElement = document.createElement('input');
+        inputElement.type = 'text';
+        } else if (fieldName === 'documentacao') { // <<< NOVO BLOCO 'else if'
+            // --- LÓGICA PARA ABRIR O MODAL DE DOCUMENTAÇÃO ---
+            const controleId = td.closest('tr').dataset.id;
+            console.log("Abrindo modal de documentação para:", controleId);
+
+            // Limpa modal antigo e armazena ID
+            docChecklist.innerHTML = '<p>Carregando opções...</p>';
+            docModalControleId.value = controleId; // Armazena o ID no input oculto do modal
+            docModal.classList.add('active'); // Mostra o modal (com 'Carregando...')
+
+            // Busca as opções e valores salvos
+            fetch(`/controle/get_documentacao/${controleId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        docChecklist.innerHTML = ''; // Limpa o "Carregando..."
+                        if (data.opcoes.length === 0) {
+                            docChecklist.innerHTML = '<p>Nenhuma opção de documentação cadastrada para este item.</p>';
+                            return;
+                        }
+
+                        // Cria os checkboxes
+                        data.opcoes.forEach(opcao => {
+                            const isChecked = data.salvos.includes(opcao);
+                            const wrapper = document.createElement('div');
+                            wrapper.innerHTML = `<label><input type="checkbox" name="doc_inline_pref" value="${opcao}" ${isChecked ? 'checked' : ''}> ${opcao}</label>`;
+                            docChecklist.appendChild(wrapper);
+                        });
+                    } else {
+                        docChecklist.innerHTML = `<p style="color: red;">Erro: ${data.message}</p>`;
+                    }
+                })
+                .catch(err => {
+                    console.error("Erro ao buscar documentação:", err);
+                    docChecklist.innerHTML = `<p style="color: red;">Erro de rede ao buscar opções.</p>`;
+                });
+
+            return; // Impede que o código de criação de input abaixo seja executado
+            // --- FIM DA LÓGICA DO MODAL ---
             } else {
                 inputElement = document.createElement('input');
                 inputElement.type = 'text';
@@ -1091,6 +1156,69 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }); // Fim do forEach cardContainers
     } // Fim do if (cardContainers.length > 0)
+
+    // --- 15. LÓGICA PARA SALVAR O MODAL DE DOCUMENTAÇÃO --- <<< NOVO BLOCO >>>
+    if (btnSalvarDoc) {
+        btnSalvarDoc.addEventListener('click', () => {
+            const controleId = docModalControleId.value;
+            if (!controleId) {
+                alert("Erro: ID do controle não encontrado.");
+                return;
+            }
+
+            // Pega os valores marcados
+            const docSelecionados = Array.from(docChecklist.querySelectorAll('input[name="doc_inline_pref"]:checked')).map(cb => cb.value);
+
+            // Envia para a nova rota POST
+            fetch(`/controle/update_documentacao_inline/${controleId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ documentacao: docSelecionados })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Atualiza a célula da tabela
+                    const td = document.querySelector(`#tabelaControle tr[data-id="${controleId}"] td[data-field-name="documentacao"]`);
+                    if (td) {
+                        const spanValue = td.querySelector('span.card-value');
+                        if (spanValue) {
+                            // Recria o HTML da célula com os novos dados
+                            let html = data.novos_documentos.join(', ');
+                            if (data.novos_documentos.length > 0 && data.novos_pendentes.length > 0) {
+                                html += ', ';
+                            }
+                            if (data.novos_pendentes.length > 0) {
+                                html += `<span class="texto-pendente">(pendente: ${data.novos_pendentes.join(', ')})</span>`;
+                            }
+                            spanValue.innerHTML = html;
+                        }
+
+                        // Aplica feedback flash
+                        const isDarkTheme = document.body.classList.contains('theme-dark');
+                        const feedbackColor = isDarkTheme ? '#3a3a3a' : '#e0e0e0';
+                        td.classList.add('td-feedback-flash');
+                        td.style.backgroundColor = feedbackColor;
+                        setTimeout(() => {
+                            td.style.backgroundColor = '';
+                            setTimeout(() => {
+                                td.classList.remove('td-feedback-flash');
+                            }, 300);
+                        }, 700);
+                    }
+
+                    docModal.classList.remove('active'); // Fecha o modal
+                } else {
+                    alert(`Erro ao salvar: ${data.message}`);
+                }
+            })
+            .catch(err => {
+                console.error("Erro de rede ao salvar documentação:", err);
+                alert("Erro de rede ao salvar.");
+            });
+        });
+    }
+    // --- FIM DO BLOCO 15 ---
 
 });
 </script>

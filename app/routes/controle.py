@@ -447,3 +447,92 @@ def update_field_inline(controle_id):
     except Exception as e:
         print(f"Erro ao atualizar campo inline: {e}") # Log do erro no servidor
         return {'status': 'error', 'message': 'Erro interno ao salvar.'}, 500
+
+@controle_bp.route('/get_documentacao/<string:controle_id>', methods=['GET'])
+@login_required
+def get_documentacao_inline(controle_id):
+    """
+    Busca as opções de documentação de um item e os documentos já salvos
+    para um registro de controle específico.
+    """
+    try:
+        user_id_obj = ObjectId(current_user.id)
+        controle = controle_collection.find_one(
+            {'_id': ObjectId(controle_id), 'user_id': user_id_obj},
+            {'item_id': 1, 'documentacao': 1} # Projeta apenas os campos necessários
+        )
+        if not controle:
+            return {'status': 'error', 'message': 'Registro de controle não encontrado.'}, 404
+
+        item = itens_collection.find_one(
+            {'_id': controle['item_id'], 'user_id': user_id_obj},
+            {'documentos_exigidos': 1} # Projeta apenas as opções
+        )
+        if not item:
+            return {'status': 'error', 'message': 'Item de instrumento não encontrado.'}, 404
+
+        opcoes = item.get('documentos_exigidos', [])
+        salvos = controle.get('documentacao', [])
+
+        return {'status': 'success', 'opcoes': opcoes, 'salvos': salvos}
+
+    except Exception as e:
+        print(f"Erro ao buscar documentação inline: {e}")
+        return {'status': 'error', 'message': 'Erro interno no servidor.'}, 500
+
+@controle_bp.route('/update_documentacao_inline/<string:controle_id>', methods=['POST'])
+@login_required
+def update_documentacao_inline(controle_id):
+    """
+    Atualiza a lista de 'documentacao' e recalcula 'documentacao_pendente'
+    para um registro de controle específico.
+    """
+    data = request.get_json()
+    # Espera receber uma lista de strings
+    novos_documentos = data.get('documentacao', [])
+
+    if not isinstance(novos_documentos, list):
+        return {'status': 'error', 'message': 'Formato de dados inválido.'}, 400
+
+    try:
+        user_id_obj = ObjectId(current_user.id)
+        controle = controle_collection.find_one(
+            {'_id': ObjectId(controle_id), 'user_id': user_id_obj},
+            {'item_id': 1} # Projeta item_id
+        )
+        if not controle:
+            return {'status': 'error', 'message': 'Registro de controle não encontrado.'}, 404
+
+        item = itens_collection.find_one(
+            {'_id': controle['item_id'], 'user_id': user_id_obj},
+            {'documentos_exigidos': 1} # Projeta opções
+        )
+        if not item:
+            return {'status': 'error', 'message': 'Item de instrumento não encontrado.'}, 404
+
+        # Recalcula a lista de pendentes
+        opcoes = item.get('documentos_exigidos', [])
+        novos_pendentes = [opt for opt in opcoes if opt not in novos_documentos]
+
+        # Atualiza o registro no banco
+        update_data = {
+            'documentacao': novos_documentos,
+            'documentacao_pendente': novos_pendentes,
+            'data_ultima_atualizacao': datetime.now()
+        }
+        controle_collection.update_one(
+            {'_id': ObjectId(controle_id), 'user_id': user_id_obj},
+            {'$set': update_data}
+        )
+
+        # Retorna os novos dados para o JavaScript atualizar a tabela
+        return {
+            'status': 'success',
+            'message': 'Documentação atualizada.',
+            'novos_documentos': novos_documentos,
+            'novos_pendentes': novos_pendentes
+        }
+
+    except Exception as e:
+        print(f"Erro ao salvar documentação inline: {e}")
+        return {'status': 'error', 'message': 'Erro interno ao salvar.'}, 500
