@@ -2091,6 +2091,8 @@ body.theme-dark tr[style*="background-color"]:hover {
     font-size: 0.95em;
     color: var(--text-primary);
     opacity: 0.9;
+    word-wrap: break-word; /* <<< LINHA ADICIONADA: Força a quebra de palavras longas */
+    /* (overflow-wrap: break-word; é o padrão moderno, mas word-wrap funciona e é consistente com seu h4) */
 }
 .data-card strong {
     color: var(--tertiary-color);
@@ -2105,8 +2107,8 @@ body.theme-dark tr[style*="background-color"]:hover {
 }
 .kanban-column {
     flex: 1; /* Permite que a coluna cresça */
-    min-width: 200px; /* Largura mínima */
-    max-width: 350px; /* Largura máxima */
+    min-width: 300px; /* Largura mínima */
+    max-width: 400px; /* Largura máxima */
     background-color: var(--background-primary);
     border-radius: 8px;
     padding: 10px;
@@ -2461,6 +2463,9 @@ body.theme-dark .data-card .editable-card-field textarea {
     display: block; /* <<< LINHA ADICIONADA: Faz o span ocupar a largura */
     min-height: 1em; /* Opcional: Garante altura mínima se o span estiver vazio */
     flex-grow: 1; /* <<< LINHA ADICIONADA: Necessário por causa do display:flex no pai */
+    word-wrap: break-word;     /* Fallback para navegadores mais antigos */
+    overflow-wrap: break-word; /* Padrão moderno para quebrar palavras longas */
+    min-width: 0;              /* Essencial: Permite que o item flex encolha */
 }
 
 /* --- Classe para Transição de Feedback NOS CARDS --- */
