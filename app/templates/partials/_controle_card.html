@@ -46,8 +46,13 @@
                             {% endif %}
                         </span>
                     </p>
+                {% elif field_id == 'situacao' %}
+                    <p class="editable-card-field" data-field-name="situacao"> {# <<< ADICIONA CLASSE E DATA-* #}
+                        <strong>{{ field_name }}:</strong>
+                        <span class="card-field-value">{{ controle[field_id] or 'N/D' }}</span> {# <<< ADICIONA SPAN >>> #}
+                    </p>
                 {% else %}
-                    {# Renderiza campos visíveis mas NÃO editáveis (ex: Situação) #}
+                    {# Renderiza campos visíveis mas NÃO editáveis#}
                     <p>
                         <strong>{{ field_name }}:</strong>
                         {{ controle[field_id] or '' }} {# Simplificado, pois 'documentacao' está no 'elif' #}

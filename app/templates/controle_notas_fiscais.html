@@ -611,13 +611,23 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.status === 'success') {
                 // Atualiza o texto da situação no card
-                const allParagraphs = activeCard.querySelectorAll('p');
-                allParagraphs.forEach(p => {
-                    const strong = p.querySelector('strong');
-                    if (strong && strong.textContent.includes('Situação:')) {
-                        p.innerHTML = `<strong>Situação:</strong> ${novaSituacao || 'Nenhuma'}`;
+                // --- BLOCO DE ATUALIZAÇÃO DE TEXTO CORRIGIDO ---
+                try {
+                    // 'activeCard' é o div.data-card
+                    const situacaoP = Array.from(activeCard.querySelectorAll('p')).find(p => {
+                        const strong = p.querySelector('strong');
+                        return strong && strong.textContent.trim() === 'Situação:';
+                    });
+
+                    if (situacaoP && typeof card_fields_map_global !== 'undefined') {
+                        const labelText = card_fields_map_global['situacao'] || 'Situação';
+                        // Recria o HTML preservando o span.card-field-value
+                        situacaoP.innerHTML = `<strong>${labelText}:</strong> <span class="card-field-value">${novaSituacao || 'N/D'}</span>`;
                     }
-                });
+                } catch (e) {
+                    console.error("Erro ao atualizar texto da situação no card (context menu):", e);
+                }
+                // --- FIM DO BLOCO CORRIGIDO ---
 
                 // Atualiza o data-attribute para a colorização funcionar
                 activeCard.dataset.situacao = novaSituacao || '';
@@ -1148,6 +1158,35 @@ document.addEventListener('DOMContentLoaded', function() {
                     isEditingCard = false; // Cancela o estado de edição de input
                     return; // Impede que o código de criação de input abaixo seja executado
                     // --- FIM DA LÓGICA DO MODAL (CARDS) ---
+
+                } else if (fieldName === 'situacao') { // <<< NOVO BLOCO 'else if' >>>
+                    // --- LÓGICA PARA ABRIR O MENU DE CONTEXTO ---
+                    console.log("Abrindo menu de situação via dblclick");
+
+                    activeCard = fieldElement.closest('.data-card'); // Pega o card
+                    if (!activeCard) return;
+
+                    popularMenuSituacao(); // Popula o menu (função já existe no Bloco 11)
+
+                    // Pega coordenadas do evento de clique duplo
+                    let top = e.pageY;
+                    let left = e.pageX;
+
+                    situacaoContextMenu.style.display = 'block'; // Mostra o menu
+
+                    // Ajusta posição (copiado do listener contextmenu do Bloco 11)
+                    if (top + situacaoContextMenu.offsetHeight > window.innerHeight + window.scrollY) {
+                        top = e.pageY - situacaoContextMenu.offsetHeight;
+                    }
+                    if (left + situacaoContextMenu.offsetWidth > window.innerWidth + window.scrollX) {
+                        left = e.pageX - situacaoContextMenu.offsetWidth;
+                    }
+
+                    situacaoContextMenu.style.top = `${top}px`;
+                    situacaoContextMenu.style.left = `${left}px`;
+
+                    return; // Impede que a lógica de input/textarea seja executada
+                    // --- FIM DA LÓGICA DO MENU DE CONTEXTO ---
                 } else {
                     inputElement = document.createElement('input');
                     inputElement.type = 'text';
