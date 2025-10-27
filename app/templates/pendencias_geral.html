@@ -14,11 +14,11 @@
                 <button id="btnConfigurarCampos">Configurar campos</button>
             {% endif %}
 			
-            {% if page_mode == 'concluidas' %}
+            {#{% if page_mode == 'concluidas' %}
                 <a href="{{ url_for('pendencias.exportar_pendencias_concluidas_csv') }}" class="button">Exportar</a>
             {% else %}
                 <a href="{{ url_for('pendencias.exportar_pendencias_pendentes_csv') }}" class="button">Exportar</a>
-            {% endif %}
+            {% endif %}#}
         </div>
         <div class="toolbar-group-center">
             <div class="view-selector">
