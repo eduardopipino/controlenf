@@ -237,6 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const card_fields_map = {{ dict(todas_as_colunas_cards) | tojson | safe }}; // <<< LINHA CORRIGIDA
     let isPriorityFetchLocked = false; // <<< LINHA ADICIONADA: Flag de bloqueio
+    const viewMode = "{{ view_mode }}"; // <<< LINHA ADICIONADA
 
     // --- LÓGICA DO SELETOR DE VISUALIZAÇÃO ---
     const viewSelector = document.querySelector('.view-selector');
@@ -399,103 +400,114 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- LÓGICA PARA ALTERNAR PRIORIDADE (Otimista) --- <<< BLOCO MODIFICADO >>>
+    // --- LÓGICA PARA ALTERNAR PRIORIDADE (Movimentação DOM) --- <<< BLOCO SUBSTITUÍDO >>>
     document.querySelectorAll('.coluna-prioridade, .card-priority-toggle').forEach(el => {
         el.addEventListener('click', function(e) {
             e.preventDefault(); e.stopPropagation();
-            const pendenciaId = this.dataset.id;
-            // --- INÍCIO DO BLOCO DE LOCK ---
-            if (isPriorityFetchLocked) { // <<< LINHA ADICIONADA
-                console.log("Fetch já em andamento, clique ignorado.");
-                return; // <<< LINHA ADICIONADA: Ignora cliques rápidos
+
+            if (isPriorityFetchLocked) {
+                console.log("Fetch de prioridade já em andamento, clique ignorado.");
+                return;
             }
-            isPriorityFetchLocked = true; // <<< LINHA ADICIONADA: Bloqueia novos cliques
-            // --- FIM DO BLOCO DE LOCK ---
+            isPriorityFetchLocked = true; // Bloqueia novos cliques
+
             const clickedElement = this;
-            const animationDuration = 400;
+            const pendenciaId = this.dataset.id;
+            const animationDuration = 300; // Duração do fade
 
-            // 1. Determina o estado futuro e aplica a animação IMEDIATAMENTE (Otimista)
-            const isActivating = !clickedElement.classList.contains('active') && !clickedElement.closest('tr')?.classList.contains('prioridade-ativa');
-
-            // Limpa animações antigas
-            clickedElement.classList.remove('anim-icon-pulse', 'anim-icon-shrink');
-            void clickedElement.offsetWidth; // Força reflow
-
-            if (isActivating) {
-                // --- ATIVANDO PRIORIDADE (Otimista) ---
-                clickedElement.classList.add('anim-icon-pulse');
-                if (clickedElement.classList.contains('card-priority-toggle')) {
-                    clickedElement.classList.add('active');
-                } else if (clickedElement.classList.contains('coluna-prioridade')) {
-                    clickedElement.closest('tr').classList.add('prioridade-ativa');
-                }
-            } else {
-                // --- DESATIVANDO PRIORIDADE (Otimista) ---
-                clickedElement.classList.add('anim-icon-shrink');
-                if (clickedElement.classList.contains('card-priority-toggle')) {
-                    clickedElement.classList.remove('active');
-                } else if (clickedElement.classList.contains('coluna-prioridade')) {
-                    clickedElement.closest('tr').classList.remove('prioridade-ativa');
-                }
-            }
-
-            // 2. Remove a classe de animação após terminar
-            setTimeout(() => {
-                clickedElement.classList.remove('anim-icon-pulse', 'anim-icon-shrink');
-            }, animationDuration);
-
-            // 3. Envia o Fetch para o backend EM SEGUNDO PLANO
             fetch(`/pendencias/toggle_prioridade/${pendenciaId}`, { method: 'POST' })
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // Sucesso: A mudança otimista estava correta.
-                    // Apenas agenda o reload para buscar a nova ordem.
+                    const isActivating = data.nova_prioridade;
+                    let elementToMove = null;
+                    let targetContainer = null;
+
+                    // 1. Identificar elemento e destino baseado no view_mode
+                    if (viewMode === 'table') {
+                        elementToMove = clickedElement.closest('tr');
+                        if (!elementToMove) return;
+                        targetContainer = elementToMove.closest('tbody');
+
+                    } else if (viewMode === 'cards') {
+                        elementToMove = clickedElement.closest('.data-card');
+                        if (!elementToMove) return;
+                        if (isActivating) {
+                            targetContainer = document.querySelector('.priority-section .card-grid');
+                        } else {
+                            targetContainer = document.querySelector('.card-grid:not(.priority-section .card-grid)');
+                        }
+
+                    } else if (viewMode === 'kanban') {
+                        elementToMove = clickedElement.closest('.data-card');
+                        if (!elementToMove) return;
+                        targetContainer = elementToMove.closest('.kanban-cards'); // Permanece na mesma coluna
+                    }
+
+                    if (!elementToMove || !targetContainer) {
+                        console.error("Não foi possível encontrar o elemento ou o container de destino.");
+                        isPriorityFetchLocked = false;
+                        return;
+                    }
+
+                    // 2. Animação de Fade-Out
+                    elementToMove.style.transition = 'opacity 0.3s ease-out';
+                    elementToMove.style.opacity = '0';
+
+                    // 3. Atraso para Mover e Fazer Fade-In
                     setTimeout(() => {
-                        location.reload();
-                    }, animationDuration); // Espera a animação terminar antes de recarregar
+                        // Atualiza o estado visual ANTES do fade-in
+                        if (viewMode === 'table') {
+                            elementToMove.classList.toggle('prioridade-ativa', isActivating);
+                        } else {
+                            clickedElement.classList.toggle('active', isActivating);
+                        }
+
+                        // Move o elemento
+                        if (isActivating) {
+                            targetContainer.prepend(elementToMove); // Move para o topo/início
+                        } else {
+                            // No modo Tabela ou Kanban, move para logo após os prioritários
+                            if (viewMode !== 'cards') {
+                                const lastPriorityItem = (viewMode === 'table')
+                                    ? targetContainer.querySelector('tr.prioridade-ativa:last-of-type')
+                                    : targetContainer.querySelector('.data-card .card-priority-toggle.active')?.closest('.data-card');
+
+                                if (lastPriorityItem) {
+                                    lastPriorityItem.after(elementToMove);
+                                } else {
+                                    targetContainer.prepend(elementToMove); // Se não houver outros, vai para o topo
+                                }
+                            } else {
+                                // No modo Cards, move para o início do grid geral
+                                targetContainer.prepend(elementToMove);
+                            }
+                        }
+
+                        // Animação de Fade-In
+                        requestAnimationFrame(() => {
+                            elementToMove.style.transition = 'opacity 0.3s ease-in';
+                            elementToMove.style.opacity = '1';
+                            setTimeout(() => {
+                                elementToMove.style.transition = ''; // Limpa
+                                isPriorityFetchLocked = false; // Libera o lock
+                            }, animationDuration);
+                        });
+                    }, animationDuration);
 
                 } else {
-                    // Falha no Backend: Reverte a mudança otimista
-                    alert('Erro ao alterar a prioridade. Revertendo.');
-                    if (isActivating) { // Se tentamos ativar, desativa
-                        if (clickedElement.classList.contains('card-priority-toggle')) {
-                            clickedElement.classList.remove('active');
-                        } else if (clickedElement.classList.contains('coluna-prioridade')) {
-                            clickedElement.closest('tr').classList.remove('prioridade-ativa');
-                        }
-                    } else { // Se tentamos desativar, reativa
-                        if (clickedElement.classList.contains('card-priority-toggle')) {
-                            clickedElement.classList.add('active');
-                        } else if (clickedElement.classList.contains('coluna-prioridade')) {
-                            clickedElement.closest('tr').classList.add('prioridade-ativa');
-                        }
-                    }
-                    isPriorityFetchLocked = false; // <<< LINHA ADICIONADA: Libera o lock
+                    alert('Erro ao alterar a prioridade.');
+                    isPriorityFetchLocked = false; // Libera o lock em caso de falha da API
                 }
             })
             .catch(error => {
-                // Falha de Rede: Reverte a mudança otimista
                 console.error('Erro no fetch da prioridade:', error);
-                alert('Erro de rede ao alterar prioridade. Revertendo.');
-                if (isActivating) { // Se tentamos ativar, desativa
-                    if (clickedElement.classList.contains('card-priority-toggle')) {
-                        clickedElement.classList.remove('active');
-                    } else if (clickedElement.classList.contains('coluna-prioridade')) {
-                        clickedElement.closest('tr').classList.remove('prioridade-ativa');
-                    }
-                } else { // Se tentamos desativar, reativa
-                    if (clickedElement.classList.contains('card-priority-toggle')) {
-                        clickedElement.classList.add('active');
-                    } else if (clickedElement.classList.contains('coluna-prioridade')) {
-                        clickedElement.closest('tr').classList.add('prioridade-ativa');
-                    }
-                }
-                isPriorityFetchLocked = false; // <<< LINHA ADICIONADA: Libera o lock
+                alert('Erro de rede ao alterar prioridade.');
+                isPriorityFetchLocked = false; // Libera o lock em caso de falha de rede
             });
         });
     });
-    // --- FIM LÓGICA DE PRIORIDADE (Otimista) ---
+    // --- FIM LÓGICA DE PRIORIDADE (Movimentação DOM) ---
 
     // --- LÓGICA DO MENU DE CONTEXTO PARA COR (Nativa) --- <<< BLOCO RESTAURADO >>>
     const contextMenu = document.getElementById('colorContextMenu');
