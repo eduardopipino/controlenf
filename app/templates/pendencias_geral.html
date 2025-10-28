@@ -502,7 +502,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Erro no fetch da prioridade:', error);
-                alert('Erro de rede ao alterar prioridade.');
+                //alert('Erro de rede ao alterar prioridade.');
                 isPriorityFetchLocked = false; // Libera o lock em caso de falha de rede
             });
         });
