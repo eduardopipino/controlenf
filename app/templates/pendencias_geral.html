@@ -298,17 +298,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- LÓGICA DE PRIORIDADE (TABELA E CARDS) ---
-    const priorityElements = document.querySelectorAll('.coluna-prioridade, .card-priority-toggle');
-    priorityElements.forEach(el => {
-        el.addEventListener('click', function(e) {
-            e.preventDefault(); e.stopPropagation();
-            const pendenciaId = this.dataset.id;
-            fetch(`/pendencias/toggle_prioridade/${pendenciaId}`, { method: 'POST' })
-            .then(r => r.json()).then(d => { if(d.status === 'success') location.reload(); });
-        });
-    });
-
     // --- LÓGICA DE MODAIS ---
     const filterModal = document.getElementById('filterModal');
     const configColunasModal = document.getElementById('configColunasModal');
@@ -465,22 +454,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Move o elemento
                         if (isActivating) {
-                            targetContainer.prepend(elementToMove); // Move para o topo/início
+                            // --- ATIVANDO: Move para o topo ---
+                            targetContainer.prepend(elementToMove);
                         } else {
-                            // No modo Tabela ou Kanban, move para logo após os prioritários
-                            if (viewMode !== 'cards') {
-                                const lastPriorityItem = (viewMode === 'table')
-                                    ? targetContainer.querySelector('tr.prioridade-ativa:last-of-type')
-                                    : targetContainer.querySelector('.data-card .card-priority-toggle.active')?.closest('.data-card');
+                            // --- DESATIVANDO: Move para baixo dos prioritários ---
+                            let firstNonPriorityItem = null;
 
-                                if (lastPriorityItem) {
-                                    lastPriorityItem.after(elementToMove);
+                            if (viewMode === 'table') {
+                                // Encontra TODAS as linhas que NÃO são prioridade
+                                const allNonPriorityRows = targetContainer.querySelectorAll('tr:not(.prioridade-ativa)');
+                                // Pega a primeira que NÃO seja o próprio elemento que estamos movendo
+                                firstNonPriorityItem = Array.from(allNonPriorityRows).find(row => row !== elementToMove);
+                            } else if (viewMode === 'kanban') {
+                                // Encontra o primeiro card que NÃO tem prioridade
+                                firstNonPriorityItem = targetContainer.querySelector('.data-card:not(:has(.card-priority-toggle.active))');
+                            } else { // viewMode === 'cards'
+                                // No modo Cards, o container de destino já é o grid geral
+                                targetContainer.prepend(elementToMove); // Adiciona no início do grid geral
+                            }
+
+                            if (viewMode !== 'cards') {
+                                if (firstNonPriorityItem) {
+                                    // Insere o elemento ANTES do primeiro item sem prioridade
+                                    targetContainer.insertBefore(elementToMove, firstNonPriorityItem);
                                 } else {
-                                    targetContainer.prepend(elementToMove); // Se não houver outros, vai para o topo
+                                    // Se TODOS os outros itens são prioritários, insere no FINAL
+                                    targetContainer.appendChild(elementToMove);
                                 }
-                            } else {
-                                // No modo Cards, move para o início do grid geral
-                                targetContainer.prepend(elementToMove);
                             }
                         }
 
