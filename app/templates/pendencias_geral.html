@@ -130,22 +130,15 @@
                             {% endif %}
                         </h4>
 
-                        {# Cards Prioritários deste grupo (se houver) #}
-                       {% set prioridades = grupo.pendencias | selectattr("prioridade") | list %}
-                        {% if prioridades %}
-                            <div class="card-grid">
-                                {% for p in prioridades %}
-                                    {% include 'partials/_pendencia_card.html' %}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-
-                        {# Cards Normais deste grupo #}
+                        {# --- BLOCO SIMPLIFICADO --- #}
+                        {# Renderiza TODOS os cards em um único grid #}
+                        {# (A lista grupo.pendencias JÁ VEM ordenada por prioridade do backend) #}
                         <div class="card-grid">
-                            {% for p in grupo.pendencias if not p.prioridade %}
+                            {% for p in grupo.pendencias %}
                                 {% include 'partials/_pendencia_card.html' %}
                             {% endfor %}
                         </div>
+                        {# --- FIM DO BLOCO SIMPLIFICADO --- #}
                     </div>
                 {% else %}
                     {# Se não houver grupos (improvável se o filtro funcionou) #}
@@ -522,30 +515,58 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (isActivating) {
                             // --- ATIVANDO: Move para o topo ---
                             targetContainer.prepend(elementToMove);
+
                         } else {
                             // --- DESATIVANDO: Move para baixo dos prioritários ---
                             let firstNonPriorityItem = null;
+                            let lastPriorityItem = null;
 
                             if (viewMode === 'table') {
                                 // Encontra TODAS as linhas que NÃO são prioridade
                                 const allNonPriorityRows = targetContainer.querySelectorAll('tr:not(.prioridade-ativa)');
-                                // Pega a primeira que NÃO seja o próprio elemento que estamos movendo
                                 firstNonPriorityItem = Array.from(allNonPriorityRows).find(row => row !== elementToMove);
+
                             } else if (viewMode === 'kanban') {
                                 // Encontra o primeiro card que NÃO tem prioridade
-                                firstNonPriorityItem = targetContainer.querySelector('.data-card:not(:has(.card-priority-toggle.active))');
-                            } else { // viewMode === 'cards'
-                                // No modo Cards, o container de destino já é o grid geral
-                                targetContainer.prepend(elementToMove); // Adiciona no início do grid geral
+                                const allNonPriorityCards = targetContainer.querySelectorAll('.data-card:not(:has(.card-priority-toggle.active))');
+                                firstNonPriorityItem = Array.from(allNonPriorityCards).find(card => card !== elementToMove);
+
+                            } else { // viewMode === 'cards' (Modo 'Geral' ou 'Por Instrumento')
+                                /// Encontra o ÚLTIMO item prioritário DENTRO do grid de destino
+                                // (O targetContainer já foi definido corretamente antes)
+
+                                // --- INÍCIO: Correção Lógica Cards ---
+                                // 1. Encontra TODOS os cards que AINDA são prioritários
+                                const allPriorityCards = targetContainer.querySelectorAll('.data-card:has(.card-priority-toggle.active)');
+
+                                // 2. Filtra para EXCLUIR o elemento que estamos movendo (que ainda tem .active)
+                                const otherPriorityCards = Array.from(allPriorityCards).filter(card => card !== elementToMove);
+
+                                if (otherPriorityCards.length > 0) {
+                                    // 3. Pega o último da lista filtrada
+                                    lastPriorityItem = otherPriorityCards[otherPriorityCards.length - 1];
+                                } else {
+                                    lastPriorityItem = null; // Não há nenhum OUTRO card prioritário
+                                }
+                                // --- FIM: Correção Lógica Cards ---
                             }
 
-                            if (viewMode !== 'cards') {
+                            // --- Lógica de Inserção ---
+                            if (viewMode === 'table' || viewMode === 'kanban') {
                                 if (firstNonPriorityItem) {
                                     // Insere o elemento ANTES do primeiro item sem prioridade
                                     targetContainer.insertBefore(elementToMove, firstNonPriorityItem);
                                 } else {
                                     // Se TODOS os outros itens são prioritários, insere no FINAL
                                     targetContainer.appendChild(elementToMove);
+                                }
+                            } else { // viewMode === 'cards'
+                                if (lastPriorityItem) {
+                                    // Insere DEPOIS do último item prioritário encontrado
+                                    lastPriorityItem.after(elementToMove);
+                                } else {
+                                    // Se não há NENHUM prioritário, insere no TOPO
+                                    targetContainer.prepend(elementToMove);
                                 }
                             }
                         }
