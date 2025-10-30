@@ -2102,6 +2102,11 @@ body.theme-dark tr[style*="background-color"]:hover {
 
 /* --- Layout Kanban --- */
 
+.kanban-view-container {
+    width: 100%; /* Garante que o container não ultrapasse a largura da página */
+    overflow-x: auto; /* Adiciona a barra de rolagem horizontal APENAS neste container */
+    padding-bottom: 15px; /* Adiciona um espaço para a barra de rolagem não colar no fim da página */
+}
 .kanban-board {
     display: flex;
     gap: 15px;
