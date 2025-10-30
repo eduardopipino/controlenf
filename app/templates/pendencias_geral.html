@@ -279,6 +279,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const card_fields_map = {{ dict(todas_as_colunas_cards) | tojson | safe }}; // <<< LINHA CORRIGIDA
     let isPriorityFetchLocked = false; // <<< LINHA ADICIONADA: Flag de bloqueio
     const viewMode = "{{ view_mode }}"; // <<< LINHA ADICIONADA
+    const pageMode = "{{ page_mode }}"; // <<< LINHA ADICIONADA
 
     // --- LÓGICA DO SELETOR DE VISUALIZAÇÃO ---
     const viewSelector = document.querySelector('.view-selector');
@@ -462,11 +463,35 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else if (viewMode === 'cards') {
                         elementToMove = clickedElement.closest('.data-card');
                         if (!elementToMove) return;
-                        if (isActivating) {
-                            targetContainer = document.querySelector('.priority-section .card-grid');
+
+                        // --- INÍCIO DA LÓGICA CORRIGIDA ---
+                        if (pageMode === 'por_instrumento') {
+                            // --- MODO "POR INSTRUMENTO" ---
+                            // 1. Encontra o container do grupo do instrumento atual
+                            const currentGroupSection = elementToMove.closest('.instrumento-group-section');
+                            if (!currentGroupSection) {
+                                console.error("Modo 'por_instrumento', mas não foi possível encontrar a .instrumento-group-section pai.");
+                                isPriorityFetchLocked = false;
+                                return;
+                            }
+
+                            if (isActivating) {
+                                // 2a. Encontra o PRIMEIRO .card-grid (o de prioridades) DENTRO do grupo
+                                targetContainer = currentGroupSection.querySelector('.card-grid');
+                            } else {
+                                // 2b. Encontra o ÚLTIMO .card-grid (o geral) DENTRO do grupo
+                                const allGridsInGroup = currentGroupSection.querySelectorAll('.card-grid');
+                                targetContainer = allGridsInGroup[allGridsInGroup.length - 1];
+                            }
                         } else {
-                            targetContainer = document.querySelector('.card-grid:not(.priority-section .card-grid)');
+                            // --- MODO "GERAL" (a lógica antiga estava correta para este modo) ---
+                            if (isActivating) {
+                                targetContainer = document.querySelector('.priority-section .card-grid');
+                            } else {
+                                targetContainer = document.querySelector('.card-grid:not(.priority-section .card-grid)');
+                            }
                         }
+                        // --- FIM DA LÓGICA CORRIGIDA ---
 
                     } else if (viewMode === 'kanban') {
                         elementToMove = clickedElement.closest('.data-card');
