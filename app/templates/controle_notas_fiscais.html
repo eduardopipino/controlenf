@@ -622,7 +622,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (situacaoP && typeof card_fields_map_global !== 'undefined') {
                         const labelText = card_fields_map_global['situacao'] || 'Situação';
                         // Recria o HTML preservando o span.card-field-value
-                        situacaoP.innerHTML = `<strong>${labelText}:</strong> <span class="card-field-value">${novaSituacao || 'N/D'}</span>`;
+                        situacaoP.innerHTML = `<strong>${labelText}:</strong> <span class="card-field-value">${novaSituacao || ''}</span>`;
                     }
                 } catch (e) {
                     console.error("Erro ao atualizar texto da situação no card (context menu):", e);
