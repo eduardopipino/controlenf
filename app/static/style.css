@@ -2601,3 +2601,31 @@ body.theme-dark .card-details-link:hover {
 .anim-icon-shrink {
     animation: shrink-icon-anim 0.3s ease-in-out;
 }
+
+/* --- Estilo para Agrupamento de Cards por Instrumento --- */
+.instrumento-group-section {
+    margin-bottom: 25px; /* Espaço entre grupos de instrumentos */
+    padding: 15px;
+    border: 1px solid var(--border-base);
+    border-radius: 8px;
+    background-color: var(--background-primary);
+}
+.instrumento-group-section h4 {
+    margin-top: 0;
+    margin-bottom: 15px; /* Espaço abaixo do título do instrumento */
+    border-bottom: 1px solid var(--border-base);
+    padding-bottom: 10px;
+}
+.instrumento-group-section h4 a {
+    text-decoration: none;
+    color: var(--tertiary-color);
+    font-size: 1.1em;
+}
+.instrumento-group-section h4 a:hover {
+    text-decoration: underline;
+}
+/* Ajusta o grid de prioridade (se existir) para ter espaço abaixo */
+.instrumento-group-section .card-grid:has(.data-card[data-id*="prioridade-ativa"]) {
+    margin-bottom: 15px; 
+    /* (Isso é um seletor :has complexo, pode simplificar se não funcionar) */
+}

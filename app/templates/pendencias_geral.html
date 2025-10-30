@@ -113,6 +113,46 @@
 
     {% elif view_mode == 'cards' %}
         <div class="card-view-container">
+            {# --- Início da Lógica Condicional --- #}
+            {% if page_mode == 'por_instrumento' %}
+
+                {% for grupo in grupos_de_pendencias %}
+                    <div class="instrumento-group-section">
+                        {# Título do Grupo (Instrumento) #}
+                        <h4>
+                            {# Adiciona link para os detalhes do instrumento (se tivermos o ID) #}
+                            {% if grupo.detalhes_instrumento.instrumento_id %}
+                                <a href="{{ url_for('instrumentos.gerenciar_instrumento', instrumento_id=grupo.detalhes_instrumento.instrumento_id) }}" title="Ver Instrumento">
+                                    {{ grupo.detalhes_instrumento.instrumento_display }} ({{ grupo.detalhes_instrumento.contratada }})
+                                </a>
+                            {% else %}
+                                {{ grupo.detalhes_instrumento.instrumento_display }} ({{ grupo.detalhes_instrumento.contratada }})
+                            {% endif %}
+                        </h4>
+
+                        {# Cards Prioritários deste grupo (se houver) #}
+                       {% set prioridades = grupo.pendencias | selectattr("prioridade") | list %}
+                        {% if prioridades %}
+                            <div class="card-grid">
+                                {% for p in prioridades %}
+                                    {% include 'partials/_pendencia_card.html' %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        {# Cards Normais deste grupo #}
+                        <div class="card-grid">
+                            {% for p in grupo.pendencias if not p.prioridade %}
+                                {% include 'partials/_pendencia_card.html' %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% else %}
+                    {# Se não houver grupos (improvável se o filtro funcionou) #}
+                    <p>Nenhuma pendência vinculada a instrumentos encontrada.</p>
+                {% endfor %}
+
+            {% else %}
             <!-- SEÇÃO DE PRIORIDADES -->
             <div class="priority-section">
                 <h4>
@@ -135,6 +175,7 @@
                 {% endfor %}
             </div>
         </div>
+        {% endif %}
 
     {% elif view_mode == 'kanban' %}
         <div class="kanban-view-container">

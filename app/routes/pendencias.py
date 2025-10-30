@@ -10,6 +10,7 @@ from bson.objectid import ObjectId
 from datetime import datetime
 import io
 import csv
+from collections import OrderedDict
 
 # 2. Imports da nossa própria aplicação (modelos e coleções)
 from app.models import (pendencias_collection, get_pendencias_com_detalhes,
@@ -70,11 +71,23 @@ def _gerar_pendencias_csv(query_filter, filename_prefix):
 def pendencias_lista(page_mode="geral"):
     query_filter = {'user_id': ObjectId(current_user.id)}
     
+    # --- INÍCIO: BLOCO DE INICIALIZAÇÃO ADICIONADO ---
+    # Inicializa todas as variáveis que podem ou não ser definidas pelos blocos lógicos
+    pendencias_vencidas = []
+    pendencias_a_vencer = []
+    pendencias_sem_prazo = []
+    grupos_de_pendencias = {} # Inicializa como dicionário
+    # --- FIM: BLOCO DE INICIALIZAÇÃO ADICIONADO ---
+    
     if page_mode == 'concluidas':
         query_filter['status'] = 'Concluído'
     elif page_mode == 'diversas':
         query_filter['status'] = 'Pendente'
         query_filter['instrumento_id'] = {'$in': [None, '']}
+    elif page_mode == 'por_instrumento':
+        query_filter['status'] = 'Pendente'
+        # Filtra apenas pendências que TÊM um instrumento_id
+        query_filter['instrumento_id'] = {'$exists': True, '$ne': None, '$ne': ''}
     else: # modo 'geral'
         query_filter['status'] = 'Pendente'
         page_mode = 'geral'
@@ -130,24 +143,70 @@ def pendencias_lista(page_mode="geral"):
     nao_prioritarios_ordenados = sort_bucket(nao_prioritarios, sort_by, is_reverse)
     lista_pendencias = prioritarios_ordenados + nao_prioritarios_ordenados
     
-    hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    for p in lista_pendencias:
-        p['vencido'] = p.get('prazo') and p.get('prazo') < hoje
+    # --- NOVO BLOCO: Filtro Pós-Processamento para 'por_instrumento' ---
+    if page_mode == 'por_instrumento':
+        lista_filtrada = []
+        for p in lista_pendencias:
+            # Pega o 'instrumento_display' que veio do $addFields
+            grupo_key = p.get('instrumento_display', 'Inválido')
+
+            # Mantém apenas itens que TÊM um ID E um display válido (não " / ")
+            if p.get('instrumento_id') and grupo_key.strip() and grupo_key.strip() != '/':
+                lista_filtrada.append(p)
+
+        # Sobrescreve a lista principal com a lista filtrada
+        lista_pendencias = lista_filtrada
+    # --- FIM DO NOVO BLOCO ---
+    
+    #hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    #for p in lista_pendencias:
+    #    p['vencido'] = p.get('prazo') and p.get('prazo') < hoje
+    # O loop 'hoje = ... for p in ...' foi removido daqui
+    # pois a lógica abaixo (NOVA LÓGICA PARA PREPARAR DADOS PARA O KANBAN)
+    # já faz a mesma coisa E preenche as listas do Kanban.
+
+    # --- NOVO BLOCO: Agrupamento em Python para Modo 'por_instrumento' ---
+    grupos_de_pendencias = {} # Inicializa
+    if page_mode == 'por_instrumento':
+        # Usa OrderedDict para manter a ordem de agrupamento
+        grupos_de_pendencias = OrderedDict()
+        # Itera sobre a lista_pendencias (que já está ordenada por prioridade/sort_by)
+        for p in lista_pendencias:
+            # Usa o 'instrumento_display' (Nº / Tipo) como chave de grupo
+            # (Se 'instrumento_display' não estiver sendo preenchido corretamente, use str(p.get('instrumento_id')))
+            grupo_key = p.get('instrumento_display', 'Inválido') 
+
+            # Se o ID não existir (é 'diversa') ou o display for inválido ('órfã'), pule.
+            if not p.get('instrumento_id') or not grupo_key.strip() or grupo_key.strip() == '/':
+                continue
+            if grupo_key not in grupos_de_pendencias:
+                # Cria o grupo na primeira vez que o instrumento aparece
+                grupos_de_pendencias[grupo_key] = {
+                    'detalhes_instrumento': {
+                        'instrumento_id': str(p.get('instrumento_id')), # Armazena o ID
+                        'instrumento_display': grupo_key,
+                        'contratada': p.get('contratada', 'N/A')
+                    },
+                    'pendencias': [] # Lista vazia para as pendências
+                }
+            # Adiciona a pendência ao seu grupo
+            grupos_de_pendencias[grupo_key]['pendencias'].append(p)
+    # --- FIM NOVO BLOCO ---
 
     # --- NOVA LÓGICA PARA PREPARAR DADOS PARA O KANBAN ---
-        hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-        pendencias_vencidas = []
-        pendencias_a_vencer = []
-        pendencias_sem_prazo = []
-        for p in lista_pendencias:
-            p['vencido'] = p.get('prazo') and p.get('prazo') < hoje
-            if p['vencido']:
-                pendencias_vencidas.append(p)
-            elif p.get('prazo'):
-                pendencias_a_vencer.append(p)
-            else:
-                pendencias_sem_prazo.append(p)
-        # --- FIM DA NOVA LÓGICA ---
+    hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    #pendencias_vencidas = []
+    #pendencias_a_vencer = []
+    #pendencias_sem_prazo = []
+    for p in lista_pendencias:
+        p['vencido'] = p.get('prazo') and p.get('prazo') < hoje
+        if p['vencido']:
+            pendencias_vencidas.append(p)
+        elif p.get('prazo'):
+            pendencias_a_vencer.append(p)
+        else:
+            pendencias_sem_prazo.append(p)
+    # --- FIM DA NOVA LÓGICA ---
 
     # 1. Cria a lista de opções para o modal dos cards, JÁ REMOVENDO o campo 'pendencia'
     opcoes_campos_cards = [field for field in TODAS_AS_COLUNAS_PENDENCIAS if field[0] != 'pendencia']
@@ -179,6 +238,7 @@ def pendencias_lista(page_mode="geral"):
         pendencias_vencidas=pendencias_vencidas,
         pendencias_a_vencer=pendencias_a_vencer,
         pendencias_sem_prazo=pendencias_sem_prazo,
+        grupos_de_pendencias=grupos_de_pendencias.values(),
         view_mode=view_mode,
         todas_as_colunas=colunas_para_exibir, # Usa a lista filtrada para a tabela
         colunas_visiveis=colunas_visiveis,     # Usa a lista filtrada para a tabela
@@ -201,7 +261,7 @@ def pendencias_filtrar():
     return redirect(url_for('.pendencias_lista', page_mode=page_mode, **filter_params))
 
 
-@pendencias_bp.route('/por_instrumento')
+@pendencias_bp.route('/controle_instrumento')
 @login_required
 def pendencias_por_instrumento():
     user_id_obj = ObjectId(current_user.id)
