@@ -1971,6 +1971,8 @@ body.theme-dark .texto-pendente {
 .coluna-situacao {
     /* Força o texto do cabeçalho ("Situação") a não quebrar linha */
     white-space: nowrap;
+    /* Força a coluna a encolher para o seu conteúdo (width: auto) */
+    width: 1%;
 }
 
 /* ====================================================================== */
