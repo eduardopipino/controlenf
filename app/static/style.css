@@ -2044,7 +2044,7 @@ body.theme-dark tr[style*="background-color"]:hover {
     border: none;
     padding: 6px 10px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease;
     border-left: 1px solid var(--border-base);
     color: var(--text-primary);
 }

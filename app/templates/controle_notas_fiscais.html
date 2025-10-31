@@ -63,7 +63,7 @@
                         {% else %}
                             <th class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }}">
                         {% endif %}
-                            <a href="{{ url_for(request.endpoint, filter_mode=filter_mode, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc') }}">
+                            <a href="{{ url_for(request.endpoint, **dict(request.args, filter_mode=filter_mode, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc'  )) }}">
                                 {{ col_nome }}
                                 {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}
                             </a>
@@ -189,6 +189,8 @@
             <h3>Filtrar Registros</h3>
                 {# Alterado para METHOD="GET" e a action agora usa a rota unificada #}
                 <form method="GET" action="{{ url_for('controle.controle_lista', filter_mode=filter_mode) }}">
+                <input type="hidden" name="sort_by" value="{{ sort_by or 'data_criacao' }}">
+                <input type="hidden" name="order" value="{{ order or 'asc' }}">
                 
                 <div>
                     <label for="filter_n_instrumento">Nº Instrumento:</label>
