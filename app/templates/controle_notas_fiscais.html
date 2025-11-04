@@ -1351,7 +1351,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const query = buscaInput.value.toLowerCase().trim();
             let itemsToFilter = [];
             let itemsVisiveis = 0;
-            const displayStyle = (currentViewMode === 'table') ? 'table-row' : '';
+            // Pega o estilo de display correto verificando o tamanho da janela
+            const isResponsiveMode = window.innerWidth <= 768;
+            const displayStyle = (currentViewMode === 'table') ? (isResponsiveMode ? 'block' : 'table-row') : '';
 
             // 1. Seleciona os itens corretos
             if (currentViewMode === 'table') {
@@ -1399,14 +1401,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (tabelaSemResultadosBusca) {
                     // A mensagem de BUSCA só aparece se a busca estiver ATIVA E não houver resultados
                     if (isSearching && noResultsFromSearch) {
-                        // Força a exibição como 'table-row' usando !important
-                        tabelaSemResultadosBusca.style.setProperty('display', 'table-row', 'important');
+                        // Força a exibição com o estilo correto (table-row OU block)
+                        tabelaSemResultadosBusca.style.setProperty('display', displayStyle, 'important');
                     } else {
                         // Força a ocultação
                         tabelaSemResultadosBusca.style.setProperty('display', 'none', 'important');
                     }
-                    // Remove a borda de teste (se ainda existir)
-                    tabelaSemResultadosBusca.style.border = 'none';
+                    tabelaSemResultadosBusca.style.border = 'none'; // Remove o teste da borda
                 }
                 if (tabelaBackendSemResultados) {
                     // A mensagem do BACKEND (Nenhum registro) só aparece se a busca NÃO estiver ativa
