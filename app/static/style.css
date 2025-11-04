@@ -2664,6 +2664,7 @@ body.theme-dark #buscaRapidaInput {
     font-style: italic;
 }
 /* Garante que o <td> da tabela ocupe a largura correta */
-#tabelaControle td.kanban-empty-msg {
-     padding: 30px; /* Mais espaço vertical na tabela */
+#tabelaControle td.kanban-empty-msg,
+#tabelaPendencias td.kanban-empty-msg {
+     padding: 30px;
 }

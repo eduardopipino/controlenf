@@ -143,7 +143,7 @@
                 <td><button class="expand-card-btn">Ver mais</button></td>
             </tr>
             {% else %}
-            <tr>
+            <tr id="tabela-backend-sem-resultados"> {# <<< ID ADICIONADO AQUI #}
                 <td colspan="{{ colunas_visiveis|length + 2 }}">Nenhum registro de controle encontrado.</td>
             </tr>
             {% endfor %}
@@ -776,8 +776,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 // Verifica se existe strong E se o texto corresponde a "Situação:"
                                 return strong && strong.textContent.trim() === 'Situação:';
                             });
-                            if (situacaoP && typeof card_fields_map_global !== 'undefined') { // <<< CORRIGIDO
-                            const labelText = card_fields_map_global['situacao'] || 'Situação'; // <<< CORRIGIDO
+                            if (situacaoP && typeof card_fields_map_global !== 'undefined') { 
+                            const labelText = card_fields_map_global['situacao'] || 'Situação'; 
                             situacaoP.innerHTML = `<strong>${labelText}:</strong> <span class="card-field-value">${novaSituacao || ''}</span>`; // '' para consistência
                         }
                         } catch (e) {
@@ -1340,8 +1340,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentViewMode = "{{ view_mode }}";
 
     // Referências para as mensagens "Sem Resultados"
-    const tabelaSemResultados = document.getElementById('tabela-sem-resultados-row');
-    const cardsSemResultados = document.getElementById('cards-sem-resultados');
+    const tabelaSemResultadosBusca = document.getElementById('tabela-sem-resultados-row');
+    const cardsSemResultadosBusca = document.getElementById('cards-sem-resultados');
+    const tabelaBackendSemResultados = document.getElementById('tabela-backend-sem-resultados');
 
     if (buscaInput) {
 
@@ -1350,8 +1351,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const query = buscaInput.value.toLowerCase().trim();
             let itemsToFilter = [];
             let itemsVisiveis = 0;
+            const displayStyle = (currentViewMode === 'table') ? 'table-row' : '';
 
-            // 1. Seleciona os itens corretos baseado na visualização
+            // 1. Seleciona os itens corretos
             if (currentViewMode === 'table') {
                 itemsToFilter = document.querySelectorAll('#tabelaControle tbody tr.clickable-row');
             } else if (currentViewMode === 'cards' || currentViewMode === 'kanban') {
@@ -1371,7 +1373,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 if (itemText.includes(query)) {
-                    item.style.display = ''; // Mostra o item
+                    item.style.display = displayStyle; // <<< CORRIGIDO
                     itemsVisiveis++;
                 } else {
                     item.style.display = 'none'; // Esconde o item
@@ -1379,43 +1381,76 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             // 3. Gerencia as mensagens "Sem Resultados"
+            const noResultsFromSearch = (itemsVisiveis === 0);
+            const isSearching = query.length > 0;
+
+            // --- INÍCIO LOGS DE DEPURAÇÃO ---
+            console.log("Executando busca:", {
+                query: query,
+                isSearching: isSearching,
+                itemsVisiveis: itemsVisiveis,
+                noResults: noResultsFromSearch,
+                tabelaBusca: tabelaSemResultadosBusca,
+                tabelaBackend: tabelaBackendSemResultados
+            });
+            // --- FIM LOGS DE DEPURAÇÃO ---
+
             if (currentViewMode === 'table') {
-                tabelaSemResultados.style.display = (itemsVisiveis === 0) ? '' : 'none';
+                if (tabelaSemResultadosBusca) {
+                    // A mensagem de BUSCA só aparece se a busca estiver ATIVA E não houver resultados
+                    tabelaSemResultadosBusca.style.display = (isSearching && noResultsFromSearch) ? 'table-row' : 'none'; // <<< CORRIGIDO
+                }
+                if (tabelaBackendSemResultados) {
+                    // A mensagem do BACKEND (Nenhum registro) só aparece se a busca NÃO estiver ativa
+                    tabelaBackendSemResultados.style.display = (isSearching) ? 'none' : '';
+                }
+
             } else if (currentViewMode === 'cards') {
-                cardsSemResultados.style.display = (itemsVisiveis === 0) ? '' : 'none';
+                if (cardsSemResultadosBusca) {
+                    // A mensagem de BUSCA (cards) só aparece se a busca estiver ATIVA E não houver resultados
+                    // (Assumindo que o backend já esconde a lista se 'controles' estiver vazio)
+                    cardsSemResultadosBusca.style.display = (isSearching && noResultsFromSearch) ? '' : 'none';
+                }
+
             } else if (currentViewMode === 'kanban') {
-                atualizarContagensKanban(); // Kanban tem sua própria lógica de colunas
+                atualizarContagensKanban(query);
             }
         }
 
         // Listener para 'keyup' (digitar)
         buscaInput.addEventListener('keyup', executarBusca);
 
-        // Listener para 'search' (clicar no 'X' do input type="search") e ESC
+        // Listener para 'search' (clicar no 'X' do input type="search")
         buscaInput.addEventListener('search', function() {
-            // Se o campo for limpo pelo 'X' nativo, executa a busca (query será vazia)
             executarBusca();
         });
 
         // PONTO 2: Limpar com ESC
         buscaInput.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                buscaInput.value = ''; // Limpa o valor
-                executarBusca();       // Executa a busca (que mostrará tudo)
-                buscaInput.blur();     // Tira o foco do input
+                buscaInput.value = '';
+                executarBusca();
+                buscaInput.blur();
             }
         });
+
+        // PONTO 4 (Correção): Ouve mudanças nos dropdowns da tabela
+        if (currentViewMode === 'table') {
+            document.querySelectorAll('#tabelaControle .situacao-dropdown').forEach(dropdown => {
+                dropdown.addEventListener('change', executarBusca);
+            });
+        }
     }
 
     // PONTO 3: Atualiza mensagens "Sem Resultados" no Kanban
-    function atualizarContagensKanban() {
+    function atualizarContagensKanban(query) {
         if (currentViewMode !== 'kanban') return;
+        const isSearching = query && query.length > 0;
 
         document.querySelectorAll('.kanban-column').forEach(coluna => {
             const cardsNaColuna = coluna.querySelectorAll('.data-card');
             const totalCards = cardsNaColuna.length;
 
-            // Conta quantos estão escondidos
             let cardsEscondidos = 0;
             cardsNaColuna.forEach(card => {
                 if (card.style.display === 'none') {
@@ -1425,8 +1460,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             let msgNenhumResultado = coluna.querySelector('.kanban-empty-msg');
 
-            // Se todos os cards da coluna foram ocultados (e a coluna não estava vazia)
-            if (totalCards > 0 && cardsEscondidos === totalCards) {
+            // Se a busca escondeu todos os cards (e a coluna não estava vazia)
+            if (isSearching && totalCards > 0 && cardsEscondidos === totalCards) {
                 if (!msgNenhumResultado) {
                     msgNenhumResultado = document.createElement('p');
                     msgNenhumResultado.className = 'kanban-empty-msg';
@@ -1434,7 +1469,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     coluna.querySelector('.kanban-cards').appendChild(msgNenhumResultado);
                 }
             } else if (msgNenhumResultado) {
-                // Se há cards visíveis, remove a mensagem
+                // Se a busca não está ativa, ou se há resultados, remove a mensagem
                 msgNenhumResultado.remove();
             }
         });
