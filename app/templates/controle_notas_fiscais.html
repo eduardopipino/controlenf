@@ -30,6 +30,7 @@
         </div>
                 
         <div class="toolbar-group-right">
+            <input type="search" id="buscaRapidaInput" placeholder="Buscar em todos os campos... (ESC para limpar)">
             <button onclick="location.href='{{ url_for('controle.novo_controle') }}'">Novo</button>
             <button id="btnNovoRecorrente">Novo - Recorrente</button>
         </div>
@@ -74,6 +75,9 @@
             </tr>
         </thead>
         <tbody>
+            <tr id="tabela-sem-resultados-row" style="display: none;">
+                <td colspan="{{ colunas_visiveis|length + 2 }}" class="kanban-empty-msg">Nenhum resultado encontrado para a busca.</td>
+            </tr>
             {% for controle in controles %}
             <tr class="clickable-row" id="controle-row-{{ controle._id }}" data-id="{{ controle._id }}" data-url="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}">   
                 <td data-label="Ações">
@@ -147,6 +151,9 @@
     </table>
 
     {% elif view_mode == 'cards' %}
+    <p id="cards-sem-resultados" class="kanban-empty-msg" style="display: none; text-align: center; width: 100%;">
+        Nenhum resultado encontrado para a busca.
+    </p>
     <div class="card-view-container">
         <div class="card-grid">
             {% for controle in controles %}
@@ -1327,6 +1334,112 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     // --- FIM DO BLOCO 15 ---
+
+    // --- 16. LÓGICA DE BUSCA RÁPIDA (CLIENT-SIDE) ---
+    const buscaInput = document.getElementById('buscaRapidaInput');
+    const currentViewMode = "{{ view_mode }}";
+
+    // Referências para as mensagens "Sem Resultados"
+    const tabelaSemResultados = document.getElementById('tabela-sem-resultados-row');
+    const cardsSemResultados = document.getElementById('cards-sem-resultados');
+
+    if (buscaInput) {
+
+        // Função principal de filtragem
+        function executarBusca() {
+            const query = buscaInput.value.toLowerCase().trim();
+            let itemsToFilter = [];
+            let itemsVisiveis = 0;
+
+            // 1. Seleciona os itens corretos baseado na visualização
+            if (currentViewMode === 'table') {
+                itemsToFilter = document.querySelectorAll('#tabelaControle tbody tr.clickable-row');
+            } else if (currentViewMode === 'cards' || currentViewMode === 'kanban') {
+                itemsToFilter = document.querySelectorAll('.data-card');
+            }
+
+            // 2. Loop para filtrar
+            itemsToFilter.forEach(item => {
+                let itemText = item.textContent.toLowerCase();
+
+                // PONTO 4: Adiciona o valor do <select> de situação (se estiver na tabela)
+                if (currentViewMode === 'table') {
+                    const situacaoSelect = item.querySelector('.situacao-dropdown');
+                    if (situacaoSelect && situacaoSelect.value) {
+                        itemText += " " + situacaoSelect.value.toLowerCase();
+                    }
+                }
+
+                if (itemText.includes(query)) {
+                    item.style.display = ''; // Mostra o item
+                    itemsVisiveis++;
+                } else {
+                    item.style.display = 'none'; // Esconde o item
+                }
+            });
+
+            // 3. Gerencia as mensagens "Sem Resultados"
+            if (currentViewMode === 'table') {
+                tabelaSemResultados.style.display = (itemsVisiveis === 0) ? '' : 'none';
+            } else if (currentViewMode === 'cards') {
+                cardsSemResultados.style.display = (itemsVisiveis === 0) ? '' : 'none';
+            } else if (currentViewMode === 'kanban') {
+                atualizarContagensKanban(); // Kanban tem sua própria lógica de colunas
+            }
+        }
+
+        // Listener para 'keyup' (digitar)
+        buscaInput.addEventListener('keyup', executarBusca);
+
+        // Listener para 'search' (clicar no 'X' do input type="search") e ESC
+        buscaInput.addEventListener('search', function() {
+            // Se o campo for limpo pelo 'X' nativo, executa a busca (query será vazia)
+            executarBusca();
+        });
+
+        // PONTO 2: Limpar com ESC
+        buscaInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                buscaInput.value = ''; // Limpa o valor
+                executarBusca();       // Executa a busca (que mostrará tudo)
+                buscaInput.blur();     // Tira o foco do input
+            }
+        });
+    }
+
+    // PONTO 3: Atualiza mensagens "Sem Resultados" no Kanban
+    function atualizarContagensKanban() {
+        if (currentViewMode !== 'kanban') return;
+
+        document.querySelectorAll('.kanban-column').forEach(coluna => {
+            const cardsNaColuna = coluna.querySelectorAll('.data-card');
+            const totalCards = cardsNaColuna.length;
+
+            // Conta quantos estão escondidos
+            let cardsEscondidos = 0;
+            cardsNaColuna.forEach(card => {
+                if (card.style.display === 'none') {
+                    cardsEscondidos++;
+                }
+            });
+
+            let msgNenhumResultado = coluna.querySelector('.kanban-empty-msg');
+
+            // Se todos os cards da coluna foram ocultados (e a coluna não estava vazia)
+            if (totalCards > 0 && cardsEscondidos === totalCards) {
+                if (!msgNenhumResultado) {
+                    msgNenhumResultado = document.createElement('p');
+                    msgNenhumResultado.className = 'kanban-empty-msg';
+                    msgNenhumResultado.textContent = 'Nenhum resultado nesta coluna.';
+                    coluna.querySelector('.kanban-cards').appendChild(msgNenhumResultado);
+                }
+            } else if (msgNenhumResultado) {
+                // Se há cards visíveis, remove a mensagem
+                msgNenhumResultado.remove();
+            }
+        });
+    }
+    // --- FIM DO BLOCO 16 ---
 
 });
 </script>

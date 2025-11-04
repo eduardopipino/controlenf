@@ -2635,3 +2635,35 @@ body.theme-dark .card-details-link:hover {
     margin-bottom: 15px; 
     /* (Isso é um seletor :has complexo, pode simplificar se não funcionar) */
 }
+
+/* Estilo para o input de Busca Rápida na barra de ferramentas */
+#buscaRapidaInput {
+    font-size: 0.9em;
+    padding: 8px 12px;
+    border: 1px solid var(--border-base);
+    border-radius: 5px;
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+
+    /* --- AJUSTES SOLICITADOS --- */
+    height: var(--element-height);
+    width: 300px; /* 2. Largura maior (ajuste se necessário) */
+    box-sizing: border-box;
+    margin-right: 10px; /* Espaço antes do botão "Novo" */
+}
+body.theme-dark #buscaRapidaInput {
+     background-color: #2a2a2a;
+     border-color: #444;
+}
+
+/* Estilo para a mensagem de "Nenhum resultado" (Kanban e Tabela) */
+.kanban-empty-msg {
+    padding: 20px;
+    text-align: center;
+    color: var(--tertiary-color);
+    font-style: italic;
+}
+/* Garante que o <td> da tabela ocupe a largura correta */
+#tabelaControle td.kanban-empty-msg {
+     padding: 30px; /* Mais espaço vertical na tabela */
+}
