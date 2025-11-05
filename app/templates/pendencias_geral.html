@@ -34,6 +34,7 @@
         </div>
         </div>
         <div class="toolbar-group-right">
+            <input type="search" id="buscaRapidaInput" placeholder="Buscar em todos os campos... (ESC para limpar)">
             <a href="{{ url_for('pendencias.nova_pendencia', origem=request.full_path) }}" class="button">Novo</a>
         </div>
     </div>
@@ -81,6 +82,9 @@
                 </tr>
             </thead>
             <tbody>
+                <tr id="tabela-pendencias-sem-resultados-row" style="display: none;">
+                    <td colspan="{{ colunas_visiveis|length + 3 }}" class="kanban-empty-msg">Nenhum resultado encontrado para a busca.</td>
+                </tr>
                 {% for p in pendencias %}
                 <tr class="clickable-row {{ 'pendencia-vencida' if p.vencido else '' }} {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" data-id="{{ p._id }}" {% if color_coding_active and p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
                     <td data-label="Ações" class="hide-on-mobile">
@@ -106,12 +110,17 @@
                     <td><button class="expand-card-btn">Ver mais</button></td>
                 </tr>
                 {% else %}
-                <tr><td colspan="{{ colunas_visiveis|length + 3 }}">Nenhuma pendência encontrada.</td></tr>
+                <tr id="tabela-pendencias-backend-sem-resultados">
+                    <td colspan="{{ colunas_visiveis|length + 3 }}">Nenhuma pendência encontrada.</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
 
     {% elif view_mode == 'cards' %}
+        <p id="cards-pendencias-sem-resultados" class="kanban-empty-msg" style="display: none; text-align: center; width: 100%;">
+            Nenhum resultado encontrado para a busca.
+        </p>
         <div class="card-view-container">
             {# --- Início da Lógica Condicional --- #}
             {% if page_mode == 'por_instrumento' %}
@@ -1082,7 +1091,131 @@ document.addEventListener('DOMContentLoaded', function() {
             return date;
         }
         return null;
-}
+    }
+
+    // --- 16. LÓGICA DE BUSCA RÁPIDA (CLIENT-SIDE) ---
+    const buscaInput = document.getElementById('buscaRapidaInput');
+    // const currentViewMode = "{{ view_mode }}"; // (Já temos 'viewMode' definido no topo do script)
+
+    // Referências para as mensagens "Sem Resultados"
+    const tabelaSemResultadosBusca = document.getElementById('tabela-pendencias-sem-resultados-row');
+    const tabelaBackendSemResultados = document.getElementById('tabela-pendencias-backend-sem-resultados');
+    const cardsSemResultadosBusca = document.getElementById('cards-pendencias-sem-resultados');
+
+    if (buscaInput) {
+
+        // Função principal de filtragem
+        function executarBusca() {
+            const query = buscaInput.value.toLowerCase().trim();
+            let itemsToFilter = [];
+            let itemsVisiveis = 0;
+
+            // Pega o estilo de display correto verificando o tamanho da janela
+            const isResponsiveMode = window.innerWidth <= 768;
+            const displayStyle = (viewMode === 'table') ? (isResponsiveMode ? 'block' : 'table-row') : '';
+
+            // 1. Seleciona os itens corretos
+            if (viewMode === 'table') {
+                itemsToFilter = document.querySelectorAll('#tabelaPendencias tbody tr.clickable-row');
+            } else if (viewMode === 'cards' || viewMode === 'kanban') {
+                itemsToFilter = document.querySelectorAll('.data-card');
+            }
+
+            // 2. Loop para filtrar
+            itemsToFilter.forEach(item => {
+                const itemText = item.textContent.toLowerCase();
+
+                // (Ponto 4: A busca no select não se aplica aqui, pois a situação é texto)
+
+                if (itemText.includes(query)) {
+                    item.style.display = displayStyle; // Mostra o item
+                    itemsVisiveis++;
+                } else {
+                    item.style.display = 'none'; // Esconde o item
+                }
+            });
+
+            // 3. Gerencia as mensagens "Sem Resultados"
+            const noResultsFromSearch = (itemsVisiveis === 0);
+            const isSearching = query.length > 0;
+
+            if (viewMode === 'table') {
+                if (tabelaSemResultadosBusca) {
+                    // A mensagem de BUSCA só aparece se a busca estiver ATIVA E não houver resultados
+                    if (isSearching && noResultsFromSearch) {
+                        tabelaSemResultadosBusca.style.setProperty('display', displayStyle, 'important');
+                    } else {
+                        tabelaSemResultadosBusca.style.setProperty('display', 'none', 'important');
+                    }
+                }
+                if (tabelaBackendSemResultados) {
+                    // A mensagem do BACKEND só aparece se a busca NÃO estiver ativa
+                    tabelaBackendSemResultados.style.display = (isSearching) ? 'none' : '';
+                }
+
+            } else if (viewMode === 'cards') {
+                if (cardsSemResultadosBusca) {
+                    cardsSemResultadosBusca.style.display = (isSearching && noResultsFromSearch) ? '' : 'none';
+                }
+
+            } else if (viewMode === 'kanban') {
+                atualizarContagensKanban(query); // Kanban tem sua própria lógica
+            }
+        }
+
+        // Listener para 'keyup' (digitar)
+        buscaInput.addEventListener('keyup', executarBusca);
+
+        // Listener para 'search' (clicar no 'X' do input type="search")
+        buscaInput.addEventListener('search', function() {
+            executarBusca();
+        });
+
+        // PONTO 2: Limpar com ESC
+        buscaInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                buscaInput.value = '';
+                executarBusca();
+                buscaInput.blur();
+            }
+        });
+
+        // (Ponto 4 - Listener de 'change' do dropdown removido, não se aplica)
+    }
+
+    // PONTO 3: Atualiza mensagens "Sem Resultados" no Kanban
+    function atualizarContagensKanban(query) {
+        if (viewMode !== 'kanban') return;
+        const isSearching = query && query.length > 0;
+
+        document.querySelectorAll('.kanban-column').forEach(coluna => {
+            const cardsNaColuna = coluna.querySelectorAll('.data-card');
+            const totalCards = cardsNaColuna.length;
+
+            let cardsEscondidos = 0;
+            cardsNaColuna.forEach(card => {
+                if (card.style.display === 'none') {
+                    cardsEscondidos++;
+                }
+            });
+
+            let msgNenhumResultado = coluna.querySelector('.kanban-empty-msg');
+
+            // Se a busca escondeu todos os cards (e a coluna não estava vazia)
+            if (isSearching && totalCards > 0 && cardsEscondidos === totalCards) {
+                if (!msgNenhumResultado) {
+                    msgNenhumResultado = document.createElement('p');
+                    msgNenhumResultado.className = 'kanban-empty-msg';
+                    msgNenhumResultado.textContent = 'Nenhum resultado nesta coluna.';
+                    coluna.querySelector('.kanban-cards').appendChild(msgNenhumResultado);
+                }
+            } else if (msgNenhumResultado) {
+                // Se a busca não está ativa, ou se há resultados, remove a mensagem
+                msgNenhumResultado.remove();
+            }
+        });
+    }
+    // --- FIM DO BLOCO 16 ---
 
 });
 </script>
