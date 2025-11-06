@@ -1364,12 +1364,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 2. Loop para filtrar
             itemsToFilter.forEach(item => {
-                let itemText = item.textContent.toLowerCase();
+                let itemText = ''; // Começa com uma string vazia
 
-                // PONTO 4: Adiciona o valor do <select> de situação (se estiver na tabela)
+                // (Correção): Busca o texto APENAS dos spans que contêm os dados
+                const spans = item.querySelectorAll('span.card-value');
+                spans.forEach(span => {
+                    itemText += " " + span.textContent.toLowerCase();
+                });
+
+                // PONTO 4: Adiciona o valor ATUAL do <select> de situação (se estiver na tabela)
                 if (currentViewMode === 'table') {
                     const situacaoSelect = item.querySelector('.situacao-dropdown');
                     if (situacaoSelect && situacaoSelect.value) {
+                        // situacaoSelect.value é o texto da opção selecionada (ex: "Conferência Relatório")
                         itemText += " " + situacaoSelect.value.toLowerCase();
                     }
                 }
