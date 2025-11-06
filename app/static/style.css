@@ -1965,7 +1965,7 @@ body.theme-dark .action-icon-link {
 
 /* Garante que o texto pendente fique legível no tema escuro */
 body.theme-dark .texto-pendente {
-    color: #999;
+    color: #BBB;
 }
 
 .coluna-situacao {
