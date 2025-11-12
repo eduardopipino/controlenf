@@ -620,6 +620,10 @@ td input[type="radio"] {
     line-height: 1.6;
 }
 
+body.theme-dark .custom-confirm-modal-content p {
+    color: var(--text-primary); /* Força o uso do --text-primary (que é branco) do tema escuro */
+}
+
 .custom-confirm-modal-actions {
     display: flex;
     justify-content: center;
