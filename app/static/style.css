@@ -2672,3 +2672,136 @@ body.theme-dark #buscaRapidaInput {
 #tabelaPendencias td.kanban-empty-msg {
      padding: 30px;
 }
+
+/* ====================================================================== */
+/* WIDGET DE NOTAS RÁPIDAS (HEADER)                                       */
+/* ====================================================================== */
+
+/* O item da lista na navbar */
+.nav-item-notepad {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* O botão do ícone */
+.notepad-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary); /* Usa a cor de texto da navbar */
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px; /* Altura fixa para alinhar */
+    width: 40px;
+    box-shadow: none; /* Remove sombra padrão de botões se houver */
+}
+
+.notepad-btn:hover, .notepad-btn.active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.notepad-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
+/* Indicador (bolinha vermelha) */
+.notepad-indicator {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    background-color: #e74c3c;
+    border-radius: 50%;
+    display: none; /* Oculto por padrão via CSS, JS controla */
+    border: 1px solid var(--nav-bg-color);
+}
+
+/* O Painel Flutuante (Dropdown) */
+.notepad-widget {
+    display: none;
+    position: absolute;
+    top: 55px; /* Logo abaixo da navbar */
+    right: -50px; /* Ajuste para centralizar em relação ao ícone ou alinhar */
+    width: 300px;
+    background-color: var(--background-secondary);
+    border: 1px solid var(--border-base);
+    border-radius: 8px;
+    box-shadow: 0 8px 20px var(--shadow-base);
+    padding: 15px;
+    z-index: 1005;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Seta do dropdown (opcional, visual) */
+.notepad-widget::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: 64px; /* Ajuste conforme o right do widget */
+    width: 12px;
+    height: 12px;
+    background-color: var(--background-secondary);
+    border-left: 1px solid var(--border-base);
+    border-top: 1px solid var(--border-base);
+    transform: rotate(45deg);
+}
+
+.notepad-widget.visible {
+    display: flex;
+}
+
+/* Header do Widget */
+.notepad-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+.notepad-header h4 {
+    margin: 0;
+    font-size: 0.95em;
+    border: none;
+    padding: 0;
+    color: var(--tertiary-color);
+}
+.notepad-status {
+    font-size: 0.75em;
+    color: var(--text-primary);
+    opacity: 0.7;
+    font-style: italic;
+}
+
+/* Textarea */
+.notepad-textarea {
+    width: 100%;
+    height: 150px;
+    resize: vertical;
+    border: 1px solid var(--border-base);
+    background-color: var(--background-primary);
+    color: var(--text-primary);
+    padding: 10px;
+    border-radius: 4px;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+.notepad-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* Rodapé */
+.notepad-footer {
+    display: flex;
+    justify-content: flex-end;
+}

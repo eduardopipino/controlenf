@@ -1,8 +1,18 @@
 [
   {
+    "versao": "2.2",
+    "data": "07/12/2025",
+    "descricao": "Implantação de Notas Rápidas no menu."
+  },
+  {
     "versao": "2.1",
     "data": "30/10/2025",
     "descricao": "Atualização de Pendências - Por Instrumento Contratual, e diversos ajustes."
+  },
+  {
+    "versao": "2.0",
+    "data": "27/10/2025",
+    "descricao": "Implantação de cards e kanbans."
   },
   {
     "versao": "1.11",

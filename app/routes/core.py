@@ -11,7 +11,8 @@ from datetime import datetime, timedelta
 # 2. Imports da nossa própria aplicação (dos modelos que criamos)
 from app.models import (users_collection, get_situacoes_que_arquivam, controle_collection,
                         instrumentos_collection, pendencias_collection,
-                        TODAS_AS_COLUNAS_CONTROLE, TODAS_AS_COLUNAS_PENDENCIAS)
+                        TODAS_AS_COLUNAS_CONTROLE, TODAS_AS_COLUNAS_PENDENCIAS,
+                        quick_notes_collection)
 
 # 3. Criação do Blueprint Principal
 # O nome 'core' será usado nos comandos url_for().
@@ -282,3 +283,25 @@ def toggle_nf_pendencias_instrumento():
     except Exception as e:
         print(f"Erro ao salvar preferência show_nf_pendencias_instrumento: {e}")
         return {'status': 'error', 'message': 'Erro ao salvar preferência.'}, 500
+
+@core_bp.route('/get_quick_note', methods=['GET'])
+@login_required
+def get_quick_note():
+    """Retorna a nota rápida do usuário atual."""
+    note = quick_notes_collection.find_one({'user_id': ObjectId(current_user.id)})
+    text = note.get('content', '') if note else ''
+    return {'status': 'success', 'text': text}
+
+@core_bp.route('/save_quick_note', methods=['POST'])
+@login_required
+def save_quick_note():
+    """Salva (upsert) a nota rápida do usuário."""
+    data = request.get_json()
+    text = data.get('text', '')
+    
+    quick_notes_collection.update_one(
+        {'user_id': ObjectId(current_user.id)},
+        {'$set': {'content': text}},
+        upsert=True
+    )
+    return {'status': 'success'}

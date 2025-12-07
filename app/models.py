@@ -21,6 +21,7 @@ controle_collection = db['CONTROLE']
 users_collection = db['users']
 documentacao_tipos_collection = db['DOCUMENTACAO']
 pendencias_collection = db['PENDENCIAS']
+quick_notes_collection = db['quick_notes']
 
 # Para as configurações de exibição de colunas
 

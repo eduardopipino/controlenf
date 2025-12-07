@@ -56,6 +56,27 @@
                             <li><a class="dropdown-item" href="{{ url_for('cadastros.cadastros_situacao') }}">Situação</a></li>
                         </ul>
                     </li>
+
+                    <li class="nav-item nav-item-notepad">
+                        <button id="btnNotepad" class="notepad-btn" title="Notas Rápidas">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                            </svg>
+                            <span class="notepad-indicator" id="noteIndicator"></span>
+                        </button>
+                        
+                        <div id="notepadWidget" class="notepad-widget">
+                            <div class="notepad-header">
+                                <h4>Anotação Rápida</h4>
+                                <span id="noteStatus" class="notepad-status"></span>
+                            </div>
+                            <textarea id="quickNoteText" class="notepad-textarea" placeholder="Digite aqui..."></textarea>
+                            <div class="notepad-footer">
+                                <button id="btnSaveNote" class="button button-small" style="height: 30px;">Salvar</button>
+                            </div>
+                        </div>
+                    </li>
+
                     <li class="nav-item nav-item-right"><a href="{{ url_for('core.configuracoes') }}" class="nav-link">Configurações</a></li>
                     <li class="nav-item dropdown">
                         <a href="#" class="nav-link dropbtn">Temas</a>
@@ -193,6 +214,100 @@
                     });
                 }
             });
+
+            // --- LÓGICA DO WIDGET DE NOTAS RÁPIDAS ---
+            const btnNotepad = document.getElementById('btnNotepad');
+            const widget = document.getElementById('notepadWidget');
+            const textarea = document.getElementById('quickNoteText');
+            const btnSaveNote = document.getElementById('btnSaveNote');
+            const statusSpan = document.getElementById('noteStatus');
+            const indicator = document.getElementById('noteIndicator');
+
+            if (btnNotepad && widget) {
+                // 1. Carregar nota ao iniciar a página
+                fetch('{{ url_for("core.get_quick_note") }}')
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            textarea.value = data.text;
+                            if (data.text.trim().length > 0) {
+                                indicator.style.display = 'block';
+                            } else {
+                                indicator.style.display = 'none';
+                            }
+                        }
+                    })
+                    .catch(err => console.error("Erro ao carregar nota:", err));
+
+                // 2. Abrir/Fechar Widget
+                btnNotepad.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    widget.classList.toggle('visible');
+                    btnNotepad.classList.toggle('active');
+                    if (widget.classList.contains('visible')) {
+                        textarea.focus();
+                    }
+                });
+
+                // 3. Fechar ao clicar fora
+                window.addEventListener('click', (e) => {
+                    if (widget.classList.contains('visible')) {
+                        if (!widget.contains(e.target) && !btnNotepad.contains(e.target)) {
+                            widget.classList.remove('visible');
+                            btnNotepad.classList.remove('active');
+                        }
+                    }
+                });
+                
+                // Evita fechar ao clicar dentro do widget
+                widget.addEventListener('click', (e) => e.stopPropagation());
+
+                // 4. Salvar Nota via AJAX
+                btnSaveNote.addEventListener('click', () => {
+                    const textContent = textarea.value;
+                    const originalBtnText = btnSaveNote.textContent;
+                    
+                    btnSaveNote.textContent = 'Salvando...';
+                    btnSaveNote.disabled = true;
+
+                    fetch('{{ url_for("core.save_quick_note") }}', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ text: textContent })
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            btnSaveNote.textContent = 'Salvo!';
+                            statusSpan.textContent = 'Salvo com sucesso';
+                            
+                            // Atualiza indicador
+                            if (textContent.trim().length > 0) {
+                                indicator.style.display = 'block';
+                            } else {
+                                indicator.style.display = 'none';
+                            }
+
+                            setTimeout(() => {
+                                btnSaveNote.textContent = originalBtnText;
+                                btnSaveNote.disabled = false;
+                                statusSpan.textContent = '';
+                            }, 1500);
+                        } else {
+                            alert('Erro ao salvar nota.');
+                            btnSaveNote.textContent = originalBtnText;
+                            btnSaveNote.disabled = false;
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert('Erro de conexão.');
+                        btnSaveNote.textContent = originalBtnText;
+                        btnSaveNote.disabled = false;
+                    });
+                });
+            }
+            // --- FIM LÓGICA NOTAS RÁPIDAS ---
 
         });
     </script>
