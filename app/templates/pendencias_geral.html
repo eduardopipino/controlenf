@@ -114,6 +114,38 @@
                     <td colspan="{{ colunas_visiveis|length + 3 }}">Nenhuma pendência encontrada.</td>
                 </tr>
                 {% endfor %}
+                
+                <tr id="inline-create-template" style="display: none; background-color: var(--background-primary);">
+                    <td class="hide-on-mobile" style="text-align: center; vertical-align: middle;">
+                        <button type="button" class="btn-save-inline" title="Salvar" style="background-color: var(--primary-color); color: white; border: none; padding: 4px; border-radius: 3px; cursor: pointer; margin-bottom: 4px; display: block; width: 100%;">✔</button>
+                        <button type="button" class="btn-cancel-inline" title="Cancelar" style="background-color: #7f8c8d; color: white; border: none; padding: 4px; border-radius: 3px; cursor: pointer; display: block; width: 100%;">✖</button>
+                    </td>
+                    <td></td> {% for col_id, col_nome in todas_as_colunas %}
+                        {% if col_id in colunas_visiveis %}
+                            <td style="padding: 4px; vertical-align: top;">
+                                {% if col_id in ['pendencia', 'responsavel', 'situacao', 'observacoes', 'prazo'] %}
+                                    {% if col_id == 'observacoes' or col_id == 'pendencia' %}
+                                        <textarea name="{{ col_id }}" style="width: 100%; box-sizing: border-box; min-height: 40px; border: 1px solid var(--primary-color); border-radius: 3px; padding: 4px; font-family: inherit; font-size: inherit;" placeholder="Digitar..."></textarea>
+                                    {% elif col_id == 'prazo' %}
+                                        <input type="date" name="{{ col_id }}" style="width: 100%; box-sizing: border-box; border: 1px solid var(--primary-color); border-radius: 3px; padding: 4px; font-family: inherit; font-size: inherit;">
+                                    {% else %}
+                                        <input type="text" name="{{ col_id }}" style="width: 100%; box-sizing: border-box; border: 1px solid var(--primary-color); border-radius: 3px; padding: 4px; font-family: inherit; font-size: inherit;" placeholder="Digitar...">
+                                    {% endif %}
+                                {% else %}
+                                    <div style="color: #999; font-size: 0.85em; font-style: italic; padding: 6px; text-align: center;">Não aplicável</div>
+                                {% endif %}
+                            </td>
+                        {% endif %}
+                    {% endfor %}
+                    <td></td> </tr>
+
+                <tr id="row-btn-add-inline">
+                    <td colspan="{{ colunas_visiveis|length + 3 }}" style="padding: 0;">
+                        <button type="button" id="btnShowInlineCreate" style="width: 100%; background: none; border: 2px dashed var(--border-base); color: var(--tertiary-color); padding: 10px; cursor: pointer; font-weight: bold; border-radius: 0 0 8px 8px; transition: background-color 0.2s;">
+                            + Adicionar Pendência Rapidamente
+                        </button>
+                    </td>
+                </tr>
             </tbody>
         </table>
 
@@ -827,6 +859,93 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    // --- 13.5. LÓGICA DE CRIAÇÃO INLINE (ADICIONAR NOVA LINHA NO FIM DA TABELA) ---
+        const btnShowInlineCreate = document.getElementById('btnShowInlineCreate');
+        const rowBtnAddInline = document.getElementById('row-btn-add-inline');
+        const templateInlineCreate = document.getElementById('inline-create-template');
+
+        if (btnShowInlineCreate && rowBtnAddInline && templateInlineCreate) {
+            
+            // Efeito Hover sutil no botão gigante
+            btnShowInlineCreate.addEventListener('mouseenter', () => {
+                btnShowInlineCreate.style.backgroundColor = 'var(--hover-bg)';
+            });
+            btnShowInlineCreate.addEventListener('mouseleave', () => {
+                btnShowInlineCreate.style.backgroundColor = 'transparent';
+            });
+
+            // Ao clicar no botão "+ Adicionar"
+            btnShowInlineCreate.addEventListener('click', () => {
+                // Esconde a linha do botão "+"
+                rowBtnAddInline.style.display = 'none';
+                
+                // Exibe a linha de inputs
+                templateInlineCreate.style.display = 'table-row';
+                
+                // Foca automaticamente no campo "Pendência" (se ele existir e for editável)
+                const pendenciaInput = templateInlineCreate.querySelector('[name="pendencia"]');
+                if (pendenciaInput) pendenciaInput.focus();
+            });
+
+            // Botão Cancelar (✖)
+            const btnCancelInline = templateInlineCreate.querySelector('.btn-cancel-inline');
+            btnCancelInline.addEventListener('click', () => {
+                // Limpa os inputs
+                templateInlineCreate.querySelectorAll('input, textarea').forEach(el => el.value = '');
+                // Esconde os inputs e mostra o "+" de novo
+                templateInlineCreate.style.display = 'none';
+                rowBtnAddInline.style.display = 'table-row';
+            });
+
+            // Botão Salvar (✔)
+            const btnSaveInline = templateInlineCreate.querySelector('.btn-save-inline');
+            btnSaveInline.addEventListener('click', () => {
+                // Coleta os dados
+                const payload = {};
+                templateInlineCreate.querySelectorAll('input, textarea').forEach(el => {
+                    if (el.name) {
+                        payload[el.name] = el.value;
+                    }
+                });
+
+                // Validação básica
+                if (!payload.pendencia || payload.pendencia.trim() === '') {
+                    alert("Por favor, digite o conteúdo da pendência.");
+                    templateInlineCreate.querySelector('[name="pendencia"]').focus();
+                    return;
+                }
+
+                // UI de Carregamento
+                btnSaveInline.textContent = '...';
+                btnSaveInline.disabled = true;
+
+                // Envia para o Backend
+                fetch("{{ url_for('pendencias.quick_create_inline') }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Recarrega a página para que o Jinja2 renderize a linha corretamente (com ID, cores e listeners)
+                        window.location.reload();
+                    } else {
+                        alert("Erro ao salvar: " + data.message);
+                        btnSaveInline.textContent = '✔';
+                        btnSaveInline.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro de requisição:", error);
+                    alert("Erro de rede ao tentar salvar a pendência.");
+                    btnSaveInline.textContent = '✔';
+                    btnSaveInline.disabled = false;
+                });
+            });
+        }
+        // --- FIM DA CRIAÇÃO INLINE ---
 
     // --- 14. LÓGICA DE EDIÇÃO INLINE NOS CARDS (COPIADO E ADAPTADO) --- <<< NOVO BLOCO >>>
     const cardContainers = document.querySelectorAll('.card-view-container, .kanban-view-container');

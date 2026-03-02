@@ -492,3 +492,42 @@ def update_field_inline_pendencia(pendencia_id):
     except Exception as e:
         print(f"Erro ao atualizar campo de pendência inline: {e}")
         return {'status': 'error', 'message': 'Erro interno ao salvar.'}, 500
+
+@pendencias_bp.route('/quick_create_inline', methods=['POST'])
+@login_required
+def quick_create_inline():
+    """ Rota rápida para criar uma pendência via AJAX direto do final da tabela. """
+    data = request.get_json()
+    
+    pendencia_texto = data.get('pendencia', '').strip()
+    if not pendencia_texto:
+        return {'status': 'error', 'message': 'O campo Pendência é obrigatório.'}, 400
+
+    prazo_str = data.get('prazo')
+    prazo_dt = None
+    if prazo_str:
+        try:
+            # O input type="date" do HTML5 sempre envia no formato AAAA-MM-DD
+            prazo_dt = datetime.strptime(prazo_str, '%Y-%m-%d')
+        except ValueError:
+            return {'status': 'error', 'message': 'Formato de data inválido.'}, 400
+
+    nova_pendencia = {
+        'pendencia': pendencia_texto,
+        'prazo': prazo_dt,
+        'responsavel': data.get('responsavel', '').strip(),
+        'situacao': data.get('situacao', '').strip(),
+        'observacoes': data.get('observacoes', '').strip(),
+        'status': 'Pendente',
+        'user_id': ObjectId(current_user.id),
+        'data_criacao': datetime.now(),
+        'instrumento_id': None, # Será criada como Pendência Diversa (sem vínculo)
+        'prioridade': False
+    }
+
+    try:
+        pendencias_collection.insert_one(nova_pendencia)
+        return {'status': 'success'}
+    except Exception as e:
+        print(f"Erro ao criar pendência inline: {e}")
+        return {'status': 'error', 'message': 'Erro interno ao salvar no banco de dados.'}, 500
