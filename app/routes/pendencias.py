@@ -522,7 +522,7 @@ def quick_create_inline():
         'user_id': ObjectId(current_user.id),
         'data_criacao': datetime.now(),
         'instrumento_id': None, # Será criada como Pendência Diversa (sem vínculo)
-        'prioridade': False
+        'prioridade': data.get('prioridade', False) # Aceita o valor vindo do card
     }
 
     try:

@@ -2805,3 +2805,44 @@ body.theme-dark #buscaRapidaInput {
     display: flex;
     justify-content: flex-end;
 }
+
+/* --- Estilos para Adição Rápida em Modo Cards --- */
+.card-quick-add-trigger {
+    border: 2px dashed var(--border-base);
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    color: var(--tertiary-color);
+}
+
+.card-quick-add-trigger:hover {
+    background-color: var(--hover-bg);
+    border-color: var(--primary-color);
+}
+
+.card-quick-add-form {
+    display: none; /* Oculto inicialmente */
+}
+
+/* Ajustes nos inputs dentro do card de rascunho */
+.card-quick-add-form input, 
+.card-quick-add-form textarea {
+    width: 100%;
+    margin-bottom: 8px;
+    border: 1px solid var(--border-base);
+    border-radius: 4px;
+    padding: 6px;
+    background-color: var(--background-primary);
+    color: var(--text-primary);
+    font-size: 0.9em;
+}
+
+.card-quick-add-form textarea {
+    height: 60px;
+    resize: vertical;
+}
