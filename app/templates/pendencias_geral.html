@@ -187,7 +187,35 @@
                             {% for p in grupo.pendencias %}
                                 {% include 'partials/_pendencia_card.html' %}
                             {% endfor %}
-                        </div>
+                            
+                            <div class="card-quick-add-container-group">
+                                <div class="card-quick-add-trigger btnShowQuickAddCardGroup">
+                                    <span style="font-size: 1.2em; font-weight: bold;">+ Adição Rápida</span>
+                                </div>
+
+                                <div class="data-card card-quick-add-form quickAddCardFormGroup" style="border-left-color: var(--border-base); display: none;" data-priority="false">
+                                    
+                                    <input type="hidden" name="instrumento_id" value="{{ grupo.detalhes_instrumento.instrumento_id }}">
+                                    
+                                    <div class="card-actions-corner">
+                                        <div class="card-priority-toggle quickCardPriorityToggleGroup" title="Alternar Prioridade">
+                                            <svg viewBox="0 0 24 24" style="width:18px; height:18px;"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="currentColor"/></svg>
+                                        </div>
+                                    </div>
+
+                                    <input type="text" name="pendencia" placeholder="Título da Pendência (Obrigatório)*" required>
+                                    <input type="text" name="responsavel" placeholder="Responsável">
+                                    <input type="date" name="prazo" title="Prazo">
+                                    <input type="text" name="situacao" placeholder="Situação">
+                                    <textarea name="observacoes" placeholder="Observações..."></textarea>
+
+                                    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 5px;">
+                                        <button type="button" class="btn-cancel btnCancelQuickCardGroup" style="padding: 5px 12px; height: 30px;">Cancelar</button>
+                                        <button type="button" class="btn-confirm-success btnSaveQuickCardGroup" style="padding: 5px 12px; height: 30px; background-color: var(--primary-color);">Salvar</button>
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
                         {# --- FIM DO BLOCO SIMPLIFICADO --- #}
                     </div>
                 {% else %}
@@ -1450,6 +1478,103 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    // --- LÓGICA DE ADIÇÃO RÁPIDA EM FORMATO DE CARD (POR INSTRUMENTO) ---
+        // Como há vários na tela, usamos .querySelectorAll e delegamos os eventos
+        
+        // 1. Abrir rascunho
+        document.querySelectorAll('.btnShowQuickAddCardGroup').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const container = this.closest('.card-quick-add-container-group');
+                const form = container.querySelector('.quickAddCardFormGroup');
+                
+                this.style.display = 'none';
+                form.style.display = 'flex';
+                
+                // Limpa campos (ignora o input oculto de instrumento_id)
+                form.querySelectorAll('input:not([type="hidden"]), textarea').forEach(i => i.value = '');
+                
+                // Reseta prioridade
+                const priorityToggle = form.querySelector('.quickCardPriorityToggleGroup');
+                priorityToggle.classList.remove('active');
+                form.dataset.priority = 'false';
+                form.style.borderLeftColor = 'var(--border-base)';
+
+                form.querySelector('[name="pendencia"]').focus();
+            });
+        });
+
+        // 2. Alternar prioridade
+        document.querySelectorAll('.quickCardPriorityToggleGroup').forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                const form = this.closest('.quickAddCardFormGroup');
+                let isPriority = form.dataset.priority === 'true';
+                
+                isPriority = !isPriority; // inverte
+                form.dataset.priority = isPriority; // salva no dataset
+                
+                this.classList.toggle('active', isPriority);
+                form.style.borderLeftColor = isPriority ? '#e74c3c' : 'var(--border-base)';
+            });
+        });
+
+        // 3. Cancelar
+        document.querySelectorAll('.btnCancelQuickCardGroup').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const container = this.closest('.card-quick-add-container-group');
+                const form = container.querySelector('.quickAddCardFormGroup');
+                const trigger = container.querySelector('.btnShowQuickAddCardGroup');
+                
+                form.style.display = 'none';
+                trigger.style.display = 'flex';
+            });
+        });
+
+        // 4. Salvar
+        document.querySelectorAll('.btnSaveQuickCardGroup').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const form = this.closest('.quickAddCardFormGroup');
+                const payload = { 
+                    prioridade: form.dataset.priority === 'true'
+                };
+                
+                // Pega todos os inputs (incluindo o hidden com instrumento_id)
+                form.querySelectorAll('input, textarea').forEach(i => {
+                    if (i.name) payload[i.name] = i.value;
+                });
+
+                if (!payload.pendencia.trim()) {
+                    alert("O título da pendência é obrigatório.");
+                    return;
+                }
+
+                const btnSave = this;
+                btnSave.disabled = true;
+                btnSave.textContent = "...";
+
+                fetch("{{ url_for('pendencias.quick_create_inline') }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        window.location.reload();
+                    } else {
+                        alert("Erro: " + data.message);
+                        btnSave.disabled = false;
+                        btnSave.textContent = "Salvar";
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Erro de conexão.");
+                    btnSave.disabled = false;
+                    btnSave.textContent = "Salvar";
+                });
+            });
+        });
 
 });
 </script>

@@ -512,6 +512,10 @@ def quick_create_inline():
         except ValueError:
             return {'status': 'error', 'message': 'Formato de data inválido.'}, 400
 
+    # --- Modificação para capturar o ID do instrumento ---
+    instrumento_id_str = data.get('instrumento_id')
+    instrumento_id_obj = ObjectId(instrumento_id_str) if instrumento_id_str else None
+
     nova_pendencia = {
         'pendencia': pendencia_texto,
         'prazo': prazo_dt,
@@ -521,8 +525,8 @@ def quick_create_inline():
         'status': 'Pendente',
         'user_id': ObjectId(current_user.id),
         'data_criacao': datetime.now(),
-        'instrumento_id': None, # Será criada como Pendência Diversa (sem vínculo)
-        'prioridade': data.get('prioridade', False) # Aceita o valor vindo do card
+        'instrumento_id': instrumento_id_obj, # <<< AGORA VINCULA AO INSTRUMENTO
+        'prioridade': data.get('prioridade', False)
     }
 
     try:
