@@ -1385,6 +1385,15 @@ document.addEventListener('DOMContentLoaded', function() {
         btnShowQuickCard.addEventListener('click', () => {
             btnShowQuickCard.style.display = 'none';
             quickCardForm.style.display = 'flex';
+            
+            // Força a limpeza de todos os campos para evitar cache do navegador
+            quickCardForm.querySelectorAll('input, textarea').forEach(i => i.value = '');
+            
+            // Reseta também a estrela de prioridade
+            isQuickCardPriority = false;
+            priorityToggle.classList.remove('active');
+            quickCardForm.style.borderLeftColor = 'var(--border-base)';
+
             quickCardForm.querySelector('[name="pendencia"]').focus();
         });
 
