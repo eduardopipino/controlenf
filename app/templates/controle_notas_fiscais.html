@@ -303,6 +303,11 @@
                 <p>Carregando opções...</p>
             </div>
 
+            <div style="display: flex; gap: 10px; margin-top: 15px; align-items: center;">
+                <input type="text" id="novoDocumentoExtra" placeholder="Adicionar documento extra..." style="flex-grow: 1; height: 32px; padding: 0 10px; margin: 0; box-sizing: border-box; border: 1px solid var(--border-base); border-radius: 4px; background-color: var(--background-secondary); color: var(--text-primary);">
+                <button type="button" id="btnAdicionarDocExtra" style="height: 32px; padding: 0 20px; margin: 0; box-sizing: border-box; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;" title="Adicionar e marcar">+</button>
+            </div>
+
             <div class="button-toolbar">
                 <button id="btnSalvarDocumentacao">Salvar</button>
                 <button type="button" class="btn-cancel-modal">Cancelar</button>
@@ -962,6 +967,24 @@ document.addEventListener('DOMContentLoaded', function() {
                             wrapper.innerHTML = `<label><input type="checkbox" name="doc_inline_pref" value="${opcao}" ${isChecked ? 'checked' : ''}> ${opcao}</label>`;
                             docChecklist.appendChild(wrapper);
                         });
+                        // NOVO: Renderiza também os documentos EXTRAS que já foram salvos anteriormente (não estão na lista padrão)
+                        data.salvos.forEach(salvo => {
+                            if (!data.opcoes.includes(salvo)) {
+                                const wrapper = document.createElement('div');
+                                wrapper.innerHTML = `<label><input type="checkbox" name="doc_inline_pref" value="${salvo}" checked> <span style="font-style: italic; color: var(--primary-color);">${salvo} (Extra)</span></label>`;
+                                docChecklist.appendChild(wrapper);
+                            }
+                        });
+                        // NOVO: Renderiza documentos EXTRAS PENDENTES (desmarcados)
+                        if (data.pendentes) {
+                            data.pendentes.forEach(pendente => {
+                                if (!data.opcoes.includes(pendente)) {
+                                    const wrapper = document.createElement('div');
+                                    wrapper.innerHTML = `<label><input type="checkbox" name="doc_inline_pref" value="${pendente}"> <span style="font-style: italic; color: var(--primary-color);">${pendente} (Extra)</span></label>`;
+                                    docChecklist.appendChild(wrapper);
+                                }
+                            });
+                        }
                     } else {
                         docChecklist.innerHTML = `<p style="color: red;">Erro: ${data.message}</p>`;
                     }
@@ -1257,11 +1280,16 @@ document.addEventListener('DOMContentLoaded', function() {
             // Pega os valores marcados
             const docSelecionados = Array.from(docChecklist.querySelectorAll('input[name="doc_inline_pref"]:checked')).map(cb => cb.value);
 
+            // NOVO: Pega os valores desmarcados (pendentes)
+            const docPendentes = Array.from(docChecklist.querySelectorAll('input[name="doc_inline_pref"]:not(:checked)')).map(cb => cb.value);
+
             // Envia para a nova rota POST
             fetch(`/controle/update_documentacao_inline/${controleId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ documentacao: docSelecionados })
+                body: JSON.stringify({ 
+                    documentacao: docSelecionados,
+                    documentacao_pendente: docPendentes})
             })
             .then(response => response.json())
             .then(data => {
@@ -1491,6 +1519,43 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     // --- FIM DO BLOCO 16 ---
+
+    // --- BLOCO 17 - LÓGICA PARA ADICIONAR DOCUMENTO EXTRA NO MODAL ---
+    const inputDocExtra = document.getElementById('novoDocumentoExtra');
+    const btnAddDocExtra = document.getElementById('btnAdicionarDocExtra');
+
+    if (btnAddDocExtra && inputDocExtra) {
+        btnAddDocExtra.addEventListener('click', () => {
+            const novoDoc = inputDocExtra.value.trim();
+            if (novoDoc) {
+                // Verifica se já não existe na lista (evitar duplicados)
+                const checkExistente = Array.from(docChecklist.querySelectorAll('input[name="doc_inline_pref"]'))
+                    .find(cb => cb.value.toLowerCase() === novoDoc.toLowerCase());
+                
+                if (checkExistente) {
+                    checkExistente.checked = true; // Se já existe, apenas marca a checkbox
+                } else {
+                    // Cria a nova checkbox já marcada como entregue
+                    const wrapper = document.createElement('div');
+                    wrapper.innerHTML = `<label><input type="checkbox" name="doc_inline_pref" value="${novoDoc}" checked> <span style="font-style: italic; color: var(--primary-color);">${novoDoc} (Extra)</span></label>`;
+                    
+                    // Adiciona no topo da lista (abaixo das opções padrão)
+                    docChecklist.appendChild(wrapper);
+                }
+                inputDocExtra.value = ''; // Limpa o campo de texto
+                inputDocExtra.focus();
+            }
+        });
+
+        // Permite adicionar ao pressionar "Enter" dentro do campo
+        inputDocExtra.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                btnAddDocExtra.click();
+            }
+        });
+    }
+    // --- FIM DO BLOCO 17 ---
 
 });
 </script>

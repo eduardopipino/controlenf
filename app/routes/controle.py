@@ -459,7 +459,7 @@ def get_documentacao_inline(controle_id):
         user_id_obj = ObjectId(current_user.id)
         controle = controle_collection.find_one(
             {'_id': ObjectId(controle_id), 'user_id': user_id_obj},
-            {'item_id': 1, 'documentacao': 1} # Projeta apenas os campos necessários
+            {'item_id': 1, 'documentacao': 1, 'documentacao_pendente': 1} # Projeta apenas os campos necessários
         )
         if not controle:
             return {'status': 'error', 'message': 'Registro de controle não encontrado.'}, 404
@@ -473,8 +473,9 @@ def get_documentacao_inline(controle_id):
 
         opcoes = item.get('documentos_exigidos', [])
         salvos = controle.get('documentacao', [])
+        pendentes = controle.get('documentacao_pendente', [])
 
-        return {'status': 'success', 'opcoes': opcoes, 'salvos': salvos}
+        return {'status': 'success', 'opcoes': opcoes, 'salvos': salvos, 'pendentes': pendentes}
 
     except Exception as e:
         print(f"Erro ao buscar documentação inline: {e}")
@@ -490,6 +491,7 @@ def update_documentacao_inline(controle_id):
     data = request.get_json()
     # Espera receber uma lista de strings
     novos_documentos = data.get('documentacao', [])
+    novos_pendentes = data.get('documentacao_pendente') # <- LER PENDENTES DO JS
 
     if not isinstance(novos_documentos, list):
         return {'status': 'error', 'message': 'Formato de dados inválido.'}, 400
@@ -512,7 +514,9 @@ def update_documentacao_inline(controle_id):
 
         # Recalcula a lista de pendentes
         opcoes = item.get('documentos_exigidos', [])
-        novos_pendentes = [opt for opt in opcoes if opt not in novos_documentos]
+        if novos_pendentes is None:
+            opcoes = item.get('documentos_exigidos', [])
+            novos_pendentes = [opt for opt in opcoes if opt not in novos_documentos]
 
         # Atualiza o registro no banco
         update_data = {
