@@ -1080,36 +1080,68 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({ field: fieldName, value: newValue })
             })
             .then(response => response.json())
-            .then(data => {
+           .then(data => {
                 if (data.status === 'success') {
-                    // Sucesso: Atualiza visualmente
-                    const updatedValue = data.newValue;
-                    // Recria o span com o novo valor
-                    const labelHtml = activeCardFieldElement.querySelector('strong') ? activeCardFieldElement.querySelector('strong').outerHTML : '';
-                    activeCardFieldElement.innerHTML = `${labelHtml} <span class="card-field-value">${updatedValue}</span>`;
+                    console.log("Dados recebidos do servidor:", data); // Debug para ver se o 'Teste' vem aqui
+                    
+                    let updatedElement = null;
+                    let spanToUpdate = null;
 
-                    currentCardEditInput = null;
-                    originalCardContent = null;
-                    activeCardFieldElement = null;
-                    isEditingCard = false; // <<< LINHA ADICIONADA: Desativa a flag no sucesso
+                    // 1. Identifica o elemento a atualizar baseado no modo de visualização
+                    if ("{{ view_mode }}" === "table") {
+                        // Na Tabela: procura a TD daquela linha específica
+                        updatedElement = document.querySelector(`#tabelaControle tr[data-id="${controleId}"] td[data-field-name="documentacao"]`);
+                        if (updatedElement) {
+                            spanToUpdate = updatedElement.querySelector('span.card-value');
+                        }
+                    } else {
+                        // Nos Cards: procura o Card específico
+                        const cardDiv = document.querySelector(`.data-card[data-id="${controleId}"]`);
+                        if (cardDiv) {
+                            updatedElement = cardDiv; 
+                            const pElement = cardDiv.querySelector('p[data-field-name="documentacao"]');
+                            if (pElement) {
+                                // Assume-se que o card usa card-field-value (ajuste se for card-value)
+                                spanToUpdate = pElement.querySelector('.card-field-value');
+                            }
+                        }
+                    }
 
-                    // Feedback visual rápido com fade no card
-                    const isDarkTheme = document.body.classList.contains('theme-dark');
-                    const feedbackColor = isDarkTheme ? '#3a3a3a' : '#e0e0e0';
-                    cardDiv.classList.add('card-feedback-flash');
-                    const originalCardBg = cardDiv.style.backgroundColor; // Guarda bg original (pode ser da situação)
-                    cardDiv.style.backgroundColor = feedbackColor;
-                    setTimeout(() => {
-                        cardDiv.style.backgroundColor = originalCardBg || ''; // Restaura bg original ou remove
+                    // 2. Reconstroi o HTML interno exatamente como o Jinja faz
+                    if (spanToUpdate) {
+                        let docEntregues = data.novos_documentos || [];
+                        let docPendentes = data.novos_pendentes || [];
+                        
+                        let novoHtml = docEntregues.join(', ');
+                        
+                        if (docPendentes.length > 0) {
+                            // Adiciona vírgula se já houver documentos entregues
+                            if (docEntregues.length > 0) novoHtml += ', ';
+                            
+                            // Adiciona o span dos pendentes (Teste deve aparecer aqui)
+                            novoHtml += `<span class="texto-pendente">(pendente: ${docPendentes.join(', ')})</span>`;
+                        }
+                        
+                        spanToUpdate.innerHTML = novoHtml;
+                        console.log("HTML atualizado para:", novoHtml);
+                    }
+
+                    // 3. Feedback visual (Flash)
+                    if (updatedElement) {
+                        const flashClass = (updatedElement.tagName === 'TD') ? 'td-feedback-flash' : 'card-feedback-flash';
+                        updatedElement.classList.add(flashClass);
+                        const originalBg = updatedElement.style.backgroundColor;
+                        updatedElement.style.backgroundColor = document.body.classList.contains('theme-dark') ? '#3a3a3a' : '#e0e0e0';
+                        
                         setTimeout(() => {
-                            cardDiv.classList.remove('card-feedback-flash');
-                        }, 300); // Remove classe após fade out
-                    }, 700); // Tempo visível
+                            updatedElement.style.backgroundColor = originalBg || '';
+                            setTimeout(() => updatedElement.classList.remove(flashClass), 300);
+                        }, 700);
+                    }
 
+                    docModal.classList.remove('active');
                 } else {
-                    // Erro: Informa o usuário e reverte
                     alert(`Erro ao salvar: ${data.message}`);
-                    cancelInlineEditCard();
                 }
             })
             .catch(error => {
@@ -1178,6 +1210,26 @@ document.addEventListener('DOMContentLoaded', function() {
                                     wrapper.innerHTML = `<label><input type="checkbox" name="doc_inline_pref" value="${opcao}" ${isChecked ? 'checked' : ''}> ${opcao}</label>`;
                                     docChecklist.appendChild(wrapper);
                                 });
+                                
+                                // NOVO: Renderiza documentos EXTRAS que já foram salvos (marcados)
+                                data.salvos.forEach(salvo => {
+                                    if (!data.opcoes.includes(salvo)) {
+                                        const wrapper = document.createElement('div');
+                                        wrapper.innerHTML = `<label><input type="checkbox" name="doc_inline_pref" value="${salvo}" checked> <span style="font-style: italic; color: var(--primary-color);">${salvo} (Extra)</span></label>`;
+                                        docChecklist.appendChild(wrapper);
+                                    }
+                                });
+                                
+                                // NOVO: Renderiza documentos EXTRAS PENDENTES (desmarcados)
+                                if (data.pendentes) {
+                                    data.pendentes.forEach(pendente => {
+                                        if (!data.opcoes.includes(pendente)) {
+                                            const wrapper = document.createElement('div');
+                                            wrapper.innerHTML = `<label><input type="checkbox" name="doc_inline_pref" value="${pendente}"> <span style="font-style: italic; color: var(--primary-color);">${pendente} (Extra)</span></label>`;
+                                            docChecklist.appendChild(wrapper);
+                                        }
+                                    });
+                                }
                             } else {
                                 docChecklist.innerHTML = `<p style="color: red;">Erro: ${data.message}</p>`;
                             }

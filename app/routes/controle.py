@@ -71,8 +71,16 @@ def controle_lista(filter_mode):
     sort_order_mongo = -1 if order == 'desc' else 1
     sort_document = {sort_by: sort_order_mongo}
 
-    controles = get_controle_data(query_filter, sort_document=sort_document)
+    controles_raw = get_controle_data(query_filter, sort_document=sort_document)
+    controles = list(controles_raw)
     
+    # --- CORREÇÃO: Força a leitura dos pendentes reais diretamente do banco ---
+    for c in controles:
+        db_doc = controle_collection.find_one({'_id': c['_id']}, {'documentacao_pendente': 1})
+        if db_doc and 'documentacao_pendente' in db_doc:
+            c['documentacao_pendente'] = db_doc['documentacao_pendente']
+    # -------------------------------------------------------------------------
+
     situacoes_para_filtro = get_situacoes_para_dropdown()
     chart_data_json = prepare_chart_data(controles)
     color_map = get_color_map_for_user()
