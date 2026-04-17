@@ -986,7 +986,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (fieldName === 'documentacao') { // <<< NOVO BLOCO 'else if'
             // --- LÓGICA PARA ABRIR O MODAL DE DOCUMENTAÇÃO ---
             const controleId = td.closest('tr').dataset.id;
-            console.log("Abrindo modal de documentação para:", controleId);
+            // console.log("Abrindo modal de documentação para:", controleId);
 
             // Limpa modal antigo e armazena ID
             docChecklist.innerHTML = '<p>Carregando opções...</p>';
@@ -1122,7 +1122,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
            .then(data => {
                 if (data.status === 'success') {
-                    console.log("Dados recebidos do servidor:", data); // Debug para ver se o 'Teste' vem aqui
+                    // console.log("Dados recebidos do servidor:", data); // Debug para ver se o 'Teste' vem aqui
                     
                     let updatedElement = null;
                     let spanToUpdate = null;
@@ -1163,7 +1163,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                         
                         spanToUpdate.innerHTML = novoHtml;
-                        console.log("HTML atualizado para:", novoHtml);
+                        // console.log("HTML atualizado para:", novoHtml);
                     }
 
                     // 3. Feedback visual (Flash)
@@ -1225,7 +1225,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (fieldName === 'documentacao') { // <<< BLOCO 'else if' ADICIONADO
                     // --- LÓGICA PARA ABRIR O MODAL DE DOCUMENTAÇÃO (CARDS) ---
                     const controleId = fieldElement.closest('.data-card').dataset.id; // Pega ID do card
-                    console.log("Abrindo modal de documentação para (card):", controleId);
+                    // console.log("Abrindo modal de documentação para (card):", controleId);
 
                     // Limpa modal antigo e armazena ID
                     docChecklist.innerHTML = '<p>Carregando opções...</p>';
@@ -1279,7 +1279,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 } else if (fieldName === 'situacao') { // <<< NOVO BLOCO 'else if' >>>
                     // --- LÓGICA PARA ABRIR O MENU DE CONTEXTO ---
-                    console.log("Abrindo menu de situação via dblclick");
+                    // console.log("Abrindo menu de situação via dblclick");
 
                     activeCard = fieldElement.closest('.data-card'); // Pega o card
                     if (!activeCard) return;
@@ -1508,14 +1508,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const isSearching = query.length > 0;
 
             // --- INÍCIO LOGS DE DEPURAÇÃO ---
-            console.log("Executando busca:", {
+            /*console.log("Executando busca:", {
                 query: query,
                 isSearching: isSearching,
                 itemsVisiveis: itemsVisiveis,
                 noResults: noResultsFromSearch,
                 tabelaBusca: tabelaSemResultadosBusca,
                 tabelaBackend: tabelaBackendSemResultados
-            });
+            });*/
             // --- FIM LOGS DE DEPURAÇÃO ---
 
             if (currentViewMode === 'table') {
