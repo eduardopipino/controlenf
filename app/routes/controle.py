@@ -479,7 +479,11 @@ def get_documentacao_inline(controle_id):
         if not item:
             return {'status': 'error', 'message': 'Item de instrumento não encontrado.'}, 404
 
-        opcoes = item.get('documentos_exigidos', [])
+        # Lógica Nova: Filtra os documentos que o usuário excluiu
+        opcoes_originais = item.get('documentos_exigidos', [])
+        excluidos = controle.get('documentos_excluidos', [])
+        opcoes = [opt for opt in opcoes_originais if opt not in excluidos]
+
         salvos = controle.get('documentacao', [])
         pendentes = controle.get('documentacao_pendente', [])
 
@@ -520,16 +524,19 @@ def update_documentacao_inline(controle_id):
         if not item:
             return {'status': 'error', 'message': 'Item de instrumento não encontrado.'}, 404
 
-        # Recalcula a lista de pendentes
-        opcoes = item.get('documentos_exigidos', [])
+        # Lógica Nova: Identifica o que foi excluído da tela e grava no banco
+        opcoes_originais = item.get('documentos_exigidos', [])
         if novos_pendentes is None:
-            opcoes = item.get('documentos_exigidos', [])
-            novos_pendentes = [opt for opt in opcoes if opt not in novos_documentos]
+            novos_pendentes = [opt for opt in opcoes_originais if opt not in novos_documentos]
+
+        # Deduz os excluídos: eram exigidos, mas não vieram marcados nem pendentes do JavaScript
+        excluidos = [opt for opt in opcoes_originais if opt not in novos_documentos and opt not in novos_pendentes]
 
         # Atualiza o registro no banco
         update_data = {
             'documentacao': novos_documentos,
             'documentacao_pendente': novos_pendentes,
+            'documentos_excluidos': excluidos, # <<< Grava a lista de apagados
             'data_ultima_atualizacao': datetime.now()
         }
         controle_collection.update_one(

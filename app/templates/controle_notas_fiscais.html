@@ -330,6 +330,50 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnSalvarDoc = document.getElementById('btnSalvarDocumentacao');
     const docModalControleId = document.getElementById('documentacaoModalControleId');
 
+    // --- FUNÇÃO AUXILIAR: Desenhar linha com IMAGEM de lixeira ---
+    function criarLinhaDocumento(valor, isChecked, isExtra) {
+        const wrapper = document.createElement('div');
+        wrapper.style.display = 'flex';
+        wrapper.style.justifyContent = 'space-between';
+        wrapper.style.alignItems = 'center';
+        wrapper.style.padding = '6px 0'; 
+        wrapper.style.borderBottom = '1px solid var(--border-base)';
+        
+        const extraStyle = isExtra ? 'font-style: italic; color: var(--primary-color);' : '';
+        const extraLabel = isExtra ? ' (Extra)' : '';
+
+        // O próprio SVG atuará como a imagem clicável. Adicionamos a classe nele.
+        // flex-shrink: 0 impede que ele seja esmagado pelo texto.
+        // Ícone SVG com animação de hover (transition + onmouseenter/onmouseleave)
+        const iconeLixeira = `
+            <svg class="btn-remove-doc" title="Excluir documento" 
+                 style="cursor: pointer; color: var(--text-primary); opacity: 0.6; flex-shrink: 0; margin-left: 10px; transition: all 0.2s ease;" 
+                 onmouseenter="this.style.transform='translateY(-2px) scale(1.1)'; this.style.opacity='1'; this.style.color='#e74c3c';"
+                 onmouseleave="this.style.transform='translateY(0) scale(1)'; this.style.opacity='0.6'; this.style.color='var(--text-primary)';"
+                 xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor">
+                <path d="M0 0h24v24H0V0z" fill="none" pointer-events="none"/>
+                <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zM18 7H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z" pointer-events="none"/>
+            </svg>`;
+
+        wrapper.innerHTML = `
+            <label style="cursor: pointer; margin: 0; display: flex; align-items: center; gap: 8px; flex-grow: 1; word-break: break-word;">
+                <input type="checkbox" name="doc_inline_pref" value="${valor}" ${isChecked ? 'checked' : ''}> 
+                <span style="${extraStyle}">${valor}${extraLabel}</span>
+            </label>
+            ${iconeLixeira}
+        `;
+        return wrapper;
+    }
+
+    // Delegação de evento: Se clicar na imagem da lixeira, apaga a linha
+    docChecklist.addEventListener('click', function(e) {
+        // Usamos .closest() para garantir que funciona mesmo se o clique pegar nas "linhas" do desenho do SVG
+        const lixeira = e.target.closest('.btn-remove-doc');
+        if (lixeira) {
+            lixeira.closest('div').remove(); // Apaga do HTML
+        }
+    });
+
     // --- 1. LÓGICA DO SELETOR DE VISUALIZAÇÃO (ATUALIZADA) ---
     const viewSelector = document.querySelector('.view-selector');
 
@@ -960,28 +1004,24 @@ document.addEventListener('DOMContentLoaded', function() {
                             return;
                         }
 
-                        // Cria os checkboxes
+                        // Cria os checkboxes originais
                         data.opcoes.forEach(opcao => {
                             const isChecked = data.salvos.includes(opcao);
-                            const wrapper = document.createElement('div');
-                            wrapper.innerHTML = `<label><input type="checkbox" name="doc_inline_pref" value="${opcao}" ${isChecked ? 'checked' : ''}> ${opcao}</label>`;
-                            docChecklist.appendChild(wrapper);
+                            docChecklist.appendChild(criarLinhaDocumento(opcao, isChecked, false));
                         });
-                        // NOVO: Renderiza também os documentos EXTRAS que já foram salvos anteriormente (não estão na lista padrão)
+                        
+                        // Renderiza documentos EXTRAS que já foram salvos (marcados)
                         data.salvos.forEach(salvo => {
                             if (!data.opcoes.includes(salvo)) {
-                                const wrapper = document.createElement('div');
-                                wrapper.innerHTML = `<label><input type="checkbox" name="doc_inline_pref" value="${salvo}" checked> <span style="font-style: italic; color: var(--primary-color);">${salvo} (Extra)</span></label>`;
-                                docChecklist.appendChild(wrapper);
+                                docChecklist.appendChild(criarLinhaDocumento(salvo, true, true));
                             }
                         });
-                        // NOVO: Renderiza documentos EXTRAS PENDENTES (desmarcados)
+                        
+                        // Renderiza documentos EXTRAS PENDENTES (desmarcados)
                         if (data.pendentes) {
                             data.pendentes.forEach(pendente => {
                                 if (!data.opcoes.includes(pendente)) {
-                                    const wrapper = document.createElement('div');
-                                    wrapper.innerHTML = `<label><input type="checkbox" name="doc_inline_pref" value="${pendente}"> <span style="font-style: italic; color: var(--primary-color);">${pendente} (Extra)</span></label>`;
-                                    docChecklist.appendChild(wrapper);
+                                    docChecklist.appendChild(criarLinhaDocumento(pendente, false, true));
                                 }
                             });
                         }
@@ -1203,30 +1243,24 @@ document.addEventListener('DOMContentLoaded', function() {
                                     return;
                                 }
 
-                                // Cria os checkboxes
+                                // Cria os checkboxes originais
                                 data.opcoes.forEach(opcao => {
                                     const isChecked = data.salvos.includes(opcao);
-                                    const wrapper = document.createElement('div');
-                                    wrapper.innerHTML = `<label><input type="checkbox" name="doc_inline_pref" value="${opcao}" ${isChecked ? 'checked' : ''}> ${opcao}</label>`;
-                                    docChecklist.appendChild(wrapper);
+                                    docChecklist.appendChild(criarLinhaDocumento(opcao, isChecked, false));
                                 });
                                 
-                                // NOVO: Renderiza documentos EXTRAS que já foram salvos (marcados)
+                                // Renderiza documentos EXTRAS que já foram salvos (marcados)
                                 data.salvos.forEach(salvo => {
                                     if (!data.opcoes.includes(salvo)) {
-                                        const wrapper = document.createElement('div');
-                                        wrapper.innerHTML = `<label><input type="checkbox" name="doc_inline_pref" value="${salvo}" checked> <span style="font-style: italic; color: var(--primary-color);">${salvo} (Extra)</span></label>`;
-                                        docChecklist.appendChild(wrapper);
+                                        docChecklist.appendChild(criarLinhaDocumento(salvo, true, true));
                                     }
                                 });
                                 
-                                // NOVO: Renderiza documentos EXTRAS PENDENTES (desmarcados)
+                                // Renderiza documentos EXTRAS PENDENTES (desmarcados)
                                 if (data.pendentes) {
                                     data.pendentes.forEach(pendente => {
                                         if (!data.opcoes.includes(pendente)) {
-                                            const wrapper = document.createElement('div');
-                                            wrapper.innerHTML = `<label><input type="checkbox" name="doc_inline_pref" value="${pendente}"> <span style="font-style: italic; color: var(--primary-color);">${pendente} (Extra)</span></label>`;
-                                            docChecklist.appendChild(wrapper);
+                                            docChecklist.appendChild(criarLinhaDocumento(pendente, false, true));
                                         }
                                     });
                                 }
