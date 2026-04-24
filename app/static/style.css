@@ -1382,13 +1382,16 @@ td .card-value {
 /* ESTILOS DE RESPONSIVIDADE PARA TELAS PEQUENAS                        */
 /* ====================================================================== */
 @media (max-width: 768px) {
+    
+    /* NOVA CLASSE: Esconde Cards e Kanban nativos no celular */
+    .hide-on-mobile {
+        display: none !important;
+    }
 
-    /* Empurra o conteúdo para baixo para dar espaço à barra superior fixa */
     body {
         padding-top: var(--height-nav);
     }
 
-    /* A barra <nav> agora fica fixa no topo */
     nav {
         position: fixed;
         top: 0;
@@ -1396,20 +1399,17 @@ td .card-value {
         width: 100%;
     }
     
-    /* Esconde a logo no celular para uma UI mais limpa, como sugerido */
     .nav-brand-container {
         display: none;
     }
     
-    /* Esconde os links do desktop (eles estarão no painel) */
     #nav-links-container {
         display: none;
     }
 
-    /* Mostra e estiliza o botão hambúrguer */
     .hamburger-menu {
         display: flex;
-        position: absolute; /* Relativo à <nav> fixa */
+        position: absolute;
         top: 0;
         left: 0;
         height: 100%;
@@ -1421,13 +1421,12 @@ td .card-value {
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        z-index: 1002; /* Fica acima de tudo */
+        z-index: 1002;
     }
     .hamburger-menu .close-icon { display: none; }
     body.nav-open .hamburger-menu .close-icon { display: block; }
     body.nav-open .hamburger-menu .hamburger-icon { display: none; }
 
-    /* O painel de menu deslizante (usa o #nav-links-container) */
     body.nav-open #nav-links-container {
         display: block;
         position: fixed;
@@ -1440,12 +1439,11 @@ td .card-value {
         transform: translateX(0);
         transition: transform 0.3s ease-in-out;
         z-index: 1001;
-        padding-top: var(--height-nav); /* Empurra os links para baixo da barra */
+        padding-top: var(--height-nav);
         box-sizing: border-box;
         overflow-y: auto;
     }
     
-    /* Estilos para a lista e itens dentro do painel mobile */
     #main-nav-menu {
         flex-direction: column;
         height: auto;
@@ -1470,39 +1468,34 @@ td .card-value {
         position: static;
         box-shadow: none;
         border-radius: 0;
-        background-color: rgba(0,0,0,0.2); /* Fundo para submenu no tema escuro */
+        background-color: rgba(0,0,0,0.2);
     }
-    /* Cor de fundo para submenu nos temas claros */
     body:not(.theme-dark) .dropdown-menu {
         background-color: var(--secondary-color);
-        opacity: 0.8; /* Adiciona uma leve transparência para diferenciar */
+        opacity: 0.8;
     }
     
-    /* O overlay de fundo */
     .nav-overlay {
         display: none;
         position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
         background-color: rgba(0, 0, 0, 0.6);
-        z-index: 1000; /* Fica abaixo do menu */
+        z-index: 1000;
     }
     body.nav-open .nav-overlay {
         display: block;
     }
 
-    /* --- VISIBILIDADE DAS BARRAS DE AÇÃO --- */
     .desktop-actions {
-        display: none; /* Esconde a barra de botões do desktop */
+        display: none;
     }
 
     .mobile-actions {
-        display: block; /* Mostra os botões flutuantes do mobile */
+        display: block;
     }
 
-    /* --- ESTILOS PARA O MENU KEBAB (AÇÕES SECUNDÁRIAS NO MOBILE) --- */
     .kebab-menu-container {
         position: fixed;
-        /* Ajuste para ficar abaixo da barra de navegação */
         top: calc(var(--height-nav) + 10px);
         right: 15px;
         z-index: 998;
@@ -1531,7 +1524,6 @@ td .card-value {
         background-color: var(--accent-color);
     }
 
-    /* Ajuste para o Kebab no tema escuro */
     body.theme-dark .kebab-menu-button {
         background-color: var(--primary-color);
     }
@@ -1542,9 +1534,9 @@ td .card-value {
 
     /* --- TRANSFORMAÇÃO DA TABELA EM CARDS --- */
     .responsive-card-table {
-        display: block; /* Garante que se comporte como um div */
-        width: 100%;                  /* <<< CORREÇÃO PRINCIPAL */
-        box-sizing: border-box;       /* <<< CORREÇÃO ESSENCIAL */
+        display: block;
+        width: 100%;                  
+        box-sizing: border-box;       
         border: none;
         box-shadow: none;
         background-color: transparent;
@@ -1553,10 +1545,10 @@ td .card-value {
     .responsive-card-table thead {
         display: none;
     }
-    .responsive-card-table tr {
+    .responsive-card-table tr:not(#tabela-sem-resultados-row):not(#tabela-backend-sem-resultados) {
         display: block !important;
         width: 100% !important;
-        box-sizing: border-box !important; /* <<< A PROPRIEDADE CHAVE */
+        box-sizing: border-box !important;
         border: 1px solid var(--border-base);
         border-radius: 8px;
         margin-bottom: 20px;
@@ -1574,15 +1566,14 @@ td .card-value {
         background-color: #181818;
     }
     .responsive-card-table td {
-        display: block; /* <<< Força o comportamento de um DIV */
+        display: block;
         width: 100% ;
         box-sizing: border-box;
         padding: 10px 0;
-        text-align: left; /* Garante que o texto do valor comece à esquerda */
+        text-align: left;
         border: none !important;
         overflow-wrap: break-word;
         word-break: break-word; 
-        box-sizing: border-box;
         white-space: normal !important;
     }
     .responsive-card-table td:last-child {
@@ -1593,7 +1584,7 @@ td .card-value {
         font-weight: bold;
         color: var(--tertiary-color);
         margin-bottom: 5px;
-        display: block; /* <<< Garante que o rótulo ocupe sua própria linha */
+        display: block;
         text-align: left;
     }
     .responsive-card-table .celula-situacao {
@@ -1605,12 +1596,11 @@ td .card-value {
         width: 100%;
     }
     
-    /* --- EXPANSÃO DOS CARDS --- */
     .responsive-card-table td.col-detalhe {
         display: none;
     }
     .responsive-card-table tr.card-expanded td.col-detalhe {
-        display: block !important;   /* em vez de flex */
+        display: block !important;
         width: 100% !important;
     }
     .expand-card-btn {
@@ -1627,98 +1617,84 @@ td .card-value {
      td, td .card-value {
         width: 100% !important;
     }
-    /* Anula o limite de largura da classe .coluna-texto-longo no modo card */
     .responsive-card-table .coluna-texto-longo {
         max-width: none;
         min-width: 0;
     }
-    /* 1) Garante que a linha e as células sejam blocos largura cheia */
     .responsive-card-table tr,
     .responsive-card-table td {
-    display: block !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    float: none !important;
-    clear: both !important;
-    box-sizing: border-box;
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        float: none !important;
+        clear: both !important;
+        box-sizing: border-box;
     }
 
-    /* 2) As colunas de detalhe (expandidas) devem ser bloco, não flex */
     .responsive-card-table tr.card-expanded > td.col-detalhe {
-    display: block !important;
-    width: 100% !important;
+        display: block !important;
+        width: 100% !important;
     }
 
-    /* 3) Qualquer conteúdo interno vira bloco largura cheia */
     .responsive-card-table td > *,
     .responsive-card-table td > * > * {
-    display: block !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    float: none !important;
-    box-sizing: border-box;
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        float: none !important;
+        box-sizing: border-box;
     }
 
-    /* 4) Rótulo em cima, valor embaixo, ambas 100% */
     .responsive-card-table td::before {
-    display: block !important;
-    width: 100% !important;
-    margin-bottom: 6px;
-    white-space: normal !important;
+        display: block !important;
+        width: 100% !important;
+        margin-bottom: 6px;
+        white-space: normal !important;
     }
 
-    /* Regra final e unificada para o VALOR dentro dos cards */
     .responsive-card-table .card-value {
-        display: flex;         /* <<< ALTERADO */
-        align-items: center;   /* <<< ADICIONADO: Alinha a cor e o texto verticalmente */
-        flex-wrap: wrap;       /* <<< ADICIONADO: Permite que o texto quebre se necessário */        display: block !important;      /* Garante que o valor se comporte como um bloco */
-        width: 100% !important;         /* Garante que ocupe toda a largura */
-        box-sizing: border-box;         /* Garante que o padding não afete a largura */
-        white-space: normal !important; /* ESSENCIAL para permitir a quebra de linha */
-        overflow-wrap: break-word;      /* Quebra palavras longas para não estourarem o layout */
-        word-break: break-word;         /* Garante a quebra em todos os cenários */
-        text-align: left !important;      /* Garante o alinhamento correto do texto */
+        display: flex;         
+        align-items: center;   
+        flex-wrap: wrap;       
+        display: block !important;      
+        width: 100% !important;         
+        box-sizing: border-box;         
+        white-space: normal !important; 
+        overflow-wrap: break-word;      
+        word-break: break-word;         
+        text-align: left !important;      
     }    
 
-    /* 5) Zera qualquer flex que tenha “sobrado” */
     .responsive-card-table tr.card-expanded,
     .responsive-card-table tr.card-expanded td,
     .responsive-card-table tr.card-expanded td.col-detalhe {
-    flex: 0 0 auto !important;
+        flex: 0 0 auto !important;
     }
 
-    /* === REFINAMENTOS FINAIS PARA O LAYOUT DOS CARDS === */
-
-    /* Força o esconderijo da primeira coluna (radio button) no modo card */
     .responsive-card-table td:first-child {
         display: none !important;
     }
 
-    /* Esconde as colunas de detalhe por padrão */
     .responsive-card-table td.col-detalhe {
         display: none !important;
     }
 
-    /* Mostra as colunas de detalhe quando o card está expandido */
     .responsive-card-table tr.card-expanded td.col-detalhe {
         display: block !important;
     }
 
-    /* Garante que o botão de expandir só apareça no modo card */
     .expand-card-btn {
         display: block !important;
     }
     table.responsive-card-table td:last-of-type {
-        border-bottom: none !important; /* Remove a linha do botão "Ver mais" */
+        border-bottom: none !important; 
     }
-    /* Garante que a célula do botão "Ver mais" apareça no modo card */
     .responsive-card-table td:last-child {
         display: block !important;
-        border-bottom: none !important; /* Remove a linha separadora debaixo do botão */
+        border-bottom: none !important; 
     }
-    /* Regra MAIS ESPECÍFICA para a barra de ações, agora sem 'gap' */
     .responsive-card-table .card-actions-toolbar {
         display: flex !important;
         flex-direction: row !important;
@@ -1726,20 +1702,16 @@ td .card-value {
         margin-top: 15px;
         width: 100% !important;
     }
-    /* Adiciona margens APENAS aos links e botões para criar o espaçamento */
     .responsive-card-table .card-actions-toolbar > a.button,
     .responsive-card-table .card-actions-toolbar > button {
-        margin: 0 5px; /* Cria 10px de espaço uniforme entre os itens visíveis */
+        margin: 0 5px; 
     }
-    /* Garante que o link 'Editar' se comporte como um botão flexível */
     .responsive-card-table .card-actions-toolbar a.button {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         height: var(--element-height);
     }
-    /* Regra "agressiva" que força QUALQUER conteúdo dentro de uma célula de card
-       a virar um bloco de largura cheia, resolvendo problemas de estouro de layout. */
     .responsive-card-table td > * {
         display: block !important;
         width: 100% !important;
@@ -1748,45 +1720,37 @@ td .card-value {
         text-align: left !important;
         white-space: normal !important;
     }
-    /* ADICIONE DENTRO do @media (max-width: 768px) */
 
-    /* Correção para o tamanho da caixinha de cor no modo card */
     .responsive-card-table .color-preview {
-        width: 25px !important;     /* Força uma largura fixa pequena */
-        height: 25px !important;    /* Força uma altura fixa pequena */
-        display: block !important;    /* Garante que se comporte como um bloco */
+        width: 25px !important;     
+        height: 25px !important;    
+        display: block !important;    
     }
-    /* Correção de largura específica para os cards da página de Situações */
     #tabelaSituacoes.responsive-card-table tr {
         width: 100%;
-        box-sizing: border-box; /* Garante que o padding e a borda não estourem a largura */
+        box-sizing: border-box; 
     }
 
-    /* Correção específica para a célula de Cor no modo card */
     .responsive-card-table td[data-label^="Cor"] {
-        /* Alinha o conteúdo (a caixinha de cor) à esquerda */
         justify-content: flex-start;
-    }
-    /* ADICIONE DENTRO do @media (max-width: 768px) */
-
-    /* 1. Define que a célula de Cor terá uma largura automática, baseada no seu conteúdo */
-    .responsive-card-table td[data-label^="Cor"] {
         width: auto !important;
     }
 
-    /* 2. Garante que o conteúdo (a caixinha de cor) tenha o tamanho correto */
     .responsive-card-table td[data-label^="Cor"] > * {
         width: 25px !important;
         height: 25px !important;
     }
 
-    /* Força o corpo da tabela a ocupar a largura total no modo card */
     .responsive-card-table tbody {
         display: block;
         width: 100%;
     }
-}
 
+    /* Mostra a barra de busca mobile */
+    .mobile-search-bar {
+        display: block !important;
+    }
+}
 
 table {
     border-collapse: separate;
@@ -2154,7 +2118,9 @@ body.theme-dark tr[style*="background-color"]:hover {
 
 @media (min-width: 769px) {
     .view-selector { display: flex; }
-
+    .hide-on-desktop {
+        display: none !important;
+    }
     /* As outras regras de body.view-mode-* foram removidas */
 }
 

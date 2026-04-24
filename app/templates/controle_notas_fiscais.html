@@ -52,8 +52,8 @@
     </div>
     
     <br>
-    {% if view_mode == 'table' %}
-    <table border="1" id="tabelaControle" class="responsive-card-table">
+    
+    <table border="1" id="tabelaControle" class="responsive-card-table {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
         <thead>
             <tr>
                 <th></th>
@@ -96,7 +96,6 @@
                     {% if col_id in colunas_visiveis %}
 
                         {% if col_id == 'situacao' %}
-                            {# Handles the 'situacao' column #}
                             <td data-label="{{ col_nome }}" class="celula-situacao coluna-situacao">
                                 <select class="situacao-dropdown" data-id="{{ controle._id }}" 
                                     {% if color_coding_active and controle.situacao in color_map %}
@@ -110,10 +109,9 @@
                             </td>
 
                         {% elif col_id == 'documentacao' %}
-                            {# NEW: Handles ONLY the 'documentacao' column #}
                             <td data-label="{{ col_nome }}"
                                 class="coluna-texto-longo {{ 'col-detalhe' if col_id in colunas_detalhe else '' }} editable-cell"
-                                data-field-name="documentacao"> {# <<< LINHAS MODIFICADAS >>> #}
+                                data-field-name="documentacao">
                                 <span class="card-value">
                                     {{ controle.documentacao | join(', ') }}
                                     {%- if controle.documentacao and controle.documentacao_pendente %}, {% endif %}
@@ -126,11 +124,10 @@
                             </td>
 
                         {% else %}
-                            {# Handles all OTHER standard columns #}
-                            {% set is_editable = col_id in ['referencia', 'nota_fiscal', 'carta_de_correcao', 'observacoes'] %} {# Define se é editável #}
+                            {% set is_editable = col_id in ['referencia', 'nota_fiscal', 'carta_de_correcao', 'observacoes'] %}
                             <td data-label="{{ col_nome }}"
-                                class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }} {{ 'col-detalhe' if col_id in colunas_detalhe else '' }} {{ 'editable-cell' if is_editable else '' }}" {# Adiciona classe se editável #}
-                                {% if is_editable %}data-field-name="{{ col_id }}"{% endif %}> {# Adiciona data-attribute se editável #}
+                                class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }} {{ 'col-detalhe' if col_id in colunas_detalhe else '' }} {{ 'editable-cell' if is_editable else '' }}"
+                                {% if is_editable %}data-field-name="{{ col_id }}"{% endif %}>
                                 <span class="card-value">
                                     {{ controle[col_id] }}
                                 </span>
@@ -143,12 +140,28 @@
                 <td><button class="expand-card-btn">Ver mais</button></td>
             </tr>
             {% else %}
-            <tr id="tabela-backend-sem-resultados"> {# <<< ID ADICIONADO AQUI #}
+            <tr id="tabela-backend-sem-resultados">
                 <td colspan="{{ colunas_visiveis|length + 2 }}">Nenhum registro de controle encontrado.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+
+    {% if view_mode == 'cards' %}
+    <p id="cards-sem-resultados" class="kanban-empty-msg hide-on-mobile" style="display: none; text-align: center; width: 100%;">
+        Nenhum resultado encontrado para a busca.
+    </p>
+    <div class="card-view-container hide-on-mobile">
+        <div class="card-grid">
+            {% for controle in controles %}
+                {% include 'partials/_controle_card.html' %}
+            {% endfor %}
+        </div>
+    </div>
+
+    {% elif view_mode == 'kanban' %}
+    <div class="kanban-view-container hide-on-mobile">
+        <div class="kanban-board">
 
     {% elif view_mode == 'cards' %}
     <p id="cards-sem-resultados" class="kanban-empty-msg" style="display: none; text-align: center; width: 100%;">
@@ -1451,146 +1464,124 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- 16. LÓGICA DE BUSCA RÁPIDA (CLIENT-SIDE) ---
     const buscaInput = document.getElementById('buscaRapidaInput');
+    const buscaInputMobile = document.getElementById('buscaRapidaInputMobile'); 
     const currentViewMode = "{{ view_mode }}";
 
-    // Referências para as mensagens "Sem Resultados"
     const tabelaSemResultadosBusca = document.getElementById('tabela-sem-resultados-row');
     const cardsSemResultadosBusca = document.getElementById('cards-sem-resultados');
     const tabelaBackendSemResultados = document.getElementById('tabela-backend-sem-resultados');
 
-    if (buscaInput) {
+    function executarBusca(e) {
+        // Lê SEMPRE o valor digitado (sincronizando mobile e desktop visualmente)
+        const isMobile = window.innerWidth <= 768;
+        let query = '';
+        
+        if (e && e.target) {
+            query = e.target.value.toLowerCase().trim();
+            if (buscaInput && e.target.id === 'buscaRapidaInputMobile') buscaInput.value = e.target.value;
+            if (buscaInputMobile && e.target.id === 'buscaRapidaInput') buscaInputMobile.value = e.target.value;
+        } else {
+            const valDesktop = buscaInput ? buscaInput.value : '';
+            const valMobile = buscaInputMobile ? buscaInputMobile.value : '';
+            query = (isMobile ? valMobile : valDesktop).toLowerCase().trim();
+        }
 
-        // Função principal de filtragem
-        function executarBusca() {
-            const query = buscaInput.value.toLowerCase().trim();
-            let itemsToFilter = [];
-            let itemsVisiveis = 0;
-            // Pega o estilo de display correto verificando o tamanho da janela
-            const isResponsiveMode = window.innerWidth <= 768;
-            const displayStyle = (currentViewMode === 'table') ? (isResponsiveMode ? 'block' : 'table-row') : '';
+        let itemsToFilter = [];
+        let displayStyle = '';
 
-            // 1. Seleciona os itens corretos
+        // O SEGREDO DA CONSISTÊNCIA: No celular, a busca filtra SEMPRE a tabela,
+        // independentemente da visualização selecionada pelo usuário no desktop!
+        if (isMobile) {
+            itemsToFilter = document.querySelectorAll('#tabelaControle tbody tr.clickable-row');
+            displayStyle = 'block';
+        } else {
             if (currentViewMode === 'table') {
                 itemsToFilter = document.querySelectorAll('#tabelaControle tbody tr.clickable-row');
+                displayStyle = 'table-row';
             } else if (currentViewMode === 'cards' || currentViewMode === 'kanban') {
                 itemsToFilter = document.querySelectorAll('.data-card');
+                displayStyle = 'flex';
+            }
+        }
+
+        let itemsVisiveis = 0;
+
+        itemsToFilter.forEach(item => {
+            let itemText = '';
+            
+            // Extrai texto dos valores (serve para a tabela e para os cards)
+            const spans = item.querySelectorAll('span.card-value, span.card-field-value');
+            spans.forEach(span => { itemText += " " + span.textContent.toLowerCase(); });
+            
+            // Extrai texto do H4 se for um Card
+            const h4 = item.querySelector('h4');
+            if (h4) itemText += " " + h4.textContent.toLowerCase();
+
+            // Extrai texto do dropdown de Situação se for a Tabela
+            const situacaoSelect = item.querySelector('.situacao-dropdown');
+            if (situacaoSelect && situacaoSelect.value) {
+                itemText += " " + situacaoSelect.value.toLowerCase();
             }
 
-            // 2. Loop para filtrar
-            itemsToFilter.forEach(item => {
-                let itemText = ''; // Começa com uma string vazia
+            if (itemText.includes(query)) {
+                item.style.display = displayStyle;
+                itemsVisiveis++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
 
-                // (Correção): Busca o texto APENAS dos spans que contêm os dados
-                const spans = item.querySelectorAll('span.card-value');
-                spans.forEach(span => {
-                    itemText += " " + span.textContent.toLowerCase();
-                });
+        const noResults = (itemsVisiveis === 0);
+        const isSearching = query.length > 0;
 
-                // PONTO 4: Adiciona o valor ATUAL do <select> de situação (se estiver na tabela)
-                if (currentViewMode === 'table') {
-                    const situacaoSelect = item.querySelector('.situacao-dropdown');
-                    if (situacaoSelect && situacaoSelect.value) {
-                        // situacaoSelect.value é o texto da opção selecionada (ex: "Conferência Relatório")
-                        itemText += " " + situacaoSelect.value.toLowerCase();
-                    }
-                }
-
-                if (itemText.includes(query)) {
-                    item.style.display = displayStyle;
-                    itemsVisiveis++;
-                } else {
-                    item.style.display = 'none'; // Esconde o item
-                }
-            });
-
-            // 3. Gerencia as mensagens "Sem Resultados"
-            const noResultsFromSearch = (itemsVisiveis === 0);
-            const isSearching = query.length > 0;
-
-            // --- INÍCIO LOGS DE DEPURAÇÃO ---
-            /*console.log("Executando busca:", {
-                query: query,
-                isSearching: isSearching,
-                itemsVisiveis: itemsVisiveis,
-                noResults: noResultsFromSearch,
-                tabelaBusca: tabelaSemResultadosBusca,
-                tabelaBackend: tabelaBackendSemResultados
-            });*/
-            // --- FIM LOGS DE DEPURAÇÃO ---
-
-            if (currentViewMode === 'table') {
-                if (tabelaSemResultadosBusca) {
-                    // A mensagem de BUSCA só aparece se a busca estiver ATIVA E não houver resultados
-                    if (isSearching && noResultsFromSearch) {
-                        // Força a exibição com o estilo correto (table-row OU block)
-                        tabelaSemResultadosBusca.style.setProperty('display', displayStyle, 'important');
-                    } else {
-                        // Força a ocultação
-                        tabelaSemResultadosBusca.style.setProperty('display', 'none', 'important');
-                    }
-                    tabelaSemResultadosBusca.style.border = 'none'; // Remove o teste da borda
-                }
-                if (tabelaBackendSemResultados) {
-                    // A mensagem do BACKEND (Nenhum registro) só aparece se a busca NÃO estiver ativa
-                    tabelaBackendSemResultados.style.display = (isSearching) ? 'none' : '';
-                }
-
-            } else if (currentViewMode === 'cards') {
-                if (cardsSemResultadosBusca) {
-                    // A mensagem de BUSCA (cards) só aparece se a busca estiver ATIVA E não houver resultados
-                    // (Assumindo que o backend já esconde a lista se 'controles' estiver vazio)
-                    cardsSemResultadosBusca.style.display = (isSearching && noResultsFromSearch) ? '' : 'none';
-                }
-
+        // Gestão das mensagens de erro e componentes visuais
+        if (isMobile || currentViewMode === 'table') {
+            if (tabelaSemResultadosBusca) {
+                tabelaSemResultadosBusca.style.setProperty('display', (isSearching && noResults) ? displayStyle : 'none', 'important');
+                tabelaSemResultadosBusca.style.border = 'none';
+            }
+            if (tabelaBackendSemResultados) {
+                tabelaBackendSemResultados.style.display = isSearching ? 'none' : '';
+            }
+        } 
+        
+        if (!isMobile) {
+            if (currentViewMode === 'cards' && cardsSemResultadosBusca) {
+                cardsSemResultadosBusca.style.display = (isSearching && noResults) ? 'block' : 'none';
             } else if (currentViewMode === 'kanban') {
                 atualizarContagensKanban(query);
             }
         }
-
-        // Listener para 'keyup' (digitar)
-        buscaInput.addEventListener('keyup', executarBusca);
-
-        // Listener para 'search' (clicar no 'X' do input type="search")
-        buscaInput.addEventListener('search', function() {
-            executarBusca();
-        });
-
-        // PONTO 2: Limpar com ESC
-        buscaInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                buscaInput.value = '';
-                executarBusca();
-                //buscaInput.blur();
-            }
-        });
-
-        // PONTO 4 (Correção): Ouve mudanças nos dropdowns da tabela
-        if (currentViewMode === 'table') {
-            document.querySelectorAll('#tabelaControle .situacao-dropdown').forEach(dropdown => {
-                dropdown.addEventListener('change', executarBusca);
-            });
-        }
     }
 
-    // PONTO 3: Atualiza mensagens "Sem Resultados" no Kanban
+    // Atribui os eventos de busca apenas uma vez
+    if (buscaInput) {
+        buscaInput.addEventListener('keyup', executarBusca);
+        buscaInput.addEventListener('search', executarBusca);
+        buscaInput.addEventListener('keydown', e => { if (e.key === 'Escape') { buscaInput.value = ''; executarBusca(e); }});
+    }
+    if (buscaInputMobile) {
+        buscaInputMobile.addEventListener('keyup', executarBusca);
+        buscaInputMobile.addEventListener('search', executarBusca);
+        buscaInputMobile.addEventListener('keydown', e => { if (e.key === 'Escape') { buscaInputMobile.value = ''; executarBusca(e); }});
+    }
+    
+    // Atualiza a busca ao mudar o select da tabela
+    document.querySelectorAll('#tabelaControle .situacao-dropdown').forEach(dropdown => {
+        dropdown.addEventListener('change', executarBusca);
+    });
+
     function atualizarContagensKanban(query) {
-        if (currentViewMode !== 'kanban') return;
+        if (currentViewMode !== 'kanban' || window.innerWidth <= 768) return;
         const isSearching = query && query.length > 0;
 
         document.querySelectorAll('.kanban-column').forEach(coluna => {
             const cardsNaColuna = coluna.querySelectorAll('.data-card');
             const totalCards = cardsNaColuna.length;
-
             let cardsEscondidos = 0;
-            cardsNaColuna.forEach(card => {
-                if (card.style.display === 'none') {
-                    cardsEscondidos++;
-                }
-            });
+            cardsNaColuna.forEach(card => { if (card.style.display === 'none') cardsEscondidos++; });
 
             let msgNenhumResultado = coluna.querySelector('.kanban-empty-msg');
-
-            // Se a busca escondeu todos os cards (e a coluna não estava vazia)
             if (isSearching && totalCards > 0 && cardsEscondidos === totalCards) {
                 if (!msgNenhumResultado) {
                     msgNenhumResultado = document.createElement('p');
@@ -1599,7 +1590,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     coluna.querySelector('.kanban-cards').appendChild(msgNenhumResultado);
                 }
             } else if (msgNenhumResultado) {
-                // Se a busca não está ativa, ou se há resultados, remove a mensagem
                 msgNenhumResultado.remove();
             }
         });
