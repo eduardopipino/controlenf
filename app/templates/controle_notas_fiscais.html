@@ -855,6 +855,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     alert(`Erro ao salvar: ${data.message}`);
                     cancelInlineEdit(td, inputElement, originalValue); 
                 }
+                window.opcoesOriginaisModal = data.opcoes || [];
             })
             .catch(error => {
                 console.error('Erro de rede ao salvar:', error);
@@ -924,6 +925,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         } else {
                             docChecklist.innerHTML = `<p style="color: red;">Erro: ${data.message}</p>`;
                         }
+                        window.opcoesOriginaisModal = data.opcoes || [];
                     })
                     .catch(err => {
                         console.error("Erro ao buscar documentação:", err);
@@ -1203,24 +1205,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
+            // 1. Pega os valores que ficaram na tela (marcados e desmarcados)
             const docSelecionados = Array.from(docChecklist.querySelectorAll('input[name="doc_inline_pref"]:checked')).map(cb => cb.value);
             const docPendentes = Array.from(docChecklist.querySelectorAll('input[name="doc_inline_pref"]:not(:checked)')).map(cb => cb.value);
 
+            // 2. Lógica de Ignorados (Lixeira)
+            // Pegamos TODAS as checkboxes atuais na tela
+            const docsAtuais = Array.from(docChecklist.querySelectorAll('input[name="doc_inline_pref"]')).map(cb => cb.value);
+            
+            // Variável global temporária onde tínhamos guardado as opções quando o modal abriu.
+            // Precisamos garantir que window.opcoesOriginaisModal foi preenchida na abertura do modal!
+            let ignorados = [];
+            if (window.opcoesOriginaisModal) {
+                // Se estava nas opções originais e NÃO está mais na tela, foi ignorado (excluído)
+                ignorados = window.opcoesOriginaisModal.filter(opt => !docsAtuais.includes(opt));
+            }
+
+            // Envia para a API
             fetch(`/controle/update_documentacao_inline/${controleId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     documentacao: docSelecionados,
-                    documentacao_pendente: docPendentes})
+                    documentacao_pendente: docPendentes,
+                    documentacao_ignorada: ignorados // <<< ENVIA OS IGNORADOS
+                })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
+                    // ... (O RESTO DO CÓDIGO AQUI FICA EXATAMENTE IGUAL, não precisa mexer nas atualizações visuais) ...
                     let updatedElement = null; 
                     let spanToUpdate = null; 
 
                     const isMobile = window.innerWidth <= 768;
-                    // No mobile a tabela sempre está lá. No desktop, procuramos conforme o view_mode
                     if (isMobile || "{{ view_mode }}" === "table") {
                         updatedElement = document.querySelector(`#tabelaControle tr[data-id="${controleId}"] td[data-field-name="documentacao"]`);
                         if (updatedElement) {

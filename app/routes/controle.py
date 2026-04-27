@@ -467,25 +467,27 @@ def get_documentacao_inline(controle_id):
         user_id_obj = ObjectId(current_user.id)
         controle = controle_collection.find_one(
             {'_id': ObjectId(controle_id), 'user_id': user_id_obj},
-            {'item_id': 1, 'documentacao': 1, 'documentacao_pendente': 1} # Projeta apenas os campos necessários
+            {'item_id': 1, 'documentacao': 1, 'documentacao_pendente': 1, 'documentos_excluidos': 1} # <-- Adicionado aqui
         )
         if not controle:
             return {'status': 'error', 'message': 'Registro de controle não encontrado.'}, 404
 
         item = itens_collection.find_one(
             {'_id': controle['item_id'], 'user_id': user_id_obj},
-            {'documentos_exigidos': 1} # Projeta apenas as opções
+            {'documentos_exigidos': 1} 
         )
         if not item:
             return {'status': 'error', 'message': 'Item de instrumento não encontrado.'}, 404
 
-        # Lógica Nova: Filtra os documentos que o usuário excluiu
         opcoes_originais = item.get('documentos_exigidos', [])
-        excluidos = controle.get('documentos_excluidos', [])
-        opcoes = [opt for opt in opcoes_originais if opt not in excluidos]
-
         salvos = controle.get('documentacao', [])
         pendentes = controle.get('documentacao_pendente', [])
+        
+        # --- A MÁGICA ACONTECE AQUI ---
+        # Busca os excluídos no banco e os remove das opções do modal
+        excluidos = controle.get('documentos_excluidos', [])
+        opcoes = [opt for opt in opcoes_originais if opt not in excluidos]
+        # ------------------------------
 
         return {'status': 'success', 'opcoes': opcoes, 'salvos': salvos, 'pendentes': pendentes}
 
@@ -497,13 +499,12 @@ def get_documentacao_inline(controle_id):
 @login_required
 def update_documentacao_inline(controle_id):
     """
-    Atualiza a lista de 'documentacao' e recalcula 'documentacao_pendente'
+    Atualiza a lista de 'documentacao' e recalcula 'documentacao_pendente' e 'documentos_excluidos'
     para um registro de controle específico.
     """
     data = request.get_json()
-    # Espera receber uma lista de strings
     novos_documentos = data.get('documentacao', [])
-    novos_pendentes = data.get('documentacao_pendente') # <- LER PENDENTES DO JS
+    novos_pendentes = data.get('documentacao_pendente')
 
     if not isinstance(novos_documentos, list):
         return {'status': 'error', 'message': 'Formato de dados inválido.'}, 400
@@ -512,39 +513,41 @@ def update_documentacao_inline(controle_id):
         user_id_obj = ObjectId(current_user.id)
         controle = controle_collection.find_one(
             {'_id': ObjectId(controle_id), 'user_id': user_id_obj},
-            {'item_id': 1} # Projeta item_id
+            {'item_id': 1} 
         )
         if not controle:
             return {'status': 'error', 'message': 'Registro de controle não encontrado.'}, 404
 
         item = itens_collection.find_one(
             {'_id': controle['item_id'], 'user_id': user_id_obj},
-            {'documentos_exigidos': 1} # Projeta opções
+            {'documentos_exigidos': 1} 
         )
         if not item:
             return {'status': 'error', 'message': 'Item de instrumento não encontrado.'}, 404
 
-        # Lógica Nova: Identifica o que foi excluído da tela e grava no banco
         opcoes_originais = item.get('documentos_exigidos', [])
+        
         if novos_pendentes is None:
             novos_pendentes = [opt for opt in opcoes_originais if opt not in novos_documentos]
 
-        # Deduz os excluídos: eram exigidos, mas não vieram marcados nem pendentes do JavaScript
+        # --- A MÁGICA ACONTECE AQUI ---
+        # Deduz os excluídos: eram exigidos no contrato original, mas não vieram nem como salvos nem como pendentes da tela!
         excluidos = [opt for opt in opcoes_originais if opt not in novos_documentos and opt not in novos_pendentes]
+        # ------------------------------
 
         # Atualiza o registro no banco
         update_data = {
             'documentacao': novos_documentos,
             'documentacao_pendente': novos_pendentes,
-            'documentos_excluidos': excluidos, # <<< Grava a lista de apagados
+            'documentos_excluidos': excluidos, # <<< Grava a lista de apagados no banco
             'data_ultima_atualizacao': datetime.now()
         }
+        
         controle_collection.update_one(
             {'_id': ObjectId(controle_id), 'user_id': user_id_obj},
             {'$set': update_data}
         )
 
-        # Retorna os novos dados para o JavaScript atualizar a tabela
         return {
             'status': 'success',
             'message': 'Documentação atualizada.',
