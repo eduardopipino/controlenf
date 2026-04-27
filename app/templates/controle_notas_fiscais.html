@@ -12,7 +12,6 @@
             {% else %}
                 <button id="btnConfigurarCampos">Configurar campos</button>
             {% endif %}
-            {#<a href="{{ url_for('controle.exportar_csv', filter_mode=filter_mode) }}" class="button">Exportar</a>#}
         </div>
         
         <div class="toolbar-group-center">
@@ -52,6 +51,10 @@
     </div>
     
     <br>
+
+    <div class="mobile-search-bar hide-on-desktop" style="margin-bottom: 15px;">
+        <input type="search" id="buscaRapidaInputMobile" placeholder="Buscar registros..." style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid var(--border-base); background-color: var(--background-secondary); color: var(--text-primary); font-size: 16px;">
+    </div>
     
     <table border="1" id="tabelaControle" class="responsive-card-table {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
         <thead>
@@ -158,25 +161,10 @@
             {% endfor %}
         </div>
     </div>
+    {% endif %}
 
-    {% elif view_mode == 'kanban' %}
+    {% if view_mode == 'kanban' %}
     <div class="kanban-view-container hide-on-mobile">
-        <div class="kanban-board">
-
-    {% elif view_mode == 'cards' %}
-    <p id="cards-sem-resultados" class="kanban-empty-msg" style="display: none; text-align: center; width: 100%;">
-        Nenhum resultado encontrado para a busca.
-    </p>
-    <div class="card-view-container">
-        <div class="card-grid">
-            {% for controle in controles %}
-                {% include 'partials/_controle_card.html' %}
-            {% endfor %}
-        </div>
-    </div>
-
-    {% elif view_mode == 'kanban' %}
-    <div class="kanban-view-container">
         <div class="kanban-board">
             {% for sit in situacoes_kanban %}
                 <div class="kanban-column" data-situacao="{{ sit.situacao }}">
@@ -202,12 +190,12 @@
             </div>
         </div>
     </div>
-{% endif %}
+    {% endif %}
+
 
     <div id="filterModal" class="modal-overlay">
         <div class="modal-content">
             <h3>Filtrar Registros</h3>
-                {# Alterado para METHOD="GET" e a action agora usa a rota unificada #}
                 <form method="GET" action="{{ url_for('controle.controle_lista', filter_mode=filter_mode) }}">
                 <input type="hidden" name="sort_by" value="{{ sort_by or 'data_criacao' }}">
                 <input type="hidden" name="order" value="{{ order or 'asc' }}">
@@ -250,8 +238,6 @@
                     </div>
                     <div class="toolbar-group-right">
                         <button type="button" class="button" onclick="window.location.href='{{ url_for('controle.controle_lista', filter_mode=filter_mode) }}'">Limpar Filtro</button>
-                        {#<button type="button" id="btnLimparFiltro" class="button">Limpar Filtro</button>#}
-                        {#<a href="{{ url_for('controle_lista', filter_mode=filter_mode) }}" class="button">Limpar Filtro</a>#}
                     </div>
                 </div>
             </form>
@@ -337,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const colorMap = {{ color_map | tojson | safe }};
     const colorCodingIsActive = {{ color_coding_active | tojson }};
     const editableFields = ['referencia', 'nota_fiscal', 'carta_de_correcao', 'observacoes'];
-    const card_fields_map_global = {{ dict(todas_as_colunas_cards) | tojson | safe }}; // <<< LINHA ADICIONADA AQUI
+    const card_fields_map_global = {{ dict(todas_as_colunas_cards) | tojson | safe }}; 
     const docModal = document.getElementById('documentacaoModal');
     const docChecklist = document.getElementById('documentacao-checklist');
     const btnSalvarDoc = document.getElementById('btnSalvarDocumentacao');
@@ -355,9 +341,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const extraStyle = isExtra ? 'font-style: italic; color: var(--primary-color);' : '';
         const extraLabel = isExtra ? ' (Extra)' : '';
 
-        // O próprio SVG atuará como a imagem clicável. Adicionamos a classe nele.
-        // flex-shrink: 0 impede que ele seja esmagado pelo texto.
-        // Ícone SVG com animação de hover (transition + onmouseenter/onmouseleave)
         const iconeLixeira = `
             <svg class="btn-remove-doc" title="Excluir documento" 
                  style="cursor: pointer; color: var(--text-primary); opacity: 0.6; flex-shrink: 0; margin-left: 10px; transition: all 0.2s ease;" 
@@ -378,27 +361,22 @@ document.addEventListener('DOMContentLoaded', function() {
         return wrapper;
     }
 
-    // Delegação de evento: Se clicar na imagem da lixeira, apaga a linha
     docChecklist.addEventListener('click', function(e) {
-        // Usamos .closest() para garantir que funciona mesmo se o clique pegar nas "linhas" do desenho do SVG
         const lixeira = e.target.closest('.btn-remove-doc');
         if (lixeira) {
-            lixeira.closest('div').remove(); // Apaga do HTML
+            lixeira.closest('div').remove(); 
         }
     });
 
-    // --- 1. LÓGICA DO SELETOR DE VISUALIZAÇÃO (ATUALIZADA) ---
+    // --- 1. LÓGICA DO SELETOR DE VISUALIZAÇÃO ---
     const viewSelector = document.querySelector('.view-selector');
-
     if (viewSelector) {
         viewSelector.addEventListener('click', (e) => {
             const button = e.target.closest('.view-button');
-            // Não faz nada se clicar no botão que já está ativo
             if (!button || button.classList.contains('active')) return;
 
             const selectedView = button.dataset.view;
 
-            // Salva a preferência no backend e, em caso de sucesso, recarrega a página
             fetch("{{ url_for('core.set_view_preference') }}", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -407,7 +385,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // Recarrega a página. O servidor irá renderizar a visualização correta.
                     window.location.reload();
                 } else {
                     alert('Erro ao salvar a preferência de visualização.');
@@ -418,7 +395,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // --- 2. LÓGICA GERAL PARA FECHAMENTO DE MODAIS ---
-    // (Este era o código que faltava)
     document.querySelectorAll('.modal-overlay').forEach(modal => {
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
@@ -446,13 +422,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('btnConfigurarColunas')?.addEventListener('click', () => configColunasModal.classList.add('active'));
     document.getElementById('btnConfigurarColunasMobile')?.addEventListener('click', () => configColunasModal.classList.add('active'));
 
-    // --- 4. LÓGICA DE CLIQUE (DESKTOP E MOBILE) ---
+    // --- 4 E 5. LÓGICA DE CLIQUE E EXPANDIR (MOBILE NATIVO NA TABELA) ---
     document.querySelectorAll('#tabelaControle .clickable-row[data-url]').forEach(row => {
-
-        // LÓGICA DE CLIQUE SIMPLES PARA MOBILE
         row.addEventListener('click', function(e) {
-            if (window.innerWidth <= 768) { // Só executa em telas pequenas
-                // Previne a navegação se o clique for em um elemento interativo
+            if (window.innerWidth <= 768) { 
                 if (!e.target.closest('.action-icon-link, .expand-card-btn, .situacao-dropdown, input')) {
                     window.location.href = this.dataset.url;
                 }
@@ -460,17 +433,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // --- 5. LÓGICA PARA EXPANDIR CARDS (SÓ TEM EFEITO VISÍVEL NO MOBILE) ---
-    document.querySelectorAll('.expand-card-btn').forEach(button => {
+    document.querySelectorAll('.responsive-card-table .expand-card-btn').forEach(button => {
         button.addEventListener('click', function(e) {
             e.stopPropagation();
-            const card = this.closest('tr');
-            card.classList.toggle('card-expanded');
-            this.textContent = card.classList.contains('card-expanded') ? 'Ver menos' : 'Ver mais';
+            const row = this.closest('tr');
+            row.classList.toggle('card-expanded');
+            this.textContent = row.classList.contains('card-expanded') ? 'Ver menos' : 'Ver mais';
         });
     });
 
-    // --- 6. LÓGICA DO MENU KEBAB (SÓ APARECE NO MOBILE) ---
+    // --- 6. LÓGICA DO MENU KEBAB ---
     const kebabButton = document.getElementById('btnKebab');
     const kebabDropdown = document.querySelector('.kebab-menu-dropdown');
     if (kebabButton) {
@@ -483,7 +455,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- 7. LÓGICA DE IDENTIFICAR POR CORES (PERMANENTE) ---
+    // --- 7. LÓGICA DE IDENTIFICAR POR CORES ---
     function handleToggleColor() {
         fetch("{{ url_for('core.toggle_color_coding') }}", { method: 'POST' })
         .then(response => response.json())
@@ -498,12 +470,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('btnColorCode')?.addEventListener('click', handleToggleColor);
     document.getElementById('btnColorCodeMobile')?.addEventListener('click', handleToggleColor);
 
-    // Ativa o estilo do botão se a colorização estiver ativa
     if (colorCodingIsActive) {
         document.getElementById('btnColorCode')?.classList.add('filtro-ativo');
     }
 
-    // --- 8. LÓGICA PARA ATUALIZAÇÃO RÁPIDA DE SITUAÇÃO (CORRIGIDA) ---
+    // --- 8. LÓGICA PARA ATUALIZAÇÃO RÁPIDA DE SITUAÇÃO ---
     const dropdowns = document.querySelectorAll('.situacao-dropdown');
     const situacoesArquivadoras = JSON.parse('{{ arquivadores_json | default("[]") | safe }}');
     dropdowns.forEach(dropdown => {
@@ -523,18 +494,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.status === 'success') {
                     linhaDaTabela.classList.add('update-success');
                     setTimeout(() => { linhaDaTabela.classList.remove('update-success'); }, 1500);
-                    
-                    // Usa as novas variáveis para aplicar a cor dinamicamente
                     if (colorCodingIsActive) {
                         this.style.backgroundColor = colorMap[novaSituacao] || '';
                     }
-                    
-                    /*if (situacoesArquivadoras.includes(novaSituacao) && "{{ filter_mode }}" === "pendentes") {
-                        setTimeout(() => {
-                            linhaDaTabela.style.opacity = '0';
-                            setTimeout(() => linhaDaTabela.remove(), 500);
-                        }, 500);
-                    }*/
                 } else {
                     linhaDaTabela.classList.add('update-error');
                     setTimeout(() => { linhaDaTabela.classList.remove('update-error'); }, 2000);
@@ -620,16 +582,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const todasAsSituacoes = {{ situacoes_para_filtro | tojson | safe }};
     let activeCard = null;
 
-    // Função para popular o menu com as opções de situação
     function popularMenuSituacao() {
-        situacaoOptionsContainer.innerHTML = ''; // Limpa as opções antigas
-        // --- Adiciona a opção "Nenhuma" ---
+        situacaoOptionsContainer.innerHTML = ''; 
         const nenhumaLi = document.createElement('li');
         nenhumaLi.className = 'context-menu-item';
         nenhumaLi.textContent = '-- Nenhuma --';
-        nenhumaLi.dataset.situacao = ''; // Define o valor como string vazia
+        nenhumaLi.dataset.situacao = ''; 
         situacaoOptionsContainer.appendChild(nenhumaLi);
-        // --- 
+        
         todasAsSituacoes.forEach(sit => {
             const li = document.createElement('li');
             li.className = 'context-menu-item';
@@ -639,13 +599,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Adiciona o evento de clique direito aos cards do "Modo Cards" E do "Modo Kanban"
     document.querySelectorAll('.card-view-container .data-card, .kanban-view-container .data-card').forEach(card => {
         card.addEventListener('contextmenu', function(event) {
             event.preventDefault();
-            activeCard = this; // Guarda o card que foi clicado
+            activeCard = this; 
 
-            popularMenuSituacao(); // Popula o menu com os dados mais recentes
+            popularMenuSituacao(); 
 
             let top = event.pageY;
             let left = event.pageX;
@@ -664,7 +623,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Adiciona o evento de clique aos itens do menu
     situacaoContextMenu.addEventListener('click', (event) => {
         const menuItem = event.target.closest('.context-menu-item');
         if (!menuItem || !activeCard) return;
@@ -672,7 +630,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const novaSituacao = menuItem.dataset.situacao;
         const controleId = activeCard.dataset.id;
 
-        // Chama a API para salvar a nova situação
         fetch(`/controle/set_situacao/${controleId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -681,10 +638,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                // Atualiza o texto da situação no card
-                // --- BLOCO DE ATUALIZAÇÃO DE TEXTO CORRIGIDO ---
                 try {
-                    // 'activeCard' é o div.data-card
                     const situacaoP = Array.from(activeCard.querySelectorAll('p')).find(p => {
                         const strong = p.querySelector('strong');
                         return strong && strong.textContent.trim() === 'Situação:';
@@ -692,95 +646,62 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     if (situacaoP && typeof card_fields_map_global !== 'undefined') {
                         const labelText = card_fields_map_global['situacao'] || 'Situação';
-                        // Recria o HTML preservando o span.card-field-value
                         situacaoP.innerHTML = `<strong>${labelText}:</strong> <span class="card-field-value">${novaSituacao || ''}</span>`;
                     }
                 } catch (e) {
                     console.error("Erro ao atualizar texto da situação no card (context menu):", e);
                 }
-                // --- FIM DO BLOCO CORRIGIDO ---
 
-                // Atualiza o data-attribute para a colorização funcionar
                 activeCard.dataset.situacao = novaSituacao || '';
 
-                // Se a colorização estiver ativa, atualiza a cor do card
                 if (document.getElementById('btnColorCode')?.classList.contains('filtro-ativo')) {
                     activeCard.style.backgroundColor = colorMap[novaSituacao] || '';
                 }
 
-                // --- LÓGICA ESPECIAL PARA KANBAN ---
                  const isInKanban = activeCard.closest('.kanban-view-container');
                  if (isInKanban) {
-                     const cardElement = activeCard.closest('a'); // O elemento <a> que contém o card
-                     const currentColumnSituacao = activeCard.closest('.kanban-column')?.dataset.situacao ?? ""; // Pega situação da coluna atual ou ""
+                     const cardElement = activeCard.closest('a'); 
+                     const currentColumnSituacao = activeCard.closest('.kanban-column')?.dataset.situacao ?? "";
                      const situacoesArquivadoras = JSON.parse('{{ arquivadores_json | default("[]") | safe }}');
-                     const targetSituacao = novaSituacao || ""; // Usa "" se novaSituacao for nula/vazia
+                     const targetSituacao = novaSituacao || ""; 
 
-                     // 1. Se for uma situação de ARQUIVAMENTO (e está visível no Kanban)
                      if (situacoesArquivadoras.includes(novaSituacao)) {
-                         // Faz o card desaparecer suavemente e o remove do DOM
                          cardElement.style.transition = 'opacity 0.5s ease, height 0.5s ease, margin 0.5s ease, padding 0.5s ease';
                          cardElement.style.opacity = '0';
-                         // Adiciona estilos para colapsar antes de remover
                          cardElement.style.height = '0';
                          cardElement.style.margin = '0';
                          cardElement.style.padding = '0';
-                         cardElement.style.border = 'none'; // Esconde bordas durante a animação
-                         setTimeout(() => cardElement.remove(), 500); // Remove após a animação
+                         cardElement.style.border = 'none'; 
+                         setTimeout(() => cardElement.remove(), 500); 
                      }
-                     // 2. Se a situação mudou para uma COLUNA DIFERENTE (e não é arquivamento)
                     else if (targetSituacao !== currentColumnSituacao) {
-                             // Encontra a coluna de destino pelo data-situacao
                              const targetColumn = document.querySelector(`.kanban-column[data-situacao="${targetSituacao}"]`);
                              if (targetColumn) {
-                                 // Encontra o container de cards dentro da coluna de destino
                                  const targetCardContainer = targetColumn.querySelector('.kanban-cards');
                                  if (targetCardContainer) {
-                                     // --- MOVIMENTAÇÃO DIRETA ---
-                                    // --- INÍCIO: Adiciona Fade Out ---
-                                     activeCard.style.transition = 'opacity 0.3s ease-out'; // Define transição
-                                     activeCard.style.opacity = '0'; // Inicia fade out
+                                     activeCard.style.transition = 'opacity 0.3s ease-out';
+                                     activeCard.style.opacity = '0'; 
 
-                                     // Espera o fade out terminar antes de mover
                                      setTimeout(() => {
-                                         // Move o elemento card para a nova coluna
                                          targetCardContainer.appendChild(activeCard);
 
-                                         // --- INÍCIO: Adiciona Fade In ---
-                                         // Força recalcular layout antes do fade in
                                          requestAnimationFrame(() => {
-                                             activeCard.style.transition = 'opacity 0.3s ease-in'; // Define transição
-                                             activeCard.style.opacity = '1'; // Inicia fade in
+                                             activeCard.style.transition = 'opacity 0.3s ease-in';
+                                             activeCard.style.opacity = '1'; 
 
-                                             // Limpa o estilo de transição após o fade in
                                              setTimeout(() => {
                                                  activeCard.style.transition = '';
-                                             }, 300); // Duração do fade in
+                                             }, 300); 
                                          });
-                                         // --- FIM: Adiciona Fade In ---
-
-                                         // Opcional: Scroll suave para o card movido
-                                         // activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-                                     }, 300); // Duração do fade out
-                                     // --- FIM: Adiciona Fade Out ---                                     // --- FIM MOVIMENTAÇÃO ---
-
-                                     // Opcional: Adicionar um breve flash ou scroll se desejar, mas o principal é mover.
-                                     // Ex: Scroll suave para o card movido (se a coluna for longa)
-                                     // activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                     }, 300); 
                                  } else {
-                                     console.error("Container de cards '.kanban-cards' não encontrado na coluna de destino:", targetSituacao);
-                                     // Não removemos mais, apenas logamos o erro. O card fica visualmente na coluna errada,
-                                     // mas os dados estão corretos e um reload corrigirá.
+                                     console.error("Container de cards '.kanban-cards' não encontrado");
                                  }
                              } else {
-                                 console.error("Coluna de destino '.kanban-column' não encontrada para situação:", targetSituacao);
-                                 // Não removemos.
+                                 console.error("Coluna de destino '.kanban-column' não encontrada");
                              }
                          }
-                         // 3. Se a situação mudou mas permaneceu na MESMA coluna (Não faz nada de movimentação - OK)
                      }
-                 // --- FIM LÓGICA KANBAN ---
 
             } else {
                 alert('Erro ao atualizar a situação.');
@@ -788,7 +709,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Esconde o menu se clicar em qualquer outro lugar
     window.addEventListener('click', () => {
         if (situacaoContextMenu) situacaoContextMenu.style.display = 'none';
     });
@@ -797,26 +717,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const kanbanColumns = document.querySelectorAll('.kanban-cards');
     kanbanColumns.forEach(column => {
         new Sortable(column, {
-            group: 'kanban', // Permite mover cards entre colunas
+            group: 'kanban', 
             animation: 150,
-            ghostClass: 'dragging-card', // Classe para o "fantasma" do card
+            ghostClass: 'dragging-card', 
             draggable: '.data-card',
 
-            // Evento disparado quando o arraste termina
             onEnd: function (evt) {
-                const cardElement = evt.item; // cardElement AGORA É a div.data-card que foi movida
-                const newColumn = evt.to;     // A coluna (.kanban-cards) onde ele foi solto
+                const cardElement = evt.item; 
+                const newColumn = evt.to;     
 
-                // --- LINHAS ALTERADAS ---
-                if (!cardElement.classList.contains('data-card')) { // Segurança: Verifica se é mesmo o card
+                if (!cardElement.classList.contains('data-card')) { 
                      console.error("Elemento arrastado não é um data-card:", cardElement);
-                     return; // Sai se não for o card esperado
+                     return; 
                 }
-                const controleId = cardElement.dataset.id; // Pega o ID diretamente do card movido
-                const novaSituacao = newColumn.parentElement.dataset.situacao || ""; // Pega situação da nova coluna ou ""
-                // --- FIM LINHAS ALTERADAS ---
+                const controleId = cardElement.dataset.id; 
+                const novaSituacao = newColumn.parentElement.dataset.situacao || "";
 
-                // Chama a API para salvar a nova situação (Fetch continua igual)
                 fetch(`/controle/set_situacao/${controleId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -825,43 +741,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        // --- LÓGICA DE ATUALIZAÇÃO VISUAL REFORÇADA ---
                         cardElement.dataset.situacao = novaSituacao;
 
-                        // 1. Garante que card_fields_map está acessível (já deve estar do passo anterior)
-                        //    Se não estiver, mova a definição `const card_fields_map = ...` para fora/antes desta função onEnd.
-
-                        // 2. Atualiza o texto da situação SOMENTE SE o campo existir E o map estiver acessível
-                        try { // Adiciona try/catch para isolar potencial erro
+                        try { 
                             const situacaoP = Array.from(cardElement.querySelectorAll('p')).find(p => {
                                 const strong = p.querySelector('strong');
-                                // Verifica se existe strong E se o texto corresponde a "Situação:"
                                 return strong && strong.textContent.trim() === 'Situação:';
                             });
                             if (situacaoP && typeof card_fields_map_global !== 'undefined') { 
                             const labelText = card_fields_map_global['situacao'] || 'Situação'; 
-                            situacaoP.innerHTML = `<strong>${labelText}:</strong> <span class="card-field-value">${novaSituacao || ''}</span>`; // '' para consistência
+                            situacaoP.innerHTML = `<strong>${labelText}:</strong> <span class="card-field-value">${novaSituacao || ''}</span>`; 
                         }
                         } catch (e) {
                             console.error("Erro ao atualizar texto da situação no card:", e);
-                            // Não impede o resto da atualização visual
                         }
 
-
-                        // 3. Atualiza a cor SOMENTE SE as variáveis estiverem acessíveis
-                        try { // Adiciona try/catch
-                            if (typeof colorCodingIsActive !== 'undefined' && colorCodingIsActive && typeof colorMap !== 'undefined') { // <<< Verifica se variáveis existem
+                        try { 
+                            if (typeof colorCodingIsActive !== 'undefined' && colorCodingIsActive && typeof colorMap !== 'undefined') { 
                                 cardElement.style.backgroundColor = colorMap[novaSituacao] || '';
                             } else if (typeof colorCodingIsActive !== 'undefined' && !colorCodingIsActive) {
-                                 // Garante que a cor seja removida se color coding foi desativado
                                  cardElement.style.backgroundColor = '';
                             }
                         } catch (e) {
                              console.error("Erro ao atualizar cor do card:", e);
                         }
 
-
-                        // 4. Lógica de remoção (mantida igual)
                         const situacoesArquivadoras = JSON.parse('{{ arquivadores_json | default("[]") | safe }}');
                         if (situacoesArquivadoras.includes(novaSituacao)) {
                             cardElement.style.transition = 'opacity 0.5s ease, height 0.5s ease, margin 0.5s ease, padding 0.5s ease';
@@ -872,20 +776,18 @@ document.addEventListener('DOMContentLoaded', function() {
                             cardElement.style.border = 'none';
                             setTimeout(() => cardElement.remove(), 500);
                         }
-                        // --- FIM ATUALIZAÇÃO VISUAL ---
-                    } else { // if data.status === 'success'
+                    } else { 
                         alert('Erro ao atualizar a situação. A página será recarregada.');
-                        location.reload(); // Recarrega para reverter a mudança visual
+                        location.reload(); 
                     }
                 })
-                .catch(error => { // Adiciona tratamento de erro de rede
+                .catch(error => { 
                     console.error("Erro de rede ao salvar situação via drag-drop:", error);
                     alert('Erro de rede ao salvar a situação. A página será recarregada.');
-                    location.reload(); // Recarrega para reverter
+                    location.reload(); 
                 });
-            }, // Fim do onEnd
+            }, 
 
-            // Evento para dar feedback visual ao arrastar sobre uma coluna
             onMove: function (evt) {
                 document.querySelectorAll('.kanban-column').forEach(col => col.classList.remove('kanban-column-hover'));
                 evt.to.parentElement.classList.add('kanban-column-hover');
@@ -899,32 +801,29 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- 13. LÓGICA DE EDIÇÃO INLINE NA TABELA ---
     const tableBody = document.querySelector('#tabelaControle tbody');
 
-    if (tableBody && "{{ view_mode }}" === "table") { // Só ativa no modo tabela
-        let currentEditInput = null; // Guarda referência ao input ativo
+    // A tabela agora SEMPRE carrega (pois é necessária no mobile), então removemos a verificação view_mode aqui
+    if (tableBody) { 
+        let currentEditInput = null; 
 
-        // Função para reverter a célula ao estado original
         function cancelInlineEdit(td, inputElement, originalValue) {
             if (!td || !inputElement) return;
             const span = document.createElement('span');
             span.className = 'card-value';
             span.textContent = originalValue;
-            td.innerHTML = ''; // Limpa a célula
-            td.appendChild(span); // Adiciona o span de volta
-            currentEditInput = null; // Limpa a referência
+            td.innerHTML = ''; 
+            td.appendChild(span); 
+            currentEditInput = null; 
         }
 
-        // Função para salvar a edição
         function saveInlineEdit(td, inputElement, fieldName, originalValue) {
             const newValue = inputElement.value.trim();
-            const controleId = td.closest('tr').dataset.id; // Pega o ID da linha
+            const controleId = td.closest('tr').dataset.id; 
 
-            // Se não houve mudança, apenas cancela
             if (newValue === originalValue) {
                 cancelInlineEdit(td, inputElement, originalValue);
                 return;
             }
 
-            // Prepara para enviar para a API
             fetch(`/controle/update_field_inline/${controleId}`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -933,7 +832,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // Sucesso: Atualiza visualmente com o novo valor retornado (pode ter sido trimado no backend)
                     const updatedValue = data.newValue;
                     const span = document.createElement('span');
                     span.className = 'card-value';
@@ -941,146 +839,123 @@ document.addEventListener('DOMContentLoaded', function() {
                     td.innerHTML = '';
                     td.appendChild(span);
                     currentEditInput = null;
-                    // Feedback visual rápido
                     const isDarkTheme = document.body.classList.contains('theme-dark');
-                    const feedbackColor = isDarkTheme ? '#3a3a3a' : '#e0e0e0'; // Define a cor
+                    const feedbackColor = isDarkTheme ? '#3a3a3a' : '#e0e0e0'; 
 
-                    td.classList.add('td-feedback-flash'); // <<< LINHA ADICIONADA: Ativa a transição CSS
-                    td.style.backgroundColor = feedbackColor; // <<< LINHA ALTERADA: Aplica a cor (inicia fade in)
+                    td.classList.add('td-feedback-flash'); 
+                    td.style.backgroundColor = feedbackColor; 
 
-                    // Define timeout para remover a cor E a classe de transição
                     setTimeout(() => {
-                        td.style.backgroundColor = ''; // <<< MANTIDO: Inicia fade out (a classe ainda aplica a transição)
-                        // Remove a classe DEPOIS que a transição de fade out (300ms) terminar
-                        setTimeout(() => { // <<< NOVO setTimeout INTERNO >>>
-                            td.classList.remove('td-feedback-flash'); // <<< LINHA ADICIONADA >>>
-                        }, 300); // Duração da transição CSS
-                    }, 700); // Tempo que a cor fica visível (1000ms total - 300ms fade out)
+                        td.style.backgroundColor = ''; 
+                        setTimeout(() => { 
+                            td.classList.remove('td-feedback-flash'); 
+                        }, 300); 
+                    }, 700); 
                 } else {
-                    // Erro: Informa o usuário e reverte
                     alert(`Erro ao salvar: ${data.message}`);
-                    cancelInlineEdit(td, inputElement, originalValue); // Reverte para o original
+                    cancelInlineEdit(td, inputElement, originalValue); 
                 }
             })
             .catch(error => {
                 console.error('Erro de rede ao salvar:', error);
                 alert('Erro de rede ao salvar. A alteração foi cancelada.');
-                cancelInlineEdit(td, inputElement, originalValue); // Reverte para o original
-                isEditingCard = false; // <<< LINHA ADICIONADA: Garante desativação no erro
+                cancelInlineEdit(td, inputElement, originalValue); 
+                isEditingCard = false; 
             });
         }
 
-        // Listener principal delegado ao tbody
         tableBody.addEventListener('dblclick', function(e) {
-            const td = e.target.closest('td.editable-cell'); // Só ativa em células editáveis
-            if (!td) return; // Se não for célula editável, sai
+            const td = e.target.closest('td.editable-cell'); 
+            if (!td) return; 
 
-            // Previne editar se já houver um input na célula (ou em outra)
             if (td.querySelector('input, textarea') || currentEditInput) {
-            if(currentEditInput) currentEditInput.focus(); // Foca no input já existente
+            if(currentEditInput) currentEditInput.focus(); 
             return;
             }
 
             const span = td.querySelector('span.card-value');
-            if (!span) return; // Não encontrou o span interno
+            if (!span) return; 
 
             const originalValue = span.textContent.trim();
             const fieldName = td.dataset.fieldName;
             let inputElement;
 
-            // Cria o input apropriado
             if (fieldName === 'observacoes') {
                 inputElement = document.createElement('textarea');
-                inputElement.style.height = Math.max(span.offsetHeight, 60) + 'px'; // Ajusta altura inicial
-                inputElement.style.resize = 'vertical'; // Permite redimensionar verticalmente
-            } else if (fieldName !== 'documentacao') { // <<< LINHA MODIFICADA
-        inputElement = document.createElement('input');
-        inputElement.type = 'text';
-        } else if (fieldName === 'documentacao') { // <<< NOVO BLOCO 'else if'
-            // --- LÓGICA PARA ABRIR O MODAL DE DOCUMENTAÇÃO ---
-            const controleId = td.closest('tr').dataset.id;
-            // console.log("Abrindo modal de documentação para:", controleId);
+                inputElement.style.height = Math.max(span.offsetHeight, 60) + 'px'; 
+                inputElement.style.resize = 'vertical'; 
+            } else if (fieldName !== 'documentacao') { 
+                inputElement = document.createElement('input');
+                inputElement.type = 'text';
+            } else if (fieldName === 'documentacao') { 
+                const controleId = td.closest('tr').dataset.id;
+                docChecklist.innerHTML = '<p>Carregando opções...</p>';
+                docModalControleId.value = controleId; 
+                docModal.classList.add('active'); 
 
-            // Limpa modal antigo e armazena ID
-            docChecklist.innerHTML = '<p>Carregando opções...</p>';
-            docModalControleId.value = controleId; // Armazena o ID no input oculto do modal
-            docModal.classList.add('active'); // Mostra o modal (com 'Carregando...')
-
-            // Busca as opções e valores salvos
-            fetch(`/controle/get_documentacao/${controleId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        docChecklist.innerHTML = ''; // Limpa o "Carregando..."
-                        if (data.opcoes.length === 0) {
-                            docChecklist.innerHTML = '<p>Nenhuma opção de documentação cadastrada para este item.</p>';
-                            return;
-                        }
-
-                        // Cria os checkboxes originais
-                        data.opcoes.forEach(opcao => {
-                            const isChecked = data.salvos.includes(opcao);
-                            docChecklist.appendChild(criarLinhaDocumento(opcao, isChecked, false));
-                        });
-                        
-                        // Renderiza documentos EXTRAS que já foram salvos (marcados)
-                        data.salvos.forEach(salvo => {
-                            if (!data.opcoes.includes(salvo)) {
-                                docChecklist.appendChild(criarLinhaDocumento(salvo, true, true));
+                fetch(`/controle/get_documentacao/${controleId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            docChecklist.innerHTML = ''; 
+                            if (data.opcoes.length === 0) {
+                                docChecklist.innerHTML = '<p>Nenhuma opção de documentação cadastrada para este item.</p>';
+                                return;
                             }
-                        });
-                        
-                        // Renderiza documentos EXTRAS PENDENTES (desmarcados)
-                        if (data.pendentes) {
-                            data.pendentes.forEach(pendente => {
-                                if (!data.opcoes.includes(pendente)) {
-                                    docChecklist.appendChild(criarLinhaDocumento(pendente, false, true));
+
+                            data.opcoes.forEach(opcao => {
+                                const isChecked = data.salvos.includes(opcao);
+                                docChecklist.appendChild(criarLinhaDocumento(opcao, isChecked, false));
+                            });
+                            
+                            data.salvos.forEach(salvo => {
+                                if (!data.opcoes.includes(salvo)) {
+                                    docChecklist.appendChild(criarLinhaDocumento(salvo, true, true));
                                 }
                             });
+                            
+                            if (data.pendentes) {
+                                data.pendentes.forEach(pendente => {
+                                    if (!data.opcoes.includes(pendente)) {
+                                        docChecklist.appendChild(criarLinhaDocumento(pendente, false, true));
+                                    }
+                                });
+                            }
+                        } else {
+                            docChecklist.innerHTML = `<p style="color: red;">Erro: ${data.message}</p>`;
                         }
-                    } else {
-                        docChecklist.innerHTML = `<p style="color: red;">Erro: ${data.message}</p>`;
-                    }
-                })
-                .catch(err => {
-                    console.error("Erro ao buscar documentação:", err);
-                    docChecklist.innerHTML = `<p style="color: red;">Erro de rede ao buscar opções.</p>`;
-                });
+                    })
+                    .catch(err => {
+                        console.error("Erro ao buscar documentação:", err);
+                        docChecklist.innerHTML = `<p style="color: red;">Erro de rede ao buscar opções.</p>`;
+                    });
 
-            return; // Impede que o código de criação de input abaixo seja executado
-            // --- FIM DA LÓGICA DO MODAL ---
+                return; 
             } else {
                 inputElement = document.createElement('input');
                 inputElement.type = 'text';
             }
 
             inputElement.value = originalValue;
-            inputElement.style.width = '100%'; // Ocupa a célula
-            inputElement.style.boxSizing = 'border-box'; // Evita estourar o layout
-            currentEditInput = inputElement; // Guarda a referência
+            inputElement.style.width = '100%'; 
+            inputElement.style.boxSizing = 'border-box'; 
+            currentEditInput = inputElement; 
 
-            // Substitui o span pelo input
             td.innerHTML = '';
             td.appendChild(inputElement);
             inputElement.focus();
-            // Seleciona o texto (opcional, bom para inputs de texto)
             if(inputElement.select) inputElement.select();
 
-            // Listener para Enter e Escape NO INPUT ATUAL
             inputElement.addEventListener('keydown', function(event) {
                 if (event.key === 'Enter') {
-                    event.preventDefault(); // Previne nova linha em textarea
+                    event.preventDefault(); 
                     saveInlineEdit(td, inputElement, fieldName, originalValue);
                 } else if (event.key === 'Escape') {
                     cancelInlineEdit(td, inputElement, originalValue);
                 }
             });
 
-            // Listener para Blur (clicar fora) NO INPUT ATUAL
             inputElement.addEventListener('blur', function() {
-                // Adiciona um pequeno delay para permitir que o Enter seja processado primeiro se necessário
-                // Neste caso, como blur sempre cancela, não precisamos do delay complexo.
-                // Se o input ainda existe (não foi removido pelo save/cancel do Enter/Esc), cancela.
                 if (document.body.contains(inputElement)) {
                     cancelInlineEdit(td, inputElement, originalValue);
                 }
@@ -1088,27 +963,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- 14. LÓGICA DE EDIÇÃO INLINE NOS CARDS (Cards e Kanban) --- <<< NOVO BLOCO >>>
+    // --- 14. LÓGICA DE EDIÇÃO INLINE NOS CARDS (Cards e Kanban) ---
     const cardContainers = document.querySelectorAll('.card-view-container, .kanban-view-container');
 
-    if (cardContainers.length > 0 && "{{ view_mode }}" !== "table") { // Só ativa nos modos card/kanban
-        let currentCardEditInput = null; // Guarda referência ao input ativo (separado da tabela)
-        let originalCardContent = null; // Guarda o conteúdo original do span/h4
-        let activeCardFieldElement = null; // Guarda a referência ao elemento <p> ou <h4> sendo editado
-        let isEditingCard = false; // <<< LINHA ADICIONADA: Flag para controlar estado de edição
+    if (cardContainers.length > 0) { 
+        let currentCardEditInput = null; 
+        let originalCardContent = null; 
+        let activeCardFieldElement = null; 
+        let isEditingCard = false; 
 
-        // Função para reverter o campo do card ao estado original
         function cancelInlineEditCard() {
             if (!activeCardFieldElement || !currentCardEditInput) return;
-            // Restaura o conteúdo original (que era o span)
             activeCardFieldElement.innerHTML = originalCardContent;
             currentCardEditInput = null;
             originalCardContent = null;
             activeCardFieldElement = null;
-            isEditingCard = false; // <<< LINHA ADICIONADA: Desativa a flag
+            isEditingCard = false; 
         }
 
-        // Função para salvar a edição do card
         function saveInlineEditCard() {
             if (!activeCardFieldElement || !currentCardEditInput) return;
 
@@ -1116,17 +988,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const fieldName = activeCardFieldElement.dataset.fieldName;
             const cardDiv = activeCardFieldElement.closest('.data-card');
             const controleId = cardDiv.dataset.id;
-            const originalValueSpan = document.createElement('div'); // Div temporária para extrair texto
+            const originalValueSpan = document.createElement('div'); 
             originalValueSpan.innerHTML = originalCardContent;
             const originalValueText = originalValueSpan.querySelector('.card-field-value')?.textContent.trim() || '';
 
-            // Se não houve mudança, apenas cancela
             if (newValue === originalValueText) {
                 cancelInlineEditCard();
                 return;
             }
 
-            // Prepara para enviar para a API (mesma rota da tabela)
             fetch(`/controle/update_field_inline/${controleId}`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -1135,32 +1005,21 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
            .then(data => {
                 if (data.status === 'success') {
-                    // console.log("Dados recebidos do servidor:", data); // Debug para ver se o 'Teste' vem aqui
                     
                     let updatedElement = null;
                     let spanToUpdate = null;
 
-                    // 1. Identifica o elemento a atualizar baseado no modo de visualização
-                    if ("{{ view_mode }}" === "table") {
-                        // Na Tabela: procura a TD daquela linha específica
-                        updatedElement = document.querySelector(`#tabelaControle tr[data-id="${controleId}"] td[data-field-name="documentacao"]`);
-                        if (updatedElement) {
-                            spanToUpdate = updatedElement.querySelector('span.card-value');
-                        }
-                    } else {
-                        // Nos Cards: procura o Card específico
-                        const cardDiv = document.querySelector(`.data-card[data-id="${controleId}"]`);
-                        if (cardDiv) {
-                            updatedElement = cardDiv; 
-                            const pElement = cardDiv.querySelector('p[data-field-name="documentacao"]');
-                            if (pElement) {
-                                // Assume-se que o card usa card-field-value (ajuste se for card-value)
-                                spanToUpdate = pElement.querySelector('.card-field-value');
-                            }
+                    // Como no mobile a tabela sobrepõe, precisamos verificar quem vai receber o flash
+                    // Porém como o HTML do card está fixo em view_mode, este código roda na view de cards do desktop.
+                    const cardDiv = document.querySelector(`.data-card[data-id="${controleId}"]`);
+                    if (cardDiv) {
+                        updatedElement = cardDiv; 
+                        const pElement = cardDiv.querySelector('p[data-field-name="documentacao"]');
+                        if (pElement) {
+                            spanToUpdate = pElement.querySelector('.card-field-value');
                         }
                     }
 
-                    // 2. Reconstroi o HTML interno exatamente como o Jinja faz
                     if (spanToUpdate) {
                         let docEntregues = data.novos_documentos || [];
                         let docPendentes = data.novos_pendentes || [];
@@ -1168,20 +1027,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         let novoHtml = docEntregues.join(', ');
                         
                         if (docPendentes.length > 0) {
-                            // Adiciona vírgula se já houver documentos entregues
                             if (docEntregues.length > 0) novoHtml += ', ';
-                            
-                            // Adiciona o span dos pendentes (Teste deve aparecer aqui)
                             novoHtml += `<span class="texto-pendente">(pendente: ${docPendentes.join(', ')})</span>`;
                         }
                         
                         spanToUpdate.innerHTML = novoHtml;
-                        // console.log("HTML atualizado para:", novoHtml);
                     }
 
-                    // 3. Feedback visual (Flash)
                     if (updatedElement) {
-                        const flashClass = (updatedElement.tagName === 'TD') ? 'td-feedback-flash' : 'card-feedback-flash';
+                        const flashClass = 'card-feedback-flash';
                         updatedElement.classList.add(flashClass);
                         const originalBg = updatedElement.style.backgroundColor;
                         updatedElement.style.backgroundColor = document.body.classList.contains('theme-dark') ? '#3a3a3a' : '#e0e0e0';
@@ -1200,52 +1054,42 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => {
                 console.error('Erro de rede ao salvar card:', error);
                 alert('Erro de rede ao salvar. A alteração foi cancelada.');
-                isEditingCard = false; // <<< LINHA ADICIONADA: Garante desativação no erro
+                isEditingCard = false; 
                 cancelInlineEditCard();
             });
         }
 
-        // Listener principal delegado aos containers de cards
         cardContainers.forEach(container => {
             container.addEventListener('dblclick', function(e) {
-                // Encontra o elemento editável mais próximo (h4 ou p)
                 const fieldElement = e.target.closest('.editable-card-field');
-                if (!fieldElement) return; // Não clicou em campo editável
+                if (!fieldElement) return; 
 
-                //e.stopPropagation(); // IMPEDE a navegação do link <a> pai
-
-                // Previne editar se já estiver editando este ou outro campo
                 if (fieldElement.querySelector('input, textarea') || currentCardEditInput) {
                     if (currentCardEditInput) currentCardEditInput.focus();
                     return;
                 }
 
-                activeCardFieldElement = fieldElement; // Guarda referência ao <p> ou <h4>
+                activeCardFieldElement = fieldElement; 
                 const valueSpan = fieldElement.querySelector('.card-field-value');
-                const labelElement = fieldElement.querySelector('strong'); // Pega o <strong> se existir
-                if (!valueSpan && fieldElement.tagName !== 'H4') return; // Segurança: Se não for H4 e não tiver span, sai
+                const labelElement = fieldElement.querySelector('strong'); 
+                if (!valueSpan && fieldElement.tagName !== 'H4') return; 
 
-                const originalValue = valueSpan ? valueSpan.textContent.trim() : fieldElement.textContent.replace(labelElement ? labelElement.textContent : '', '').trim(); // Pega valor do span ou do h4
-                originalCardContent = fieldElement.innerHTML; // Guarda TODO o HTML interno (label + span)
+                const originalValue = valueSpan ? valueSpan.textContent.trim() : fieldElement.textContent.replace(labelElement ? labelElement.textContent : '', '').trim(); 
+                originalCardContent = fieldElement.innerHTML; 
                 const fieldName = fieldElement.dataset.fieldName;
                 let inputElement;
-                isEditingCard = true; // <<< LINHA ADICIONADA: Ativa a flag
+                isEditingCard = true; 
 
-                // Cria input/textarea
                 if (fieldName === 'observacoes') {
                     inputElement = document.createElement('textarea');
                     inputElement.style.height = '60px';
-                } else if (fieldName === 'documentacao') { // <<< BLOCO 'else if' ADICIONADO
-                    // --- LÓGICA PARA ABRIR O MODAL DE DOCUMENTAÇÃO (CARDS) ---
-                    const controleId = fieldElement.closest('.data-card').dataset.id; // Pega ID do card
-                    // console.log("Abrindo modal de documentação para (card):", controleId);
+                } else if (fieldName === 'documentacao') { 
+                    const controleId = fieldElement.closest('.data-card').dataset.id; 
 
-                    // Limpa modal antigo e armazena ID
                     docChecklist.innerHTML = '<p>Carregando opções...</p>';
-                    docModalControleId.value = controleId; // Armazena o ID no input oculto do modal
-                    docModal.classList.add('active'); // Mostra o modal
+                    docModalControleId.value = controleId; 
+                    docModal.classList.add('active'); 
 
-                    // Busca as opções e valores salvos (mesma rota da tabela)
                     fetch(`/controle/get_documentacao/${controleId}`)
                         .then(response => response.json())
                         .then(data => {
@@ -1256,20 +1100,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                     return;
                                 }
 
-                                // Cria os checkboxes originais
                                 data.opcoes.forEach(opcao => {
                                     const isChecked = data.salvos.includes(opcao);
                                     docChecklist.appendChild(criarLinhaDocumento(opcao, isChecked, false));
                                 });
                                 
-                                // Renderiza documentos EXTRAS que já foram salvos (marcados)
                                 data.salvos.forEach(salvo => {
                                     if (!data.opcoes.includes(salvo)) {
                                         docChecklist.appendChild(criarLinhaDocumento(salvo, true, true));
                                     }
                                 });
                                 
-                                // Renderiza documentos EXTRAS PENDENTES (desmarcados)
                                 if (data.pendentes) {
                                     data.pendentes.forEach(pendente => {
                                         if (!data.opcoes.includes(pendente)) {
@@ -1286,26 +1127,20 @@ document.addEventListener('DOMContentLoaded', function() {
                             docChecklist.innerHTML = `<p style="color: red;">Erro de rede ao buscar opções.</p>`;
                         });
 
-                    isEditingCard = false; // Cancela o estado de edição de input
-                    return; // Impede que o código de criação de input abaixo seja executado
-                    // --- FIM DA LÓGICA DO MODAL (CARDS) ---
+                    isEditingCard = false; 
+                    return; 
 
-                } else if (fieldName === 'situacao') { // <<< NOVO BLOCO 'else if' >>>
-                    // --- LÓGICA PARA ABRIR O MENU DE CONTEXTO ---
-                    // console.log("Abrindo menu de situação via dblclick");
-
-                    activeCard = fieldElement.closest('.data-card'); // Pega o card
+                } else if (fieldName === 'situacao') { 
+                    activeCard = fieldElement.closest('.data-card'); 
                     if (!activeCard) return;
 
-                    popularMenuSituacao(); // Popula o menu (função já existe no Bloco 11)
+                    popularMenuSituacao(); 
 
-                    // Pega coordenadas do evento de clique duplo
                     let top = e.pageY;
                     let left = e.pageX;
 
-                    situacaoContextMenu.style.display = 'block'; // Mostra o menu
+                    situacaoContextMenu.style.display = 'block'; 
 
-                    // Ajusta posição (copiado do listener contextmenu do Bloco 11)
                     if (top + situacaoContextMenu.offsetHeight > window.innerHeight + window.scrollY) {
                         top = e.pageY - situacaoContextMenu.offsetHeight;
                     }
@@ -1316,34 +1151,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     situacaoContextMenu.style.top = `${top}px`;
                     situacaoContextMenu.style.left = `${left}px`;
 
-                    return; // Impede que a lógica de input/textarea seja executada
-                    // --- FIM DA LÓGICA DO MENU DE CONTEXTO ---
+                    return; 
                 } else {
                     inputElement = document.createElement('input');
                     inputElement.type = 'text';
                 }
 
                 inputElement.value = originalValue;
-                currentCardEditInput = inputElement; // Guarda a referência
+                currentCardEditInput = inputElement; 
 
-                // Substitui o conteúdo pelo input (mantendo o label)
-                fieldElement.innerHTML = ''; // Limpa o elemento
+                fieldElement.innerHTML = ''; 
 
                 if (fieldElement.tagName === 'H4') {
-                    // Para o H4 (Referência), adiciona o texto do rótulo manualmente
-                    fieldElement.appendChild(document.createTextNode('Referência: ')); // <<< ADICIONADO TEXTO
+                    fieldElement.appendChild(document.createTextNode('Referência: ')); 
                 } else if (labelElement) {
-                    // Para outros campos (<p>), readiciona o <strong>
                     fieldElement.appendChild(labelElement);
-                    fieldElement.appendChild(document.createTextNode(' ')); // Espaço após o label no <p>
+                    fieldElement.appendChild(document.createTextNode(' ')); 
                 }
 
-                fieldElement.appendChild(inputElement); // Adiciona o input/textarea
+                fieldElement.appendChild(inputElement); 
                 inputElement.focus();
                 
                 if(inputElement.select) inputElement.select();
 
-                // Listeners para Enter/Esc no input atual
                 inputElement.addEventListener('keydown', function(event) {
                     if (event.key === 'Enter') {
                         event.preventDefault();
@@ -1353,21 +1183,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
 
-                // Listener para Blur no input atual
                 inputElement.addEventListener('blur', function() {
-                    // Adiciona um pequeno delay para evitar conflito com Enter/Esc
                     setTimeout(() => {
-                        // Se o input ainda existe (não foi removido pelo save/cancel), cancela.
                         if (document.body.contains(inputElement) && currentCardEditInput === inputElement) {
                             cancelInlineEditCard();
                         }
-                    }, 150); // Delay de 150ms
+                    }, 150); 
                 });
             });
-        }); // Fim do forEach cardContainers
-    } // Fim do if (cardContainers.length > 0)
+        }); 
+    } 
 
-    // --- 15. LÓGICA PARA SALVAR O MODAL DE DOCUMENTAÇÃO --- <<< NOVO BLOCO >>>
+    // --- 15. LÓGICA PARA SALVAR O MODAL DE DOCUMENTAÇÃO ---
     if (btnSalvarDoc) {
         btnSalvarDoc.addEventListener('click', () => {
             const controleId = docModalControleId.value;
@@ -1376,13 +1203,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Pega os valores marcados
             const docSelecionados = Array.from(docChecklist.querySelectorAll('input[name="doc_inline_pref"]:checked')).map(cb => cb.value);
-
-            // NOVO: Pega os valores desmarcados (pendentes)
             const docPendentes = Array.from(docChecklist.querySelectorAll('input[name="doc_inline_pref"]:not(:checked)')).map(cb => cb.value);
 
-            // Envia para a nova rota POST
             fetch(`/controle/update_documentacao_inline/${controleId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1393,22 +1216,20 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // --- BLOCO DE ATUALIZAÇÃO VISUAL (TABELA OU CARD) ---
-                    let updatedElement = null; // Elemento a ser "flashado" (td ou cardDiv)
-                    let spanToUpdate = null; // Span a ter o HTML atualizado
+                    let updatedElement = null; 
+                    let spanToUpdate = null; 
 
-                    // Tenta encontrar na Tabela (se view_mode for table)
-                    if ("{{ view_mode }}" === "table") {
+                    const isMobile = window.innerWidth <= 768;
+                    // No mobile a tabela sempre está lá. No desktop, procuramos conforme o view_mode
+                    if (isMobile || "{{ view_mode }}" === "table") {
                         updatedElement = document.querySelector(`#tabelaControle tr[data-id="${controleId}"] td[data-field-name="documentacao"]`);
                         if (updatedElement) {
                             spanToUpdate = updatedElement.querySelector('span.card-value');
                         }
-                    } else { // Procura no Card (se view_mode for cards ou kanban)
-                        // Encontra o card visível com o ID correto
+                    } else { 
                         const cardDiv = document.querySelector(`.data-card[data-id="${controleId}"]`);
                         if (cardDiv) {
-                            updatedElement = cardDiv; // O feedback flash será no card
-                            // Encontra o <p> da documentação dentro do card
+                            updatedElement = cardDiv; 
                             const pElement = cardDiv.querySelector('p[data-field-name="documentacao"]');
                             if (pElement) {
                                 spanToUpdate = pElement.querySelector('span.card-field-value');
@@ -1416,9 +1237,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
 
-                    // Se encontrou o span para atualizar
                     if (spanToUpdate) {
-                        // Recria o HTML (mesma lógica de antes)
                         let html = data.novos_documentos.join(', ');
                         if (data.novos_documentos.length > 0 && data.novos_pendentes.length > 0) {
                             html += ', ';
@@ -1429,27 +1248,24 @@ document.addEventListener('DOMContentLoaded', function() {
                         spanToUpdate.innerHTML = html;
                     }
 
-                    // Se encontrou o elemento para aplicar feedback
                     if (updatedElement) {
                         const isDarkTheme = document.body.classList.contains('theme-dark');
                         const feedbackColor = isDarkTheme ? '#3a3a3a' : '#e0e0e0';
 
-                        // Adiciona a classe flash correta (td ou card)
                         const flashClass = (updatedElement.tagName === 'TD') ? 'td-feedback-flash' : 'card-feedback-flash';
 
                         updatedElement.classList.add(flashClass);
-                        const originalCardBg = updatedElement.style.backgroundColor; // Guarda bg original
+                        const originalCardBg = updatedElement.style.backgroundColor; 
                         updatedElement.style.backgroundColor = feedbackColor;
                         setTimeout(() => {
-                            updatedElement.style.backgroundColor = originalCardBg || ''; // Restaura
+                            updatedElement.style.backgroundColor = originalCardBg || ''; 
                             setTimeout(() => {
                                 updatedElement.classList.remove(flashClass);
                             }, 300);
                         }, 700);
                     }
-                    // --- FIM DO BLOCO DE ATUALIZAÇÃO VISUAL ---
 
-                    docModal.classList.remove('active'); // Fecha o modal
+                    docModal.classList.remove('active'); 
                 } else {
                     alert(`Erro ao salvar: ${data.message}`);
                 }
@@ -1460,7 +1276,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-    // --- FIM DO BLOCO 15 ---
 
     // --- 16. LÓGICA DE BUSCA RÁPIDA (CLIENT-SIDE) ---
     const buscaInput = document.getElementById('buscaRapidaInput');
@@ -1472,11 +1287,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const tabelaBackendSemResultados = document.getElementById('tabela-backend-sem-resultados');
 
     function executarBusca(e) {
-        // Lê SEMPRE o valor digitado (sincronizando mobile e desktop visualmente)
         const isMobile = window.innerWidth <= 768;
         let query = '';
         
-        if (e && e.target) {
+        // Proteção: Só atualiza a query se o evento vier de um INPUT de texto (evita o bug do <select> sobrescrever a busca)
+        if (e && e.target && e.target.tagName === 'INPUT') {
             query = e.target.value.toLowerCase().trim();
             if (buscaInput && e.target.id === 'buscaRapidaInputMobile') buscaInput.value = e.target.value;
             if (buscaInputMobile && e.target.id === 'buscaRapidaInput') buscaInputMobile.value = e.target.value;
@@ -1489,8 +1304,6 @@ document.addEventListener('DOMContentLoaded', function() {
         let itemsToFilter = [];
         let displayStyle = '';
 
-        // O SEGREDO DA CONSISTÊNCIA: No celular, a busca filtra SEMPRE a tabela,
-        // independentemente da visualização selecionada pelo usuário no desktop!
         if (isMobile) {
             itemsToFilter = document.querySelectorAll('#tabelaControle tbody tr.clickable-row');
             displayStyle = 'block';
@@ -1509,52 +1322,50 @@ document.addEventListener('DOMContentLoaded', function() {
         itemsToFilter.forEach(item => {
             let itemText = '';
             
-            // Extrai texto dos valores (serve para a tabela e para os cards)
             const spans = item.querySelectorAll('span.card-value, span.card-field-value');
             spans.forEach(span => { itemText += " " + span.textContent.toLowerCase(); });
             
-            // Extrai texto do H4 se for um Card
             const h4 = item.querySelector('h4');
             if (h4) itemText += " " + h4.textContent.toLowerCase();
 
-            // Extrai texto do dropdown de Situação se for a Tabela
-            const situacaoSelect = item.querySelector('.situacao-dropdown');
-            if (situacaoSelect && situacaoSelect.value) {
-                itemText += " " + situacaoSelect.value.toLowerCase();
+            if (isMobile || currentViewMode === 'table') {
+                const situacaoSelect = item.querySelector('.situacao-dropdown');
+                if (situacaoSelect && situacaoSelect.value) {
+                    itemText += " " + situacaoSelect.value.toLowerCase();
+                }
             }
 
+            // O SEGREDINHO AQUI: Usa setProperty com 'important' para conseguir esconder no mobile!
             if (itemText.includes(query)) {
-                item.style.display = displayStyle;
+                item.style.setProperty('display', displayStyle, 'important');
                 itemsVisiveis++;
             } else {
-                item.style.display = 'none';
+                item.style.setProperty('display', 'none', 'important');
             }
         });
 
         const noResults = (itemsVisiveis === 0);
         const isSearching = query.length > 0;
 
-        // Gestão das mensagens de erro e componentes visuais
         if (isMobile || currentViewMode === 'table') {
             if (tabelaSemResultadosBusca) {
                 tabelaSemResultadosBusca.style.setProperty('display', (isSearching && noResults) ? displayStyle : 'none', 'important');
                 tabelaSemResultadosBusca.style.border = 'none';
             }
             if (tabelaBackendSemResultados) {
-                tabelaBackendSemResultados.style.display = isSearching ? 'none' : '';
+                tabelaBackendSemResultados.style.setProperty('display', isSearching ? 'none' : 'table-row', 'important');
             }
         } 
         
         if (!isMobile) {
             if (currentViewMode === 'cards' && cardsSemResultadosBusca) {
-                cardsSemResultadosBusca.style.display = (isSearching && noResults) ? 'block' : 'none';
+                cardsSemResultadosBusca.style.setProperty('display', (isSearching && noResults) ? 'block' : 'none', 'important');
             } else if (currentViewMode === 'kanban') {
                 atualizarContagensKanban(query);
             }
         }
     }
 
-    // Atribui os eventos de busca apenas uma vez
     if (buscaInput) {
         buscaInput.addEventListener('keyup', executarBusca);
         buscaInput.addEventListener('search', executarBusca);
@@ -1566,7 +1377,6 @@ document.addEventListener('DOMContentLoaded', function() {
         buscaInputMobile.addEventListener('keydown', e => { if (e.key === 'Escape') { buscaInputMobile.value = ''; executarBusca(e); }});
     }
     
-    // Atualiza a busca ao mudar o select da tabela
     document.querySelectorAll('#tabelaControle .situacao-dropdown').forEach(dropdown => {
         dropdown.addEventListener('change', executarBusca);
     });
@@ -1596,7 +1406,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     // --- FIM DO BLOCO 16 ---
 
-    // --- BLOCO 17 - LÓGICA PARA ADICIONAR DOCUMENTO EXTRA NO MODAL ---
+    // --- 17. LÓGICA PARA ADICIONAR DOCUMENTO EXTRA NO MODAL ---
     const inputDocExtra = document.getElementById('novoDocumentoExtra');
     const btnAddDocExtra = document.getElementById('btnAdicionarDocExtra');
 
@@ -1604,26 +1414,19 @@ document.addEventListener('DOMContentLoaded', function() {
         btnAddDocExtra.addEventListener('click', () => {
             const novoDoc = inputDocExtra.value.trim();
             if (novoDoc) {
-                // Verifica se já não existe na lista (evitar duplicados)
                 const checkExistente = Array.from(docChecklist.querySelectorAll('input[name="doc_inline_pref"]'))
                     .find(cb => cb.value.toLowerCase() === novoDoc.toLowerCase());
                 
                 if (checkExistente) {
-                    checkExistente.checked = true; // Se já existe, apenas marca a checkbox
+                    checkExistente.checked = true;
                 } else {
-                    // Cria a nova checkbox já marcada como entregue
-                    const wrapper = document.createElement('div');
-                    wrapper.innerHTML = `<label><input type="checkbox" name="doc_inline_pref" value="${novoDoc}" checked> <span style="font-style: italic; color: var(--primary-color);">${novoDoc} (Extra)</span></label>`;
-                    
-                    // Adiciona no topo da lista (abaixo das opções padrão)
-                    docChecklist.appendChild(wrapper);
+                    docChecklist.appendChild(criarLinhaDocumento(novoDoc, true, true));
                 }
-                inputDocExtra.value = ''; // Limpa o campo de texto
+                inputDocExtra.value = '';
                 inputDocExtra.focus();
             }
         });
 
-        // Permite adicionar ao pressionar "Enter" dentro do campo
         inputDocExtra.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -1631,7 +1434,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    // --- FIM DO BLOCO 17 ---
 
 });
 </script>

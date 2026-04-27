@@ -55,7 +55,7 @@
                     {# Renderiza campos visíveis mas NÃO editáveis#}
                     <p>
                         <strong>{{ field_name }}:</strong>
-                        {{ controle[field_id] or '' }} {# Simplificado, pois 'documentacao' está no 'elif' #}
+                        <span class="card-field-value">{{ controle[field_id] or '' }}</span> {# <<< SPAN ADICIONADO AQUI #} {# Simplificado, pois 'documentacao' está no 'elif' #}
                     </p>
                 {% endif %}
 
