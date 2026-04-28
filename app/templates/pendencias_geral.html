@@ -73,7 +73,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr id="tabela-pendencias-sem-resultados-row" style="display: none;">
+            <tr id="tabela-pendencias-sem-resultados-row" style="display: none !important;">
                 <td colspan="{{ colunas_visiveis|length + 3 }}" class="kanban-empty-msg">Nenhum resultado encontrado para a busca.</td>
             </tr>
             
@@ -191,7 +191,7 @@
 
 
     {% if view_mode == 'cards' %}
-        <p id="cards-pendencias-sem-resultados" class="kanban-empty-msg hide-on-mobile" style="display: none; text-align: center; width: 100%;">
+        <p id="cards-pendencias-sem-resultados" class="kanban-empty-msg hide-on-mobile" style="display: none !important; text-align: center; width: 100%;">
             Nenhum resultado encontrado para a busca.
         </p>
         <div class="card-view-container hide-on-mobile">
