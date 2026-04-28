@@ -1750,6 +1750,31 @@ td .card-value {
     .mobile-search-bar {
         display: block !important;
     }
+
+    /* ====================================================================== */
+    /* AJUSTE PARA O WIDGET DE NOTAS RÁPIDAS NO MOBILE                        */
+    /* ====================================================================== */
+    
+    .nav-item-notepad {
+        flex-direction: column; /* Empilha o botão e a janela de notas */
+        padding: 10px 20px;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .notepad-widget {
+        position: static !important; /* Remove o comportamento de "flutuar" */
+        width: 100% !important;      /* Obriga a ocupar a largura do menu lateral */
+        margin-top: 15px !important; /* Dá um espaço limpo abaixo do botão */
+        right: auto !important;
+        top: auto !important;
+        box-shadow: none !important; /* Tira a sombra, pois agora está embutido */
+    }
+
+    /* Esconde a setinha direcional (o bico do balão) pois não faz sentido no formato mobile */
+    .notepad-widget::before {
+        display: none !important;
+    }
 }
 
 table {
