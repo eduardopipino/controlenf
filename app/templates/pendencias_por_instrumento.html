@@ -46,22 +46,23 @@
                 <p><strong>Objeto:</strong> {{ grupo.detalhes_instrumento.objeto_resumido or '' }}</p>
             </div>
 
+            {% set colunas_sempre_visiveis_pendencias = ['instrumento_display', 'contratada', 'pendencia', 'prazo'] %}
+
             {% if grupo.pendencias_vencidas or grupo.pendencias_a_vencer %}
                 <h4 class="pendencia-categoria-titulo">Pendências com Prazo</h4>
                 <table id="pendenciasPorInstrumentoTabela" class="responsive-card-table">
                     <thead>
-                        <tr> {# Adicionado <tr> para envolver os th #}
-                            <th class="hide-on-mobile"></th> {# Ações #}
-                            <th>!</th> {# Prioridade #}
+                        <tr> 
+                            <th class="hide-on-mobile"></th> 
+                            <th>!</th> 
                             {% for col_id, col_nome in todas_as_colunas_pendencias %}
                                 {% if col_id in colunas_visiveis_pendencias %}
-                                    {# Adiciona classe para colunas longas e remove ordenação por simplicidade aqui #}
                                     <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
                                         {{ col_nome }}
                                     </th>
                                 {% endif %}
                             {% endfor %}
-                            <th></th> {# Botão Ver Mais (Mobile) #}
+                            <th></th> 
                         </tr>
                     </thead>
                     <tbody>
@@ -75,17 +76,16 @@
                                 </a>
                             </td>
                             <td class="coluna-prioridade" data-id="{{ p._id }}"></td>
-                            {# Loop dinâmico para as colunas #}
                             {% for col_id, col_nome in todas_as_colunas_pendencias %}
                                 {% if col_id in colunas_visiveis_pendencias %}
-                                    <td data-label="{{ col_nome }}" class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
+                                    <td data-label="{{ col_nome }}" class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }} {{ 'col-detalhe' if col_id not in colunas_sempre_visiveis_pendencias else '' }}">
                                         <span class="card-value">
                                             {% if col_id == 'prazo' %}{{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}{% else %}{{ p[col_id] or '' }}{% endif %}
                                         </span>
                                     </td>
                                 {% endif %}
                             {% endfor %}
-                            <td><button class="expand-card-btn">Ver mais</button></td> {# Botão Ver Mais (Mobile) #}
+                            <td><button class="expand-card-btn">Ver mais</button></td>
                         </tr>
                         {% endfor %}
                         {% for p in grupo.pendencias_a_vencer %}
@@ -98,17 +98,16 @@
                                 </a>
                             </td>
                             <td class="coluna-prioridade" data-id="{{ p._id }}"></td>
-                            {# Loop dinâmico para as colunas #}
                             {% for col_id, col_nome in todas_as_colunas_pendencias %}
                                 {% if col_id in colunas_visiveis_pendencias %}
-                                    <td data-label="{{ col_nome }}" class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
+                                    <td data-label="{{ col_nome }}" class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }} {{ 'col-detalhe' if col_id not in colunas_sempre_visiveis_pendencias else '' }}">
                                         <span class="card-value">
                                             {% if col_id == 'prazo' %}{{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}{% else %}{{ p[col_id] or '' }}{% endif %}
                                         </span>
                                     </td>
                                 {% endif %}
                             {% endfor %}
-                            <td><button class="expand-card-btn">Ver mais</button></td> {# Botão Ver Mais (Mobile) #}
+                            <td><button class="expand-card-btn">Ver mais</button></td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -120,17 +119,16 @@
                 <table id="pendenciasPorInstrumentoTabela" class="responsive-card-table">
                     <thead>
                         <tr>
-                            <th class="hide-on-mobile"></th> {# Ações #}
-                            <th>!</th> {# Prioridade #}
+                            <th class="hide-on-mobile"></th>
+                            <th>!</th>
                             {% for col_id, col_nome in todas_as_colunas_pendencias %}
-                                {# Pula a coluna 'prazo' explicitamente aqui #}
                                 {% if col_id in colunas_visiveis_pendencias and col_id != 'prazo' %}
                                     <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
                                         {{ col_nome }}
                                     </th>
                                 {% endif %}
                             {% endfor %}
-                            <th></th> {# Botão Ver Mais (Mobile) #}
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -144,38 +142,39 @@
                                 </a>
                             </td>
                             <td class="coluna-prioridade" data-id="{{ p._id }}"></td>
-                            {# Loop dinâmico para as colunas #}
                             {% for col_id, col_nome in todas_as_colunas_pendencias %}
-                                {# Pula a coluna 'prazo' #}
                                 {% if col_id in colunas_visiveis_pendencias and col_id != 'prazo' %}
-                                    <td data-label="{{ col_nome }}" class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
+                                    <td data-label="{{ col_nome }}" class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }} {{ 'col-detalhe' if col_id not in colunas_sempre_visiveis_pendencias else '' }}">
                                         <span class="card-value">{{ p[col_id] or '' }}</span>
                                     </td>
                                 {% endif %}
                             {% endfor %}
-                            <td><button class="expand-card-btn">Ver mais</button></td> {# Botão Ver Mais (Mobile) #}
+                            <td><button class="expand-card-btn">Ver mais</button></td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
-            {% endif %} <div class="secao-notas-fiscais" style="display: {{ 'block' if show_nf_preference else 'none' }}; margin-top: 20px;">
+            {% endif %} 
+            
+            <div class="secao-notas-fiscais" style="display: {{ 'block' if show_nf_preference else 'none' }}; margin-top: 20px;">
                 <h4 class="pendencia-categoria-titulo">Notas Fiscais Pendentes</h4>
                 
                 {% if grupo.controles_pendentes %}
+                    {# Definimos as colunas que SEMPRE aparecem no card mobile #}
+                    {% set colunas_sempre_visiveis_nf_mobile = ['contratada', 'item_descricao', 'referencia'] %}
+
                     <table id="pendenciasPorInstrumentoTabela" class="responsive-card-table">
                         <thead>
                             <tr>
                                 <th class="hide-on-mobile"></th> {# Ações #}
-                                {# Loop pelas colunas DE CONTROLE #}
-                                {% for col_id, col_nome in todas_as_colunas_controle %}
-                                    {# Verifica se a coluna de CONTROLE deve ser exibida (usando a config de controle) #}
-                                    {% if col_id in colunas_visiveis_controle %}
-                                        <th class="{{ 'coluna-texto-longo' if col_id in ['objeto', 'item_descricao', 'observacoes', 'documentacao'] else '' }}">
-                                            {{ col_nome }}
-                                        </th>
-                                    {% endif %}
-                                {% endfor %}
-                                <th></th> {# Botão Ver Mais (Mobile) #}
+                                <th class="hide-on-desktop">Contratada</th> {# Visível apenas no card mobile #}
+                                <th>Item</th>
+                                <th>Referência</th>
+                                <th>Documento Fiscal</th>
+                                <th>Documentação</th>
+                                <th>Situação</th>
+                                <th class="hide-on-desktop">Observações</th> {# Só aparece no "Ver mais" do mobile #}
+                                <th></th> {# Espaço para o Ver Mais #}
                             </tr>
                         </thead>
                         <tbody>
@@ -183,28 +182,51 @@
                                 <tr class="clickable-row" data-url="{{ url_for('controle.detalhes_controle', controle_id=controle._id, origem=request.full_path ~ '&show_nf=1') }}">
                                     <td data-label="Ações" class="hide-on-mobile">
                                         <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id, origem=request.full_path ~ '&show_nf=1') }}" class="action-icon-link" title="Ver Detalhes">
-                                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
                                         </a>
                                     </td>
-                                    {# Loop dinâmico pelas colunas DE CONTROLE #}
-                                    {% for col_id, col_nome in todas_as_colunas_controle %}
-                                        {% if col_id in colunas_visiveis_controle %}
-                                            <td data-label="{{ col_nome }}" class="{{ 'coluna-texto-longo' if col_id in ['objeto', 'item_descricao', 'observacoes', 'documentacao'] else '' }}">
-                                                <span class="card-value">
-                                                    {# Lógica especial para documentação, se necessário #}
-                                                    {% if col_id == 'documentacao' %}
-                                                        {{ controle.documentacao | join(', ') }}
-                                                        {% if controle.documentacao_pendente %}
-                                                            <span class="texto-pendente">(pendente: {{ controle.documentacao_pendente | join(', ') }})</span>
-                                                        {% endif %}
-                                                    {% else %}
-                                                        {{ controle[col_id] or '' }}
-                                                    {% endif %}
-                                                </span>
-                                            </td>
-                                        {% endif %}
-                                    {% endfor %}
-                                    <td><button class="expand-card-btn">Ver mais</button></td> {# Botão Ver Mais (Mobile) #}
+
+                                    {# 1. Contratada (Sempre no mobile, oculta no desktop) #}
+                                    <td data-label="Contratada" class="hide-on-desktop">
+                                        <span class="card-value">{{ controle.contratada or '' }}</span>
+                                    </td>
+
+                                    {# 2. Item #}
+                                    <td data-label="Item" class="coluna-texto-longo">
+                                        <span class="card-value">{{ controle.item_descricao or '' }}</span>
+                                    </td>
+
+                                    {# 3. Referência #}
+                                    <td data-label="Referência">
+                                        <span class="card-value">{{ controle.referencia or '' }}</span>
+                                    </td>
+
+                                    {# 4. Documento Fiscal (Escondido no mobile até expandir) #}
+                                    <td data-label="Documento Fiscal" class="col-detalhe">
+                                        <span class="card-value">{{ controle.nota_fiscal or '' }}</span>
+                                    </td>
+
+                                    {# 5. Documentação (Escondido no mobile até expandir) #}
+                                    <td data-label="Documentação" class="coluna-texto-longo col-detalhe">
+                                        <span class="card-value">
+                                            {{ controle.documentacao | join(', ') }}
+                                            {% if controle.documentacao_pendente %}
+                                                <span class="texto-pendente">(pendente: {{ controle.documentacao_pendente | join(', ') }})</span>
+                                            {% endif %}
+                                        </span>
+                                    </td>
+
+                                    {# 6. Situação (Escondido no mobile até expandir) #}
+                                    <td data-label="Situação" class="col-detalhe">
+                                        <span class="card-value">{{ controle.situacao or '' }}</span>
+                                    </td>
+
+                                    {# 7. Observações (Oculta no desktop, detalhe no mobile) #}
+                                    <td data-label="Observações" class="coluna-texto-longo hide-on-desktop col-detalhe">
+                                        <span class="card-value">{{ controle.observacoes or '' }}</span>
+                                    </td>
+
+                                    <td><button class="expand-card-btn">Ver mais</button></td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -227,7 +249,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
 
-    // --- LÓGICA DE CLIQUE (DESKTOP E MOBILE) ---
+    // --- LÓGICA DE CLIQUE E EXPANDIR (DESKTOP E MOBILE) ---
     document.querySelectorAll('.clickable-row[data-url]').forEach(row => {
         // LÓGICA DE CLIQUE DUPLO PARA DESKTOP
         row.addEventListener('dblclick', function(e) {
@@ -241,10 +263,19 @@ document.addEventListener('DOMContentLoaded', function() {
         // LÓGICA DE CLIQUE SIMPLES PARA MOBILE
         row.addEventListener('click', function(e) {
             if (window.innerWidth <= 768) {
-                if (!e.target.closest('.action-icon-link, .coluna-prioridade, input')) {
+                if (!e.target.closest('.action-icon-link, .coluna-prioridade, input, .expand-card-btn, button')) {
                     window.location.href = this.dataset.url;
                 }
             }
+        });
+    });
+
+    document.querySelectorAll('.responsive-card-table .expand-card-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation(); // Impede que o clique "vaze" para a linha
+            const card = this.closest('tr');
+            card.classList.toggle('card-expanded');
+            this.textContent = card.classList.contains('card-expanded') ? 'Ver menos' : 'Ver mais';
         });
     });
 
@@ -252,17 +283,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnToggle = document.getElementById('btnToggleNotasFiscais');
     if (btnToggle) {
         btnToggle.addEventListener('click', () => {
-            // Determina o NOVO estado desejado (inverso do atual)
-            const newState = !btnToggle.classList.contains('filtro-ativo'); // Se NÃO tem a classe, o novo estado é EXIBIR (true)
+            const newState = !btnToggle.classList.contains('filtro-ativo'); 
 
-            // Chama a API para salvar a preferência
             fetch("{{ url_for('core.toggle_nf_pendencias_instrumento') }}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // Adicionar CSRF token se você estiver usando Flask-WTF com CSRF
                 }
-                // Não precisa enviar body, a rota sabe que é para alternar
             })
             .then(response => {
                 if (!response.ok) {
@@ -272,9 +299,8 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 if (data.status === 'success') {
-                    // Atualiza a interface APENAS se o backend confirmar
                     const secoesNF = document.querySelectorAll('.secao-notas-fiscais');
-                    const shouldShow = data.newState; // Usa o estado retornado pelo backend
+                    const shouldShow = data.newState; 
 
                     secoesNF.forEach(secao => {
                         secao.style.display = shouldShow ? 'block' : 'none';
@@ -283,14 +309,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     btnToggle.textContent = shouldShow ? 'Ocultar Notas Fiscais' : 'Exibir Notas Fiscais';
                     btnToggle.classList.toggle('filtro-ativo', shouldShow);
                 } else {
-                    // Informa o usuário sobre o erro
                     alert('Erro ao salvar a preferência: ' + data.message);
                 }
             })
             .catch(error => {
                 console.error('Erro na requisição fetch:', error);
                 alert('Não foi possível salvar a preferência. Verifique sua conexão.');
-                // Opcional: Reverter a mudança visual se a API falhar (não implementado aqui)
             });
         });
     }
