@@ -7,18 +7,11 @@
         <div class="toolbar-group-left">
             <button id="btnFiltro">Filtro...</button>
             <button id="btnColorCode">Identificar por cores</button>
-            <!-- Botão de Configuração Condicional -->
             {% if view_mode == 'table' %}
                 <button id="btnConfigurarColunas">Configurar colunas</button>
             {% else %}
                 <button id="btnConfigurarCampos">Configurar campos</button>
             {% endif %}
-			
-            {#{% if page_mode == 'concluidas' %}
-                <a href="{{ url_for('pendencias.exportar_pendencias_concluidas_csv') }}" class="button">Exportar</a>
-            {% else %}
-                <a href="{{ url_for('pendencias.exportar_pendencias_pendentes_csv') }}" class="button">Exportar</a>
-            {% endif %}#}
         </div>
         <div class="toolbar-group-center">
             <div class="view-selector">
@@ -46,7 +39,6 @@
             <div class="kebab-menu-dropdown">
                 <a href="#" id="btnFiltroMobile">Filtrar...</a>
                 <a href="#" id="btnConfigurarColunasMobile">Configurar Colunas</a>
-                
                 {% if page_mode == 'concluidas' %}
                     <a href="{{ url_for('pendencias.exportar_pendencias_concluidas_csv') }}">Exportar Concluídas</a>
                 {% else %}
@@ -58,119 +50,155 @@
 
     <br>
 
-    <!-- ====================================================================== -->
-    <!-- LÓGICA DE RENDERIZAÇÃO CONDICIONAL DA VISUALIZAÇÃO                 -->
-    <!-- ====================================================================== -->
+    <div class="mobile-search-bar hide-on-desktop" style="margin-bottom: 15px;">
+        <input type="search" id="buscaRapidaInputMobile" placeholder="Buscar registros..." style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid var(--border-base); background-color: var(--background-secondary); color: var(--text-primary); font-size: 16px;">
+    </div>
+
     {% set card_fields_map = dict(todas_as_colunas_cards) %}
 
-    {% if view_mode == 'table' %}
-        {# A sua tabela original, sem alterações #}
-        <table border="1" id="tabelaPendencias" class="responsive-card-table">
-            <thead>
-                <tr>
-                    <th class="hide-on-mobile"></th> <th>!</th>
-                    {% for col_id, col_nome in todas_as_colunas %}
-                        {% if col_id in colunas_visiveis %}
-                            <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
-                               <a href="{{ url_for(request.endpoint, **dict(request.args, page_mode=page_mode, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc' )) }}">
-                                    {{ col_nome }} {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}
-                                </a>
-                            </th>
-                        {% endif %}
-                    {% endfor %}
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr id="tabela-pendencias-sem-resultados-row" style="display: none;">
-                    <td colspan="{{ colunas_visiveis|length + 3 }}" class="kanban-empty-msg">Nenhum resultado encontrado para a busca.</td>
-                </tr>
-                {% for p in pendencias %}
-                <tr class="clickable-row {{ 'pendencia-vencida' if p.vencido else '' }} {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" data-id="{{ p._id }}" {% if color_coding_active and p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
-                    <td data-label="Ações" class="hide-on-mobile">
-                        <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" class="action-icon-link" title="Ver Detalhes">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                        </a>
-                    </td>
-                    <td class="coluna-prioridade" data-id="{{ p._id }}"></td>
-                    {% set editable_fields_pendencias = ['pendencia', 'prazo', 'responsavel', 'situacao', 'observacoes'] %}
-                    {% for col_id, col_nome in todas_as_colunas %}
-                        {% if col_id in colunas_visiveis %}
-                            {% set is_editable = col_id in editable_fields_pendencias %}
-                            <td data-label="{{ col_nome }}"
-                                class="{{ 'coluna-texto-longo' if col_id in ['observacoes', 'pendencia'] else '' }} {{ 'editable-cell' if is_editable else '' }}"
-                                {% if is_editable %}data-field-name="{{ col_id }}"{% endif %}> {# <<< LINHAS MODIFICADAS/ADICIONADAS >>> #}
-
-                                <span class="card-value">
-                                    {% if col_id == 'prazo' %}{{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}{% else %}{{ p[col_id] or '' }}{% endif %}
-                                </span>
-                            </td>
-                        {% endif %}
-                    {% endfor %}
-                    <td><button class="expand-card-btn">Ver mais</button></td>
-                </tr>
-                {% else %}
-                <tr id="tabela-pendencias-backend-sem-resultados">
-                    <td colspan="{{ colunas_visiveis|length + 3 }}">Nenhuma pendência encontrada.</td>
-                </tr>
+    <table border="1" id="tabelaPendencias" class="responsive-card-table {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
+        <thead>
+            <tr>
+                <th class="hide-on-mobile"></th> <th class="hide-on-mobile">!</th>
+                {% for col_id, col_nome in todas_as_colunas %}
+                    {% if col_id in colunas_visiveis %}
+                        <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
+                           <a href="{{ url_for(request.endpoint, **dict(request.args, page_mode=page_mode, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc' )) }}">
+                                {{ col_nome }} {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}
+                            </a>
+                        </th>
+                    {% endif %}
                 {% endfor %}
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr id="tabela-pendencias-sem-resultados-row" style="display: none;">
+                <td colspan="{{ colunas_visiveis|length + 3 }}" class="kanban-empty-msg">Nenhum resultado encontrado para a busca.</td>
+            </tr>
+            
+            {% for p in pendencias %}
+            <tr class="clickable-row {{ 'pendencia-vencida' if p.vencido else '' }} {% if p.prioridade %}prioridade-ativa{% endif %}" 
+                data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" 
+                data-id="{{ p._id }}" 
+                style="position: relative; {% if color_coding_active and p.cor_destaque %}background-color: {{ p.cor_destaque }};{% endif %}">
                 
-                <tr id="inline-create-template" style="display: none; background-color: var(--table-stripe);">
-                    <td class="hide-on-mobile" style="text-align: center; vertical-align: middle; padding: 4px;">
-                        <button type="button" class="btn-save-inline" title="Salvar" style="background-color: var(--primary-color); color: white; border: none; padding: 4px; border-radius: 3px; cursor: pointer; margin-bottom: 4px; display: block; width: 100%;">✔</button>
-                        <button type="button" class="btn-cancel-inline" title="Cancelar" style="background-color: #7f8c8d; color: white; border: none; padding: 4px; border-radius: 3px; cursor: pointer; display: block; width: 100%;">✖</button>
-                    </td>
-                    <td></td> 
-                    
-                    {% for col_id, col_nome in todas_as_colunas %}
-                        {% if col_id in colunas_visiveis %}
-                            <td style="padding: 4px; vertical-align: middle;"> 
-                                {% if col_id in ['pendencia', 'responsavel', 'situacao', 'observacoes', 'prazo'] %}
-                                    
-                                    {% if col_id == 'observacoes' %}
-                                        <textarea name="{{ col_id }}" style="width: 100%; min-height: 38px; resize: vertical; box-sizing: border-box; border: 1px solid var(--primary-color); border-radius: 3px; padding: 8px; font-family: inherit; font-size: inherit; background-color: var(--background-secondary); color: var(--text-primary); display: block;" placeholder="Observações..."></textarea>
-                                    
-                                    {% elif col_id == 'prazo' %}
-                                        <input type="date" name="{{ col_id }}" style="width: 100%; height: 38px; box-sizing: border-box; border: 1px solid var(--primary-color); border-radius: 3px; padding: 0 8px; font-family: inherit; font-size: inherit; background-color: var(--background-secondary); color: var(--text-primary); display: block;">
-                                    
-                                    {% else %}
-                                        <input type="text" name="{{ col_id }}" style="width: 100%; height: 38px; box-sizing: border-box; border: 1px solid var(--primary-color); border-radius: 3px; padding: 0 8px; font-family: inherit; font-size: inherit; background-color: var(--background-secondary); color: var(--text-primary); display: block;" placeholder="Digitar...">
-                                    
-                                    {% endif %}
-                                    
+                <div class="card-actions-corner hide-on-desktop">
+                    <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" class="card-action-icon" title="Ver Detalhes">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor">
+                            <path d="M0 0h24v24H0V0z" fill="none"/>
+                            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                        </svg>
+                    </a>
+                    <span class="card-priority-toggle {{ 'active' if p.prioridade else '' }}" data-id="{{ p._id }}" title="Alternar Prioridade">
+                        <svg viewBox="0 0 24 24" style="width:18px; height:18px;"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
+                    </span>
+                </div>
+
+                <td data-label="Ações" class="hide-on-mobile">
+                    <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" class="action-icon-link" title="Ver Detalhes">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                    </a>
+                </td>
+                
+                <td class="coluna-prioridade hide-on-mobile" data-id="{{ p._id }}"></td>
+                
+                {% set editable_fields_pendencias = ['pendencia', 'prazo', 'responsavel', 'situacao', 'observacoes'] %}
+                {% set colunas_sempre_visiveis = ['instrumento_display', 'contratada', 'pendencia', 'prazo'] %}
+
+                {% for col_id, col_nome in todas_as_colunas %}
+                    {% if col_id in colunas_visiveis %}
+                        {% set is_editable = col_id in editable_fields_pendencias %}
+                        {% set is_detalhe = col_id not in colunas_sempre_visiveis %}
+                        
+                        <td data-label="{{ col_nome }}"
+                            class="{{ 'coluna-texto-longo' if col_id in ['observacoes', 'pendencia'] else '' }} {{ 'col-detalhe' if is_detalhe else '' }} {{ 'editable-cell' if is_editable else '' }}"
+                            {% if is_editable %}data-field-name="{{ col_id }}"{% endif %}>
+                            <span class="card-value">
+                                {% if col_id == 'prazo' %}{{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}{% else %}{{ p[col_id] or '' }}{% endif %}
+                            </span>
+                        </td>
+                    {% endif %}
+                {% endfor %}
+                <td><button class="expand-card-btn">Ver mais</button></td>
+            </tr>
+            {% else %}
+            <tr id="tabela-pendencias-backend-sem-resultados">
+                <td colspan="{{ colunas_visiveis|length + 3 }}">Nenhuma pendência encontrada.</td>
+            </tr>
+            {% endfor %}
+            
+            <tr id="inline-create-template" class="hide-on-mobile-always" style="display: none; background-color: var(--table-stripe);">
+                <td class="hide-on-mobile" style="text-align: center; vertical-align: middle; padding: 4px;">
+                    <button type="button" class="btn-save-inline" title="Salvar" style="background-color: var(--primary-color); color: white; border: none; padding: 4px; border-radius: 3px; cursor: pointer; margin-bottom: 4px; display: block; width: 100%;">✔</button>
+                    <button type="button" class="btn-cancel-inline" title="Cancelar" style="background-color: #7f8c8d; color: white; border: none; padding: 4px; border-radius: 3px; cursor: pointer; display: block; width: 100%;">✖</button>
+                </td>
+                <td class="hide-on-mobile"></td> 
+                
+                {% for col_id, col_nome in todas_as_colunas %}
+                    {% if col_id in colunas_visiveis %}
+                        <td style="padding: 4px; vertical-align: middle;"> 
+                            {% if col_id in ['pendencia', 'responsavel', 'situacao', 'observacoes', 'prazo'] %}
+                                {% if col_id == 'observacoes' %}
+                                    <textarea name="{{ col_id }}" style="width: 100%; min-height: 38px; resize: vertical; box-sizing: border-box; border: 1px solid var(--primary-color); border-radius: 3px; padding: 8px; font-family: inherit; font-size: inherit; background-color: var(--background-secondary); color: var(--text-primary); display: block;" placeholder="Observações..."></textarea>
+                                {% elif col_id == 'prazo' %}
+                                    <input type="date" name="{{ col_id }}" style="width: 100%; height: 38px; box-sizing: border-box; border: 1px solid var(--primary-color); border-radius: 3px; padding: 0 8px; font-family: inherit; font-size: inherit; background-color: var(--background-secondary); color: var(--text-primary); display: block;">
                                 {% else %}
-                                    <div style="color: var(--text-primary); opacity: 0.6; font-size: 0.85em; font-style: italic; padding: 6px; text-align: center;">Não aplicável</div>
+                                    <input type="text" name="{{ col_id }}" style="width: 100%; height: 38px; box-sizing: border-box; border: 1px solid var(--primary-color); border-radius: 3px; padding: 0 8px; font-family: inherit; font-size: inherit; background-color: var(--background-secondary); color: var(--text-primary); display: block;" placeholder="Digitar...">
                                 {% endif %}
-                            </td>
-                        {% endif %}
-                    {% endfor %}
-                    <td></td> 
-                </tr>
+                            {% else %}
+                                <div style="color: var(--text-primary); opacity: 0.6; font-size: 0.85em; font-style: italic; padding: 6px; text-align: center;">Não aplicável</div>
+                            {% endif %}
+                        </td>
+                    {% endif %}
+                {% endfor %}
+                <td></td> 
+            </tr>
 
-                <tr id="row-btn-add-inline">
-                    <td colspan="{{ colunas_visiveis|length + 2 }}" style="padding: 0;">
-                        <button type="button" id="btnShowInlineCreate" style="width: 100%; background: none; border: 2px dashed var(--border-base); color: var(--tertiary-color); padding: 10px; cursor: pointer; font-weight: bold; border-radius: 0 0 8px 8px; transition: background-color 0.2s;">
-                            + Adição Rápida
-                        </button>
-                    </td>
-                    <td></td>
-                </tr>
-            </tbody>
-        </table>
+            <tr id="row-btn-add-inline" class="hide-on-mobile-always">
+                <td colspan="{{ colunas_visiveis|length + 2 }}" style="padding: 0;">
+                    <button type="button" id="btnShowInlineCreate" style="width: 100%; background: none; border: 2px dashed var(--border-base); color: var(--tertiary-color); padding: 10px; cursor: pointer; font-weight: bold; border-radius: 0 0 8px 8px; transition: background-color 0.2s;">
+                        + Adição Rápida
+                    </button>
+                </td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
 
-    {% elif view_mode == 'cards' %}
-        <p id="cards-pendencias-sem-resultados" class="kanban-empty-msg" style="display: none; text-align: center; width: 100%;">
+    <div class="card-quick-add-container-group hide-on-desktop" style="margin-top: 15px;">
+        <div class="card-quick-add-trigger btnShowQuickAddCardMobile">
+            <span style="font-size: 1.2em; font-weight: bold;">+ Adicionar Pendência</span>
+        </div>
+        <div class="data-card card-quick-add-form quickAddCardFormMobile" style="border-left-color: var(--border-base); display: none; position: relative;" data-priority="false">
+            <div class="card-actions-corner">
+                <div class="card-priority-toggle quickCardPriorityToggleMobile" title="Alternar Prioridade">
+                    <svg viewBox="0 0 24 24" style="width:24px; height:24px;"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="currentColor"/></svg>
+                </div>
+            </div>
+            <input type="text" name="pendencia" placeholder="Título da Pendência (Obrigatório)*" required>
+            <input type="text" name="responsavel" placeholder="Responsável">
+            <input type="date" name="prazo" title="Prazo">
+            <input type="text" name="situacao" placeholder="Situação">
+            <textarea name="observacoes" placeholder="Observações..."></textarea>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 5px;">
+                <button type="button" class="btn-cancel btnCancelQuickCardMobile" style="padding: 5px 12px; height: 30px;">Cancelar</button>
+                <button type="button" class="btn-confirm-success btnSaveQuickCardMobile" style="padding: 5px 12px; height: 30px; background-color: var(--primary-color);">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+
+    {% if view_mode == 'cards' %}
+        <p id="cards-pendencias-sem-resultados" class="kanban-empty-msg hide-on-mobile" style="display: none; text-align: center; width: 100%;">
             Nenhum resultado encontrado para a busca.
         </p>
-        <div class="card-view-container">
-            {# --- Início da Lógica Condicional --- #}
+        <div class="card-view-container hide-on-mobile">
             {% if page_mode == 'por_instrumento' %}
-
                 {% for grupo in grupos_de_pendencias %}
                     <div class="instrumento-group-section">
-                        {# Título do Grupo (Instrumento) #}
                         <h4>
-                            {# Adiciona link para os detalhes do instrumento (se tivermos o ID) #}
                             {% if grupo.detalhes_instrumento.instrumento_id %}
                                 <a href="{{ url_for('instrumentos.gerenciar_instrumento', instrumento_id=grupo.detalhes_instrumento.instrumento_id) }}" title="Ver Instrumento">
                                     {{ grupo.detalhes_instrumento.instrumento_display }} ({{ grupo.detalhes_instrumento.contratada }})
@@ -180,9 +208,6 @@
                             {% endif %}
                         </h4>
 
-                        {# --- BLOCO SIMPLIFICADO --- #}
-                        {# Renderiza TODOS os cards em um único grid #}
-                        {# (A lista grupo.pendencias JÁ VEM ordenada por prioridade do backend) #}
                         <div class="card-grid">
                             {% for p in grupo.pendencias %}
                                 {% include 'partials/_pendencia_card.html' %}
@@ -192,45 +217,34 @@
                                 <div class="card-quick-add-trigger btnShowQuickAddCardGroup">
                                     <span style="font-size: 1.2em; font-weight: bold;">+ Adição Rápida</span>
                                 </div>
-
                                 <div class="data-card card-quick-add-form quickAddCardFormGroup" style="border-left-color: var(--border-base); display: none;" data-priority="false">
-                                    
                                     <input type="hidden" name="instrumento_id" value="{{ grupo.detalhes_instrumento.instrumento_id }}">
-                                    
                                     <div class="card-actions-corner">
                                         <div class="card-priority-toggle quickCardPriorityToggleGroup" title="Alternar Prioridade">
                                             <svg viewBox="0 0 24 24" style="width:18px; height:18px;"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="currentColor"/></svg>
                                         </div>
                                     </div>
-
                                     <input type="text" name="pendencia" placeholder="Título da Pendência (Obrigatório)*" required>
                                     <input type="text" name="responsavel" placeholder="Responsável">
                                     <input type="date" name="prazo" title="Prazo">
                                     <input type="text" name="situacao" placeholder="Situação">
                                     <textarea name="observacoes" placeholder="Observações..."></textarea>
-
                                     <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 5px;">
                                         <button type="button" class="btn-cancel btnCancelQuickCardGroup" style="padding: 5px 12px; height: 30px;">Cancelar</button>
                                         <button type="button" class="btn-confirm-success btnSaveQuickCardGroup" style="padding: 5px 12px; height: 30px; background-color: var(--primary-color);">Salvar</button>
                                     </div>
                                 </div>
                             </div>
-                            </div>
-                        {# --- FIM DO BLOCO SIMPLIFICADO --- #}
+                        </div>
                     </div>
                 {% else %}
-                    {# Se não houver grupos (improvável se o filtro funcionou) #}
                     <p>Nenhuma pendência vinculada a instrumentos encontrada.</p>
                 {% endfor %}
-
-
-                
             {% else %}
-            <!-- SEÇÃO DE PRIORIDADES -->
             <div class="priority-section">
                 <h4>
 				<span class="priority-icon">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <!-- CORRIGIDO AQUI -->
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> 
 						<path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
 					</svg>
 				</span>
@@ -241,7 +255,6 @@
                     {% endfor %}
                 </div>
             </div>
-            <!-- SEÇÃO GERAL -->
             <div class="card-grid">
                 {% for p in pendencias if not p.prioridade %}
                     {% include 'partials/_pendencia_card.html' %}
@@ -251,32 +264,29 @@
                     <div id="btnShowQuickAddCard" class="card-quick-add-trigger">
                         <span style="font-size: 1.2em; font-weight: bold;">+ Adicionar Pendência</span>
                     </div>
-
                     <div id="quickAddCardForm" class="data-card card-quick-add-form" style="border-left-color: var(--border-base);">
                         <div class="card-actions-corner">
                             <div id="quickCardPriorityToggle" class="card-priority-toggle" title="Alternar Prioridade">
                                 <svg viewBox="0 0 24 24" style="width:18px; height:18px;"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="currentColor"/></svg>
                             </div>
                         </div>
-
                         <input type="text" name="pendencia" placeholder="Título da Pendência (Obrigatório)*" required>
                         <input type="text" name="responsavel" placeholder="Responsável">
                         <input type="date" name="prazo" title="Prazo">
                         <input type="text" name="situacao" placeholder="Situação">
                         <textarea name="observacoes" placeholder="Observações..."></textarea>
-
                         <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 5px;">
                             <button type="button" id="btnCancelQuickCard" class="btn-cancel" style="padding: 5px 12px; height: 30px;">Cancelar</button>
                             <button type="button" id="btnSaveQuickCard" class="btn-confirm-success" style="padding: 5px 12px; height: 30px; background-color: var(--primary-color);">Salvar</button>
                         </div>
                     </div>
                 </div>
-                </div>
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
 
     {% elif view_mode == 'kanban' %}
-        <div class="kanban-view-container">
+        <div class="kanban-view-container hide-on-mobile">
             <div class="kanban-board kanban-board-wide">
                 <div class="kanban-column" id="kanban-column-sem-prazo">
                     <div class="kanban-column-header">Sem Prazo ({{ pendencias_sem_prazo|length }})</div>
@@ -371,16 +381,32 @@
     </ul>
     <input type="color" class="hidden-color-input" id="hiddenColorPicker">
 
+    <style>
+        @media (max-width: 768px) {
+            /* Regra ultra-específica (vence o !important do style.css) para aniquilar as linhas de criação do desktop no mobile */
+            table#tabelaPendencias tr#inline-create-template,
+            table#tabelaPendencias tr#row-btn-add-inline,
+            table#tabelaPendencias tr.hide-on-mobile-always {
+                display: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                height: 0 !important;
+                overflow: hidden !important;
+            }
+        }
+    </style>
+
 {% endblock %}
 
 {% block page_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
 
-    const card_fields_map = {{ dict(todas_as_colunas_cards) | tojson | safe }}; // <<< LINHA CORRIGIDA
-    let isPriorityFetchLocked = false; // <<< LINHA ADICIONADA: Flag de bloqueio
-    const viewMode = "{{ view_mode }}"; // <<< LINHA ADICIONADA
-    const pageMode = "{{ page_mode }}"; // <<< LINHA ADICIONADA
+    const card_fields_map = {{ dict(todas_as_colunas_cards) | tojson | safe }}; 
+    let isPriorityFetchLocked = false; 
+    const viewMode = "{{ view_mode }}"; 
+    const pageMode = "{{ page_mode }}"; 
 
     // --- LÓGICA DO SELETOR DE VISUALIZAÇÃO ---
     const viewSelector = document.querySelector('.view-selector');
@@ -396,22 +422,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- LÓGICA DE IDENTIFICAR POR CORES (PERMANENTE) ---
     function handleToggleColor() {
         fetch("{{ url_for('core.toggle_color_coding_pendencias') }}", { method: 'POST' })
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                window.location.reload(); // Recarrega a página para aplicar a nova preferência
+                window.location.reload(); 
             } else {
                 alert('Erro ao salvar a preferência de cores.');
             }
         });
     }
     document.getElementById('btnColorCode')?.addEventListener('click', handleToggleColor);
-    // Adicione o listener para o botão mobile também, se você o criou.
 
-    // Ativa o estilo do botão se a colorização estiver ativa na carga da página
     if ({{ color_coding_active | tojson }}) {
         document.getElementById('btnColorCode')?.classList.add('filtro-ativo');
     }
@@ -424,7 +447,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const cardFieldsVisiveis = {{ card_fields_visiveis | tojson | safe }};
         todasAsColunasCards.forEach(campo => {
             const [field_id, field_name] = campo;
-            if (field_name) { // Garante que campos vazios não sejam adicionados
+            if (field_name) { 
                 const isChecked = cardFieldsVisiveis.includes(field_id);
                 const wrapper = document.createElement('div');
                 wrapper.innerHTML = `<label><input type="checkbox" name="campo_pref" value="${field_id}" ${isChecked ? 'checked' : ''}> ${field_name}</label>`;
@@ -441,7 +464,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- LÓGICA DE MODAIS ---
     const filterModal = document.getElementById('filterModal');
     const configColunasModal = document.getElementById('configColunasModal');
     const configCamposModal = document.getElementById('configCamposModal');
@@ -461,20 +483,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // --- LÓGICA DE CLIQUE (DESKTOP E MOBILE) ---
+    // --- LÓGICA DE CLIQUE E EXPANDIR (MOBILE NATIVO NA TABELA) ---
     document.querySelectorAll('#tabelaPendencias .clickable-row[data-url]').forEach(row => {
-
         row.addEventListener('click', function(e) {
             if (window.innerWidth <= 768) {
-                if (!e.target.closest('.action-icon-link, .expand-card-btn, input, .coluna-prioridade')) {
+                if (!e.target.closest('.action-icon-link, .expand-card-btn, input, .card-priority-toggle')) {
                     window.location.href = this.dataset.url;
                 }
             }
         });
     });
 
-    // --- LÓGICA PARA EXPANDIR CARDS (MOBILE) ---
-    document.querySelectorAll('.expand-card-btn').forEach(button => {
+    document.querySelectorAll('.responsive-card-table .expand-card-btn').forEach(button => {
         button.addEventListener('click', function(e) {
             e.stopPropagation();
             const card = this.closest('tr');
@@ -483,7 +503,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // --- LÓGICA DO MENU KEBAB (MOBILE) ---
+    // --- LÓGICA DO MENU KEBAB ---
     const kebabButton = document.getElementById('btnKebab');
     const kebabDropdown = document.querySelector('.kebab-menu-dropdown');
     if (kebabButton) {
@@ -532,7 +552,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- LÓGICA PARA ALTERNAR PRIORIDADE (Movimentação DOM) --- <<< BLOCO SUBSTITUÍDO >>>
+    // --- LÓGICA PARA ALTERNAR PRIORIDADE (Movimentação DOM) --- 
     document.querySelectorAll('.coluna-prioridade, .card-priority-toggle').forEach(el => {
         el.addEventListener('click', function(e) {
             e.preventDefault(); e.stopPropagation();
@@ -541,11 +561,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log("Fetch de prioridade já em andamento, clique ignorado.");
                 return;
             }
-            isPriorityFetchLocked = true; // Bloqueia novos cliques
+            isPriorityFetchLocked = true; 
 
             const clickedElement = this;
             const pendenciaId = this.dataset.id;
-            const animationDuration = 300; // Duração do fade
+            const animationDuration = 300; 
 
             fetch(`/pendencias/toggle_prioridade/${pendenciaId}`, { method: 'POST' })
             .then(response => response.json())
@@ -554,9 +574,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     const isActivating = data.nova_prioridade;
                     let elementToMove = null;
                     let targetContainer = null;
+                    
+                    const isMobile = window.innerWidth <= 768;
 
-                    // 1. Identificar elemento e destino baseado no view_mode
-                    if (viewMode === 'table') {
+                    // 1. Identificar elemento e destino
+                    if (isMobile || viewMode === 'table') {
                         elementToMove = clickedElement.closest('tr');
                         if (!elementToMove) return;
                         targetContainer = elementToMove.closest('tbody');
@@ -565,43 +587,33 @@ document.addEventListener('DOMContentLoaded', function() {
                         elementToMove = clickedElement.closest('.data-card');
                         if (!elementToMove) return;
 
-                        // --- INÍCIO DA LÓGICA CORRIGIDA ---
                         if (pageMode === 'por_instrumento') {
-                            // --- MODO "POR INSTRUMENTO" ---
-                            // 1. Encontra o container do grupo do instrumento atual
                             const currentGroupSection = elementToMove.closest('.instrumento-group-section');
                             if (!currentGroupSection) {
-                                console.error("Modo 'por_instrumento', mas não foi possível encontrar a .instrumento-group-section pai.");
                                 isPriorityFetchLocked = false;
                                 return;
                             }
-
                             if (isActivating) {
-                                // 2a. Encontra o PRIMEIRO .card-grid (o de prioridades) DENTRO do grupo
                                 targetContainer = currentGroupSection.querySelector('.card-grid');
                             } else {
-                                // 2b. Encontra o ÚLTIMO .card-grid (o geral) DENTRO do grupo
                                 const allGridsInGroup = currentGroupSection.querySelectorAll('.card-grid');
                                 targetContainer = allGridsInGroup[allGridsInGroup.length - 1];
                             }
                         } else {
-                            // --- MODO "GERAL" (a lógica antiga estava correta para este modo) ---
                             if (isActivating) {
                                 targetContainer = document.querySelector('.priority-section .card-grid');
                             } else {
                                 targetContainer = document.querySelector('.card-grid:not(.priority-section .card-grid)');
                             }
                         }
-                        // --- FIM DA LÓGICA CORRIGIDA ---
 
                     } else if (viewMode === 'kanban') {
                         elementToMove = clickedElement.closest('.data-card');
                         if (!elementToMove) return;
-                        targetContainer = elementToMove.closest('.kanban-cards'); // Permanece na mesma coluna
+                        targetContainer = elementToMove.closest('.kanban-cards'); 
                     }
 
                     if (!elementToMove || !targetContainer) {
-                        console.error("Não foi possível encontrar o elemento ou o container de destino.");
                         isPriorityFetchLocked = false;
                         return;
                     }
@@ -612,174 +624,140 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     // 3. Atraso para Mover e Fazer Fade-In
                     setTimeout(() => {
-                        // Atualiza o estado visual ANTES do fade-in
-                        if (viewMode === 'table') {
+                        if (isMobile || viewMode === 'table') {
                             elementToMove.classList.toggle('prioridade-ativa', isActivating);
+                            // Sincroniza o ícone de prioridade injetado no Mobile
+                            const iconInsideRow = elementToMove.querySelector('.card-priority-toggle');
+                            if(iconInsideRow) iconInsideRow.classList.toggle('active', isActivating);
                         } else {
                             clickedElement.classList.toggle('active', isActivating);
                         }
 
                         // Move o elemento
                         if (isActivating) {
-                            // --- ATIVANDO: Move para o topo ---
                             targetContainer.prepend(elementToMove);
-
                         } else {
-                            // --- DESATIVANDO: Move para baixo dos prioritários ---
                             let firstNonPriorityItem = null;
                             let lastPriorityItem = null;
 
-                            if (viewMode === 'table') {
-                                // Encontra TODAS as linhas que NÃO são prioridade
+                            if (isMobile || viewMode === 'table') {
                                 const allNonPriorityRows = targetContainer.querySelectorAll('tr:not(.prioridade-ativa)');
                                 firstNonPriorityItem = Array.from(allNonPriorityRows).find(row => row !== elementToMove);
 
                             } else if (viewMode === 'kanban') {
-                                // Encontra o primeiro card que NÃO tem prioridade
                                 const allNonPriorityCards = targetContainer.querySelectorAll('.data-card:not(:has(.card-priority-toggle.active))');
                                 firstNonPriorityItem = Array.from(allNonPriorityCards).find(card => card !== elementToMove);
 
-                            } else { // viewMode === 'cards' (Modo 'Geral' ou 'Por Instrumento')
-                                /// Encontra o ÚLTIMO item prioritário DENTRO do grid de destino
-                                // (O targetContainer já foi definido corretamente antes)
-
-                                // --- INÍCIO: Correção Lógica Cards ---
-                                // 1. Encontra TODOS os cards que AINDA são prioritários
+                            } else { 
                                 const allPriorityCards = targetContainer.querySelectorAll('.data-card:has(.card-priority-toggle.active)');
-
-                                // 2. Filtra para EXCLUIR o elemento que estamos movendo (que ainda tem .active)
                                 const otherPriorityCards = Array.from(allPriorityCards).filter(card => card !== elementToMove);
 
                                 if (otherPriorityCards.length > 0) {
-                                    // 3. Pega o último da lista filtrada
                                     lastPriorityItem = otherPriorityCards[otherPriorityCards.length - 1];
                                 } else {
-                                    lastPriorityItem = null; // Não há nenhum OUTRO card prioritário
+                                    lastPriorityItem = null; 
                                 }
-                                // --- FIM: Correção Lógica Cards ---
                             }
 
-                            // --- Lógica de Inserção ---
-                            if (viewMode === 'table' || viewMode === 'kanban') {
+                            if (isMobile || viewMode === 'table' || viewMode === 'kanban') {
                                 if (firstNonPriorityItem) {
-                                    // Insere o elemento ANTES do primeiro item sem prioridade
                                     targetContainer.insertBefore(elementToMove, firstNonPriorityItem);
                                 } else {
-                                    // Se TODOS os outros itens são prioritários, insere no FINAL
                                     targetContainer.appendChild(elementToMove);
                                 }
-                            } else { // viewMode === 'cards'
+                            } else { 
                                 if (lastPriorityItem) {
-                                    // Insere DEPOIS do último item prioritário encontrado
                                     lastPriorityItem.after(elementToMove);
                                 } else {
-                                    // Se não há NENHUM prioritário, insere no TOPO
                                     targetContainer.prepend(elementToMove);
                                 }
                             }
                         }
 
-                        // Animação de Fade-In
                         requestAnimationFrame(() => {
                             elementToMove.style.transition = 'opacity 0.3s ease-in';
                             elementToMove.style.opacity = '1';
                             setTimeout(() => {
-                                elementToMove.style.transition = ''; // Limpa
-                                isPriorityFetchLocked = false; // Libera o lock
+                                elementToMove.style.transition = ''; 
+                                isPriorityFetchLocked = false; 
                             }, animationDuration);
                         });
                     }, animationDuration);
 
                 } else {
                     alert('Erro ao alterar a prioridade.');
-                    isPriorityFetchLocked = false; // Libera o lock em caso de falha da API
+                    isPriorityFetchLocked = false; 
                 }
             })
             .catch(error => {
                 console.error('Erro no fetch da prioridade:', error);
-                //alert('Erro de rede ao alterar prioridade.');
-                isPriorityFetchLocked = false; // Libera o lock em caso de falha de rede
+                isPriorityFetchLocked = false; 
             });
         });
     });
-    // --- FIM LÓGICA DE PRIORIDADE (Movimentação DOM) ---
 
-    // --- LÓGICA DO MENU DE CONTEXTO PARA COR (Nativa) --- <<< BLOCO RESTAURADO >>>
+    // --- LÓGICA DO MENU DE CONTEXTO PARA COR (Nativa) ---
     const contextMenu = document.getElementById('colorContextMenu');
-    const colorPicker = document.getElementById('hiddenColorPicker'); // <<< Referência ao input nativo
+    const colorPicker = document.getElementById('hiddenColorPicker'); 
     const chooseColorBtn = document.getElementById('chooseColorOption');
     const clearColorBtn = document.getElementById('clearColorOption');
-    let activeItem = null; // <<< Renomeado de volta (se necessário)
-    // 'lastContextMenuPosition' não é mais necessário aqui
+    let activeItem = null; 
 
-    // Listener para clique direito (mostrar menu) - Mantido
     document.querySelectorAll('tbody .clickable-row, .data-card').forEach(item => {
         item.addEventListener('contextmenu', function(event) {
             event.preventDefault();
-            activeItem = this; // Guarda o item clicado
-            // Posiciona e mostra o menu HTML
+            activeItem = this; 
             contextMenu.style.top = `${event.pageY}px`;
             contextMenu.style.left = `${event.pageX}px`;
             contextMenu.style.display = 'block';
         });
     });
 
-    // Listener para fechar menu ao clicar fora - Mantido
     window.addEventListener('click', () => {
         if (contextMenu) contextMenu.style.display = 'none';
-        // Nenhuma chamada a Coloris.close() aqui
     });
 
-    // Listener para o botão "Escolher Cor..." (aciona input nativo)
-    chooseColorBtn.addEventListener('click', () => { // <<< Lógica Restaurada >>>
+    chooseColorBtn.addEventListener('click', () => { 
         if (colorPicker) {
-            // Define a cor atual no picker antes de abrir (opcional, mas bom)
             try {
-                let currentColor = '#FFFFFF'; // Default
+                let currentColor = '#FFFFFF'; 
                 if (activeItem) {
                      const computedStyle = getComputedStyle(activeItem);
                      const bgColor = computedStyle.backgroundColor;
                      if (bgColor && bgColor !== 'rgba(0, 0, 0, 0)' && bgColor !== 'transparent') {
-                        // Tenta converter RGB para HEX para o input color
                         if (bgColor.startsWith('rgb')) {
                            const rgb = bgColor.match(/\d+/g);
                            if (rgb && rgb.length >= 3) {
                                currentColor = "#" + ((1 << 24) + (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2])).toString(16).slice(1).toUpperCase();
                            }
                         } else {
-                             currentColor = bgColor; // Assume que é HEX ou nome
+                             currentColor = bgColor; 
                         }
                      }
                 }
                 colorPicker.value = currentColor;
             } catch(e){ console.warn("Failed to set initial color picker value", e); }
 
-            colorPicker.click(); // <<< Aciona o clique no input oculto
+            colorPicker.click(); 
         } else {
             console.error("Hidden color picker not found!");
         }
-         // Não precisa fechar o menu aqui, o clique no botão já faz isso implicitamente
-         // contextMenu.style.display = 'none';
     });
 
-    // Listener para o botão "Limpar Cor" - Mantido
     clearColorBtn.addEventListener('click', () => {
         if (!activeItem) return;
-        // contextMenu.style.display = 'none'; // Desnecessário
-        saveColor(activeItem.dataset.id, null); // Chama saveColor com null
+        saveColor(activeItem.dataset.id, null); 
     });
 
-    // Listener para quando a cor é selecionada no picker NATIVO
-    if (colorPicker) { // <<< Bloco Re-adicionado >>>
+    if (colorPicker) { 
         colorPicker.addEventListener('change', (event) => {
             if (!activeItem) return;
             const newColor = event.target.value;
             saveColor(activeItem.dataset.id, newColor);
         });
-    } // <<< Fim do Bloco Re-adicionado >>>
+    }
 
-    // Função para salvar a cor (renomeada de volta e mantida)
-    function saveColor(pendenciaId, color) { // <<< Renomeada de volta >>>
+    function saveColor(pendenciaId, color) { 
         fetch(`/pendencias/set_cor_destaque/${pendenciaId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -788,24 +766,139 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success' && activeItem) {
-                activeItem.style.backgroundColor = color || ''; // Aplica cor visualmente
-            } else if (data.status !== 'success') { // Só alerta em caso de erro real
+                activeItem.style.backgroundColor = color || ''; 
+            } else if (data.status !== 'success') { 
                 alert('Erro ao salvar a cor.');
             }
-            // Limpa activeItem após salvar ou falhar, para evitar seleção fantasma
-            // activeItem = null; // Considerar re-adicionar se houver problemas
         }).catch(err => {
             console.error("Fetch error saving color:", err);
             alert('Erro de rede ao salvar a cor.');
-            // activeItem = null; // Considerar re-adicionar
         });
     }
 
-    // --- 13. LÓGICA DE EDIÇÃO INLINE NA TABELA (PENDENCIAS) --- <<< NOVO BLOCO ADICIONADO >>>
-    const tableBodyPendencias = document.querySelector('#tabelaPendencias tbody');
-    const editableFieldsPendencias = ['pendencia', 'prazo', 'responsavel', 'situacao', 'observacoes'];
+    // --- CORREÇÃO 3: LÓGICA DE BUSCA RÁPIDA (CLIENT-SIDE) UNIFICADA ---
+    const buscaInput = document.getElementById('buscaRapidaInput');
+    const buscaInputMobile = document.getElementById('buscaRapidaInputMobile'); 
+    
+    const tabelaSemResultadosBusca = document.getElementById('tabela-pendencias-sem-resultados-row');
+    const tabelaBackendSemResultados = document.getElementById('tabela-pendencias-backend-sem-resultados');
+    const cardsSemResultadosBusca = document.getElementById('cards-pendencias-sem-resultados');
 
-    if (tableBodyPendencias && "{{ view_mode }}" === "table") {
+    function executarBusca(e) {
+        const isMobile = window.innerWidth <= 768;
+        let query = '';
+        
+        if (e && e.target && e.target.tagName === 'INPUT') {
+            query = e.target.value.toLowerCase().trim();
+            if (buscaInput && e.target.id === 'buscaRapidaInputMobile') buscaInput.value = e.target.value;
+            if (buscaInputMobile && e.target.id === 'buscaRapidaInput') buscaInputMobile.value = e.target.value;
+        } else {
+            const valDesktop = buscaInput ? buscaInput.value : '';
+            const valMobile = buscaInputMobile ? buscaInputMobile.value : '';
+            query = (isMobile ? valMobile : valDesktop).toLowerCase().trim();
+        }
+
+        let itemsToFilter = [];
+        let displayStyle = '';
+
+        if (isMobile) {
+            // No mobile filtra a tabela
+            itemsToFilter = document.querySelectorAll('#tabelaPendencias tbody tr.clickable-row');
+            displayStyle = 'block';
+        } else {
+            // No desktop filtra a view ativa
+            if (viewMode === 'table') {
+                itemsToFilter = document.querySelectorAll('#tabelaPendencias tbody tr.clickable-row');
+                displayStyle = 'table-row';
+            } else if (viewMode === 'cards' || viewMode === 'kanban') {
+                itemsToFilter = document.querySelectorAll('.data-card');
+                displayStyle = 'flex';
+            }
+        }
+
+        let itemsVisiveis = 0;
+
+        itemsToFilter.forEach(item => {
+            let itemText = '';
+            
+            // Pega o texto dos spans (Tabela e Cards)
+            const spans = item.querySelectorAll('span.card-value, span.card-field-value');
+            spans.forEach(span => { itemText += " " + span.textContent.toLowerCase(); });
+            
+            // Pega o texto do H4 (Cards)
+            const h4 = item.querySelector('h4');
+            if (h4) itemText += " " + h4.textContent.toLowerCase();
+
+            if (itemText.includes(query)) {
+                // Aqui usamos block/table-row/flex
+                item.style.setProperty('display', displayStyle, 'important');
+                itemsVisiveis++;
+            } else {
+                item.style.setProperty('display', 'none', 'important');
+            }
+        });
+
+        const noResults = (itemsVisiveis === 0);
+        const isSearching = query.length > 0;
+
+        if (isMobile || viewMode === 'table') {
+            if (tabelaSemResultadosBusca) {
+                tabelaSemResultadosBusca.style.setProperty('display', (isSearching && noResults) ? displayStyle : 'none', 'important');
+                tabelaSemResultadosBusca.style.border = 'none';
+            }
+            if (tabelaBackendSemResultados) {
+                tabelaBackendSemResultados.style.setProperty('display', isSearching ? 'none' : 'table-row', 'important');
+            }
+        } 
+        
+        if (!isMobile) {
+            if (viewMode === 'cards' && cardsSemResultadosBusca) {
+                cardsSemResultadosBusca.style.setProperty('display', (isSearching && noResults) ? 'block' : 'none', 'important');
+            } else if (viewMode === 'kanban') {
+                atualizarContagensKanban(query);
+            }
+        }
+    }
+
+    if (buscaInput) {
+        buscaInput.addEventListener('keyup', executarBusca);
+        buscaInput.addEventListener('search', executarBusca);
+        buscaInput.addEventListener('keydown', e => { if (e.key === 'Escape') { buscaInput.value = ''; executarBusca(e); }});
+    }
+    if (buscaInputMobile) {
+        buscaInputMobile.addEventListener('keyup', executarBusca);
+        buscaInputMobile.addEventListener('search', executarBusca);
+        buscaInputMobile.addEventListener('keydown', e => { if (e.key === 'Escape') { buscaInputMobile.value = ''; executarBusca(e); }});
+    }
+
+    function atualizarContagensKanban(query) {
+        if (viewMode !== 'kanban' || window.innerWidth <= 768) return;
+        const isSearching = query && query.length > 0;
+
+        document.querySelectorAll('.kanban-column').forEach(coluna => {
+            const cardsNaColuna = coluna.querySelectorAll('.data-card');
+            const totalCards = cardsNaColuna.length;
+            let cardsEscondidos = 0;
+            cardsNaColuna.forEach(card => { if (card.style.display === 'none') cardsEscondidos++; });
+
+            let msgNenhumResultado = coluna.querySelector('.kanban-empty-msg');
+            if (isSearching && totalCards > 0 && cardsEscondidos === totalCards) {
+                if (!msgNenhumResultado) {
+                    msgNenhumResultado = document.createElement('p');
+                    msgNenhumResultado.className = 'kanban-empty-msg';
+                    msgNenhumResultado.textContent = 'Nenhum resultado nesta coluna.';
+                    coluna.querySelector('.kanban-cards').appendChild(msgNenhumResultado);
+                }
+            } else if (msgNenhumResultado) {
+                msgNenhumResultado.remove();
+            }
+        });
+    }
+
+    // --- LÓGICA DE EDIÇÃO INLINE NA TABELA (PENDENCIAS) ---
+    const tableBodyPendencias = document.querySelector('#tabelaPendencias tbody');
+
+    if (tableBodyPendencias) { // Aplica sempre pois é usado no mobile
         let currentEditInput = null;
 
         function cancelInlineEdit(td, inputElement, originalValue) {
@@ -820,14 +913,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function saveInlineEdit(td, inputElement, fieldName, originalValue) {
             const newValue = inputElement.value.trim();
-            const pendenciaId = td.closest('tr').dataset.id; // <<< Alterado para pendenciaId
+            const pendenciaId = td.closest('tr').dataset.id; 
 
             if (newValue === originalValue) {
                 cancelInlineEdit(td, inputElement, originalValue);
                 return;
             }
 
-            fetch(`/pendencias/update_field_inline/${pendenciaId}`, { // <<< URL Alterada
+            fetch(`/pendencias/update_field_inline/${pendenciaId}`, { 
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ field: fieldName, value: newValue })
@@ -842,10 +935,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     td.innerHTML = '';
                     td.appendChild(span);
                     currentEditInput = null;
-                    // Feedback visual (cinza)
+                    
                     const isDarkTheme = document.body.classList.contains('theme-dark');
                     td.style.backgroundColor = isDarkTheme ? '#3a3a3a' : '#e0e0e0';
-                    td.classList.add('td-feedback-flash'); // Adiciona classe para transição
+                    td.classList.add('td-feedback-flash'); 
                     setTimeout(() => {
                         td.style.backgroundColor = '';
                         setTimeout(() => {
@@ -879,27 +972,24 @@ document.addEventListener('DOMContentLoaded', function() {
             const fieldName = td.dataset.fieldName;
             let inputElement;
 
-            // --- Lógica de criação de input específica ---
             if (fieldName === 'observacoes') {
                 inputElement = document.createElement('textarea');
                 inputElement.style.height = Math.max(span.offsetHeight, 60) + 'px';
                 inputElement.style.resize = 'vertical';
             } else if (fieldName === 'prazo') {
                 inputElement = document.createElement('input');
-                inputElement.type = 'date'; // <<< LINHA ALTERADA
-                // inputElement.placeholder = 'DD/MM/AAAA'; // <<< LINHA REMOVIDA
+                inputElement.type = 'date'; 
             } else {
                 inputElement = document.createElement('input');
                 inputElement.type = 'text';
             }
-            // --- Fim da lógica específica ---
-
+            
             if (fieldName === 'prazo') {
-                inputElement.value = convertDateToISO(originalValue); // <<< USA A FUNÇÃO DE CONVERSÃO
+                inputElement.value = convertDateToISO(originalValue); 
             } else {
                 inputElement.value = originalValue;
             }
-            // Aplica estilos CSS (são aplicados via CSS)
+            
             currentEditInput = inputElement;
 
             td.innerHTML = '';
@@ -925,102 +1015,83 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- 13.5. LÓGICA DE CRIAÇÃO INLINE (ADICIONAR NOVA LINHA NO FIM DA TABELA) ---
-        const btnShowInlineCreate = document.getElementById('btnShowInlineCreate');
-        const rowBtnAddInline = document.getElementById('row-btn-add-inline');
-        const templateInlineCreate = document.getElementById('inline-create-template');
+    const btnShowInlineCreate = document.getElementById('btnShowInlineCreate');
+    const rowBtnAddInline = document.getElementById('row-btn-add-inline');
+    const templateInlineCreate = document.getElementById('inline-create-template');
 
-        if (btnShowInlineCreate && rowBtnAddInline && templateInlineCreate) {
-            
-            // Efeito Hover sutil no botão gigante
-            btnShowInlineCreate.addEventListener('mouseenter', () => {
-                btnShowInlineCreate.style.backgroundColor = 'var(--hover-bg)';
-            });
-            btnShowInlineCreate.addEventListener('mouseleave', () => {
-                btnShowInlineCreate.style.backgroundColor = 'transparent';
-            });
+    if (btnShowInlineCreate && rowBtnAddInline && templateInlineCreate) {
+        btnShowInlineCreate.addEventListener('mouseenter', () => {
+            btnShowInlineCreate.style.backgroundColor = 'var(--hover-bg)';
+        });
+        btnShowInlineCreate.addEventListener('mouseleave', () => {
+            btnShowInlineCreate.style.backgroundColor = 'transparent';
+        });
 
-            // Ao clicar no botão "+ Adicionar"
-            btnShowInlineCreate.addEventListener('click', () => {
-                // Esconde a linha do botão "+"
-                rowBtnAddInline.style.display = 'none';
-                
-                // Exibe a linha de inputs
-                templateInlineCreate.style.display = 'table-row';
-                
-                // Foca automaticamente no campo "Pendência" (se ele existir e for editável)
-                const pendenciaInput = templateInlineCreate.querySelector('[name="pendencia"]');
-                if (pendenciaInput) pendenciaInput.focus();
-            });
+        btnShowInlineCreate.addEventListener('click', () => {
+            rowBtnAddInline.style.display = 'none';
+            templateInlineCreate.style.display = 'table-row';
+            const pendenciaInput = templateInlineCreate.querySelector('[name="pendencia"]');
+            if (pendenciaInput) pendenciaInput.focus();
+        });
 
-            // Botão Cancelar (✖)
-            const btnCancelInline = templateInlineCreate.querySelector('.btn-cancel-inline');
-            btnCancelInline.addEventListener('click', () => {
-                // Limpa os inputs
-                templateInlineCreate.querySelectorAll('input, textarea').forEach(el => el.value = '');
-                // Esconde os inputs e mostra o "+" de novo
-                templateInlineCreate.style.display = 'none';
-                rowBtnAddInline.style.display = 'table-row';
-            });
+        const btnCancelInline = templateInlineCreate.querySelector('.btn-cancel-inline');
+        btnCancelInline.addEventListener('click', () => {
+            templateInlineCreate.querySelectorAll('input, textarea').forEach(el => el.value = '');
+            templateInlineCreate.style.display = 'none';
+            rowBtnAddInline.style.display = 'table-row';
+        });
 
-            // Botão Salvar (✔)
-            const btnSaveInline = templateInlineCreate.querySelector('.btn-save-inline');
-            btnSaveInline.addEventListener('click', () => {
-                // Coleta os dados
-                const payload = {};
-                templateInlineCreate.querySelectorAll('input, textarea').forEach(el => {
-                    if (el.name) {
-                        payload[el.name] = el.value;
-                    }
-                });
-
-                // Validação básica
-                if (!payload.pendencia || payload.pendencia.trim() === '') {
-                    alert("Por favor, digite o conteúdo da pendência.");
-                    templateInlineCreate.querySelector('[name="pendencia"]').focus();
-                    return;
+        const btnSaveInline = templateInlineCreate.querySelector('.btn-save-inline');
+        btnSaveInline.addEventListener('click', () => {
+            const payload = {};
+            templateInlineCreate.querySelectorAll('input, textarea').forEach(el => {
+                if (el.name) {
+                    payload[el.name] = el.value;
                 }
+            });
 
-                // UI de Carregamento
-                btnSaveInline.textContent = '...';
-                btnSaveInline.disabled = true;
+            if (!payload.pendencia || payload.pendencia.trim() === '') {
+                alert("Por favor, digite o conteúdo da pendência.");
+                templateInlineCreate.querySelector('[name="pendencia"]').focus();
+                return;
+            }
 
-                // Envia para o Backend
-                fetch("{{ url_for('pendencias.quick_create_inline') }}", {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        // Recarrega a página para que o Jinja2 renderize a linha corretamente (com ID, cores e listeners)
-                        window.location.reload();
-                    } else {
-                        alert("Erro ao salvar: " + data.message);
-                        btnSaveInline.textContent = '✔';
-                        btnSaveInline.disabled = false;
-                    }
-                })
-                .catch(error => {
-                    console.error("Erro de requisição:", error);
-                    alert("Erro de rede ao tentar salvar a pendência.");
+            btnSaveInline.textContent = '...';
+            btnSaveInline.disabled = true;
+
+            fetch("{{ url_for('pendencias.quick_create_inline') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.reload();
+                } else {
+                    alert("Erro ao salvar: " + data.message);
                     btnSaveInline.textContent = '✔';
                     btnSaveInline.disabled = false;
-                });
+                }
+            })
+            .catch(error => {
+                console.error("Erro de requisição:", error);
+                alert("Erro de rede ao tentar salvar a pendência.");
+                btnSaveInline.textContent = '✔';
+                btnSaveInline.disabled = false;
             });
-        }
-        // --- FIM DA CRIAÇÃO INLINE ---
+        });
+    }
 
-    // --- 14. LÓGICA DE EDIÇÃO INLINE NOS CARDS (COPIADO E ADAPTADO) --- <<< NOVO BLOCO >>>
+    // --- 14. LÓGICA DE EDIÇÃO INLINE NOS CARDS --- 
     const cardContainers = document.querySelectorAll('.card-view-container, .kanban-view-container');
 
-    if (cardContainers.length > 0 && "{{ view_mode }}" !== "table") {
+    if (cardContainers.length > 0 && viewMode !== "table") {
         let currentCardEditInput = null;
         let originalCardContent = null;
         let activeCardFieldElement = null;
         let isEditingCard = false;
 
-        // Função para reverter o campo do card ao estado original
         function cancelInlineEditCard() {
             if (!activeCardFieldElement || !currentCardEditInput) return;
             activeCardFieldElement.innerHTML = originalCardContent;
@@ -1030,25 +1101,23 @@ document.addEventListener('DOMContentLoaded', function() {
             isEditingCard = false;
         }
 
-        // Função para salvar a edição do card
         function saveInlineEditCard() {
             if (!activeCardFieldElement || !currentCardEditInput) return;
 
             const newValue = currentCardEditInput.value.trim();
             const fieldName = activeCardFieldElement.dataset.fieldName;
             const cardDiv = activeCardFieldElement.closest('.data-card');
-            const pendenciaId = cardDiv.dataset.id; // <<< USA ID DA PENDÊNCIA
+            const pendenciaId = cardDiv.dataset.id; 
             const originalValueSpan = document.createElement('div');
             originalValueSpan.innerHTML = originalCardContent;
             const originalValueText = originalValueSpan.querySelector('.card-field-value')?.textContent.trim() || '';
 
-            if (newValue === originalValueText && fieldName !== 'prazo') { // Permite salvar 'prazo' mesmo se igual (para re-formatar)
+            if (newValue === originalValueText && fieldName !== 'prazo') { 
                 cancelInlineEditCard();
                 return;
             }
 
-            // *** API ENDPOINT ALTERADO ***
-            fetch(`/pendencias/update_field_inline/${pendenciaId}`, { // <<< URL ALTERADA
+            fetch(`/pendencias/update_field_inline/${pendenciaId}`, { 
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ field: fieldName, value: newValue })
@@ -1058,7 +1127,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.status === 'success') {
                         const updatedValue = data.newValue;
 
-                        // Recria o HTML interno corretamente
                         if (activeCardFieldElement.tagName === 'H4') {
                             activeCardFieldElement.innerHTML = `<span class="card-field-value">${updatedValue || 'Pendência sem título'}</span>`;
                         } else {
@@ -1067,23 +1135,20 @@ document.addEventListener('DOMContentLoaded', function() {
                             activeCardFieldElement.innerHTML = `<strong>${labelText}:</strong> <span class="card-field-value">${updatedValue || ''}</span>`;
                         }
 
-                        // Limpa variáveis de estado da edição
                         currentCardEditInput = null;
                         originalCardContent = null;
                         activeCardFieldElement = null;
                         isEditingCard = false;
 
-                        // --- LÓGICA DE ANIMAÇÃO CORRIGIDA ---
-                        let moved = false; // Flag para saber se a movimentação ocorrerá
-                        const cardElement = cardDiv; // cardDiv é o .data-card
+                        let moved = false; 
+                        const cardElement = cardDiv; 
 
-                        // 1. Verifica se a movimentação KANBAN é necessária
-                        if (fieldName === 'prazo' && "{{ view_mode }}" === "kanban") {
+                        if (fieldName === 'prazo' && viewMode === "kanban") {
                             const currentCol = cardElement.closest('.kanban-column');
                             if (currentCol) {
                                 const hoje = new Date();
                                 hoje.setHours(0, 0, 0, 0);
-                                const newPrazoDate = parseDateFromDDMMYYYY(data.newValue); // Usa a função auxiliar
+                                const newPrazoDate = parseDateFromDDMMYYYY(data.newValue); 
 
                                 let targetColumnId = '';
                                 if (!newPrazoDate) {
@@ -1094,56 +1159,48 @@ document.addEventListener('DOMContentLoaded', function() {
                                     targetColumnId = 'kanban-column-a-vencer';
                                 }
 
-                                // Verifica se a coluna de destino é DIFERENTE da atual
                                 if (currentCol.id !== targetColumnId) {
                                     const targetColumn = document.getElementById(targetColumnId);
                                     const targetCardContainer = targetColumn ? targetColumn.querySelector('.kanban-cards') : null;
 
                                     if (targetCardContainer) {
-                                        moved = true; // <<< SINALIZA QUE VAI MOVER
-
-                                        // --- Execute a animação de FADE/MOVIMENTO ---
+                                        moved = true; 
                                         cardElement.style.transition = 'opacity 0.3s ease-out';
                                         cardElement.style.opacity = '0';
                                         setTimeout(() => {
-                                            targetCardContainer.appendChild(cardElement); // Mover
+                                            targetCardContainer.appendChild(cardElement); 
                                             requestAnimationFrame(() => {
                                                 cardElement.style.transition = 'opacity 0.3s ease-in';
                                                 cardElement.style.opacity = '1';
                                                 setTimeout(() => {
                                                     cardElement.style.transition = '';
-                                                    // Verifica se o card tem um ícone de prioridade ATIVO
                                                     const priorityIcon = cardElement.querySelector('.card-priority-toggle');
                                                     if (priorityIcon && priorityIcon.classList.contains('active')) {
-                                                        targetCardContainer.prepend(cardElement); // Mover para o TOPO
+                                                        targetCardContainer.prepend(cardElement); 
                                                     } else {
-                                                        targetCardContainer.appendChild(cardElement); // Mover para o FIM
+                                                        targetCardContainer.appendChild(cardElement); 
                                                     }
                                                 }, 300);
                                             });
                                         }, 300);
-                                    } else {
-                                        console.error("Kanban move: Target column container not found for ID:", targetColumnId);
-                                    }
+                                    } 
                                 }
-                            } // Fim if (currentCol)
-                        } // Fim if (fieldName === 'prazo' && kanban)
+                            } 
+                        } 
 
-                        // 2. Se NÃO houve movimentação, execute o FLASH CINZA
-                        if (!moved) { // <<< CONDIÇÃO ADICIONADA
+                        if (!moved) { 
                             const isDarkTheme = document.body.classList.contains('theme-dark');
                             const feedbackColor = isDarkTheme ? '#3a3a3a' : '#e0e0e0';
                             cardDiv.classList.add('card-feedback-flash');
-                            const originalCardBg = cardDiv.style.backgroundColor; // Salva cor (ex: da situação)
+                            const originalCardBg = cardDiv.style.backgroundColor; 
                             cardDiv.style.backgroundColor = feedbackColor;
                             setTimeout(() => {
-                                cardDiv.style.backgroundColor = originalCardBg || ''; // Restaura cor original
+                                cardDiv.style.backgroundColor = originalCardBg || ''; 
                                 setTimeout(() => {
                                     cardDiv.classList.remove('card-feedback-flash');
                                 }, 300);
                             }, 700);
                         }
-                        // --- FIM DA LÓGICA DE ANIMAÇÃO CORRIGIDA ---
 
                 } else {
                     alert(`Erro ao salvar: ${data.message}`);
@@ -1159,13 +1216,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // Listener principal delegado aos containers de cards
         cardContainers.forEach(container => {
             container.addEventListener('dblclick', function(e) {
                 const fieldElement = e.target.closest('.editable-card-field');
                 if (!fieldElement) return;
-
-                // NÃO precisa de e.stopPropagation() pois <a> foi removido
 
                 if (fieldElement.querySelector('input, textarea') || currentCardEditInput) {
                    if (currentCardEditInput) currentCardEditInput.focus();
@@ -1175,51 +1229,46 @@ document.addEventListener('DOMContentLoaded', function() {
                 activeCardFieldElement = fieldElement;
                 const valueSpan = fieldElement.querySelector('.card-field-value');
                 const labelElement = fieldElement.querySelector('strong');
-                if (!valueSpan) return; // Segurança (só edita se tiver span)
+                if (!valueSpan) return; 
 
                 const originalValue = valueSpan.textContent.trim();
                 originalCardContent = fieldElement.innerHTML;
                 const fieldName = fieldElement.dataset.fieldName;
                 let inputElement;
 
-                // Cria input/textarea
                 if (fieldName === 'observacoes') {
                     inputElement = document.createElement('textarea');
                     inputElement.style.height = '60px';
                 } else if (fieldName === 'prazo') {
                     inputElement = document.createElement('input');
-                    inputElement.type = 'date'; // <<< LINHA ALTERADA
-                    // inputElement.placeholder = 'DD/MM/AAAA'; // <<< LINHA REMOVIDA
+                    inputElement.type = 'date'; 
                 } else {
                     inputElement = document.createElement('input');
                     inputElement.type = 'text';
                 }
 
                 if (fieldName === 'prazo') {
-                    inputElement.value = convertDateToISO(originalValue); // <<< USA A FUNÇÃO DE CONVERSÃO
+                    inputElement.value = convertDateToISO(originalValue); 
                 } else {
                     inputElement.value = originalValue;
                 }
 
                 currentCardEditInput = inputElement;
-                isEditingCard = true; // Ativa a flag
+                isEditingCard = true; 
 
-                // Substitui o conteúdo
                 fieldElement.innerHTML = '';
                 if (labelElement) {
                     fieldElement.appendChild(labelElement);
                     fieldElement.appendChild(document.createTextNode(' '));
                 }
-                // (Se for H4, labelElement é null, input preenche tudo)
                 if (fieldElement.tagName === 'H4') {
-                     inputElement.value = originalValue; // Garante valor no H4
+                     inputElement.value = originalValue; 
                 }
                 fieldElement.appendChild(inputElement);
                 inputElement.focus();
                 if(inputElement.select) inputElement.select();
                 let saveInProgress = false;
 
-                // Listeners para Enter/Esc
                 inputElement.addEventListener('keydown', function(event) {
                     if (event.key === 'Enter') {
                         event.preventDefault();
@@ -1230,328 +1279,92 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
 
-                // Listener para Blur
                 inputElement.addEventListener('blur', function() {
                     setTimeout(() => {
-                        // Se o Enter iniciou o salvamento, o blur não deve cancelar
-                        if (saveInProgress) { // <<< LINHA ADICIONADA
-                            return; // <<< LINHA ADICIONADA
-                        } // <<< LINHA ADICIONADA
+                        if (saveInProgress) { 
+                            return; 
+                        } 
                         if (document.body.contains(inputElement) && currentCardEditInput === inputElement) {
                             cancelInlineEditCard();
                         }
                     }, 150);
                 });
             });
-        }); // Fim do forEach cardContainers (dblclick)
-    } // Fim do if (cardContainers.length > 0)
-    // --- FIM DO BLOCO DE EDIÇÃO INLINE NOS CARDS ---
+        }); 
+    } 
 
-    /**
-     * Converte data de DD/MM/AAAA para YYYY-MM-DD
-     */
     function convertDateToISO(dateString) {
-        if (!dateString) return ''; // Retorna vazio se não houver data
+        if (!dateString) return ''; 
         const parts = dateString.split('/');
         if (parts.length === 3 && parts[2] && parts[1] && parts[0]) {
-            // parts[0] = DD, parts[1] = MM, parts[2] = YYYY
             return `${parts[2]}-${parts[1]}-${parts[0]}`;
         }
-        return ''; // Retorna vazio se o formato for inválido
+        return ''; 
     }
 
-    /**
-     * Converte data de DD/MM/AAAA para um objeto Date (à meia-noite)
-     */
     function parseDateFromDDMMYYYY(dateString) {
         if (!dateString) return null;
         const parts = dateString.split('/');
         if (parts.length === 3) {
-            // parts[0] = DD, parts[1] = MM (0-11), parts[2] = YYYY
-            // O MÊS EM JAVASCRIPT É BASEADO EM ZERO (0 = Jan, 11 = Dez)
-            const date = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0])); // <<< BUG ESTÁ AQUI
+            const date = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0])); 
             date.setHours(0, 0, 0, 0);
             return date;
         }
         return null;
     }
 
-    // --- 16. LÓGICA DE BUSCA RÁPIDA (CLIENT-SIDE) ---
-    const buscaInput = document.getElementById('buscaRapidaInput');
-    // const currentViewMode = "{{ view_mode }}"; // (Já temos 'viewMode' definido no topo do script)
-
-    // Referências para as mensagens "Sem Resultados"
-    const tabelaSemResultadosBusca = document.getElementById('tabela-pendencias-sem-resultados-row');
-    const tabelaBackendSemResultados = document.getElementById('tabela-pendencias-backend-sem-resultados');
-    const cardsSemResultadosBusca = document.getElementById('cards-pendencias-sem-resultados');
-
-    if (buscaInput) {
-
-        // Função principal de filtragem
-        function executarBusca() {
-            const query = buscaInput.value.toLowerCase().trim();
-            let itemsToFilter = [];
-            let itemsVisiveis = 0;
-
-            // Pega o estilo de display correto verificando o tamanho da janela
-            const isResponsiveMode = window.innerWidth <= 768;
-            const displayStyle = (viewMode === 'table') ? (isResponsiveMode ? 'block' : 'table-row') : '';
-
-            // 1. Seleciona os itens corretos
-            if (viewMode === 'table') {
-                itemsToFilter = document.querySelectorAll('#tabelaPendencias tbody tr.clickable-row');
-            } else if (viewMode === 'cards' || viewMode === 'kanban') {
-                itemsToFilter = document.querySelectorAll('.data-card');
-            }
-
-            // 2. Loop para filtrar
-            itemsToFilter.forEach(item => {
-                const itemText = item.textContent.toLowerCase();
-
-                // (Ponto 4: A busca no select não se aplica aqui, pois a situação é texto)
-
-                if (itemText.includes(query)) {
-                    item.style.display = displayStyle; // Mostra o item
-                    itemsVisiveis++;
-                } else {
-                    item.style.display = 'none'; // Esconde o item
-                }
-            });
-
-            // 3. Gerencia as mensagens "Sem Resultados"
-            const noResultsFromSearch = (itemsVisiveis === 0);
-            const isSearching = query.length > 0;
-
-            if (viewMode === 'table') {
-                if (tabelaSemResultadosBusca) {
-                    // A mensagem de BUSCA só aparece se a busca estiver ATIVA E não houver resultados
-                    if (isSearching && noResultsFromSearch) {
-                        tabelaSemResultadosBusca.style.setProperty('display', displayStyle, 'important');
-                    } else {
-                        tabelaSemResultadosBusca.style.setProperty('display', 'none', 'important');
-                    }
-                }
-                if (tabelaBackendSemResultados) {
-                    // A mensagem do BACKEND só aparece se a busca NÃO estiver ativa
-                    tabelaBackendSemResultados.style.display = (isSearching) ? 'none' : '';
-                }
-
-            } else if (viewMode === 'cards') {
-                if (cardsSemResultadosBusca) {
-                    cardsSemResultadosBusca.style.display = (isSearching && noResultsFromSearch) ? '' : 'none';
-                }
-
-            } else if (viewMode === 'kanban') {
-                atualizarContagensKanban(query); // Kanban tem sua própria lógica
-            }
-        }
-
-        // Listener para 'keyup' (digitar)
-        buscaInput.addEventListener('keyup', executarBusca);
-
-        // Listener para 'search' (clicar no 'X' do input type="search")
-        buscaInput.addEventListener('search', function() {
-            executarBusca();
-        });
-
-        // PONTO 2: Limpar com ESC
-        buscaInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                buscaInput.value = '';
-                executarBusca();
-                //buscaInput.blur();
-            }
-        });
-
-        // (Ponto 4 - Listener de 'change' do dropdown removido, não se aplica)
-    }
-
-    // PONTO 3: Atualiza mensagens "Sem Resultados" no Kanban
-    function atualizarContagensKanban(query) {
-        if (viewMode !== 'kanban') return;
-        const isSearching = query && query.length > 0;
-
-        document.querySelectorAll('.kanban-column').forEach(coluna => {
-            const cardsNaColuna = coluna.querySelectorAll('.data-card');
-            const totalCards = cardsNaColuna.length;
-
-            let cardsEscondidos = 0;
-            cardsNaColuna.forEach(card => {
-                if (card.style.display === 'none') {
-                    cardsEscondidos++;
-                }
-            });
-
-            let msgNenhumResultado = coluna.querySelector('.kanban-empty-msg');
-
-            // Se a busca escondeu todos os cards (e a coluna não estava vazia)
-            if (isSearching && totalCards > 0 && cardsEscondidos === totalCards) {
-                if (!msgNenhumResultado) {
-                    msgNenhumResultado = document.createElement('p');
-                    msgNenhumResultado.className = 'kanban-empty-msg';
-                    msgNenhumResultado.textContent = 'Nenhum resultado nesta coluna.';
-                    coluna.querySelector('.kanban-cards').appendChild(msgNenhumResultado);
-                }
-            } else if (msgNenhumResultado) {
-                // Se a busca não está ativa, ou se há resultados, remove a mensagem
-                msgNenhumResultado.remove();
-            }
-        });
-    }
-    // --- FIM DO BLOCO 16 ---
-
-    // --- LÓGICA DE ADIÇÃO RÁPIDA EM FORMATO DE CARD ---
-    const btnShowQuickCard = document.getElementById('btnShowQuickAddCard');
-    const quickCardForm = document.getElementById('quickAddCardForm');
-    const btnCancelQuickCard = document.getElementById('btnCancelQuickCard');
-    const btnSaveQuickCard = document.getElementById('btnSaveQuickCard');
-    const priorityToggle = document.getElementById('quickCardPriorityToggle');
-    let isQuickCardPriority = false;
-
-    if (btnShowQuickCard) {
-        // Abrir rascunho
-        btnShowQuickCard.addEventListener('click', () => {
-            btnShowQuickCard.style.display = 'none';
-            quickCardForm.style.display = 'flex';
-            
-            // Força a limpeza de todos os campos para evitar cache do navegador
-            quickCardForm.querySelectorAll('input, textarea').forEach(i => i.value = '');
-            
-            // Reseta também a estrela de prioridade
-            isQuickCardPriority = false;
-            priorityToggle.classList.remove('active');
-            quickCardForm.style.borderLeftColor = 'var(--border-base)';
-
-            quickCardForm.querySelector('[name="pendencia"]').focus();
-        });
-
-        // Alternar prioridade no rascunho
-        priorityToggle.addEventListener('click', () => {
-            isQuickCardPriority = !isQuickCardPriority;
-            priorityToggle.classList.toggle('active', isQuickCardPriority);
-            quickCardForm.style.borderLeftColor = isQuickCardPriority ? '#e74c3c' : 'var(--border-base)';
-        });
-
-        // Cancelar
-        btnCancelQuickCard.addEventListener('click', () => {
-            quickCardForm.style.display = 'none';
-            btnShowQuickCard.style.display = 'flex';
-            quickCardForm.querySelectorAll('input, textarea').forEach(i => i.value = '');
-            isQuickCardPriority = false;
-            priorityToggle.classList.remove('active');
-        });
-
-        // Salvar
-        btnSaveQuickCard.addEventListener('click', () => {
-            const payload = { prioridade: isQuickCardPriority };
-            quickCardForm.querySelectorAll('input, textarea').forEach(i => {
-                if (i.name) payload[i.name] = i.value;
-            });
-
-            if (!payload.pendencia.trim()) {
-                alert("O título da pendência é obrigatório.");
-                return;
-            }
-
-            btnSaveQuickCard.disabled = true;
-            btnSaveQuickCard.textContent = "...";
-
-            fetch("{{ url_for('pendencias.quick_create_inline') }}", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    window.location.reload(); // Recarrega para posicionar o card no lugar certo (Prioridade ou Geral)
-                } else {
-                    alert("Erro: " + data.message);
-                    btnSaveQuickCard.disabled = false;
-                    btnSaveQuickCard.textContent = "Salvar";
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                alert("Erro de conexão.");
-                btnSaveQuickCard.disabled = false;
-            });
-        });
-    }
-
-    // --- LÓGICA DE ADIÇÃO RÁPIDA EM FORMATO DE CARD (POR INSTRUMENTO) ---
-        // Como há vários na tela, usamos .querySelectorAll e delegamos os eventos
-        
-        // 1. Abrir rascunho
-        document.querySelectorAll('.btnShowQuickAddCardGroup').forEach(btn => {
+    // --- LÓGICA DE ADIÇÃO RÁPIDA EM FORMATO DE CARD (DESKTOP E MOBILE) ---
+    function setupQuickAddCard(containerSelector, formSelector, triggerSelector, toggleSelector, btnCancelSelector, btnSaveSelector) {
+        document.querySelectorAll(triggerSelector).forEach(btn => {
             btn.addEventListener('click', function() {
-                const container = this.closest('.card-quick-add-container-group');
-                const form = container.querySelector('.quickAddCardFormGroup');
-                
+                const container = this.closest(containerSelector);
+                const form = container.querySelector(formSelector);
                 this.style.display = 'none';
                 form.style.display = 'flex';
-                
-                // Limpa campos (ignora o input oculto de instrumento_id)
                 form.querySelectorAll('input:not([type="hidden"]), textarea').forEach(i => i.value = '');
-                
-                // Reseta prioridade
-                const priorityToggle = form.querySelector('.quickCardPriorityToggleGroup');
+                const priorityToggle = form.querySelector(toggleSelector);
                 priorityToggle.classList.remove('active');
                 form.dataset.priority = 'false';
                 form.style.borderLeftColor = 'var(--border-base)';
-
                 form.querySelector('[name="pendencia"]').focus();
             });
         });
 
-        // 2. Alternar prioridade
-        document.querySelectorAll('.quickCardPriorityToggleGroup').forEach(toggle => {
+        document.querySelectorAll(toggleSelector).forEach(toggle => {
             toggle.addEventListener('click', function() {
-                const form = this.closest('.quickAddCardFormGroup');
+                const form = this.closest(formSelector);
                 let isPriority = form.dataset.priority === 'true';
-                
-                isPriority = !isPriority; // inverte
-                form.dataset.priority = isPriority; // salva no dataset
-                
+                isPriority = !isPriority; 
+                form.dataset.priority = isPriority; 
                 this.classList.toggle('active', isPriority);
                 form.style.borderLeftColor = isPriority ? '#e74c3c' : 'var(--border-base)';
             });
         });
 
-        // 3. Cancelar
-        document.querySelectorAll('.btnCancelQuickCardGroup').forEach(btn => {
+        document.querySelectorAll(btnCancelSelector).forEach(btn => {
             btn.addEventListener('click', function() {
-                const container = this.closest('.card-quick-add-container-group');
-                const form = container.querySelector('.quickAddCardFormGroup');
-                const trigger = container.querySelector('.btnShowQuickAddCardGroup');
-                
+                const container = this.closest(containerSelector);
+                const form = container.querySelector(formSelector);
+                const trigger = container.querySelector(triggerSelector);
                 form.style.display = 'none';
                 trigger.style.display = 'flex';
             });
         });
 
-        // 4. Salvar
-        document.querySelectorAll('.btnSaveQuickCardGroup').forEach(btn => {
+        document.querySelectorAll(btnSaveSelector).forEach(btn => {
             btn.addEventListener('click', function() {
-                const form = this.closest('.quickAddCardFormGroup');
-                const payload = { 
-                    prioridade: form.dataset.priority === 'true'
-                };
-                
-                // Pega todos os inputs (incluindo o hidden com instrumento_id)
+                const form = this.closest(formSelector);
+                const payload = { prioridade: form.dataset.priority === 'true' };
                 form.querySelectorAll('input, textarea').forEach(i => {
                     if (i.name) payload[i.name] = i.value;
                 });
-
                 if (!payload.pendencia.trim()) {
                     alert("O título da pendência é obrigatório.");
                     return;
                 }
-
                 const btnSave = this;
                 btnSave.disabled = true;
                 btnSave.textContent = "...";
-
                 fetch("{{ url_for('pendencias.quick_create_inline') }}", {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1575,6 +1388,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
         });
+    }
+
+    // Inicializa o Desktop (Todas as pendências)
+    setupQuickAddCard('#card-quick-add-container', '#quickAddCardForm', '#btnShowQuickAddCard', '#quickCardPriorityToggle', '#btnCancelQuickCard', '#btnSaveQuickCard');
+    // Inicializa o Desktop (Por instrumento)
+    setupQuickAddCard('.card-quick-add-container-group', '.quickAddCardFormGroup', '.btnShowQuickAddCardGroup', '.quickCardPriorityToggleGroup', '.btnCancelQuickCardGroup', '.btnSaveQuickCardGroup');
+    // Inicializa o Mobile (No fim da tabela)
+    setupQuickAddCard('.card-quick-add-container-group', '.quickAddCardFormMobile', '.btnShowQuickAddCardMobile', '.quickCardPriorityToggleMobile', '.btnCancelQuickCardMobile', '.btnSaveQuickCardMobile');
 
 });
 </script>

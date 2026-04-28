@@ -2,7 +2,6 @@
 {# --- Define quais campos são editáveis inline (baseado na sua lista) --- #}
 {% set editable_fields_pendencias = ['pendencia', 'prazo', 'responsavel', 'situacao', 'observacoes'] %}
 
-{# Link <a> removido daqui #}
 <div class="data-card"
      data-id="{{ p._id }}"
      {% if color_coding_active and p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
@@ -20,7 +19,7 @@
         <span class="card-priority-toggle {{ 'active' if p.prioridade else '' }}"
               data-id="{{ p._id }}"
               title="Alternar Prioridade">
-            <svg xmlns="http://www.w3.org/2000/svg" height="18px" width="18px" viewBox="0 0 24 24" fill="currentColor"> {# Tamanho ajustado #}
+            <svg xmlns="http://www.w3.org/2000/svg" height="18px" width="18px" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
             </svg>
         </span>
@@ -33,7 +32,7 @@
     </h4>
 
     {# Loop pelos campos visíveis (na ordem correta) #}
-    {% for field_data in todas_as_colunas_cards %} {# Itera sobre a lista mestra (passada pela rota) #}
+    {% for field_data in todas_as_colunas_cards %}
         {% set field_id = field_data[0] %}
         {% set field_name = field_data[1] %}
 
@@ -53,17 +52,18 @@
                     </span>
                 </p>
             {% else %}
-                {# Renderiza campos visíveis mas NÃO editáveis (ex: 'instrumento_display') #}
+                {# Renderiza campos visíveis mas NÃO editáveis (ex: 'instrumento_display') com o SPAN #}
                 <p class="{{ 'pendencia-vencida' if p.vencido and field_id == 'prazo' else '' }}">
                     <strong>{{ field_name }}:</strong>
-                    {% if field_id == 'prazo' %}
-                        {{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}
-                    {% else %}
-                        {{ p[field_id] or '' }}
-                    {% endif %}
+                    <span class="card-field-value">
+                        {% if field_id == 'prazo' %}
+                            {{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}
+                        {% else %}
+                            {{ p[field_id] or '' }}
+                        {% endif %}
+                    </span>
                 </p>
             {% endif %}
         {% endif %}
     {% endfor %}
 </div>
-{# <a> removido daqui #}
