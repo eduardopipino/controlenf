@@ -133,7 +133,11 @@
                     <button type="button" class="btn-save-inline" title="Salvar" style="background-color: var(--primary-color); color: white; border: none; padding: 4px; border-radius: 3px; cursor: pointer; margin-bottom: 4px; display: block; width: 100%;">✔</button>
                     <button type="button" class="btn-cancel-inline" title="Cancelar" style="background-color: #7f8c8d; color: white; border: none; padding: 4px; border-radius: 3px; cursor: pointer; display: block; width: 100%;">✖</button>
                 </td>
-                <td class="hide-on-mobile"></td> 
+                <td class="hide-on-mobile" style="text-align: center; vertical-align: middle;">
+                    <span id="inlineCreatePriorityToggle" class="card-priority-toggle" title="Alternar Prioridade">
+                        <svg viewBox="0 0 24 24" style="width:20px; height:20px;"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
+                    </span>
+                </td>
                 
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
@@ -173,7 +177,7 @@
         <div class="data-card card-quick-add-form quickAddCardFormMobile" style="border-left-color: var(--border-base); display: none; position: relative;" data-priority="false">
             <div class="card-actions-corner">
                 <div class="card-priority-toggle quickCardPriorityToggleMobile" title="Alternar Prioridade">
-                    <svg viewBox="0 0 24 24" style="width:24px; height:24px;"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="currentColor"/></svg>
+                    <svg viewBox="0 0 24 24" style="width:24px; height:24px;"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
                 </div>
             </div>
             <input type="text" name="pendencia" placeholder="Título da Pendência (Obrigatório)*" required>
@@ -221,7 +225,7 @@
                                     <input type="hidden" name="instrumento_id" value="{{ grupo.detalhes_instrumento.instrumento_id }}">
                                     <div class="card-actions-corner">
                                         <div class="card-priority-toggle quickCardPriorityToggleGroup" title="Alternar Prioridade">
-                                            <svg viewBox="0 0 24 24" style="width:18px; height:18px;"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="currentColor"/></svg>
+                                            <svg viewBox="0 0 24 24" style="width:18px; height:18px;"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
                                         </div>
                                     </div>
                                     <input type="text" name="pendencia" placeholder="Título da Pendência (Obrigatório)*" required>
@@ -267,7 +271,7 @@
                     <div id="quickAddCardForm" class="data-card card-quick-add-form" style="border-left-color: var(--border-base);">
                         <div class="card-actions-corner">
                             <div id="quickCardPriorityToggle" class="card-priority-toggle" title="Alternar Prioridade">
-                                <svg viewBox="0 0 24 24" style="width:18px; height:18px;"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="currentColor"/></svg>
+                                <svg viewBox="0 0 24 24" style="width:18px; height:18px;"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
                             </div>
                         </div>
                         <input type="text" name="pendencia" placeholder="Título da Pendência (Obrigatório)*" required>
@@ -1020,6 +1024,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const templateInlineCreate = document.getElementById('inline-create-template');
 
     if (btnShowInlineCreate && rowBtnAddInline && templateInlineCreate) {
+        const priorityToggleInline = document.getElementById('inlineCreatePriorityToggle');
+        let isInlinePriority = false;
+
         btnShowInlineCreate.addEventListener('mouseenter', () => {
             btnShowInlineCreate.style.backgroundColor = 'var(--hover-bg)';
         });
@@ -1027,11 +1034,23 @@ document.addEventListener('DOMContentLoaded', function() {
             btnShowInlineCreate.style.backgroundColor = 'transparent';
         });
 
+        // Alterna a cor do ícone de prioridade ao clicar
+        if (priorityToggleInline) {
+            priorityToggleInline.addEventListener('click', function() {
+                isInlinePriority = !isInlinePriority;
+                this.classList.toggle('active', isInlinePriority);
+            });
+        }
+
         btnShowInlineCreate.addEventListener('click', () => {
             rowBtnAddInline.style.display = 'none';
             templateInlineCreate.style.display = 'table-row';
             const pendenciaInput = templateInlineCreate.querySelector('[name="pendencia"]');
             if (pendenciaInput) pendenciaInput.focus();
+            
+            // Reseta a prioridade ao abrir o formulário
+            isInlinePriority = false;
+            if (priorityToggleInline) priorityToggleInline.classList.remove('active');
         });
 
         const btnCancelInline = templateInlineCreate.querySelector('.btn-cancel-inline');
@@ -1039,11 +1058,17 @@ document.addEventListener('DOMContentLoaded', function() {
             templateInlineCreate.querySelectorAll('input, textarea').forEach(el => el.value = '');
             templateInlineCreate.style.display = 'none';
             rowBtnAddInline.style.display = 'table-row';
+            
+            // Reseta a prioridade ao cancelar
+            isInlinePriority = false;
+            if (priorityToggleInline) priorityToggleInline.classList.remove('active');
         });
 
         const btnSaveInline = templateInlineCreate.querySelector('.btn-save-inline');
         btnSaveInline.addEventListener('click', () => {
-            const payload = {};
+            // Inclui o estado da prioridade no envio dos dados
+            const payload = { prioridade: isInlinePriority };
+            
             templateInlineCreate.querySelectorAll('input, textarea').forEach(el => {
                 if (el.name) {
                     payload[el.name] = el.value;
