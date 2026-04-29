@@ -66,4 +66,10 @@
             {% endif %}
         {% endif %}
     {% endfor %}
+    {# --- NOVO: Botão de Concluir no Canto Inferior Direito --- #}
+    <div class="coluna-concluir" style="position: absolute; bottom: 12px; right: 15px; z-index: 5;">
+        <button class="btn-concluir-action" data-id="{{ p._id }}" title="Marcar como Concluído">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+        </button>
+    </div>
 </div>

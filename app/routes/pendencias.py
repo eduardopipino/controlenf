@@ -18,7 +18,7 @@ from app.models import (pendencias_collection, get_pendencias_com_detalhes,
                         get_controles_pendentes_por_instrumento, get_color_map_for_user,
                         users_collection, TODAS_AS_COLUNAS_CONTROLE)
 
-EDITABLE_FIELDS_PENDENCIAS = ['pendencia', 'prazo', 'responsavel', 'situacao', 'observacoes']
+EDITABLE_FIELDS_PENDENCIAS = ['pendencia', 'prazo', 'responsavel', 'situacao', 'observacoes', 'status']
 
 # 3. Criação do Blueprint de Pendências
 # O nome 'pendencias' será usado nos comandos url_for().

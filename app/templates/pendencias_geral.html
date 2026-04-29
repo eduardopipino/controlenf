@@ -69,6 +69,9 @@
                         </th>
                     {% endif %}
                 {% endfor %}
+                <th class="hide-on-mobile" style="text-align: center; width: 40px;" title="Concluir Pendência">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+                </th>
                 <th></th>
             </tr>
         </thead>
@@ -120,6 +123,11 @@
                         </td>
                     {% endif %}
                 {% endfor %}
+                <td data-label="Concluir" class="coluna-concluir" style="text-align: center; vertical-align: middle;">
+                    <button class="btn-concluir-action" data-id="{{ p._id }}" title="Marcar como Concluído">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+                    </button>
+                </td>
                 <td><button class="expand-card-btn">Ver mais</button></td>
             </tr>
             {% else %}
@@ -399,6 +407,53 @@
                 overflow: hidden !important;
             }
         }
+        /* ESTILO DO BOTÃO DE CONCLUIR */
+        .btn-concluir-action {
+            background: transparent;
+            border: 2px solid var(--border-base);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+			padding: 0 !important;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+            opacity: 0.5;
+            margin: 0 auto;
+        }
+        .btn-concluir-action:hover {
+            border-color: #27ae60;
+            background-color: #27ae60;
+            color: white;
+            opacity: 1;
+            transform: scale(1.15);
+        }
+        .btn-concluir-action svg { width: 12px; height: 12px; }
+
+        @media (max-width: 768px) {
+            /* Fixa o botão concluir no canto inferior direito do card da tabela mobile */
+            .responsive-card-table .coluna-concluir {
+                position: absolute !important;
+                bottom: 12px !important;
+                right: 15px !important;
+                width: auto !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                display: block !important;
+                z-index: 5;
+            }
+            .responsive-card-table .coluna-concluir::before {
+                display: none !important; /* Esconde a palavra "Concluir" no mobile */
+            }
+            /* O botão "Ver mais" recua para não sobrepor o check */
+            .responsive-card-table td:last-child {
+                width: calc(100% - 50px) !important;
+                display: block !important;
+            }
     </style>
 
 {% endblock %}
@@ -1414,6 +1469,73 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    // --- LÓGICA DO BOTÃO CONCLUIR (HÍBRIDO FLASH + SHRINK) ---
+    document.addEventListener('click', function(e) {
+        const btnConcluir = e.target.closest('.btn-concluir-action');
+        if (!btnConcluir) return;
+
+        e.preventDefault();
+        e.stopPropagation(); // Impede a abertura dos detalhes
+
+        const pendenciaId = btnConcluir.dataset.id;
+
+        // Feedback imediato: O botão fica verde mal é clicado
+        btnConcluir.style.backgroundColor = '#27ae60';
+        btnConcluir.style.borderColor = '#27ae60';
+        btnConcluir.style.color = 'white';
+
+        fetch(`/pendencias/update_field_inline/${pendenciaId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ field: 'status', value: 'Concluído' }) // Manda o campo e o valor corretos
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const elementToAnimate = btnConcluir.closest('tr, .data-card');
+                if (elementToAnimate) {
+                    
+                    // 1. Efeito Flash (A linha acende a verde escuro/claro consoante o tema)
+                    elementToAnimate.style.transition = 'background-color 0.3s ease';
+                    const isDarkTheme = document.body.classList.contains('theme-dark');
+                    elementToAnimate.style.backgroundColor = isDarkTheme ? '#1e4620' : '#d4edda';
+
+                    // 2. Efeito Shrink (Encolhimento) e Remoção
+                    setTimeout(() => {
+                        elementToAnimate.style.transition = 'opacity 0.4s ease, height 0.4s ease, padding 0.4s ease, margin 0.4s ease, transform 0.4s ease';
+                        elementToAnimate.style.opacity = '0';
+                        elementToAnimate.style.transform = 'scaleY(0)';
+                        
+                        // Zera dimensões forçadamente para garantir o colapso na Tabela e nos Cards
+                        if(elementToAnimate.tagName === 'TR') {
+                            elementToAnimate.querySelectorAll('td').forEach(td => {
+                                td.style.transition = 'padding 0.4s ease, font-size 0.4s ease';
+                                td.style.padding = '0';
+                                td.style.fontSize = '0';
+                            });
+                        } else {
+                            elementToAnimate.style.height = '0';
+                            elementToAnimate.style.padding = '0';
+                            elementToAnimate.style.margin = '0';
+                        }
+                        
+                        // Remove definitivamente do HTML após a animação
+                        setTimeout(() => elementToAnimate.remove(), 400);
+                    }, 400); // Fica verde durante 400ms antes de começar a encolher
+                }
+            } else {
+                alert('Erro ao concluir pendência: ' + data.message);
+                btnConcluir.style.backgroundColor = '';
+                btnConcluir.style.borderColor = '';
+                btnConcluir.style.color = '';
+            }
+        })
+        .catch(error => {
+            console.error('Erro de rede:', error);
+            alert('Erro de conexão ao concluir.');
+        });
+    });
 
     // Inicializa o Desktop (Todas as pendências)
     setupQuickAddCard('#card-quick-add-container', '#quickAddCardForm', '#btnShowQuickAddCard', '#quickCardPriorityToggle', '#btnCancelQuickCard', '#btnSaveQuickCard');
