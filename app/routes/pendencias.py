@@ -16,7 +16,8 @@ from collections import OrderedDict
 from app.models import (pendencias_collection, get_pendencias_com_detalhes,
                         get_instrumentos_para_dropdown, TODAS_AS_COLUNAS_PENDENCIAS,
                         get_controles_pendentes_por_instrumento, get_color_map_for_user,
-                        users_collection, TODAS_AS_COLUNAS_CONTROLE)
+                        users_collection, TODAS_AS_COLUNAS_CONTROLE,
+                        controle_collection, instrumentos_collection, get_situacoes_que_arquivam)
 
 EDITABLE_FIELDS_PENDENCIAS = ['pendencia', 'prazo', 'responsavel', 'situacao', 'observacoes', 'status']
 
@@ -291,6 +292,46 @@ def pendencias_por_instrumento():
         {'$sort': {'detalhes_instrumento.n_instrumento': 1}}
     ]
     grupos_de_pendencias = list(pendencias_collection.aggregate(pipeline))
+
+    # --- INÍCIO DA NOVA LÓGICA: INCLUIR NFs SEM PENDÊNCIAS ---
+    
+    # 1. Pegamos os IDs que já estão na lista porque tinham pendências
+    ids_na_lista = [str(g['_id']) for g in grupos_de_pendencias]
+    ids_para_adicionar = []
+
+    if instrumento_filtro_id:
+        # Se o usuário filtrou um instrumento específico, garantimos ele na tela
+        if instrumento_filtro_id not in ids_na_lista:
+            ids_para_adicionar.append(ObjectId(instrumento_filtro_id))
+    else:
+        # Se não tem filtro, buscamos TODOS os instrumentos que tenham Notas Fiscais pendentes
+        situacoes_arquivadoras = get_situacoes_que_arquivam()
+        ids_com_notas = controle_collection.distinct('instrumento_id', {
+            'user_id': user_id_obj,
+            'situacao': {'$nin': situacoes_arquivadoras}
+        })
+        for n_id in ids_com_notas:
+            if str(n_id) not in ids_na_lista:
+                ids_para_adicionar.append(n_id)
+
+    # 2. Para cada ID que faltou, buscamos o Instrumento no BD e adicionamos um grupo com 0 pendências
+    for add_id in ids_para_adicionar:
+        inst_info = instrumentos_collection.find_one({'_id': add_id, 'user_id': user_id_obj})
+        if inst_info:
+            grupos_de_pendencias.append({
+                '_id': add_id,
+                'detalhes_instrumento': inst_info,
+                'pendencias': [] # Começa vazio
+            })
+            
+    # (Opcional) Reordenar para que os recém-adicionados fiquem na ordem correta
+    def sort_key(g):
+        inst = g.get('detalhes_instrumento', {})
+        if not inst: return ""
+        return str(inst.get('n_instrumento', ''))
+    
+    grupos_de_pendencias.sort(key=sort_key)
+    # --- FIM DA NOVA LÓGICA ---
 
     hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     for grupo in grupos_de_pendencias:

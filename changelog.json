@@ -1,5 +1,10 @@
 [
   {
+    "versao": "2.5",
+    "data": "30/04/2026",
+    "descricao": "Implantação de botão de conclusão de pendência."
+  },
+  {
     "versao": "2.4",
     "data": "28/04/2026",
     "descricao": "Ajustes de responsividade."
