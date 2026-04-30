@@ -1,0 +1,383 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Hub Central de Instrumentos Contratuais</h2>
+
+    <div class="button-toolbar desktop-actions">
+        <div class="toolbar-group-left">
+            <select id="filtroStatusInline" style="padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border-base); background-color: var(--background-secondary); color: var(--text-primary); cursor: pointer;">
+                <option value="" {% if not filtro_status %}selected{% endif %}>Todos</option>
+                <option value="Vigente" {% if filtro_status == 'Vigente' %}selected{% endif %}>Vigentes</option>
+                <option value="Extinto" {% if filtro_status == 'Extinto' %}selected{% endif %}>Extintos</option>
+            </select>
+            </div>
+        <div class="toolbar-group-center">
+            <div class="view-selector">
+                <button class="view-button {{ 'active' if view_mode == 'table' else '' }}" data-view="table" title="Visualizar como Tabela">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 4h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 10h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 16h4v4H4zm6 1h4v3h-4zm6 0h4v4h-4z"/></svg>
+                </button>
+                <button class="view-button {{ 'active' if view_mode == 'cards' else '' }}" data-view="cards" title="Visualizar como Cards">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 4h6v6H4zm9 0h6v6h-6zM4 14h6v6H4zm9 0h6v6h-6z"/></svg>
+                </button>
+                <button class="view-button {{ 'active' if view_mode == 'kanban' else '' }}" data-view="kanban" title="Visualizar como Kanban">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 3h6v18H3zm8 0h6v18h-6zm8 0h6v18h-6z"/></svg>
+                </button>
+            </div>
+        </div>
+        <div class="toolbar-group-right">
+            <input type="search" id="buscaRapidaInput" placeholder="Buscar em tudo... (ESC para limpar)">
+        </div>
+    </div>
+
+    <div style="margin-bottom: 25px;"></div>
+
+    <div class="hub-container" id="hubAccordionContainer">
+        {% if not hub_dados %}
+            <p>Nenhum instrumento encontrado com estes filtros.</p>
+        {% else %}
+            {% set card_fields_map = dict(todas_as_colunas_cards) %}
+            
+            {% for item in hub_dados %}
+                <details class="hub-accordion" data-search-content="{{ item.instrumento.contratada|lower }} {{ item.instrumento.objeto_resumido|lower }}">
+                    <summary class="hub-summary">
+                        <div class="hub-summary-header">
+                            <h3>{{ item.instrumento.tipo_documento }} Nº {{ item.instrumento.n_instrumento }} - {{ item.instrumento.contratada }}</h3>
+                            <a href="{{ url_for('instrumentos.gerenciar_instrumento', instrumento_id=item.instrumento._id) }}" class="btn-manage-link" title="Gerenciar Instrumento">⚙️</a>
+                        </div>
+                        <div class="hub-summary-badges">
+                            <span class="hub-badge badge-status {{ 'vigente' if item.instrumento.vigente else 'extinto' }}">{{ item.instrumento.status_texto }}</span>
+                            <span class="hub-badge badge-pendencia">⏳ {{ item.stats.total_pendencias }} Pendências</span>
+                            <span class="hub-badge badge-nota">🧾 {{ item.stats.total_controles }} Notas Fiscais</span>
+                        </div>
+                        <p class="hub-summary-objeto">{{ item.instrumento.objeto_resumido }}</p>
+                    </summary>
+
+                    <div class="hub-accordion-content">
+                        <div class="hub-section pendencias-section">
+                            <div class="hub-section-header">
+                                <h4>⏳ Pendências Gerais</h4>
+                                <a href="{{ url_for('pendencias.nova_pendencia', instrumento_id=item.instrumento.str_id, origem=request.full_path) }}" class="btn-add-mini">+ Nova Pendência</a>
+                            </div>
+
+                            {% if not item.pendencias %}
+                                <p class="empty-msg">Nenhuma pendência em aberto.</p>
+                            {% else %}
+                                {% if view_mode == 'table' %}
+                                    <table class="responsive-card-table tabela-hub" data-type="pendencia">
+                                        <thead>
+                                            <tr>
+                                                <th class="hide-on-mobile" style="width: 40px; text-align: center;"></th> 
+                                                <th style="width: 40px; text-align: center;">!</th>
+                                                {% for col_id, col_nome in todas_as_colunas_pendencias %}
+                                                    {% if col_id in colunas_visiveis_pendencias %}
+                                                        <th>{{ col_nome }}</th>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                <th style="width: 40px; text-align: center;" title="Concluir">✔</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for p in item.pendencias %}
+                                                <tr class="clickable-row {% if p.prioridade %}prioridade-ativa{% endif %}" data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id) }}" data-id="{{ p._id }}">
+                                                    <td class="hide-on-mobile" style="text-align: center; vertical-align: middle;">
+                                                        <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" class="action-icon-link" title="Ver Detalhes">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                                                        </a>
+                                                    </td>
+                                                    <td class="coluna-prioridade" data-id="{{ p._id }}"></td>
+                                                    {% for col_id, col_nome in todas_as_colunas_pendencias %}
+                                                        {% if col_id in colunas_visiveis_pendencias %}
+                                                            <td data-label="{{ col_nome }}"><span class="card-value">{{ p.prazo.strftime('%d/%m/%Y') if col_id == 'prazo' and p.prazo else p.get(col_id, '') }}</span></td>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    <td style="text-align: center; vertical-align: middle;">
+                                                        <button class="btn-concluir-action" data-id="{{ p._id }}" title="Marcar como Concluído">
+                                                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% elif view_mode == 'kanban' %}
+                                    <div class="kanban-view-container">
+                                        <div class="kanban-board">
+                                            <div class="kanban-column"><div class="kanban-column-header">Sem Prazo</div><div class="kanban-cards">
+                                                {% for p in item.pendencias_sem_prazo %}{% set colunas_visiveis = colunas_visiveis_pendencias %}{% set todas_as_colunas = todas_as_colunas_pendencias %}{% include 'partials/_pendencia_card.html' %}{% endfor %}
+                                            </div></div>
+                                            <div class="kanban-column"><div class="kanban-column-header">A Vencer</div><div class="kanban-cards">
+                                                {% for p in item.pendencias_a_vencer %}{% set colunas_visiveis = colunas_visiveis_pendencias %}{% set todas_as_colunas = todas_as_colunas_pendencias %}{% include 'partials/_pendencia_card.html' %}{% endfor %}
+                                            </div></div>
+                                            <div class="kanban-column"><div class="kanban-column-header">Vencidas</div><div class="kanban-cards">
+                                                {% for p in item.pendencias_vencidas %}{% set colunas_visiveis = colunas_visiveis_pendencias %}{% set todas_as_colunas = todas_as_colunas_pendencias %}{% include 'partials/_pendencia_card.html' %}{% endfor %}
+                                            </div></div>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="card-grid">
+                                        {% for p in item.pendencias %}
+                                            {% set colunas_visiveis = colunas_visiveis_pendencias %}{% set todas_as_colunas = todas_as_colunas_pendencias %}
+                                            {% include 'partials/_pendencia_card.html' %}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+
+                        <hr class="hub-divider">
+
+                        <div class="hub-section controles-section">
+                            <div class="hub-section-header">
+                                <h4>🧾 Documentos Fiscais Pendentes</h4>
+                                <a href="{{ url_for('controle.novo_controle', instrumento_id=item.instrumento.str_id, origem=request.full_path) }}" class="btn-add-mini">+ Nova Nota</a>
+                            </div>
+
+                            {% if not item.controles %}
+                                <p class="empty-msg">Nenhuma nota fiscal pendente.</p>
+                            {% else %}
+                                {% if view_mode == 'table' %}
+                                    <table class="responsive-card-table tabela-hub" data-type="controle">
+                                        <thead>
+                                            <tr>
+                                                <th class="hide-on-mobile" style="width: 40px; text-align: center;"></th>
+                                                {% for col_id, col_nome in todas_as_colunas_controle %}
+                                                    {% if col_id in colunas_visiveis_controle %}<th>{{ col_nome }}</th>{% endif %}
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for controle in item.controles %}
+                                                <tr class="clickable-row" data-url="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}">
+                                                    <td class="hide-on-mobile" style="text-align: center; vertical-align: middle;">
+                                                        <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id, origem=request.full_path) }}" class="action-icon-link" title="Ver Detalhes">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                                                        </a>
+                                                    </td>
+                                                    {% for col_id, col_nome in todas_as_colunas_controle %}
+                                                        {% if col_id in colunas_visiveis_controle %}
+                                                            <td data-label="{{ col_nome }}">
+                                                                <span class="card-value">
+                                                                    {% if col_id == 'documentacao' %}
+                                                                        {% set docs = controle.get('documentacao') %}
+                                                                        {{ docs | join(', ') if docs is iterable and docs is not string else docs }}
+                                                                        {% set pendentes = controle.get('documentacao_pendente') %}
+                                                                        {% if pendentes %}
+                                                                            <span class="texto-pendente" style="color: #e74c3c; font-size: 0.9em;">(pendente: {{ pendentes | join(', ') if pendentes is iterable and pendentes is not string else pendentes }})</span>
+                                                                        {% endif %}
+                                                                    {% else %}
+                                                                        {{ controle.get(col_id, '') }}
+                                                                    {% endif %}
+                                                                </span>
+                                                            </td>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% else %}
+                                    <div class="card-grid">
+                                        {% for controle in item.controles %}
+                                            {% set colunas_visiveis = colunas_visiveis_controle %}{% set todas_as_colunas = todas_as_colunas_controle %}
+                                            {% include 'partials/_controle_card.html' %}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </details>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <style>
+        .hub-accordion { background-color: var(--background-secondary); border: 1px solid var(--border-base); border-radius: 8px; margin-bottom: 15px; overflow: hidden; transition: all 0.3s ease; }
+        .hub-accordion[open] { border-color: var(--primary-color); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .hub-summary { padding: 15px 20px; cursor: pointer; list-style: none; position: relative; }
+        .hub-summary::-webkit-details-marker { display: none; }
+        .hub-summary::before { content: "▶"; position: absolute; left: 10px; top: 20px; font-size: 12px; transition: transform 0.2s; color: var(--primary-color); }
+        .hub-accordion[open] .hub-summary::before { transform: rotate(90deg); }
+        .hub-summary-header { display: flex; justify-content: space-between; align-items: center; padding-left: 15px; }
+        .hub-summary-header h3 { margin: 0; font-size: 1.1em; color: var(--primary-color); }
+        .btn-manage-link { text-decoration: none; font-size: 1.2em; padding: 5px; }
+        .hub-summary-badges { margin-top: 10px; padding-left: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .hub-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.85em; font-weight: bold; color: white; }
+        .badge-vigente { background-color: #27ae60; } .badge-extinto { background-color: #7f8c8d; }
+        
+        /* Cores baseadas no tema para Pendências e Notas */
+        .badge-nota { background-color: var(--primary-color); }
+        .badge-pendencia { background-color: var(--primary-color); opacity: 0.75; }
+
+        .hub-summary-objeto { margin: 10px 0 0 15px; font-size: 0.9em; color: var(--text-primary); opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .hub-accordion-content { padding: 20px; background-color: var(--background-primary); border-top: 1px solid var(--border-base); }
+        .hub-section { margin-bottom: 20px; }
+        .hub-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .hub-section-header h4 { margin: 0; color: var(--text-primary); font-size: 1.1em; }
+        .btn-add-mini { background-color: transparent; border: 1px solid var(--primary-color); color: var(--primary-color); padding: 4px 10px; border-radius: 4px; text-decoration: none; font-size: 0.85em; transition: all 0.2s; }
+        .btn-add-mini:hover { background-color: var(--primary-color); color: white; }
+        .hub-divider { border: 0; height: 1px; background-color: var(--border-base); margin: 25px 0; }
+        .empty-msg { opacity: 0.6; font-style: italic; }
+        
+        /* Botão Concluir Integrado */
+        .btn-concluir-action { background: transparent; border: 2px solid var(--border-base); border-radius: 50%; width: 28px; height: 28px; padding: 0 !important; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-primary); transition: all 0.2s ease; opacity: 0.5; margin: 0 auto; box-sizing: border-box; }
+        .btn-concluir-action:hover { border-color: #27ae60; background-color: #27ae60; color: white; opacity: 1; transform: scale(1.15); }
+        .btn-concluir-action svg { width: 20px; height: 20px; display: block;}
+    </style>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // --- Select Inline de Status (Atualiza a página imediatamente pelo campo Vigente) ---
+    document.getElementById('filtroStatusInline')?.addEventListener('change', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (this.value) {
+            urlParams.set('status', this.value);
+        } else {
+            urlParams.delete('status');
+        }
+        window.location.search = urlParams.toString();
+    });
+
+    // --- Seletor de Views à prova de balas (Muda a URL e renderiza corretamente) ---
+    const viewSelector = document.querySelector('.view-selector');
+    if (viewSelector) {
+        viewSelector.addEventListener('click', (e) => {
+            const button = e.target.closest('.view-button');
+            if (!button || button.classList.contains('active')) return;
+            
+            // Grava silenciosamente no backend...
+            fetch("{{ url_for('core.set_view_preference_pendencias') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ view_mode: button.dataset.view })
+            });
+
+            // ...e força a renderização visual imediatamente injetando o param 'view'
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('view', button.dataset.view);
+            window.location.search = urlParams.toString();
+        });
+    }
+
+    // --- Busca Rápida Dinâmica ---
+    const buscaInput = document.getElementById('buscaRapidaInput');
+    if (buscaInput) {
+        buscaInput.addEventListener('keyup', function(e) {
+            const query = e.target.value.toLowerCase().trim();
+            document.querySelectorAll('.hub-accordion').forEach(acc => {
+                const searchContent = acc.dataset.searchContent || '';
+                let contentText = acc.textContent.toLowerCase(); 
+                if (searchContent.includes(query) || contentText.includes(query)) {
+                    acc.style.display = 'block';
+                    if (query.length > 2) acc.open = true;
+                } else {
+                    acc.style.display = 'none';
+                }
+            });
+            if(e.key === 'Escape') { this.value = ''; this.dispatchEvent(new Event('keyup')); }
+        });
+    }
+
+    // --- Lógica de Prioridade (Tabela e Cards) ---
+    let isPriorityFetchLocked = false; 
+    document.querySelectorAll('.coluna-prioridade, .card-priority-toggle').forEach(el => {
+        el.addEventListener('click', function(e) {
+            e.preventDefault(); e.stopPropagation();
+            if (isPriorityFetchLocked) return;
+            isPriorityFetchLocked = true; 
+
+            const clickedElement = this;
+            const pendenciaId = this.dataset.id;
+            
+            fetch(`/pendencias/toggle_prioridade/${pendenciaId}`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const isActivating = data.nova_prioridade;
+                    const elementToAnimate = clickedElement.closest('tr, .data-card');
+                    if(elementToAnimate) {
+                        elementToAnimate.classList.toggle('prioridade-ativa', isActivating);
+                        if(elementToAnimate.tagName !== 'TR') {
+                            clickedElement.classList.toggle('active', isActivating);
+                        } else {
+                            const iconInsideRow = elementToAnimate.querySelector('.card-priority-toggle');
+                            if(iconInsideRow) iconInsideRow.classList.toggle('active', isActivating);
+                        }
+                    }
+                } else {
+                    alert('Erro ao alterar prioridade.');
+                }
+            }).finally(() => isPriorityFetchLocked = false);
+        });
+    });
+
+    // --- Lógica de Conclusão ---
+    document.addEventListener('click', function(e) {
+        const btnConcluir = e.target.closest('.btn-concluir-action');
+        if (!btnConcluir) return;
+        e.preventDefault(); e.stopPropagation();
+
+        const pendenciaId = btnConcluir.dataset.id;
+        btnConcluir.style.backgroundColor = '#27ae60';
+        btnConcluir.style.borderColor = '#27ae60';
+        btnConcluir.style.color = 'white';
+
+        fetch(`/pendencias/update_field_inline/${pendenciaId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ field: 'status', value: 'Concluído' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const elementToAnimate = btnConcluir.closest('tr, .data-card');
+                if (elementToAnimate) {
+                    elementToAnimate.style.transition = 'background-color 0.3s ease';
+                    elementToAnimate.style.backgroundColor = document.body.classList.contains('theme-dark') ? '#1e4620' : '#d4edda';
+                    
+                    const accordion = elementToAnimate.closest('.hub-accordion');
+                    if(accordion) {
+                        const badge = accordion.querySelector('.badge-pendencia');
+                        if(badge) {
+                            let num = parseInt(badge.textContent.replace(/\D/g,'')) - 1;
+                            badge.textContent = `⏳ ${Math.max(0, num)} Pendências`;
+                        }
+                    }
+
+                    setTimeout(() => {
+                        elementToAnimate.style.transition = 'all 0.4s ease';
+                        elementToAnimate.style.opacity = '0';
+                        elementToAnimate.style.transform = 'scaleY(0)';
+                        if(elementToAnimate.tagName === 'TR') {
+                            elementToAnimate.querySelectorAll('td').forEach(td => { td.style.padding = '0'; td.style.fontSize = '0'; });
+                        } else {
+                            elementToAnimate.style.height = '0'; elementToAnimate.style.margin = '0';
+                        }
+                        setTimeout(() => elementToAnimate.remove(), 400);
+                    }, 400);
+                }
+            } else {
+                alert('Erro ao concluir pendência: ' + data.message);
+                btnConcluir.style.backgroundColor = '';
+            }
+        });
+    });
+
+    // --- Navegação para Detalhes ---
+    document.querySelectorAll('.clickable-row, .data-card').forEach(row => {
+        const url = row.dataset.url;
+        if (!url) return;
+        
+        row.addEventListener(row.tagName === 'TR' ? 'dblclick' : 'click', function(e) {
+            if (!e.target.closest('.action-icon-link, .btn-concluir-action, .card-priority-toggle, .coluna-prioridade, input, textarea, button')) {
+                window.location.href = url;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
