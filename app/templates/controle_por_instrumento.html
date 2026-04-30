@@ -5,7 +5,7 @@
 
     <div class="button-toolbar desktop-actions">
         <div class="toolbar-group-left">
-            <select id="filtroStatusInline" style="padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border-base); background-color: var(--background-secondary); color: var(--text-primary); cursor: pointer;">
+            <select id="filtroStatusInline" style="min-width: 150px; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border-base); background-color: var(--background-secondary); color: var(--text-primary); cursor: pointer;">
                 <option value="" {% if not filtro_status %}selected{% endif %}>Todos</option>
                 <option value="Vigente" {% if filtro_status == 'Vigente' %}selected{% endif %}>Vigentes</option>
                 <option value="Extinto" {% if filtro_status == 'Extinto' %}selected{% endif %}>Extintos</option>
