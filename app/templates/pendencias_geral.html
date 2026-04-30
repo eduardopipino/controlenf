@@ -393,69 +393,6 @@
     </ul>
     <input type="color" class="hidden-color-input" id="hiddenColorPicker">
 
-    <style>
-        @media (max-width: 768px) {
-            /* Regra ultra-específica (vence o !important do style.css) para aniquilar as linhas de criação do desktop no mobile */
-            table#tabelaPendencias tr#inline-create-template,
-            table#tabelaPendencias tr#row-btn-add-inline,
-            table#tabelaPendencias tr.hide-on-mobile-always {
-                display: none !important;
-                border: none !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                height: 0 !important;
-                overflow: hidden !important;
-            }
-        }
-        /* ESTILO DO BOTÃO DE CONCLUIR */
-        .btn-concluir-action {
-            background: transparent;
-            border: 2px solid var(--border-base);
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-			padding: 0 !important;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-primary);
-            transition: all 0.2s ease;
-            opacity: 0.5;
-            margin: 0 auto;
-        }
-        .btn-concluir-action:hover {
-            border-color: #27ae60;
-            background-color: #27ae60;
-            color: white;
-            opacity: 1;
-            transform: scale(1.15);
-        }
-        .btn-concluir-action svg { width: 12px; height: 12px; }
-
-        @media (max-width: 768px) {
-            /* Fixa o botão concluir no canto inferior direito do card da tabela mobile */
-            .responsive-card-table .coluna-concluir {
-                position: absolute !important;
-                bottom: 12px !important;
-                right: 15px !important;
-                width: auto !important;
-                border: none !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                display: block !important;
-                z-index: 5;
-            }
-            .responsive-card-table .coluna-concluir::before {
-                display: none !important; /* Esconde a palavra "Concluir" no mobile */
-            }
-            /* O botão "Ver mais" recua para não sobrepor o check */
-            .responsive-card-table td:last-child {
-                width: calc(100% - 50px) !important;
-                display: block !important;
-            }
-    </style>
-
 {% endblock %}
 
 {% block page_scripts %}

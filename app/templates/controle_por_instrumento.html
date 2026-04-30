@@ -192,39 +192,6 @@
         {% endif %}
     </div>
 
-    <style>
-        .hub-accordion { background-color: var(--background-secondary); border: 1px solid var(--border-base); border-radius: 8px; margin-bottom: 15px; overflow: hidden; transition: all 0.3s ease; }
-        .hub-accordion[open] { border-color: var(--primary-color); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .hub-summary { padding: 15px 20px; cursor: pointer; list-style: none; position: relative; }
-        .hub-summary::-webkit-details-marker { display: none; }
-        .hub-summary::before { content: "▶"; position: absolute; left: 10px; top: 20px; font-size: 12px; transition: transform 0.2s; color: var(--primary-color); }
-        .hub-accordion[open] .hub-summary::before { transform: rotate(90deg); }
-        .hub-summary-header { display: flex; justify-content: space-between; align-items: center; padding-left: 15px; }
-        .hub-summary-header h3 { margin: 0; font-size: 1.1em; color: var(--primary-color); }
-        .btn-manage-link { text-decoration: none; font-size: 1.2em; padding: 5px; }
-        .hub-summary-badges { margin-top: 10px; padding-left: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
-        .hub-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.85em; font-weight: bold; color: white; }
-        .badge-vigente { background-color: #27ae60; } .badge-extinto { background-color: #7f8c8d; }
-        
-        /* Cores baseadas no tema para Pendências e Notas */
-        .badge-nota { background-color: var(--primary-color); }
-        .badge-pendencia { background-color: var(--primary-color); opacity: 0.75; }
-
-        .hub-summary-objeto { margin: 10px 0 0 15px; font-size: 0.9em; color: var(--text-primary); opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .hub-accordion-content { padding: 20px; background-color: var(--background-primary); border-top: 1px solid var(--border-base); }
-        .hub-section { margin-bottom: 20px; }
-        .hub-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .hub-section-header h4 { margin: 0; color: var(--text-primary); font-size: 1.1em; }
-        .btn-add-mini { background-color: transparent; border: 1px solid var(--primary-color); color: var(--primary-color); padding: 4px 10px; border-radius: 4px; text-decoration: none; font-size: 0.85em; transition: all 0.2s; }
-        .btn-add-mini:hover { background-color: var(--primary-color); color: white; }
-        .hub-divider { border: 0; height: 1px; background-color: var(--border-base); margin: 25px 0; }
-        .empty-msg { opacity: 0.6; font-style: italic; }
-        
-        /* Botão Concluir Integrado */
-        .btn-concluir-action { background: transparent; border: 2px solid var(--border-base); border-radius: 50%; width: 28px; height: 28px; padding: 0 !important; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-primary); transition: all 0.2s ease; opacity: 0.5; margin: 0 auto; box-sizing: border-box; }
-        .btn-concluir-action:hover { border-color: #27ae60; background-color: #27ae60; color: white; opacity: 1; transform: scale(1.15); }
-        .btn-concluir-action svg { width: 20px; height: 20px; display: block;}
-    </style>
 {% endblock %}
 
 {% block page_scripts %}
