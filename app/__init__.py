@@ -7,6 +7,7 @@ from flask_login import LoginManager
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 
+
 # --- INICIALIZAÇÃO DE EXTENSÕES ---
 # Criamos as instâncias das extensões aqui, fora da função.
 # Elas estarão "vazias" até que a aplicação seja criada e associada a elas.
@@ -106,5 +107,8 @@ def create_app():
     @app.before_request
     def make_session_non_permanent():
         session.permanent = False
+    
+    from app.routes.hub_ic import hub_ic_bp
+    app.register_blueprint(hub_ic_bp)
         
     return app
