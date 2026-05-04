@@ -3,14 +3,14 @@
 {% block content %}
     <h2>Hub Central de Instrumentos Contratuais</h2>
 
-    <div class="button-toolbar desktop-actions">
+    <div class="button-toolbar desktop-actions hide-on-mobile">
         <div class="toolbar-group-left">
-            <select id="filtroStatusInline" style="min-width: 150px; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border-base); background-color: var(--background-secondary); color: var(--text-primary); cursor: pointer;">
-                <option value="" {% if not filtro_status %}selected{% endif %}>Todos</option>
+            <select class="filtroStatusInline" style="min-width: 150px; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border-base); background-color: var(--background-secondary); color: var(--text-primary); cursor: pointer;">
+                <option value="" {% if not filtro_status %}selected{% endif %}>Todos os Status</option>
                 <option value="Vigente" {% if filtro_status == 'Vigente' %}selected{% endif %}>Vigentes</option>
                 <option value="Extinto" {% if filtro_status == 'Extinto' %}selected{% endif %}>Extintos</option>
             </select>
-            <button id="btnExpandirRecolher">Expandir Todos</button>
+            <button class="btnExpandirRecolher">Expandir Todos</button>
         </div>
         <div class="toolbar-group-center">
             <div class="view-selector">
@@ -26,11 +26,22 @@
             </div>
         </div>
         <div class="toolbar-group-right">
-            <input type="search" id="buscaRapidaInput" placeholder="Buscar em tudo... (ESC para limpar)">
+            <input type="search" class="buscaRapidaInput" placeholder="Buscar em tudo... (ESC para limpar)">
         </div>
     </div>
 
-    <div style="margin-bottom: 25px;"></div>
+    <div class="mobile-actions hide-on-desktop" style="display: flex; gap: 10px; margin-bottom: 10px; padding: 0 5px;">
+        <select class="filtroStatusInline" style="flex: 1; padding: 10px; border-radius: 5px; border: 1px solid var(--border-base); background-color: var(--background-secondary); color: var(--text-primary); font-size: 16px;">
+            <option value="" {% if not filtro_status %}selected{% endif %}>Todos os Status</option>
+            <option value="Vigente" {% if filtro_status == 'Vigente' %}selected{% endif %}>Vigentes</option>
+            <option value="Extinto" {% if filtro_status == 'Extinto' %}selected{% endif %}>Extintos</option>
+        </select>
+        <button class="btnExpandirRecolher" style="flex: 1; padding: 10px; font-size: 14px;">Expandir Todos</button>
+    </div>
+
+    <div class="mobile-search-bar hide-on-desktop" style="margin-bottom: 20px; padding: 0 5px;">
+        <input type="search" class="buscaRapidaInput" placeholder="Buscar registros..." style="width: 100%; padding: 12px; border-radius: 5px; border: 1px solid var(--border-base); background-color: var(--background-secondary); color: var(--text-primary); font-size: 16px;">
+    </div>
 
     <div class="hub-container" id="hubAccordionContainer">
         {% if not hub_dados %}
@@ -91,7 +102,7 @@
                                                             <td data-label="{{ col_nome }}"><span class="card-value">{{ p.prazo.strftime('%d/%m/%Y') if col_id == 'prazo' and p.prazo else p.get(col_id, '') }}</span></td>
                                                         {% endif %}
                                                     {% endfor %}
-                                                    <td class="coluna-concluir" data-label="Concluir" style="text-align: center; vertical-align: middle;">
+                                                    <td data-label="Concluir" class="coluna-concluir" style="text-align: center; vertical-align: middle;">
                                                         <button class="btn-concluir-action" data-id="{{ p._id }}" title="Marcar como Concluído">
                                                             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
                                                         </button>
@@ -199,43 +210,47 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     
-    // --- Select Inline de Status (Atualiza a página imediatamente pelo campo Vigente) ---
-    document.getElementById('filtroStatusInline')?.addEventListener('change', function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (this.value) {
-            urlParams.set('status', this.value);
-        } else {
-            urlParams.delete('status');
-        }
-        window.location.search = urlParams.toString();
+    // --- Select Inline de Status (Reconhece Desktop e Mobile) ---
+    document.querySelectorAll('.filtroStatusInline').forEach(select => {
+        select.addEventListener('change', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (this.value) {
+                urlParams.set('status', this.value);
+            } else {
+                urlParams.delete('status');
+            }
+            window.location.search = urlParams.toString();
+        });
     });
 
-    // --- Seletor de Views à prova de balas (Muda a URL e renderiza corretamente) ---
+    // --- Seletor de Views ---
     const viewSelector = document.querySelector('.view-selector');
     if (viewSelector) {
         viewSelector.addEventListener('click', (e) => {
             const button = e.target.closest('.view-button');
             if (!button || button.classList.contains('active')) return;
             
-            // Grava silenciosamente no backend...
             fetch("{{ url_for('core.set_view_preference_pendencias') }}", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ view_mode: button.dataset.view })
             });
 
-            // ...e força a renderização visual imediatamente injetando o param 'view'
             const urlParams = new URLSearchParams(window.location.search);
             urlParams.set('view', button.dataset.view);
             window.location.search = urlParams.toString();
         });
     }
 
-    // --- Busca Rápida Dinâmica ---
-    const buscaInput = document.getElementById('buscaRapidaInput');
-    if (buscaInput) {
-        buscaInput.addEventListener('keyup', function(e) {
+    // --- Busca Rápida Dinâmica (Reconhece Desktop e Mobile) ---
+    const buscaInputs = document.querySelectorAll('.buscaRapidaInput');
+    buscaInputs.forEach(input => {
+        input.addEventListener('keyup', function(e) {
             const query = e.target.value.toLowerCase().trim();
+            
+            // Sincroniza os inputs (se digitar no mobile, atualiza o desktop e vice-versa)
+            buscaInputs.forEach(other => { if(other !== input) other.value = e.target.value; });
+
             document.querySelectorAll('.hub-accordion').forEach(acc => {
                 const searchContent = acc.dataset.searchContent || '';
                 let contentText = acc.textContent.toLowerCase(); 
@@ -246,37 +261,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     acc.style.display = 'none';
                 }
             });
-            if(e.key === 'Escape') { this.value = ''; this.dispatchEvent(new Event('keyup')); }
+            if(e.key === 'Escape') { 
+                buscaInputs.forEach(i => i.value = ''); 
+                this.dispatchEvent(new Event('keyup')); 
+            }
         });
-    }
+    });
 
-    // --- Lógica de Expandir/Recolher Todos os Acordeões ---
-    const btnExpandirRecolher = document.getElementById('btnExpandirRecolher');
-    if (btnExpandirRecolher) {
+    // --- Lógica de Expandir/Recolher Todos (Reconhece Desktop e Mobile) ---
+    document.querySelectorAll('.btnExpandirRecolher').forEach(btn => {
         let isAllExpanded = false;
-        
-        btnExpandirRecolher.addEventListener('click', function() {
-            isAllExpanded = !isAllExpanded; // Alterna o estado
-            
-            // Pega todos os acordeões visíveis (ignorando os que foram escondidos pela busca)
+        btn.addEventListener('click', function() {
+            isAllExpanded = !isAllExpanded;
             const accordions = document.querySelectorAll('.hub-accordion');
-            
             accordions.forEach(acc => {
-                if (acc.style.display !== 'none') {
-                    acc.open = isAllExpanded;
-                }
+                if (acc.style.display !== 'none') acc.open = isAllExpanded;
             });
             
-            // Atualiza o texto do botão
-            this.textContent = isAllExpanded ? 'Recolher Todos' : 'Expandir Todos';
-            
-            // Efeito visual sutil de clique (opcional)
-            this.style.backgroundColor = isAllExpanded ? 'var(--primary-color)' : '';
-            this.style.color = isAllExpanded ? 'white' : '';
+            // Atualiza o texto em todos os botões de expandir
+            document.querySelectorAll('.btnExpandirRecolher').forEach(b => {
+                b.textContent = isAllExpanded ? 'Recolher Todos' : 'Expandir Todos';
+                b.style.backgroundColor = isAllExpanded ? 'var(--primary-color)' : '';
+                b.style.color = isAllExpanded ? 'white' : '';
+            });
         });
-    }
+    });
 
-    // --- Lógica de Prioridade (Tabela e Cards) ---
+    // --- Lógica de Prioridade ---
     let isPriorityFetchLocked = false; 
     document.querySelectorAll('.coluna-prioridade, .card-priority-toggle').forEach(el => {
         el.addEventListener('click', function(e) {
