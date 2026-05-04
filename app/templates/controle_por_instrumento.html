@@ -10,7 +10,8 @@
                 <option value="Vigente" {% if filtro_status == 'Vigente' %}selected{% endif %}>Vigentes</option>
                 <option value="Extinto" {% if filtro_status == 'Extinto' %}selected{% endif %}>Extintos</option>
             </select>
-            </div>
+            <button id="btnExpandirRecolher">Expandir Todos</button>
+        </div>
         <div class="toolbar-group-center">
             <div class="view-selector">
                 <button class="view-button {{ 'active' if view_mode == 'table' else '' }}" data-view="table" title="Visualizar como Tabela">
@@ -246,6 +247,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             if(e.key === 'Escape') { this.value = ''; this.dispatchEvent(new Event('keyup')); }
+        });
+    }
+
+    // --- Lógica de Expandir/Recolher Todos os Acordeões ---
+    const btnExpandirRecolher = document.getElementById('btnExpandirRecolher');
+    if (btnExpandirRecolher) {
+        let isAllExpanded = false;
+        
+        btnExpandirRecolher.addEventListener('click', function() {
+            isAllExpanded = !isAllExpanded; // Alterna o estado
+            
+            // Pega todos os acordeões visíveis (ignorando os que foram escondidos pela busca)
+            const accordions = document.querySelectorAll('.hub-accordion');
+            
+            accordions.forEach(acc => {
+                if (acc.style.display !== 'none') {
+                    acc.open = isAllExpanded;
+                }
+            });
+            
+            // Atualiza o texto do botão
+            this.textContent = isAllExpanded ? 'Recolher Todos' : 'Expandir Todos';
+            
+            // Efeito visual sutil de clique (opcional)
+            this.style.backgroundColor = isAllExpanded ? 'var(--primary-color)' : '';
+            this.style.color = isAllExpanded ? 'white' : '';
         });
     }
 
