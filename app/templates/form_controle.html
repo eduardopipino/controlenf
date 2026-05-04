@@ -45,7 +45,7 @@
                 <option value="">-- Nenhuma --</option>
                 {% for sit in situacoes %}
                     <option value="{{ sit.situacao }}"
-                        {% if (controle and controle.situacao == sit.situacao) %}
+                        {% if (controle and controle.situacao == sit.situacao)  %}
                             selected
                         {% endif %}>
                         {{ sit.situacao }}

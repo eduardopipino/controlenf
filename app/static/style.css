@@ -2883,7 +2883,7 @@ body.theme-dark #buscaRapidaInput {
 /* ESTILOS PARA O BOTÃO DE CONCLUIR PENDÊNCIAS E AÇÕES MÓVEIS             */
 /* ====================================================================== */
 
-/* ESTILO DO BOTÃO DE CONCLUIR */
+/* ESTILO DO BOTÃO DE CONCLUIR (DESKTOP E BASE) */
 .btn-concluir-action {
     background: transparent;
     border: 2px solid var(--border-base);
@@ -2910,11 +2910,15 @@ body.theme-dark #buscaRapidaInput {
     transform: scale(1.15);
 }
 
-.btn-concluir-action svg { width: 12px; height: 12px; display: block; }
+.btn-concluir-action svg { 
+    width: 12px; 
+    height: 12px; 
+    display: block; 
+}
 
-
+/* REGRAS ESPECÍFICAS PARA O MODO MOBILE (CARDS) */
 @media (max-width: 768px) {
-    /* Regra ultra-específica para aniquilar as linhas de criação do desktop no mobile */
+    /* Regra para aniquilar as linhas de criação do desktop no mobile */
     table#tabelaPendencias tr#inline-create-template,
     table#tabelaPendencias tr#row-btn-add-inline,
     table#tabelaPendencias tr.hide-on-mobile-always {
@@ -2926,21 +2930,38 @@ body.theme-dark #buscaRapidaInput {
         overflow: hidden !important;
     }
 
-    /* Fixa o botão concluir no canto inferior direito do card da tabela mobile */
-    .responsive-card-table .coluna-concluir {
+    /* O SEGREDINHO: Corrigir a Célula (TD) que contém o botão */
+    .responsive-card-table td.coluna-concluir {
         position: absolute !important;
         bottom: 12px !important;
         right: 15px !important;
-        width: auto !important;
+        
+        /* Em vez de 100%, forçamos a célula a encolher para caber apenas o botão */
+        width: auto !important; 
+        min-width: 0 !important;
+        max-width: fit-content !important;
+        
         border: none !important;
         padding: 0 !important;
         margin: 0 !important;
-        display: block !important;
+        
+        /* Flex é melhor que Block aqui para evitar estiramento acidental */
+        display: flex !important; 
+        justify-content: center;
+        align-items: center;
         z-index: 5;
     }
 
-    .responsive-card-table .coluna-concluir::before {
-        display: none !important; /* Esconde a palavra "Concluir" no mobile */
+    /* Garante que o botão dentro da célula móvel obedeça ao tamanho */
+    .responsive-card-table td.coluna-concluir .btn-concluir-action {
+        width: 20px !important;
+        height: 20px !important;
+        margin: 0 !important; /* Remove o margin: 0 auto; do desktop */
+    }
+
+    /* Esconde o pseudoelemento "Concluir" (rótulo) no mobile */
+    .responsive-card-table td.coluna-concluir::before {
+        display: none !important; 
     }
 
     /* O botão "Ver mais" recua para não sobrepor o check */

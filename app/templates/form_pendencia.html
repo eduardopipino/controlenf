@@ -12,7 +12,7 @@
                 {% for inst in instrumentos %}
                     <option value="{{ inst._id }}" 
                             data-dados="{{ inst|tojson|safe }}"
-                            {% if pendencia.instrumento_id and pendencia.instrumento_id|string == inst._id|string %}selected{% endif %}>
+                            {% if (pendencia.instrumento_id and pendencia.instrumento_id|string == inst._id|string) or (request.args.get('instrumento_id') == inst._id|string) %}selected{% endif %}>
                         {{ inst.n_instrumento }} / {{ inst.tipo_documento }} / {{ inst.contratada }}
                     </option>
                 {% endfor %}
