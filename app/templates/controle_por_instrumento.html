@@ -90,7 +90,7 @@
                                                             <td data-label="{{ col_nome }}"><span class="card-value">{{ p.prazo.strftime('%d/%m/%Y') if col_id == 'prazo' and p.prazo else p.get(col_id, '') }}</span></td>
                                                         {% endif %}
                                                     {% endfor %}
-                                                    <td style="text-align: center; vertical-align: middle;">
+                                                    <td class="coluna-concluir" data-label="Concluir" style="text-align: center; vertical-align: middle;">
                                                         <button class="btn-concluir-action" data-id="{{ p._id }}" title="Marcar como Concluído">
                                                             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
                                                         </button>
