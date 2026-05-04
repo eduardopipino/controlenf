@@ -3108,3 +3108,58 @@ body.theme-dark #buscaRapidaInput {
     opacity: 0.6; 
     font-style: italic; 
 }
+
+/* ====================================================================== */
+/* ESTILOS DO ÍCONE DE PRIORIDADE (CARDS E MOBILE)                        */
+/* ====================================================================== */
+
+/* Estado Inativo (Sempre visível como cinza) */
+.card-priority-toggle,
+.card-actions-corner .card-priority-toggle {
+    color: #95a5a6; /* Cinza claro/médio */
+    opacity: 0.6;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+/* Efeito ao passar o rato (Apenas no Desktop) */
+.card-priority-toggle:hover {
+    opacity: 1;
+    color: #f1c40f; /* Amarelo/Dourado suave */
+}
+
+/* Estado Ativo (Prioridade ativada) */
+.card-priority-toggle.active,
+.card-actions-corner .card-priority-toggle.active {
+    color: #e67e22 !important; /* Laranja de destaque */
+    opacity: 1 !important;
+}
+
+/* Garantia extra para visibilidade perfeita no Mobile */
+@media (max-width: 768px) {
+    .card-actions-corner .card-priority-toggle {
+        opacity: 0.5; /* Mantém o cinza suave visível */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5px; /* Aumenta a área de toque no mobile */
+    }
+    
+    .card-actions-corner .card-priority-toggle.active {
+        opacity: 1;
+    }
+}
+
+/* ====================================================================== */
+/* CORES DO ÍCONE DE PRIORIDADE (SEGURO - NÃO QUEBRA LAYOUT)              */
+/* ====================================================================== */
+
+.card-priority-toggle {
+    color: #95a5a6 !important; /* Força o ícone inativo a ser cinza médio */
+    opacity: 0.6 !important;   /* Deixa ligeiramente suave */
+}
+
+.card-priority-toggle.active {
+    color: #e67e22 !important; /* Força a cor laranja vibrante quando ativo */
+    opacity: 1 !important;     /* Remove a suavidade */
+}
