@@ -31,16 +31,16 @@
     </div>
 
     <div class="mobile-actions hide-on-desktop" style="display: flex; gap: 10px; margin-bottom: 10px; padding: 0 5px;">
-        <select class="filtroStatusInline" style="flex: 1; padding: 10px; border-radius: 5px; border: 1px solid var(--border-base); background-color: var(--background-secondary); color: var(--text-primary); font-size: 16px;">
+        <select class="filtroStatusInline" style="flex: 1; height: 42px; padding: 0 10px; border-radius: 5px; border: 1px solid var(--border-base); background-color: var(--background-secondary); color: var(--text-primary); font-size: 14px;">
             <option value="" {% if not filtro_status %}selected{% endif %}>Todos os Status</option>
             <option value="Vigente" {% if filtro_status == 'Vigente' %}selected{% endif %}>Vigentes</option>
             <option value="Extinto" {% if filtro_status == 'Extinto' %}selected{% endif %}>Extintos</option>
         </select>
-        <button class="btnExpandirRecolher" style="flex: 1; padding: 10px; font-size: 14px;">Expandir Todos</button>
+        <button class="btnExpandirRecolher" style="flex: 1; height: 42px; padding: 0 10px; font-size: 14px;">Expandir Todos</button>
     </div>
 
     <div class="mobile-search-bar hide-on-desktop" style="margin-bottom: 20px; padding: 0 5px;">
-        <input type="search" class="buscaRapidaInput" placeholder="Buscar registros..." style="width: 100%; padding: 12px; border-radius: 5px; border: 1px solid var(--border-base); background-color: var(--background-secondary); color: var(--text-primary); font-size: 16px;">
+        <input type="search" class="buscaRapidaInput" placeholder="Buscar registros..." style="width: 100%; padding: 12px; border-radius: 5px; border: 1px solid var(--border-base); background-color: var(--background-secondary); color: var(--text-primary); font-size: 14px;">
     </div>
 
     <div class="hub-container" id="hubAccordionContainer">

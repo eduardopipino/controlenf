@@ -3165,3 +3165,15 @@ body.theme-dark #buscaRapidaInput {
     color: #e67e22 !important; /* Força a cor laranja vibrante quando ativo */
     opacity: 1 !important;     /* Remove a suavidade */
 }
+
+/* Altera o tamanho da fonte apenas do texto "fantasma" de instrução */
+input[type="search"]::placeholder,
+input[type="text"]::placeholder {
+    font-size: 14px !important; /* Diminua este valor até ficar do seu agrado (ex: 13px, 0.9em) */
+    opacity: 0.8; /* Opcional: deixa o texto um pouquinho mais suave */
+}
+
+/* Se você também quiser diminuir o tamanho da letra quando você de fato DIGITA na caixa: */
+input[type="search"] {
+    font-size: 14px !important;
+}
