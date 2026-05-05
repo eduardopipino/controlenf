@@ -1,5 +1,10 @@
 [
   {
+    "versao": "2.6",
+    "data": "xx/05/2026",
+    "descricao": "Ajustes de responsividade e visuais. ### possível implantação hub"
+  },
+  {
     "versao": "2.5",
     "data": "30/04/2026",
     "descricao": "Implantação de botão de conclusão de pendência."

@@ -25,6 +25,21 @@
             <p><strong>Objeto:</strong> <span id="info_objeto"></span></p>
         </div>
         
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+            <label style="margin-bottom: 0;">Prioridade:</label>
+            
+            <div id="form-priority-wrapper" class="{{ 'prioridade-ativa' if pendencia.prioridade else '' }}" style="display: flex; align-items: center;">
+                
+                <div id="form-priority-toggle" 
+                     class="coluna-prioridade" 
+                     title="Alternar Prioridade" 
+                     style="width: 24px; height: 24px; margin: 0; display: inline-block;">
+                </div>
+            </div>
+            
+            <input type="hidden" id="input-prioridade" name="prioridade" value="{{ '1' if pendencia.prioridade else '0' }}">
+        </div>
+
         <div>
             <label for="pendencia">Pendência: *</label>
             <textarea id="pendencia" name="pendencia" required disabled>{{ pendencia.pendencia or '' }}</textarea>
@@ -95,7 +110,6 @@ document.addEventListener('DOMContentLoaded', function() {
         placeholder: 'Selecione um instrumento para vincular (opcional)'
     });
 
-    // Adiciona placeholder na caixa de busca interna do Select2 quando ele abre
     $('#instrumento_id').on('select2:open', function (e) {
         const searchInput = document.querySelector('.select2-search__field');
         if (searchInput) {
@@ -127,17 +141,43 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     $('#instrumento_id').on('change', atualizarInfoBox);
-    
-    // --- LÓGICA PRINCIPAL ---
+
+    // --- LÓGICA DE PRIORIDADE (SETUP GERAL) ---
+    const priorityToggle = document.getElementById('form-priority-toggle');
+    const priorityWrapper = document.getElementById('form-priority-wrapper');
+    const priorityInput = document.getElementById('input-prioridade');
+
+    if (priorityToggle && priorityWrapper) {
+        priorityToggle.addEventListener('click', function() {
+            // Só permite clicar se não estiver bloqueado
+            if (this.style.pointerEvents === 'none') return;
+
+            const isActive = priorityWrapper.classList.contains('prioridade-ativa');
+            if (isActive) {
+                priorityWrapper.classList.remove('prioridade-ativa');
+                priorityInput.value = '0';
+            } else {
+                priorityWrapper.classList.add('prioridade-ativa');
+                priorityInput.value = '1';
+            }
+        });
+    }
+
+    // --- LÓGICA PRINCIPAL (NOVO VS EDIÇÃO) ---
     if (isNewRecord) {
-        // MODO NOVO: Habilita todos os campos
+        // MODO NOVO
         formPendencia.querySelectorAll('input, textarea, select').forEach(field => {
             if (field.name !== 'origem') field.disabled = false;
         });
         $('#instrumento_id').prop('disabled', false);
         atualizarInfoBox();
 
-        // --- LÓGICA DE CONFIRMAÇÃO PARA O BOTÃO CANCELAR ---
+        // Garante que o ícone de prioridade seja clicável ao criar nova pendência
+        if (priorityToggle) {
+            priorityToggle.style.pointerEvents = 'auto';
+            priorityToggle.style.cursor = 'pointer';
+        }
+
         const btnCancelarNovo = document.getElementById('btnCancelarNovo');
         if (btnCancelarNovo) {
             btnCancelarNovo.addEventListener('click', function(event) {
@@ -147,9 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Cancelar Cadastro?',
                     'Tem certeza que deseja cancelar? Os dados inseridos serão perdidos.',
                     (confirmed) => {
-                        if (confirmed) {
-                            window.location.href = urlDestino;
-                        }
+                        if (confirmed) window.location.href = urlDestino;
                     },
                     'Sim, Cancelar'
                 );
@@ -157,69 +195,64 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
     } else {
-            // MODO EDIÇÃO/CONSULTA
-            atualizarInfoBox();
-           
-            const btnEditar = document.getElementById('btnEditar');
-            const btnSalvar = document.getElementById('btnSalvar');
-            const btnCancelar = document.getElementById('btnCancelar');
-            const btnExcluir = document.getElementById('btnExcluir');
-            const formExcluir = document.getElementById('formExcluir');
+        // MODO EDIÇÃO/CONSULTA
+        atualizarInfoBox();
+       
+        const btnEditar = document.getElementById('btnEditar');
+        const btnSalvar = document.getElementById('btnSalvar');
+        const btnCancelar = document.getElementById('btnCancelar');
+        const btnExcluir = document.getElementById('btnExcluir');
+        const formExcluir = document.getElementById('formExcluir');
 
-            // Função central para controlar o estado de edição
-            function alternarModoEdicao(habilitar) {
-                // Habilita/desabilita todos os campos do formulário, exceto o de 'origem'
-                formPendencia.querySelectorAll('input, textarea, select').forEach(field => {
-                    if (field.name !== 'origem') {
-                        field.disabled = !habilitar;
-                    }
-                });
-                $('#instrumento_id').prop('disabled', !habilitar);
+        // Centraliza todo o bloqueio/desbloqueio do formulário
+        function alternarModoEdicao(habilitar) {
+            formPendencia.querySelectorAll('input, textarea, select').forEach(field => {
+                if (field.name !== 'origem') field.disabled = !habilitar;
+            });
+            $('#instrumento_id').prop('disabled', !habilitar);
 
-                // Habilita/desabilita os botões de ação
-                btnSalvar.disabled = !habilitar;
-                btnEditar.disabled = habilitar;
-                btnExcluir.disabled = habilitar;
+            btnSalvar.disabled = !habilitar;
+            btnEditar.disabled = habilitar;
+            btnExcluir.disabled = habilitar;
 
-                // Muda o texto do botão Cancelar/Fechar
-                btnCancelar.textContent = habilitar ? 'Cancelar' : 'Fechar';
+            btnCancelar.textContent = habilitar ? 'Cancelar' : 'Fechar';
+
+            // NOVO: Habilita/desabilita o ícone de prioridade junto com o formulário
+            if (priorityToggle) {
+                priorityToggle.style.pointerEvents = habilitar ? 'auto' : 'none';
+                priorityToggle.style.cursor = habilitar ? 'pointer' : 'default';
+                priorityToggle.style.opacity = habilitar ? '1' : '0.6'; // Feedback visual se bloqueado
             }
+        }
 
-            // Estado inicial: tudo desabilitado
-            alternarModoEdicao(false);
+        // Estado inicial: tudo bloqueado
+        alternarModoEdicao(false);
 
-            // --- Lógica dos Botões ---
-            // Ao clicar em EDITAR
-            btnEditar.addEventListener('click', () => {
-                alternarModoEdicao(true);
-            });
+        // Ao clicar em EDITAR
+        btnEditar.addEventListener('click', () => alternarModoEdicao(true));
 
-            // Ao clicar em CANCELAR ou FECHAR
-            btnCancelar.addEventListener('click', () => {
-                if (btnCancelar.textContent === 'Cancelar') {
-                    showCustomConfirm(
-                        'Cancelar Edição?',
-                        'As alterações não salvas serão perdidas. Deseja continuar?',
-                        (confirmed) => {
-                            if (confirmed) {
-                                // Força o recarregamento do servidor
-                                location.reload(true);
-                            }
-                        },
-                        'Sim, Descartar'
-                    );
-                } else {
-                    // Se estiver em modo "Fechar", volta para a página de origem
-                    const urlOrigem = document.querySelector('input[name="origem"]').value;
-                    window.location.href = urlOrigem || "{{ url_for('pendencias.pendencias_lista', page_mode='geral') }}";
-                }
-            });
+        // Ao clicar em CANCELAR/FECHAR
+        btnCancelar.addEventListener('click', () => {
+            if (btnCancelar.textContent === 'Cancelar') {
+                showCustomConfirm(
+                    'Cancelar Edição?',
+                    'As alterações não salvas serão perdidas. Deseja continuar?',
+                    (confirmed) => {
+                        if (confirmed) location.reload(true);
+                    },
+                    'Sim, Descartar'
+                );
+            } else {
+                const urlOrigem = document.querySelector('input[name="origem"]').value;
+                window.location.href = urlOrigem || "{{ url_for('pendencias.pendencias_lista', page_mode='geral') }}";
+            }
+        });
 
-            // Ao clicar em EXCLUIR
-            btnExcluir.addEventListener('click', () => {
-                showCustomConfirm('Confirmar Exclusão?', 'A pendência será excluída permanentemente.', 
-                (c) => { if (c) formExcluir.submit(); }, 'Excluir');
-            });
+        // Ao clicar em EXCLUIR
+        btnExcluir.addEventListener('click', () => {
+            showCustomConfirm('Confirmar Exclusão?', 'A pendência será excluída permanentemente.', 
+            (c) => { if (c) formExcluir.submit(); }, 'Excluir');
+        });
     }
 });
 </script>

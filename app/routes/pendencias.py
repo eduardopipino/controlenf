@@ -384,7 +384,7 @@ def nova_pendencia():
             'observacoes': request.form.get('observacoes'), 'status': 'Pendente',
             'user_id': ObjectId(current_user.id), 'data_criacao': datetime.now(),
             'instrumento_id': ObjectId(instrumento_id) if instrumento_id else None,
-            'prioridade': False
+            'prioridade': request.form.get('prioridade') == '1'
         }
         pendencias_collection.insert_one(nova)
         flash('Nova pendência criada com sucesso!', 'success')
@@ -413,7 +413,8 @@ def detalhes_pendencia(pendencia_id):
             'prazo': datetime.strptime(request.form.get('prazo'), '%Y-%m-%d') if request.form.get('prazo') else None,
             'responsavel': request.form.get('responsavel'), 'situacao': request.form.get('situacao'),
             'observacoes': request.form.get('observacoes'), 'status': request.form.get('status'),
-            'instrumento_id': ObjectId(instrumento_id) if instrumento_id else None
+            'instrumento_id': ObjectId(instrumento_id) if instrumento_id else None,
+            'prioridade': request.form.get('prioridade') == '1'
         }
         pendencias_collection.update_one({'_id': ObjectId(pendencia_id)}, {'$set': update_data})
         flash('Pendência atualizada com sucesso!', 'success')
