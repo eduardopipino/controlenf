@@ -3176,4 +3176,17 @@ input[type="text"]::placeholder {
 /* Se você também quiser diminuir o tamanho da letra quando você de fato DIGITA na caixa: */
 input[type="search"] {
     font-size: 14px !important;
+    min-width: 320px; /* Aumente para 350px se ainda achar pequeno */
+    transition: all 0.3s ease; /* Dá um efeito suave caso a tela redimensione */
+}
+
+/* Ajuste para o botão Expandir/Recolher Todos (impede que o texto quebre) */
+.btnExpandirRecolher {
+    white-space: nowrap; /* Proíbe a quebra de linha do texto */
+    min-width: 140px;    /* Garante uma largura mínima confortável */
+    padding: 6px 15px;   /* Dá um respiro interno nas laterais */
+}
+
+.hub-container {
+    margin-top: 20px;
 }
