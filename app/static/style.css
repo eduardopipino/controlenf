@@ -2966,10 +2966,17 @@ body.theme-dark #buscaRapidaInput {
         display: none !important; 
     }
 
-    /* O botão "Ver mais" recua para não sobrepor o check */
+    /* Garante que o botão "Ver mais" ocupe 100% da largura em todas as páginas */
     .responsive-card-table td:last-child {
-        width: calc(100% - 50px) !important;
+        width: 100% !important;
         display: block !important;
+        padding-bottom: 30px !important;
+    }
+
+    /* Ajuste para o botão não vazar o limite do card */
+    .expand-card-btn {
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
 }
 
