@@ -3140,7 +3140,7 @@ body.theme-dark #buscaRapidaInput {
 /* Estado Ativo (Prioridade ativada) */
 .card-priority-toggle.active,
 .card-actions-corner .card-priority-toggle.active {
-    color: #e67e22 !important; /* Laranja de destaque */
+    color: #e74c3c !important; /* Laranja de destaque */
     opacity: 1 !important;
 }
 
@@ -3169,7 +3169,7 @@ body.theme-dark #buscaRapidaInput {
 }
 
 .card-priority-toggle.active {
-    color: #e67e22 !important; /* Força a cor laranja vibrante quando ativo */
+    color: #e74c3c !important; /* Força a cor laranja vibrante quando ativo */
     opacity: 1 !important;     /* Remove a suavidade */
 }
 
