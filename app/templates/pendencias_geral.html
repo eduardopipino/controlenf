@@ -76,6 +76,15 @@
             </tr>
         </thead>
         <tbody>
+            <tbody>
+            <tr id="row-btn-add-inline-top">
+                <td colspan="{{ colunas_visiveis|length + 3 }}" style="padding: 0;">
+                    <button type="button" id="btnShowInlineCreateTop" style="width: 100%; background: none; border: 2px dashed var(--border-base); color: var(--tertiary-color); padding: 10px; cursor: pointer; font-weight: bold; border-radius: 8px 8px 0 0; transition: background-color 0.2s; border-bottom: none;">
+                        + Adição Rápida
+                    </button>
+                </td>
+                <td></td> 
+            </tr>
             <tr id="tabela-pendencias-sem-resultados-row" style="display: none !important;">
                 <td colspan="{{ colunas_visiveis|length + 3 }}" class="kanban-empty-msg">Nenhum resultado encontrado para a busca.</td>
             </tr>
@@ -179,10 +188,6 @@
             </tr>
         </tbody>
     </table>
-        </tbody>
-        </tbody>
-        </tbody>
-    </table>
 
     <div class="card-quick-add-container-group hide-on-desktop" style="margin-top: 15px;">
         <div class="card-quick-add-trigger btnShowQuickAddCardMobile">
@@ -271,6 +276,29 @@
                     {% for p in pendencias if p.prioridade %}
                         {% include 'partials/_pendencia_card.html' %}
                     {% endfor %}
+                    
+                    <div class="card-quick-add-container-priority">
+                        <div class="card-quick-add-trigger btnShowQuickAddCardPriority">
+                            <span style="font-size: 1.2em; font-weight: bold;">+ Adição Rápida</span>
+                        </div>
+                        <div class="data-card card-quick-add-form quickAddCardFormPriority" style="border-left-color: #e74c3c; display: none;" data-priority="true">
+                            <div class="card-actions-corner">
+                                <div class="card-priority-toggle quickCardPriorityTogglePriority active" title="Alternar Prioridade">
+                                    <svg viewBox="0 0 24 24" style="width:18px; height:18px;"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
+                                </div>
+                            </div>
+                            <input type="text" name="pendencia" placeholder="Título da Pendência (Obrigatório)*" required>
+                            <input type="text" name="responsavel" placeholder="Responsável">
+                            <input type="date" name="prazo" title="Prazo">
+                            <input type="text" name="situacao" placeholder="Situação">
+                            <textarea name="observacoes" placeholder="Observações..."></textarea>
+                            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 5px;">
+                                <button type="button" class="btn-cancel btnCancelQuickCardPriority" style="padding: 5px 12px; height: 30px;">Cancelar</button>
+                                <button type="button" class="btn-confirm-success btnSaveQuickCardPriority" style="padding: 5px 12px; height: 30px; background-color: var(--primary-color);">Salvar</button>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
             <div class="card-grid">
@@ -1040,23 +1068,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- 13.5. LÓGICA DE CRIAÇÃO INLINE (ADICIONAR NOVA LINHA NO FIM DA TABELA) ---
-    const btnShowInlineCreate = document.getElementById('btnShowInlineCreate');
+    // --- 13.5. LÓGICA DE CRIAÇÃO INLINE (NO TOPO E NO FIM DA TABELA) ---
+    const btnShowInlineCreate = document.getElementById('btnShowInlineCreate'); // Fim
+    const btnShowInlineCreateTop = document.getElementById('btnShowInlineCreateTop'); // Topo
     const rowBtnAddInline = document.getElementById('row-btn-add-inline');
+    const rowBtnAddInlineTop = document.getElementById('row-btn-add-inline-top');
     const templateInlineCreate = document.getElementById('inline-create-template');
 
-    if (btnShowInlineCreate && rowBtnAddInline && templateInlineCreate) {
+    if (templateInlineCreate) {
         const priorityToggleInline = document.getElementById('inlineCreatePriorityToggle');
         let isInlinePriority = false;
 
-        btnShowInlineCreate.addEventListener('mouseenter', () => {
-            btnShowInlineCreate.style.backgroundColor = 'var(--hover-bg)';
-        });
-        btnShowInlineCreate.addEventListener('mouseleave', () => {
-            btnShowInlineCreate.style.backgroundColor = 'transparent';
-        });
+        function addHoverEffect(btn) {
+            if (!btn) return;
+            btn.addEventListener('mouseenter', () => btn.style.backgroundColor = 'var(--hover-bg)');
+            btn.addEventListener('mouseleave', () => btn.style.backgroundColor = 'transparent');
+        }
+        addHoverEffect(btnShowInlineCreate);
+        addHoverEffect(btnShowInlineCreateTop);
 
-        // Alterna a cor do ícone de prioridade ao clicar
         if (priorityToggleInline) {
             priorityToggleInline.addEventListener('click', function() {
                 isInlinePriority = !isInlinePriority;
@@ -1064,37 +1094,44 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        btnShowInlineCreate.addEventListener('click', () => {
-            rowBtnAddInline.style.display = 'none';
+        // Função que joga o formulário para cima ou para baixo
+        function openInlineForm(isTop) {
+            if (isTop) {
+                rowBtnAddInlineTop.after(templateInlineCreate);
+                rowBtnAddInlineTop.style.display = 'none';
+                if (rowBtnAddInline) rowBtnAddInline.style.display = 'table-row';
+            } else {
+                rowBtnAddInline.before(templateInlineCreate);
+                rowBtnAddInline.style.display = 'none';
+                if (rowBtnAddInlineTop) rowBtnAddInlineTop.style.display = 'table-row';
+            }
             templateInlineCreate.style.display = 'table-row';
             const pendenciaInput = templateInlineCreate.querySelector('[name="pendencia"]');
             if (pendenciaInput) pendenciaInput.focus();
             
-            // Reseta a prioridade ao abrir o formulário
             isInlinePriority = false;
             if (priorityToggleInline) priorityToggleInline.classList.remove('active');
-        });
+        }
+
+        if (btnShowInlineCreateTop) btnShowInlineCreateTop.addEventListener('click', () => openInlineForm(true));
+        if (btnShowInlineCreate) btnShowInlineCreate.addEventListener('click', () => openInlineForm(false));
 
         const btnCancelInline = templateInlineCreate.querySelector('.btn-cancel-inline');
         btnCancelInline.addEventListener('click', () => {
             templateInlineCreate.querySelectorAll('input, textarea').forEach(el => el.value = '');
             templateInlineCreate.style.display = 'none';
-            rowBtnAddInline.style.display = 'table-row';
+            if (rowBtnAddInlineTop) rowBtnAddInlineTop.style.display = 'table-row';
+            if (rowBtnAddInline) rowBtnAddInline.style.display = 'table-row';
             
-            // Reseta a prioridade ao cancelar
             isInlinePriority = false;
             if (priorityToggleInline) priorityToggleInline.classList.remove('active');
         });
 
         const btnSaveInline = templateInlineCreate.querySelector('.btn-save-inline');
         btnSaveInline.addEventListener('click', () => {
-            // Inclui o estado da prioridade no envio dos dados
             const payload = { prioridade: isInlinePriority };
-            
             templateInlineCreate.querySelectorAll('input, textarea').forEach(el => {
-                if (el.name) {
-                    payload[el.name] = el.value;
-                }
+                if (el.name) payload[el.name] = el.value;
             });
 
             if (!payload.pendencia || payload.pendencia.trim() === '') {
@@ -1107,25 +1144,12 @@ document.addEventListener('DOMContentLoaded', function() {
             btnSaveInline.disabled = true;
 
             fetch("{{ url_for('pendencias.quick_create_inline') }}", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    window.location.reload();
-                } else {
-                    alert("Erro ao salvar: " + data.message);
-                    btnSaveInline.textContent = '✔';
-                    btnSaveInline.disabled = false;
-                }
-            })
-            .catch(error => {
-                console.error("Erro de requisição:", error);
-                alert("Erro de rede ao tentar salvar a pendência.");
-                btnSaveInline.textContent = '✔';
-                btnSaveInline.disabled = false;
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+            }).then(r => r.json()).then(data => {
+                if (data.status === 'success') { window.location.reload(); } 
+                else { alert("Erro: " + data.message); btnSaveInline.textContent = '✔'; btnSaveInline.disabled = false; }
+            }).catch(err => {
+                alert("Erro de rede."); btnSaveInline.textContent = '✔'; btnSaveInline.disabled = false;
             });
         });
     }
@@ -1361,19 +1385,32 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- LÓGICA DE ADIÇÃO RÁPIDA EM FORMATO DE CARD (DESKTOP E MOBILE) ---
-    function setupQuickAddCard(containerSelector, formSelector, triggerSelector, toggleSelector, btnCancelSelector, btnSaveSelector) {
+    function setupQuickAddCard(containerSelector, formSelector, triggerSelector, toggleSelector, btnCancelSelector, btnSaveSelector, defaultPriority = false) {
         document.querySelectorAll(triggerSelector).forEach(btn => {
             btn.addEventListener('click', function() {
+                // EXCLUSIVIDADE: Fecha todos os outros formulários abertos
+                document.querySelectorAll('.card-quick-add-form').forEach(f => {
+                    f.style.display = 'none';
+                    f.querySelectorAll('input:not([type="hidden"]), textarea').forEach(i => i.value = '');
+                });
+                document.querySelectorAll('.card-quick-add-trigger').forEach(t => t.style.display = 'flex');
+
                 const container = this.closest(containerSelector);
                 const form = container.querySelector(formSelector);
                 this.style.display = 'none';
                 form.style.display = 'flex';
-                form.querySelectorAll('input:not([type="hidden"]), textarea').forEach(i => i.value = '');
+                
+                // Configura prioridade padrão
                 const priorityToggle = form.querySelector(toggleSelector);
-                priorityToggle.classList.remove('active');
-                form.dataset.priority = 'false';
-                form.style.borderLeftColor = 'var(--border-base)';
-                form.querySelector('[name="pendencia"]').focus();
+                form.dataset.priority = defaultPriority ? 'true' : 'false';
+                form.style.borderLeftColor = defaultPriority ? '#e74c3c' : 'var(--border-base)';
+                if (priorityToggle) {
+                    if (defaultPriority) priorityToggle.classList.add('active');
+                    else priorityToggle.classList.remove('active');
+                }
+                
+                const pendenciaInput = form.querySelector('[name="pendencia"]');
+                if(pendenciaInput) pendenciaInput.focus();
             });
         });
 
@@ -1391,10 +1428,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll(btnCancelSelector).forEach(btn => {
             btn.addEventListener('click', function() {
                 const container = this.closest(containerSelector);
-                const form = container.querySelector(formSelector);
-                const trigger = container.querySelector(triggerSelector);
-                form.style.display = 'none';
-                trigger.style.display = 'flex';
+                container.querySelector(formSelector).style.display = 'none';
+                container.querySelector(triggerSelector).style.display = 'flex';
             });
         });
 
@@ -1405,33 +1440,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 form.querySelectorAll('input, textarea').forEach(i => {
                     if (i.name) payload[i.name] = i.value;
                 });
-                if (!payload.pendencia.trim()) {
-                    alert("O título da pendência é obrigatório.");
-                    return;
-                }
-                const btnSave = this;
-                btnSave.disabled = true;
-                btnSave.textContent = "...";
+                if (!payload.pendencia.trim()) { alert("O título é obrigatório."); return; }
+                const btnSave = this; btnSave.disabled = true; btnSave.textContent = "...";
+                
                 fetch("{{ url_for('pendencias.quick_create_inline') }}", {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        window.location.reload();
-                    } else {
-                        alert("Erro: " + data.message);
-                        btnSave.disabled = false;
-                        btnSave.textContent = "Salvar";
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert("Erro de conexão.");
-                    btnSave.disabled = false;
-                    btnSave.textContent = "Salvar";
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                }).then(r => r.json()).then(data => {
+                    if (data.status === 'success') window.location.reload(); 
+                    else { alert("Erro: " + data.message); btnSave.disabled = false; btnSave.textContent = "Salvar"; }
+                }).catch(err => {
+                    alert("Erro de conexão."); btnSave.disabled = false; btnSave.textContent = "Salvar";
                 });
             });
         });
@@ -1504,13 +1522,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Inicializa o Desktop (Todas as pendências)
-    setupQuickAddCard('#card-quick-add-container', '#quickAddCardForm', '#btnShowQuickAddCard', '#quickCardPriorityToggle', '#btnCancelQuickCard', '#btnSaveQuickCard');
+    // Inicializa o Desktop (Todas as pendências não-prioritárias)
+    setupQuickAddCard('#card-quick-add-container', '#quickAddCardForm', '#btnShowQuickAddCard', '#quickCardPriorityToggle', '#btnCancelQuickCard', '#btnSaveQuickCard', false);
+    
+    // Inicializa o Desktop (Pendências Prioritárias) - ESTA ERA A LINHA QUE FALTAVA!
+    setupQuickAddCard('.card-quick-add-container-priority', '.quickAddCardFormPriority', '.btnShowQuickAddCardPriority', '.quickCardPriorityTogglePriority', '.btnCancelQuickCardPriority', '.btnSaveQuickCardPriority', true);
+    
     // Inicializa o Desktop (Por instrumento)
-    setupQuickAddCard('.card-quick-add-container-group', '.quickAddCardFormGroup', '.btnShowQuickAddCardGroup', '.quickCardPriorityToggleGroup', '.btnCancelQuickCardGroup', '.btnSaveQuickCardGroup');
+    setupQuickAddCard('.card-quick-add-container-group', '.quickAddCardFormGroup', '.btnShowQuickAddCardGroup', '.quickCardPriorityToggleGroup', '.btnCancelQuickCardGroup', '.btnSaveQuickCardGroup', false);
+    
     // Inicializa o Mobile (No fim da tabela)
-    setupQuickAddCard('.card-quick-add-container-group', '.quickAddCardFormMobile', '.btnShowQuickAddCardMobile', '.quickCardPriorityToggleMobile', '.btnCancelQuickCardMobile', '.btnSaveQuickCardMobile');
-
+    setupQuickAddCard('.card-quick-add-container-group', '.quickAddCardFormMobile', '.btnShowQuickAddCardMobile', '.quickCardPriorityToggleMobile', '.btnCancelQuickCardMobile', '.btnSaveQuickCardMobile', false);
 });
 </script>
 {% endblock %}
