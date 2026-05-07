@@ -14,12 +14,18 @@ hub_ic_bp = Blueprint('hub_ic', __name__)
 def hub_instrumentos():
     user_id_obj = ObjectId(current_user.id)
     
-    filtro_status = request.args.get('status', '') 
+    # 1. PEGAR O STATUS SEM VALOR PADRÃO (para que retorne None na primeira carga)
+    filtro_status = request.args.get('status') 
+    
+    # SE FOR A PRIMEIRA VEZ (None), FORÇA VIGENTE
+    if filtro_status is None:
+        filtro_status = 'Vigente'
+    
     filtro_contratada = request.args.get('contratada', '').strip()
     
     query = {'user_id': user_id_obj}
     
-    # 1. Correção: O filtro agora usa o campo booleano 'vigente'
+    # FILTRAGEM (Se for '', não entra em nenhum e mostra todos)
     if filtro_status == 'Vigente':
         query['vigente'] = True
     elif filtro_status == 'Extinto':
