@@ -233,6 +233,9 @@ def pendencias_lista(page_mode="geral"):
     color_map = get_color_map_for_user()
     opcoes_campos_cards = [field for field in TODAS_AS_COLUNAS_PENDENCIAS if field[0] != 'pendencia']
 
+    # --- NOVO: Busca os instrumentos para popular os selects de Adição Rápida ---
+    instrumentos_ativos = get_instrumentos_para_dropdown()
+
     return render_template(
         'pendencias_geral.html',
         pendencias=lista_pendencias,
@@ -250,7 +253,8 @@ def pendencias_lista(page_mode="geral"):
         filter_values=filter_values,
         page_mode=page_mode,
         color_map=color_map,
-        color_coding_active=getattr(current_user, 'color_coding_pendencias', False)
+        color_coding_active=getattr(current_user, 'color_coding_pendencias', False),
+        instrumentos=instrumentos_ativos
     )
 
 @pendencias_bp.route('/filtrar', methods=['POST'])

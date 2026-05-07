@@ -149,6 +149,7 @@
                     <button type="button" class="btn-save-inline" title="Salvar" style="background-color: var(--primary-color); color: white; border: none; padding: 4px; border-radius: 3px; cursor: pointer; margin-bottom: 4px; display: block; width: 100%;">✔</button>
                     <button type="button" class="btn-cancel-inline" title="Cancelar" style="background-color: #7f8c8d; color: white; border: none; padding: 4px; border-radius: 3px; cursor: pointer; display: block; width: 100%;">✖</button>
                 </td>
+                
                 <td style="text-align: center; vertical-align: middle;">
                     <span id="inlineCreatePriorityToggle" class="card-priority-toggle" title="Alternar Prioridade">
                         <svg viewBox="0 0 24 24" style="width:20px; height:20px;"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
@@ -158,14 +159,26 @@
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
                         <td style="padding: 4px; vertical-align: middle;"> 
-                            {% if col_id in ['pendencia', 'responsavel', 'situacao', 'observacoes', 'prazo'] %}
+                            {% if col_id in ['pendencia', 'responsavel', 'situacao', 'observacoes', 'prazo', 'instrumento_display'] %}
+                                
                                 {% if col_id == 'observacoes' %}
                                     <textarea name="{{ col_id }}" style="width: 100%; min-height: 38px; resize: vertical; box-sizing: border-box; border: 1px solid var(--primary-color); border-radius: 3px; padding: 8px; font-family: inherit; font-size: inherit; background-color: var(--background-secondary); color: var(--text-primary); display: block;" placeholder="Observações..."></textarea>
+                                
                                 {% elif col_id == 'prazo' %}
                                     <input type="date" name="{{ col_id }}" style="width: 100%; height: 38px; box-sizing: border-box; border: 1px solid var(--primary-color); border-radius: 3px; padding: 0 8px; font-family: inherit; font-size: inherit; background-color: var(--background-secondary); color: var(--text-primary); display: block;">
+                                
+                                {% elif col_id == 'instrumento_display' %}
+                                    <select name="instrumento_id" style="width: 100%; height: 38px; box-sizing: border-box; border: 1px solid var(--primary-color); border-radius: 3px; padding: 0 8px; font-family: inherit; font-size: inherit; background-color: var(--background-secondary); color: var(--text-primary); display: block; cursor: pointer;">
+                                        <option value="">-- Instrumento contratual --</option>
+                                        {% for inst in instrumentos %}
+                                            <option value="{{ inst._id }}">{{ inst.n_instrumento }} - {{ inst.contratada }}</option>
+                                        {% endfor %}
+                                    </select>
+                                
                                 {% else %}
                                     <input type="text" name="{{ col_id }}" style="width: 100%; height: 38px; box-sizing: border-box; border: 1px solid var(--primary-color); border-radius: 3px; padding: 0 8px; font-family: inherit; font-size: inherit; background-color: var(--background-secondary); color: var(--text-primary); display: block;" placeholder="Digitar...">
                                 {% endif %}
+
                             {% else %}
                                 <div style="color: var(--text-primary); opacity: 0.6; font-size: 0.85em; font-style: italic; padding: 6px; text-align: center;">Não aplicável</div>
                             {% endif %}
@@ -198,6 +211,12 @@
                     <svg viewBox="0 0 24 24" style="width:24px; height:24px;"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
                 </div>
             </div>
+            <select name="instrumento_id" style="width: 100%; margin-bottom: 8px; border: 1px solid var(--border-base); border-radius: 4px; padding: 6px; background-color: var(--background-primary); color: var(--text-primary); font-size: 0.9em; cursor: pointer;">
+                <option value="">-- Instrumento Contratual --</option>
+                {% for inst in instrumentos %}
+                    <option value="{{ inst._id }}">{{ inst.n_instrumento }} - {{ inst.contratada }}</option>
+                {% endfor %}
+            </select>
             <input type="text" name="pendencia" placeholder="Título da Pendência (Obrigatório)*" required>
             <input type="text" name="responsavel" placeholder="Responsável">
             <input type="date" name="prazo" title="Prazo">
@@ -286,6 +305,12 @@
                                     <svg viewBox="0 0 24 24" style="width:18px; height:18px;"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
                                 </div>
                             </div>
+                            <select name="instrumento_id" style="width: 100%; margin-bottom: 8px; border: 1px solid var(--border-base); border-radius: 4px; padding: 6px; background-color: var(--background-primary); color: var(--text-primary); font-size: 0.9em; cursor: pointer;">
+                                <option value="">-- Instrumento Contratual --</option>
+                                {% for inst in instrumentos %}
+                                    <option value="{{ inst._id }}">{{ inst.n_instrumento }} - {{ inst.contratada }}</option>
+                                {% endfor %}
+                            </select>
                             <input type="text" name="pendencia" placeholder="Título da Pendência (Obrigatório)*" required>
                             <input type="text" name="responsavel" placeholder="Responsável">
                             <input type="date" name="prazo" title="Prazo">
@@ -315,6 +340,12 @@
                                 <svg viewBox="0 0 24 24" style="width:18px; height:18px;"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
                             </div>
                         </div>
+                        <select name="instrumento_id" style="width: 100%; margin-bottom: 8px; border: 1px solid var(--border-base); border-radius: 4px; padding: 6px; background-color: var(--background-primary); color: var(--text-primary); font-size: 0.9em; cursor: pointer;">
+                            <option value="">-- Instrumento Contratual --</option>
+                            {% for inst in instrumentos %}
+                                <option value="{{ inst._id }}">{{ inst.n_instrumento }} - {{ inst.contratada }}</option>
+                            {% endfor %}
+                        </select>
                         <input type="text" name="pendencia" placeholder="Título da Pendência (Obrigatório)*" required>
                         <input type="text" name="responsavel" placeholder="Responsável">
                         <input type="date" name="prazo" title="Prazo">
@@ -1117,7 +1148,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const btnCancelInline = templateInlineCreate.querySelector('.btn-cancel-inline');
         btnCancelInline.addEventListener('click', () => {
-            templateInlineCreate.querySelectorAll('input, textarea').forEach(el => el.value = '');
+            templateInlineCreate.querySelectorAll('input, textarea, select').forEach(el => el.value = '');
             templateInlineCreate.style.display = 'none';
             if (rowBtnAddInlineTop) rowBtnAddInlineTop.style.display = 'table-row';
             if (rowBtnAddInline) rowBtnAddInline.style.display = 'table-row';
@@ -1129,7 +1160,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const btnSaveInline = templateInlineCreate.querySelector('.btn-save-inline');
 
         // --- NOVO: Salvar com Enter / Cancelar com ESC nos campos da tabela ---
-        templateInlineCreate.querySelectorAll('input, textarea').forEach(input => {
+        templateInlineCreate.querySelectorAll('input, textarea, select').forEach(input => {
             input.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     // Se for textarea e segurar Shift, apenas pula linha. Caso contrário, salva.
@@ -1146,7 +1177,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         btnSaveInline.addEventListener('click', () => {
             const payload = { prioridade: isInlinePriority };
-            templateInlineCreate.querySelectorAll('input, textarea').forEach(el => {
+            templateInlineCreate.querySelectorAll('input, textarea, select').forEach(el => {
                 if (el.name) payload[el.name] = el.value;
             });
 
@@ -1407,7 +1438,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // EXCLUSIVIDADE: Fecha todos os outros formulários abertos
                 document.querySelectorAll('.card-quick-add-form').forEach(f => {
                     f.style.display = 'none';
-                    f.querySelectorAll('input:not([type="hidden"]), textarea').forEach(i => i.value = '');
+                    f.querySelectorAll('input:not([type="hidden"]), textarea, select').forEach(i => i.value = '');
                 });
                 document.querySelectorAll('.card-quick-add-trigger').forEach(t => t.style.display = 'flex');
 
@@ -1451,7 +1482,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // --- NOVO: Salvar com Enter / Cancelar com ESC nos campos dos cards ---
         document.querySelectorAll(formSelector).forEach(form => {
-            form.querySelectorAll('input, textarea').forEach(input => {
+            form.querySelectorAll('input, textarea, select').forEach(input => {
                 input.addEventListener('keydown', function(e) {
                     if (e.key === 'Enter') {
                         if (this.tagName === 'TEXTAREA' && e.shiftKey) return; 
@@ -1471,7 +1502,7 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.addEventListener('click', function() {
                 const form = this.closest(formSelector);
                 const payload = { prioridade: form.dataset.priority === 'true' };
-                form.querySelectorAll('input, textarea').forEach(i => {
+                form.querySelectorAll('input, textarea, select').forEach(i => {
                     if (i.name) payload[i.name] = i.value;
                 });
                 if (!payload.pendencia.trim()) { alert("O título é obrigatório."); return; }
