@@ -1128,6 +1128,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         const btnSaveInline = templateInlineCreate.querySelector('.btn-save-inline');
+
+        // --- NOVO: Salvar com Enter / Cancelar com ESC nos campos da tabela ---
+        templateInlineCreate.querySelectorAll('input, textarea').forEach(input => {
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    // Se for textarea e segurar Shift, apenas pula linha. Caso contrário, salva.
+                    if (this.tagName === 'TEXTAREA' && e.shiftKey) return; 
+                    e.preventDefault();
+                    btnSaveInline.click();
+                } else if (e.key === 'Escape') {
+                    // Clica automaticamente no botão de cancelar
+                    e.preventDefault();
+                    btnCancelInline.click();
+                }
+            });
+        });
+
         btnSaveInline.addEventListener('click', () => {
             const payload = { prioridade: isInlinePriority };
             templateInlineCreate.querySelectorAll('input, textarea').forEach(el => {
@@ -1430,6 +1447,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 const container = this.closest(containerSelector);
                 container.querySelector(formSelector).style.display = 'none';
                 container.querySelector(triggerSelector).style.display = 'flex';
+            });
+        });
+
+        // --- NOVO: Salvar com Enter / Cancelar com ESC nos campos dos cards ---
+        document.querySelectorAll(formSelector).forEach(form => {
+            form.querySelectorAll('input, textarea').forEach(input => {
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        if (this.tagName === 'TEXTAREA' && e.shiftKey) return; 
+                        e.preventDefault();
+                        const btnSave = form.querySelector(btnSaveSelector);
+                        if (btnSave) btnSave.click();
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        const btnCancel = form.querySelector(btnCancelSelector);
+                        if (btnCancel) btnCancel.click();
+                    }
+                });
             });
         });
 
