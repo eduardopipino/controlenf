@@ -186,7 +186,7 @@
 
     <div class="card-quick-add-container-group hide-on-desktop" style="margin-top: 15px;">
         <div class="card-quick-add-trigger btnShowQuickAddCardMobile">
-            <span style="font-size: 1.2em; font-weight: bold;">+ Adicionar Pendência</span>
+            <span style="font-size: 1.2em; font-weight: bold;">+ Adição rápida</span>
         </div>
         <div class="data-card card-quick-add-form quickAddCardFormMobile" style="border-left-color: var(--border-base); display: none; position: relative;" data-priority="false">
             <div class="card-actions-corner">
@@ -280,7 +280,7 @@
                 
                 <div id="card-quick-add-container">
                     <div id="btnShowQuickAddCard" class="card-quick-add-trigger">
-                        <span style="font-size: 1.2em; font-weight: bold;">+ Adicionar Pendência</span>
+                        <span style="font-size: 1.2em; font-weight: bold;">+ Adição Rápida</span>
                     </div>
                     <div id="quickAddCardForm" class="data-card card-quick-add-form" style="border-left-color: var(--border-base);">
                         <div class="card-actions-corner">
@@ -637,13 +637,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Move o elemento
                         if (isActivating) {
-                            targetContainer.prepend(elementToMove);
+                            // Correção para alinhar abaixo da linha invisível de "sem resultados"
+                            if (isMobile || viewMode === 'table') {
+                                const firstRealRow = targetContainer.querySelector('tr.clickable-row');
+                                if (firstRealRow) {
+                                    targetContainer.insertBefore(elementToMove, firstRealRow);
+                                } else {
+                                    targetContainer.prepend(elementToMove);
+                                }
+                            } else {
+                                targetContainer.prepend(elementToMove);
+                            }
                         } else {
                             let firstNonPriorityItem = null;
                             let lastPriorityItem = null;
 
                             if (isMobile || viewMode === 'table') {
-                                const allNonPriorityRows = targetContainer.querySelectorAll('tr:not(.prioridade-ativa)');
+                                // CORREÇÃO: Busca APENAS nas linhas reais de dados (.clickable-row)
+                                const allNonPriorityRows = targetContainer.querySelectorAll('tr.clickable-row:not(.prioridade-ativa)');
                                 firstNonPriorityItem = Array.from(allNonPriorityRows).find(row => row !== elementToMove);
 
                             } else if (viewMode === 'kanban') {
@@ -661,7 +672,20 @@ document.addEventListener('DOMContentLoaded', function() {
                                 }
                             }
 
-                            if (isMobile || viewMode === 'table' || viewMode === 'kanban') {
+                            if (isMobile || viewMode === 'table') {
+                                if (firstNonPriorityItem) {
+                                    targetContainer.insertBefore(elementToMove, firstNonPriorityItem);
+                                } else {
+                                    // CORREÇÃO: Se não houver itens sem prioridade, garante que a linha fique 
+                                    // ANTES do botão de Adição Rápida e não no fundo da tabela quebrando o layout.
+                                    const templateRow = targetContainer.querySelector('#inline-create-template');
+                                    if (templateRow) {
+                                        targetContainer.insertBefore(elementToMove, templateRow);
+                                    } else {
+                                        targetContainer.appendChild(elementToMove);
+                                    }
+                                }
+                            } else if (viewMode === 'kanban') {
                                 if (firstNonPriorityItem) {
                                     targetContainer.insertBefore(elementToMove, firstNonPriorityItem);
                                 } else {
