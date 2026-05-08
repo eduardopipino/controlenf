@@ -5,7 +5,8 @@ from datetime import datetime
 from app.models import (instrumentos_collection, pendencias_collection, 
                         controle_collection, TODAS_AS_COLUNAS_PENDENCIAS, 
                         TODAS_AS_COLUNAS_CONTROLE, users_collection,
-                        TODAS_AS_COLUNAS_CARDS, get_controles_pendentes_por_instrumento)
+                        TODAS_AS_COLUNAS_CARDS, get_controles_pendentes_por_instrumento,
+                        itens_collection)
 
 hub_ic_bp = Blueprint('hub_ic', __name__)
 
@@ -55,6 +56,8 @@ def hub_instrumentos():
         
         controles_pendentes = get_controles_pendentes_por_instrumento(inst_id)
         
+        itens_do_instrumento = list(itens_collection.find({'instrumento_id': inst_id}))
+        
         inst['str_id'] = str(inst_id)
         # Identifica textualmente o status para os badges do HTML
         is_vigente = inst.get('vigente', True)
@@ -67,6 +70,7 @@ def hub_instrumentos():
             'pendencias_vencidas': pendencias_vencidas,
             'pendencias_a_vencer': pendencias_a_vencer,
             'controles': controles_pendentes,
+            'itens': itens_do_instrumento,
             'stats': {
                 'total_pendencias': len(pendencias_abertas),
                 'total_controles': len(controles_pendentes),
