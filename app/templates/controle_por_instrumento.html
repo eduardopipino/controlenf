@@ -116,7 +116,7 @@
                                                         <td class="coluna-prioridade" data-id="{{ p._id }}"></td>
                                                         {% for col_id, col_nome in todas_as_colunas_pendencias %}
                                                             {% if col_id in colunas_visiveis_pendencias %}
-                                                                <td data-label="{{ col_nome }}"><span class="card-value">{{ p.prazo.strftime('%d/%m/%Y') if col_id == 'prazo' and p.prazo else p.get(col_id, '') }}</span></td>
+                                                                <td data-label="{{ col_nome }}"><span class="card-value">{{ p.prazo.strftime('%d/%m/%Y') if col_id == 'prazo' and p.prazo else ('' if p.get(col_id) is none else p.get(col_id)) }}</span></td>
                                                             {% endif %}
                                                         {% endfor %}
                                                         <td data-label="Concluir" class="coluna-concluir" style="text-align: center; vertical-align: middle;">
@@ -196,7 +196,7 @@
                                                                                 <span class="texto-pendente" style="color: #e74c3c; font-size: 0.9em;">(pendente: {{ pendentes | join(', ') if pendentes is iterable and pendentes is not string else pendentes }})</span>
                                                                             {% endif %}
                                                                         {% else %}
-                                                                            {{ controle.get(col_id, '') }}
+                                                                            {{ '' if controle.get(col_id) is none else controle.get(col_id) }}
                                                                         {% endif %}
                                                                     </span>
                                                                 </td>
