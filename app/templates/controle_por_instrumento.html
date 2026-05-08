@@ -66,15 +66,20 @@
                             <span class="hub-badge badge-pendencia">⏳ {{ item.stats.total_pendencias }} Pendências</span>
                             <span class="hub-badge badge-nota">🧾 {{ item.stats.total_controles }} Notas Fiscais</span>
                         </div>
-                        <p class="hub-summary-objeto">
-                            {{ item.instrumento.objeto_resumido }}
+                        <div class="hub-summary-objeto" style="display: flex; justify-content: space-between; gap: 20px; align-items: flex-start;">
+                            <span style="flex: 1;">
+                                {{ item.instrumento.objeto_resumido }}
+                            </span>
+                            
                             {% if item.itens %}
-                                - ITENS: 
-                                {% for it in item.itens %}
-                                    {{ it.descricao_item }}{{ ", " if not loop.last else "" }}
-                                {% endfor %}
+                                <span style="text-align: right; max-width: 50%; font-size: 0.95em; opacity: 0.9;">
+                                    <strong>ITENS:</strong> 
+                                    {% for it in item.itens %}
+                                        {{ it.descricao_item }}{{ ", " if not loop.last else "" }}
+                                    {% endfor %}
+                                </span>
                             {% endif %}
-                        </p>
+                        </div>
                     </summary>
 
                     <div class="hub-accordion-content">
