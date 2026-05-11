@@ -49,9 +49,36 @@
     </div>
 
     <br>
-
     <div class="mobile-search-bar hide-on-desktop" style="margin-bottom: 15px;">
-        <input type="search" id="buscaRapidaInputMobile" placeholder="Buscar registros..." style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid var(--border-base); background-color: var(--background-secondary); color: var(--text-primary); font-size: 14px;">
+        <input type="search" id="buscaRapidaInputMobile" placeholder="Buscar em todas as colunas..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-base); box-sizing: border-box; background-color: var(--background-primary); color: var(--text-primary);">
+    </div>
+    <div class="card-quick-add-container-top-mobile hide-on-desktop" style="margin-bottom: 15px;">
+        <div class="card-quick-add-trigger btnShowQuickAddCardMobileTop" style="border: 2px dashed var(--border-base); padding: 10px; border-radius: 8px; text-align: center; color: var(--tertiary-color); cursor: pointer; display: flex; justify-content: center; align-items: center;">
+            <span style="font-size: 1.1em; font-weight: bold;">+ Adição Rápida</span>
+        </div>
+        <div class="data-card card-quick-add-form quickAddCardFormMobileTop" style="border-left-color: var(--border-base); display: none; position: relative;" data-priority="false">
+            <div class="card-actions-corner">
+                <div class="card-priority-toggle quickCardPriorityToggleMobileTop" title="Alternar Prioridade">
+                    <svg viewBox="0 0 24 24" style="width:24px; height:24px;"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
+                </div>
+            </div>
+            <select name="instrumento_id" style="width: 100%; margin-bottom: 8px; border: 1px solid var(--border-base); border-radius: 4px; padding: 6px; background-color: var(--background-primary); color: var(--text-primary); font-size: 0.9em; cursor: pointer;">
+                <option value="">-- Instrumento Contratual --</option>
+                {% for inst in instrumentos %}
+                    <option value="{{ inst._id }}">{{ inst.n_instrumento }} - {{ inst.contratada }}</option>
+                {% endfor %}
+            </select>
+            <input type="text" name="pendencia" placeholder="Título da Pendência (Obrigatório)*" required>
+            <input type="text" name="responsavel" placeholder="Responsável">
+            <input type="date" name="prazo" title="Prazo">
+            <input type="text" name="situacao" placeholder="Situação">
+            <textarea name="observacoes" placeholder="Observações..."></textarea>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 5px;">
+                <button type="button" class="btn-cancel btnCancelQuickCardMobileTop" style="padding: 5px 12px; height: 30px;">Cancelar</button>
+                <button type="button" class="btn-confirm-success btnSaveQuickCardMobileTop" style="padding: 5px 12px; height: 30px; background-color: var(--primary-color);">Salvar</button>
+            </div>
+        </div>
     </div>
 
     {% set card_fields_map = dict(todas_as_colunas_cards) %}
@@ -76,7 +103,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr id="row-btn-add-inline-top">
+            <tr id="row-btn-add-inline-top" class="hide-on-mobile">
                 <td colspan="{{ colunas_visiveis|length + 3 }}" style="padding: 0;">
                     <button type="button" id="btnShowInlineCreateTop" style="width: 100%; background: none; border: 2px dashed var(--border-base); color: var(--tertiary-color); padding: 10px; cursor: pointer; font-weight: bold; border-radius: 8px 8px 0 0; transition: background-color 0.2s; border-bottom: none;">
                         + Adição Rápida
@@ -190,7 +217,7 @@
                 <td></td> 
             </tr>
 
-            <tr id="row-btn-add-inline">
+            <tr id="row-btn-add-inline" class="hide-on-mobile">
                 <td colspan="{{ colunas_visiveis|length + 3 }}" style="padding: 0;">
                     <button type="button" id="btnShowInlineCreate" style="width: 100%; background: none; border: 2px dashed var(--border-base); color: var(--tertiary-color); padding: 10px; cursor: pointer; font-weight: bold; border-radius: 0 0 8px 8px; transition: background-color 0.2s;">
                         + Adição Rápida
@@ -1598,6 +1625,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Inicializa o Mobile (No fim da tabela)
     setupQuickAddCard('.card-quick-add-container-group', '.quickAddCardFormMobile', '.btnShowQuickAddCardMobile', '.quickCardPriorityToggleMobile', '.btnCancelQuickCardMobile', '.btnSaveQuickCardMobile', false);
+
+    // Inicializa o Mobile (No Topo da Tabela)
+    setupQuickAddCard('.card-quick-add-container-top-mobile', '.quickAddCardFormMobileTop', '.btnShowQuickAddCardMobileTop', '.quickCardPriorityToggleMobileTop', '.btnCancelQuickCardMobileTop', '.btnSaveQuickCardMobileTop', false);
+
 });
 </script>
 {% endblock %}

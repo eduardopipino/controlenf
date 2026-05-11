@@ -1545,7 +1545,7 @@ td .card-value {
     .responsive-card-table thead {
         display: none;
     }
-    .responsive-card-table tr:not(#tabela-sem-resultados-row):not(#tabela-backend-sem-resultados) {
+    .responsive-card-table tr:not(#tabela-sem-resultados-row):not(#tabela-pendencias-sem-resultados-row):not(#tabela-backend-sem-resultados):not(.hide-on-mobile) {
         display: block !important;
         width: 100% !important;
         box-sizing: border-box !important;
@@ -2923,6 +2923,8 @@ body.theme-dark #buscaRapidaInput {
     /* Regra para aniquilar as linhas de criação do desktop no mobile */
     table#tabelaPendencias tr#inline-create-template,
     table#tabelaPendencias tr#row-btn-add-inline,
+    table#tabelaPendencias tr#row-btn-add-inline-top,
+    table#tabelaPendencias tr.hide-on-mobile,
     table#tabelaPendencias tr.hide-on-mobile-always {
         display: none !important;
         border: none !important;
