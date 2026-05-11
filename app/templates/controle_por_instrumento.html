@@ -206,7 +206,7 @@
                                                                             {{ docs | join(', ') if docs is iterable and docs is not string else docs }}
                                                                             {% set pendentes = controle.get('documentacao_pendente') %}
                                                                             {% if pendentes %}
-                                                                                <span class="texto-pendente" style="color: #e74c3c; font-size: 0.9em;">(pendente: {{ pendentes | join(', ') if pendentes is iterable and pendentes is not string else pendentes }})</span>
+                                                                                <span class="texto-pendente">(pendente: {{ pendentes | join(', ') if pendentes is iterable and pendentes is not string else pendentes }})</span>
                                                                             {% endif %}
                                                                         {% else %}
                                                                             {{ '' if controle.get(col_id) is none else controle.get(col_id) }}
