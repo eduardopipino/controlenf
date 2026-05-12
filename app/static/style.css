@@ -3554,4 +3554,105 @@ tr#inline-create-template { background-color: var(--table-stripe); }
     margin-bottom: 30px;
 }
 
+/* ==========================================================================
+   ESTILOS MIGRADOS DO CONTROLE DE NOTAS FISCAIS (MODAIS E JS)
+   ========================================================================== */
+
+/* 1. Cabeçalho do Menu de Contexto */
+.context-menu-header {
+    padding: 8px 15px;
+    font-weight: bold;
+    border-bottom: 1px solid var(--border-base);
+}
+
+/* 2. Modal de Documentação */
+.modal-checklist-scroll {
+    margin-top: 15px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.modal-extra-doc-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    align-items: center;
+}
+
+.input-modal-extra {
+    flex-grow: 1;
+    height: 32px;
+    padding: 0 10px;
+    margin: 0;
+    box-sizing: border-box;
+    border: 1px solid var(--border-base);
+    border-radius: 4px;
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+}
+
+.btn-modal-add-extra {
+    height: 32px;
+    padding: 0 20px;
+    margin: 0;
+    box-sizing: border-box;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-modal-add-extra:hover {
+    background-color: var(--accent-color);
+}
+
+/* 3. Itens gerados via JavaScript (Linhas de Documento) */
+.doc-inline-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-base);
+}
+
+.doc-inline-label {
+    cursor: pointer;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-grow: 1;
+    word-break: break-word;
+}
+
+.btn-remove-doc {
+    cursor: pointer;
+    color: var(--text-primary);
+    opacity: 0.6;
+    flex-shrink: 0;
+    margin-left: 10px;
+    transition: all 0.2s ease;
+}
+
+/* Substitui os eventos onmouseenter e onmouseleave do HTML! */
+.btn-remove-doc:hover {
+    transform: translateY(-2px) scale(1.1);
+    opacity: 1;
+    color: #e74c3c;
+}
+
+/* Texto de ajuda para inputs em formulários/modais */
+.form-help-text {
+    display: block;        /* Garante que salta para a linha de baixo ignorando flexboxes */
+    margin-top: 8px;       /* Cria o espaço exato que está a faltar em relação ao input */
+    font-size: 0.85em;
+    color: var(--text-primary);
+    opacity: 0.7;
+}
+
 /* fim da transferência */
