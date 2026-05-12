@@ -50,7 +50,7 @@
 
     <br>
     <div class="mobile-search-bar hide-on-desktop" style="margin-bottom: 15px;">
-        <input type="search" id="buscaRapidaInputMobile" placeholder="Buscar em todas as colunas..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-base); box-sizing: border-box; background-color: var(--background-primary); color: var(--text-primary);">
+        <input type="search" id="buscaRapidaInputMobile" placeholder="Buscar em todas as colunas...">
     </div>
     <div class="card-quick-add-container-top-mobile hide-on-desktop" style="margin-bottom: 15px;">
         <div class="card-quick-add-trigger btnShowQuickAddCardMobileTop" style="border: 2px dashed var(--border-base); padding: 10px; border-radius: 8px; text-align: center; color: var(--tertiary-color); cursor: pointer; display: flex; justify-content: center; align-items: center;">
@@ -105,7 +105,7 @@
         <tbody>
             <tr id="row-btn-add-inline-top" class="hide-on-mobile">
                 <td colspan="{{ colunas_visiveis|length + 3 }}" style="padding: 0;">
-                    <button type="button" id="btnShowInlineCreateTop" style="width: 100%; background: none; border: 2px dashed var(--border-base); color: var(--tertiary-color); padding: 10px; cursor: pointer; font-weight: bold; border-radius: 8px 8px 0 0; transition: background-color 0.2s; border-bottom: none;">
+                    <button type="button" id="btnShowInlineCreateTop" class="btn-dashed-add top-flat">
                         + Adição Rápida
                     </button>
                 </td>
@@ -219,7 +219,7 @@
 
             <tr id="row-btn-add-inline" class="hide-on-mobile">
                 <td colspan="{{ colunas_visiveis|length + 3 }}" style="padding: 0;">
-                    <button type="button" id="btnShowInlineCreate" style="width: 100%; background: none; border: 2px dashed var(--border-base); color: var(--tertiary-color); padding: 10px; cursor: pointer; font-weight: bold; border-radius: 0 0 8px 8px; transition: background-color 0.2s;">
+                    <button type="button" id="btnShowInlineCreate" class="btn-dashed-add top-flat">
                         + Adição Rápida
                     </button>
                 </td>
