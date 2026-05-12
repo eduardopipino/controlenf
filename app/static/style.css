@@ -3441,4 +3441,111 @@ textarea.inline-add-field {
     height: 20px;
 }
 
+/* ==========================================================================
+   LIMPEZA FINAL DE ESTILOS INLINE (CARDS, TABELAS E HUB CENTRAL)
+   ========================================================================== */
+
+/* 1. Modificadores dos Containers de Adição Rápida */
+.card-quick-add-container-top-mobile { margin-bottom: 15px; }
+.card-quick-add-container-group { margin-top: 15px; }
+
+/* 2. Formulário dos Cards de Adição Rápida */
+.card-quick-add-form {
+    border-left-color: var(--border-base);
+    position: relative;
+}
+
+/* Se a prioridade estiver ativa, a borda esquerda fica vermelha automaticamente */
+.card-quick-add-form[data-priority="true"] {
+    border-left-color: #e74c3c !important;
+}
+
+/* 3. Ajustes de Linhas e Células de Tabela */
+tr#inline-create-template { background-color: var(--table-stripe); }
+.clickable-row { position: relative; }
+.kanban-empty-msg { text-align: center; width: 100%; }
+.th-icon-col { width: 40px; text-align: center; }
+
+/* Wrapper para o scroll horizontal das tabelas no Hub */
+.table-responsive-wrapper {
+    overflow-x: auto;
+    width: 100%;
+    padding-bottom: 10px;
+}
+
+/* 4. HUB CENTRAL (controle_por_instrumento.html) */
+.hub-container { margin-top: 25px; }
+
+/* Barra de Ações Mobile do Hub */
+.hub-mobile-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding: 0 5px;
+}
+.hub-mobile-actions .btnExpandirRecolher {
+    flex: 1;
+    height: 42px;
+    padding: 0 10px;
+    font-size: 14px;
+}
+
+/* Filtro Dropdown Inline (Hub Desktop) */
+.filtroStatusInline {
+    min-width: 150px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border-base);
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+/* Filtro Dropdown Inline (Ajuste Hub Mobile) */
+.hub-mobile-actions .filtroStatusInline {
+    flex: 1;
+    height: 42px;
+    padding: 0 10px;
+    font-size: 14px;
+}
+
+/* Barra de Busca Exclusiva do Hub Mobile */
+.mobile-search-bar input.buscaRapidaInput {
+    width: 100%;
+    padding: 12px;
+    border-radius: 5px;
+    border: 1px solid var(--border-base);
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+/* Badge de "Extinto" e Textos do Cabeçalho (Hub) */
+.badge-extinto-text {
+    font-style: italic;
+    font-weight: normal;
+    opacity: 0.7;
+    font-size: 0.85em;
+    margin-left: 8px;
+}
+
+/* Formatação do Flexbox Objeto/Itens no Hub */
+.hub-summary-objeto {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: flex-start;
+    margin: 10px 0 0 15px; 
+    font-size: 0.9em; 
+    color: var(--text-primary); 
+    opacity: 0.8;
+}
+.hub-objeto-text { flex: 1; }
+.hub-itens-text {
+    text-align: right;
+    max-width: 50%;
+    font-size: 0.95em;
+    opacity: 0.9;
+}
+
 /* fim da transferência */

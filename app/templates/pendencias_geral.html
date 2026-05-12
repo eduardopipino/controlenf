@@ -49,14 +49,14 @@
     </div>
 
     <br>
-    <div class="mobile-search-bar hide-on-desktop" style="margin-bottom: 15px;">
+    <div class="mobile-search-bar hide-on-desktop">
         <input type="search" id="buscaRapidaInputMobile" placeholder="Buscar em todas as colunas...">
     </div>
     <div class="card-quick-add-container-top-mobile hide-on-desktop" style="margin-bottom: 15px;">
         <div class="card-quick-add-trigger btnShowQuickAddCardMobileTop btn-dashed-add">
             <span class="quick-add-text">+ Adição Rápida</span>
         </div>
-        <div class="data-card card-quick-add-form quickAddCardFormMobileTop" style="border-left-color: var(--border-base); display: none; position: relative;" data-priority="false">
+        <div class="data-card card-quick-add-form quickAddCardFormMobileTop" style="display: none;" data-priority="false">
             <div class="card-actions-corner">
                 <div class="card-priority-toggle quickCardPriorityToggleMobileTop" title="Alternar Prioridade">
                     <svg viewBox="0 0 24 24" class="icon-24"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
@@ -158,7 +158,7 @@
                         </td>
                     {% endif %}
                 {% endfor %}
-                <td data-label="Concluir" class="coluna-concluir" style="text-align: center; vertical-align: middle;">
+                <td data-label="Concluir" class="coluna-concluir" class="td-center-compact">
                     <button class="btn-concluir-action" data-id="{{ p._id }}" title="Marcar como Concluído">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
                     </button>
@@ -171,13 +171,13 @@
             </tr>
             {% endfor %}
             
-            <tr id="inline-create-template" style="display: none; background-color: var(--table-stripe);">
+            <tr id="inline-create-template" style="display: none;">
                 <td class="td-center-compact">
                     <button type="button" class="btn-save-inline" title="Salvar" class="btn-inline-action save">✔</button>
                     <button type="button" class="btn-cancel-inline" title="Cancelar" class="btn-inline-action cancel">✖</button>
                 </td>
                 
-                <td style="text-align: center; vertical-align: middle;">
+                <td class="td-center-compact">
                     <span id="inlineCreatePriorityToggle" class="card-priority-toggle" title="Alternar Prioridade">
                         <svg viewBox="0 0 24 24" style="width:20px; height:20px;"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
                     </span>
@@ -185,7 +185,7 @@
                 
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
-                        <td style="padding: 4px; vertical-align: middle;"> 
+                        <td class="td-compact"> 
                             {% if col_id in ['pendencia', 'responsavel', 'situacao', 'observacoes', 'prazo', 'instrumento_display'] %}
                                 
                                 {% if col_id == 'observacoes' %}
@@ -232,7 +232,7 @@
         <div class="card-quick-add-trigger btnShowQuickAddCardMobile">
             <span class="quick-add-text">+ Adição rápida</span>
         </div>
-        <div class="data-card card-quick-add-form quickAddCardFormMobile" style="border-left-color: var(--border-base); display: none; position: relative;" data-priority="false">
+        <div class="data-card card-quick-add-form quickAddCardFormMobile" style="display: none;" data-priority="false">
             <div class="card-actions-corner">
                 <div class="card-priority-toggle quickCardPriorityToggleMobile" title="Alternar Prioridade">
                     <svg viewBox="0 0 24 24" class="icon-24"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
@@ -326,7 +326,7 @@
                         <div class="card-quick-add-trigger btnShowQuickAddCardPriority">
                             <span class="quick-add-text">+ Adição Rápida</span>
                         </div>
-                        <div class="data-card card-quick-add-form quickAddCardFormPriority" style="border-left-color: #e74c3c; display: none;" data-priority="true">
+                        <div class="data-card card-quick-add-form quickAddCardFormPriority" style="display: none;" data-priority="true">
                             <div class="card-actions-corner">
                                 <div class="card-priority-toggle quickCardPriorityTogglePriority active" title="Alternar Prioridade">
                                     <svg viewBox="0 0 24 24" class="icon-18"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
