@@ -52,7 +52,7 @@
     <div class="mobile-search-bar hide-on-desktop">
         <input type="search" id="buscaRapidaInputMobile" placeholder="Buscar em todas as colunas...">
     </div>
-    <div class="card-quick-add-container-top-mobile hide-on-desktop" style="margin-bottom: 15px;">
+    <div class="card-quick-add-container-top-mobile hide-on-desktop">
         <div class="card-quick-add-trigger btnShowQuickAddCardMobileTop btn-dashed-add">
             <span class="quick-add-text">+ Adição Rápida</span>
         </div>
@@ -96,7 +96,7 @@
                         </th>
                     {% endif %}
                 {% endfor %}
-                <th class="hide-on-mobile" style="text-align: center; width: 40px;" title="Concluir Pendência">
+                <th class="hide-on-mobile th-icon-col" title="Concluir Pendência">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
                 </th>
                 <th></th>
@@ -119,7 +119,7 @@
             <tr class="clickable-row {{ 'pendencia-vencida' if p.vencido else '' }} {% if p.prioridade %}prioridade-ativa{% endif %}" 
                 data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" 
                 data-id="{{ p._id }}" 
-                style="position: relative; {% if color_coding_active and p.cor_destaque %}background-color: {{ p.cor_destaque }};{% endif %}">
+                {% if color_coding_active and p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
                 
                 <div class="card-actions-corner hide-on-desktop">
                     <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" class="card-action-icon" title="Ver Detalhes">
@@ -179,7 +179,7 @@
                 
                 <td class="td-center-compact">
                     <span id="inlineCreatePriorityToggle" class="card-priority-toggle" title="Alternar Prioridade">
-                        <svg viewBox="0 0 24 24" style="width:20px; height:20px;"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
+                        <svg viewBox="0 0 24 24" class="icon-sm"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
                     </span>
                 </td>
                 
@@ -228,7 +228,7 @@
         </tbody>
     </table>
 
-    <div class="card-quick-add-container-group hide-on-desktop" style="margin-top: 15px;">
+    <div class="card-quick-add-container-group hide-on-desktop">
         <div class="card-quick-add-trigger btnShowQuickAddCardMobile">
             <span class="quick-add-text">+ Adição rápida</span>
         </div>
@@ -259,7 +259,7 @@
 
 
     {% if view_mode == 'cards' %}
-        <p id="cards-pendencias-sem-resultados" class="kanban-empty-msg hide-on-mobile" style="display: none !important; text-align: center; width: 100%;">
+        <p id="cards-pendencias-sem-resultados" class="kanban-empty-msg hide-on-mobile" style="display: none !important;">
             Nenhum resultado encontrado para a busca.
         </p>
         <div class="card-view-container hide-on-mobile">
@@ -285,7 +285,7 @@
                                 <div class="card-quick-add-trigger btnShowQuickAddCardGroup">
                                     <span class="quick-add-text">+ Adição Rápida</span>
                                 </div>
-                                <div class="data-card card-quick-add-form quickAddCardFormGroup" style="border-left-color: var(--border-base); display: none;" data-priority="false">
+                                <div class="data-card card-quick-add-form quickAddCardFormGroup" style="display: none;" data-priority="false">
                                     <input type="hidden" name="instrumento_id" value="{{ grupo.detalhes_instrumento.instrumento_id }}">
                                     <div class="card-actions-corner">
                                         <div class="card-priority-toggle quickCardPriorityToggleGroup" title="Alternar Prioridade">
@@ -361,7 +361,7 @@
                     <div id="btnShowQuickAddCard" class="card-quick-add-trigger">
                         <span class="quick-add-text">+ Adição Rápida</span>
                     </div>
-                    <div id="quickAddCardForm" class="data-card card-quick-add-form" style="border-left-color: var(--border-base);">
+                    <div id="quickAddCardForm" class="data-card card-quick-add-form">
                         <div class="card-actions-corner">
                             <div id="quickCardPriorityToggle" class="card-priority-toggle" title="Alternar Prioridade">
                                 <svg viewBox="0 0 24 24" class="icon-18"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
@@ -461,7 +461,7 @@
             <h3>Selecione as Colunas para Exibir</h3>
             <div id="colunas-checklist" class="modal-colunas-list"></div>
             <div class="button-toolbar">
-                <button id="btnSalvarColunas">Salvar e Atualizar</button>
+                <button id="btnSalvarColunas">Salvar</button>
                 <button type="button" class="btn-cancel-modal">Cancelar</button>
             </div>
         </div>
