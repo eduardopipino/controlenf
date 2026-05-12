@@ -3199,3 +3199,21 @@ input[type="search"] {
 .hub-container {
     margin-top: 20px;
 }
+
+/* Transferência de style dos arquivos html */
+
+/* Divisores do Dashboard */
+hr.divider-top {
+    margin-top: 30px;
+    margin-bottom: 0;
+    border: 0;
+    border-top: 1px solid var(--border-base);
+}
+
+hr.divider-spaced {
+    margin: 40px 0;
+    border: 0;
+    border-top: 1px solid var(--border-base);
+}
+
+/* fim da transferência */
