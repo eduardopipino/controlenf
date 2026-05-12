@@ -25,15 +25,14 @@
             <p><strong>Objeto:</strong> <span id="info_objeto"></span></p>
         </div>
         
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-            <label style="margin-bottom: 0;">Prioridade:</label>
+        <div class="form-priority-group">
+            <label>Prioridade:</label>
             
-            <div id="form-priority-wrapper" class="{{ 'prioridade-ativa' if pendencia.prioridade else '' }}" style="display: flex; align-items: center;">
+            <div id="form-priority-wrapper" class="form-priority-wrapper {{ 'prioridade-ativa' if pendencia.prioridade else '' }}">
                 
                 <div id="form-priority-toggle" 
-                     class="coluna-prioridade" 
-                     title="Alternar Prioridade" 
-                     style="width: 24px; height: 24px; margin: 0; display: inline-block;">
+                     class="coluna-prioridade form-priority-toggle-btn" 
+                     title="Alternar Prioridade">
                 </div>
             </div>
             

@@ -3655,4 +3655,31 @@ tr#inline-create-template { background-color: var(--table-stripe); }
     opacity: 0.7;
 }
 
+/* Container geral da linha de prioridade */
+.form-priority-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+/* Remove a margem padrão da label apenas dentro deste grupo */
+.form-priority-group label {
+    margin-bottom: 0;
+}
+
+/* Wrapper flexível para o ícone */
+.form-priority-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+/* Ajustes de tamanho específicos para o ícone de prioridade dentro do formulário */
+.form-priority-toggle-btn {
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    display: inline-block;
+}
+
 /* fim da transferência */
