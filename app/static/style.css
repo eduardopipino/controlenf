@@ -3548,4 +3548,10 @@ tr#inline-create-template { background-color: var(--table-stripe); }
     opacity: 0.9;
 }
 
+/* Destaque estrutural lateral para containers */
+.container-highlight {
+    border-left: 5px solid var(--primary-color);
+    margin-bottom: 30px;
+}
+
 /* fim da transferência */

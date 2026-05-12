@@ -3,7 +3,7 @@
 {% block content %}
     <h2>Consulta Instrumento Contratual</h2>
 
-    <div class="container container-darker" style="border-left: 5px solid var(--primary-color); margin-bottom: 30px;">
+    <div class="container container-darker container-highlight">
         <h3>Dados Gerais do Instrumento</h3>
         <form id="formInstrumento" method="POST" action="{{ url_for('instrumentos.gerenciar_instrumento', instrumento_id=instrumento._id) }}">
             <input type="hidden" name="update_instrumento" value="1">
