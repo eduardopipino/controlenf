@@ -3220,4 +3220,9 @@ hr.divider-spaced {
     height: 30px;
 }
 
+/* Adiciona uma borda específica para a pré-visualização de cores escuras */
+.color-preview.dark-preview {
+    border: 1px solid #777;
+}
+
 /* fim da transferência */
