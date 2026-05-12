@@ -173,8 +173,8 @@
             
             <tr id="inline-create-template" style="display: none; background-color: var(--table-stripe);">
                 <td style="text-align: center; vertical-align: middle; padding: 4px;">
-                    <button type="button" class="btn-save-inline" title="Salvar" style="background-color: var(--primary-color); color: white; border: none; padding: 4px; border-radius: 3px; cursor: pointer; margin-bottom: 4px; display: block; width: 100%;">✔</button>
-                    <button type="button" class="btn-cancel-inline" title="Cancelar" style="background-color: #7f8c8d; color: white; border: none; padding: 4px; border-radius: 3px; cursor: pointer; display: block; width: 100%;">✖</button>
+                    <button type="button" class="btn-save-inline" title="Salvar" class="btn-inline-action save">✔</button>
+                    <button type="button" class="btn-cancel-inline" title="Cancelar" class="btn-inline-action cancel">✖</button>
                 </td>
                 
                 <td style="text-align: center; vertical-align: middle;">
@@ -189,13 +189,13 @@
                             {% if col_id in ['pendencia', 'responsavel', 'situacao', 'observacoes', 'prazo', 'instrumento_display'] %}
                                 
                                 {% if col_id == 'observacoes' %}
-                                    <textarea name="{{ col_id }}" style="width: 100%; min-height: 38px; resize: vertical; box-sizing: border-box; border: 1px solid var(--primary-color); border-radius: 3px; padding: 8px; font-family: inherit; font-size: inherit; background-color: var(--background-secondary); color: var(--text-primary); display: block;" placeholder="Observações..."></textarea>
+                                    <textarea name="{{ col_id }}" class="inline-add-field" placeholder="Observações..."></textarea>
                                 
                                 {% elif col_id == 'prazo' %}
-                                    <input type="date" name="{{ col_id }}" style="width: 100%; height: 38px; box-sizing: border-box; border: 1px solid var(--primary-color); border-radius: 3px; padding: 0 8px; font-family: inherit; font-size: inherit; background-color: var(--background-secondary); color: var(--text-primary); display: block;">
+                                    <input type="date" name="{{ col_id }}" class="inline-add-field">
                                 
                                 {% elif col_id == 'instrumento_display' %}
-                                    <select name="instrumento_id" style="width: 100%; height: 38px; box-sizing: border-box; border: 1px solid var(--primary-color); border-radius: 3px; padding: 0 8px; font-family: inherit; font-size: inherit; background-color: var(--background-secondary); color: var(--text-primary); display: block; cursor: pointer;">
+                                    <select name="instrumento_id" class="inline-add-field">
                                         <option value="">-- Instrumento contratual --</option>
                                         {% for inst in instrumentos %}
                                             <option value="{{ inst._id }}">{{ inst.n_instrumento }} - {{ inst.contratada }}</option>
@@ -203,11 +203,11 @@
                                     </select>
                                 
                                 {% else %}
-                                    <input type="text" name="{{ col_id }}" style="width: 100%; height: 38px; box-sizing: border-box; border: 1px solid var(--primary-color); border-radius: 3px; padding: 0 8px; font-family: inherit; font-size: inherit; background-color: var(--background-secondary); color: var(--text-primary); display: block;" placeholder="Digitar...">
+                                    <input type="text" name="{{ col_id }}" class="inline-add-field" placeholder="Digitar...">
                                 {% endif %}
 
                             {% else %}
-                                <div style="color: var(--text-primary); opacity: 0.6; font-size: 0.85em; font-style: italic; padding: 6px; text-align: center;">Não aplicável</div>
+                                <div class="text-not-applicable">Não aplicável</div>
                             {% endif %}
                         </td>
                     {% endif %}

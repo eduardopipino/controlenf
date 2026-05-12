@@ -3273,4 +3273,104 @@ hr.divider-spaced {
     box-sizing: border-box;
 }
 
+/* Estilos para os campos dentro da Adição Rápida (Tabela e Cards) */
+.quick-field {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--primary-color);
+    border-radius: 3px;
+    padding: 8px;
+    font-family: inherit;
+    font-size: inherit;
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    display: block;
+}
+
+.quick-field-select, .quick-field-input {
+    height: 38px;
+    padding: 0 8px;
+}
+
+.quick-field-area {
+    min-height: 38px;
+    resize: vertical;
+}
+
+/* Containers de botões da Adição Rápida */
+.quick-form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 5px;
+}
+
+/* Campos de entrada (Inputs, Selects) da Adição Rápida na Tabela */
+.inline-add-field {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--primary-color);
+    border-radius: 3px;
+    padding: 0 8px;
+    font-family: inherit;
+    font-size: inherit;
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    display: block;
+}
+
+/* Altura padrão para inputs e selects */
+input.inline-add-field, 
+select.inline-add-field {
+    height: 38px;
+}
+
+/* Ajustes específicos para selects */
+select.inline-add-field {
+    cursor: pointer;
+}
+
+/* Ajustes específicos para textareas */
+textarea.inline-add-field {
+    min-height: 38px;
+    resize: vertical;
+    padding: 8px;
+}
+
+/* Botões pequenos de Salvar/Cancelar dentro da Tabela */
+.btn-inline-action {
+    color: white;
+    border: none;
+    padding: 4px;
+    border-radius: 3px;
+    cursor: pointer;
+    display: block;
+    width: 100%;
+}
+
+.btn-inline-action.save {
+    background-color: var(--primary-color);
+    margin-bottom: 4px;
+}
+
+.btn-inline-action.cancel {
+    background-color: #7f8c8d;
+}
+
+/* Texto de "Não aplicável" ou avisos silenciosos */
+.text-not-applicable {
+    color: var(--text-primary);
+    opacity: 0.6;
+    font-size: 0.85em;
+    font-style: italic;
+    padding: 6px;
+    text-align: center;
+}
+
+/* Ícones SVG em Toggles (Prioridade, etc) */
+.icon-sm {
+    width: 20px;
+    height: 20px;
+}
+
 /* fim da transferência */
