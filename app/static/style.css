@@ -3305,6 +3305,74 @@ hr.divider-spaced {
     margin-top: 5px;
 }
 
+/* Select dentro dos cards de adição rápida */
+.quick-field-select-card {
+    width: 100%;
+    margin-bottom: 8px;
+    border: 1px solid var(--border-base);
+    border-radius: 4px;
+    padding: 6px;
+    background-color: var(--background-primary);
+    color: var(--text-primary);
+    font-size: 0.9em;
+    cursor: pointer;
+}
+
+/* Texto de "+ Adição Rápida" nos cards */
+.quick-add-text {
+    font-size: 1.15em;
+    font-weight: bold;
+}
+
+/* Botões de Salvar/Cancelar dentro dos Cards de Adição Rápida */
+.btn-quick-save, .btn-quick-cancel {
+    padding: 5px 12px;
+    height: 30px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.btn-quick-save {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-quick-save:hover {
+    background-color: var(--accent-color);
+}
+
+.btn-quick-cancel {
+    background-color: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-base);
+}
+
+.btn-quick-cancel:hover {
+    background-color: var(--hover-bg);
+}
+
+/* Alinhamento de Células de Tabela Compactas */
+.td-center-compact {
+    text-align: center;
+    vertical-align: middle;
+    padding: 4px;
+}
+
+.td-compact {
+    padding: 4px;
+    vertical-align: middle;
+}
+
+.td-no-padding {
+    padding: 0 !important;
+}
+
+/* Tamanhos padrão para ícones SVG soltos */
+.icon-18 { width: 18px; height: 18px; }
+.icon-24 { width: 24px; height: 24px; }
+
 /* Campos de entrada (Inputs, Selects) da Adição Rápida na Tabela */
 .inline-add-field {
     width: 100%;

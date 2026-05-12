@@ -53,16 +53,16 @@
         <input type="search" id="buscaRapidaInputMobile" placeholder="Buscar em todas as colunas...">
     </div>
     <div class="card-quick-add-container-top-mobile hide-on-desktop" style="margin-bottom: 15px;">
-        <div class="card-quick-add-trigger btnShowQuickAddCardMobileTop" style="border: 2px dashed var(--border-base); padding: 10px; border-radius: 8px; text-align: center; color: var(--tertiary-color); cursor: pointer; display: flex; justify-content: center; align-items: center;">
-            <span style="font-size: 1.1em; font-weight: bold;">+ Adição Rápida</span>
+        <div class="card-quick-add-trigger btnShowQuickAddCardMobileTop btn-dashed-add">
+            <span class="quick-add-text">+ Adição Rápida</span>
         </div>
         <div class="data-card card-quick-add-form quickAddCardFormMobileTop" style="border-left-color: var(--border-base); display: none; position: relative;" data-priority="false">
             <div class="card-actions-corner">
                 <div class="card-priority-toggle quickCardPriorityToggleMobileTop" title="Alternar Prioridade">
-                    <svg viewBox="0 0 24 24" style="width:24px; height:24px;"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
+                    <svg viewBox="0 0 24 24" class="icon-24"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
                 </div>
             </div>
-            <select name="instrumento_id" style="width: 100%; margin-bottom: 8px; border: 1px solid var(--border-base); border-radius: 4px; padding: 6px; background-color: var(--background-primary); color: var(--text-primary); font-size: 0.9em; cursor: pointer;">
+            <select name="instrumento_id" class="quick-field-select-card">
                 <option value="">-- Instrumento Contratual --</option>
                 {% for inst in instrumentos %}
                     <option value="{{ inst._id }}">{{ inst.n_instrumento }} - {{ inst.contratada }}</option>
@@ -74,9 +74,9 @@
             <input type="text" name="situacao" placeholder="Situação">
             <textarea name="observacoes" placeholder="Observações..."></textarea>
 
-            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 5px;">
-                <button type="button" class="btn-cancel btnCancelQuickCardMobileTop" style="padding: 5px 12px; height: 30px;">Cancelar</button>
-                <button type="button" class="btn-confirm-success btnSaveQuickCardMobileTop" style="padding: 5px 12px; height: 30px; background-color: var(--primary-color);">Salvar</button>
+            <div class="quick-form-actions">
+                <button type="button" class="btn-cancel btnCancelQuickCardMobileTop" class="btn-quick-cancel">Cancelar</button>
+                <button type="button" class="btn-confirm-success btnSaveQuickCardMobileTop" class="btn-quick-save">Salvar</button>
             </div>
         </div>
     </div>
@@ -104,7 +104,7 @@
         </thead>
         <tbody>
             <tr id="row-btn-add-inline-top" class="hide-on-mobile">
-                <td colspan="{{ colunas_visiveis|length + 3 }}" style="padding: 0;">
+                <td colspan="{{ colunas_visiveis|length + 3 }}" class="td-no-padding">
                     <button type="button" id="btnShowInlineCreateTop" class="btn-dashed-add top-flat">
                         + Adição Rápida
                     </button>
@@ -129,7 +129,7 @@
                         </svg>
                     </a>
                     <span class="card-priority-toggle {{ 'active' if p.prioridade else '' }}" data-id="{{ p._id }}" title="Alternar Prioridade">
-                        <svg viewBox="0 0 24 24" style="width:18px; height:18px;"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
+                        <svg viewBox="0 0 24 24" class="icon-18"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
                     </span>
                 </div>
 
@@ -172,7 +172,7 @@
             {% endfor %}
             
             <tr id="inline-create-template" style="display: none; background-color: var(--table-stripe);">
-                <td style="text-align: center; vertical-align: middle; padding: 4px;">
+                <td class="td-center-compact">
                     <button type="button" class="btn-save-inline" title="Salvar" class="btn-inline-action save">✔</button>
                     <button type="button" class="btn-cancel-inline" title="Cancelar" class="btn-inline-action cancel">✖</button>
                 </td>
@@ -218,7 +218,7 @@
             </tr>
 
             <tr id="row-btn-add-inline" class="hide-on-mobile">
-                <td colspan="{{ colunas_visiveis|length + 3 }}" style="padding: 0;">
+                <td colspan="{{ colunas_visiveis|length + 3 }}" class="td-no-padding">
                     <button type="button" id="btnShowInlineCreate" class="btn-dashed-add top-flat">
                         + Adição Rápida
                     </button>
@@ -230,15 +230,15 @@
 
     <div class="card-quick-add-container-group hide-on-desktop" style="margin-top: 15px;">
         <div class="card-quick-add-trigger btnShowQuickAddCardMobile">
-            <span style="font-size: 1.2em; font-weight: bold;">+ Adição rápida</span>
+            <span class="quick-add-text">+ Adição rápida</span>
         </div>
         <div class="data-card card-quick-add-form quickAddCardFormMobile" style="border-left-color: var(--border-base); display: none; position: relative;" data-priority="false">
             <div class="card-actions-corner">
                 <div class="card-priority-toggle quickCardPriorityToggleMobile" title="Alternar Prioridade">
-                    <svg viewBox="0 0 24 24" style="width:24px; height:24px;"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
+                    <svg viewBox="0 0 24 24" class="icon-24"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
                 </div>
             </div>
-            <select name="instrumento_id" style="width: 100%; margin-bottom: 8px; border: 1px solid var(--border-base); border-radius: 4px; padding: 6px; background-color: var(--background-primary); color: var(--text-primary); font-size: 0.9em; cursor: pointer;">
+            <select name="instrumento_id" class="quick-field-select-card">
                 <option value="">-- Instrumento Contratual --</option>
                 {% for inst in instrumentos %}
                     <option value="{{ inst._id }}">{{ inst.n_instrumento }} - {{ inst.contratada }}</option>
@@ -250,9 +250,9 @@
             <input type="text" name="situacao" placeholder="Situação">
             <textarea name="observacoes" placeholder="Observações..."></textarea>
 
-            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 5px;">
-                <button type="button" class="btn-cancel btnCancelQuickCardMobile" style="padding: 5px 12px; height: 30px;">Cancelar</button>
-                <button type="button" class="btn-confirm-success btnSaveQuickCardMobile" style="padding: 5px 12px; height: 30px; background-color: var(--primary-color);">Salvar</button>
+            <div class="quick-form-actions">
+                <button type="button" class="btn-cancel btnCancelQuickCardMobile" class="btn-quick-cancel">Cancelar</button>
+                <button type="button" class="btn-confirm-success btnSaveQuickCardMobile" class="btn-quick-save">Salvar</button>
             </div>
         </div>
     </div>
@@ -283,13 +283,13 @@
                             
                             <div class="card-quick-add-container-group">
                                 <div class="card-quick-add-trigger btnShowQuickAddCardGroup">
-                                    <span style="font-size: 1.2em; font-weight: bold;">+ Adição Rápida</span>
+                                    <span class="quick-add-text">+ Adição Rápida</span>
                                 </div>
                                 <div class="data-card card-quick-add-form quickAddCardFormGroup" style="border-left-color: var(--border-base); display: none;" data-priority="false">
                                     <input type="hidden" name="instrumento_id" value="{{ grupo.detalhes_instrumento.instrumento_id }}">
                                     <div class="card-actions-corner">
                                         <div class="card-priority-toggle quickCardPriorityToggleGroup" title="Alternar Prioridade">
-                                            <svg viewBox="0 0 24 24" style="width:18px; height:18px;"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
+                                            <svg viewBox="0 0 24 24" class="icon-18"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
                                         </div>
                                     </div>
                                     <input type="text" name="pendencia" placeholder="Título da Pendência (Obrigatório)*" required>
@@ -297,9 +297,9 @@
                                     <input type="date" name="prazo" title="Prazo">
                                     <input type="text" name="situacao" placeholder="Situação">
                                     <textarea name="observacoes" placeholder="Observações..."></textarea>
-                                    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 5px;">
-                                        <button type="button" class="btn-cancel btnCancelQuickCardGroup" style="padding: 5px 12px; height: 30px;">Cancelar</button>
-                                        <button type="button" class="btn-confirm-success btnSaveQuickCardGroup" style="padding: 5px 12px; height: 30px; background-color: var(--primary-color);">Salvar</button>
+                                    <div class="quick-form-actions">
+                                        <button type="button" class="btn-cancel btnCancelQuickCardGroup" class="btn-quick-cancel">Cancelar</button>
+                                        <button type="button" class="btn-confirm-success btnSaveQuickCardGroup" class="btn-quick-save">Salvar</button>
                                     </div>
                                 </div>
                             </div>
@@ -324,15 +324,15 @@
                     
                     <div class="card-quick-add-container-priority">
                         <div class="card-quick-add-trigger btnShowQuickAddCardPriority">
-                            <span style="font-size: 1.2em; font-weight: bold;">+ Adição Rápida</span>
+                            <span class="quick-add-text">+ Adição Rápida</span>
                         </div>
                         <div class="data-card card-quick-add-form quickAddCardFormPriority" style="border-left-color: #e74c3c; display: none;" data-priority="true">
                             <div class="card-actions-corner">
                                 <div class="card-priority-toggle quickCardPriorityTogglePriority active" title="Alternar Prioridade">
-                                    <svg viewBox="0 0 24 24" style="width:18px; height:18px;"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
+                                    <svg viewBox="0 0 24 24" class="icon-18"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
                                 </div>
                             </div>
-                            <select name="instrumento_id" style="width: 100%; margin-bottom: 8px; border: 1px solid var(--border-base); border-radius: 4px; padding: 6px; background-color: var(--background-primary); color: var(--text-primary); font-size: 0.9em; cursor: pointer;">
+                            <select name="instrumento_id" class="quick-field-select-card">
                                 <option value="">-- Instrumento Contratual --</option>
                                 {% for inst in instrumentos %}
                                     <option value="{{ inst._id }}">{{ inst.n_instrumento }} - {{ inst.contratada }}</option>
@@ -343,9 +343,9 @@
                             <input type="date" name="prazo" title="Prazo">
                             <input type="text" name="situacao" placeholder="Situação">
                             <textarea name="observacoes" placeholder="Observações..."></textarea>
-                            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 5px;">
-                                <button type="button" class="btn-cancel btnCancelQuickCardPriority" style="padding: 5px 12px; height: 30px;">Cancelar</button>
-                                <button type="button" class="btn-confirm-success btnSaveQuickCardPriority" style="padding: 5px 12px; height: 30px; background-color: var(--primary-color);">Salvar</button>
+                            <div class="quick-form-actions">
+                                <button type="button" class="btn-cancel btnCancelQuickCardPriority" class="btn-quick-cancel">Cancelar</button>
+                                <button type="button" class="btn-confirm-success btnSaveQuickCardPriority" class="btn-quick-save">Salvar</button>
                             </div>
                         </div>
                     </div>
@@ -359,15 +359,15 @@
                 
                 <div id="card-quick-add-container">
                     <div id="btnShowQuickAddCard" class="card-quick-add-trigger">
-                        <span style="font-size: 1.2em; font-weight: bold;">+ Adição Rápida</span>
+                        <span class="quick-add-text">+ Adição Rápida</span>
                     </div>
                     <div id="quickAddCardForm" class="data-card card-quick-add-form" style="border-left-color: var(--border-base);">
                         <div class="card-actions-corner">
                             <div id="quickCardPriorityToggle" class="card-priority-toggle" title="Alternar Prioridade">
-                                <svg viewBox="0 0 24 24" style="width:18px; height:18px;"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
+                                <svg viewBox="0 0 24 24" class="icon-18"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
                             </div>
                         </div>
-                        <select name="instrumento_id" style="width: 100%; margin-bottom: 8px; border: 1px solid var(--border-base); border-radius: 4px; padding: 6px; background-color: var(--background-primary); color: var(--text-primary); font-size: 0.9em; cursor: pointer;">
+                        <select name="instrumento_id" class="quick-field-select-card">
                             <option value="">-- Instrumento Contratual --</option>
                             {% for inst in instrumentos %}
                                 <option value="{{ inst._id }}">{{ inst.n_instrumento }} - {{ inst.contratada }}</option>
@@ -378,9 +378,9 @@
                         <input type="date" name="prazo" title="Prazo">
                         <input type="text" name="situacao" placeholder="Situação">
                         <textarea name="observacoes" placeholder="Observações..."></textarea>
-                        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 5px;">
-                            <button type="button" id="btnCancelQuickCard" class="btn-cancel" style="padding: 5px 12px; height: 30px;">Cancelar</button>
-                            <button type="button" id="btnSaveQuickCard" class="btn-confirm-success" style="padding: 5px 12px; height: 30px; background-color: var(--primary-color);">Salvar</button>
+                        <div class="quick-form-actions">
+                            <button type="button" id="btnCancelQuickCard" class="btn-cancel" class="btn-quick-cancel">Cancelar</button>
+                            <button type="button" id="btnSaveQuickCard" class="btn-confirm-success" class="btn-quick-save">Salvar</button>
                         </div>
                     </div>
                 </div>
