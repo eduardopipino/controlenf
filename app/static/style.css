@@ -3216,4 +3216,8 @@ hr.divider-spaced {
     border-top: 1px solid var(--border-base);
 }
 
+.notepad-footer button {
+    height: 30px;
+}
+
 /* fim da transferência */
