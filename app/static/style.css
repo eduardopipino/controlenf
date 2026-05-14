@@ -3682,4 +3682,12 @@ tr#inline-create-template { background-color: var(--table-stripe); }
     display: inline-block;
 }
 
+/* Posicionamento do botão de concluir no canto inferior direito dos cards */
+.data-card .coluna-concluir {
+    position: absolute;
+    bottom: 12px;
+    right: 15px;
+    z-index: 5;
+}
+
 /* fim da transferência */
