@@ -213,7 +213,8 @@ nav {
     align-items: center;
     background-color: var(--nav-bg-color);
     box-shadow: 0 4px 8px var(--shadow-base);
-    position: relative;
+    position: sticky;  /* Faz a barra grudar... */
+    top: 0;            /* ...exatamente no limite superior da tela */
     z-index: 20;
     height: var(--height-nav);
 }
@@ -1256,7 +1257,8 @@ nav {
     align-items: center;
     background-color: var(--nav-bg-color);
     box-shadow: 0 4px 8px var(--shadow-base);
-    position: relative;
+    position: sticky;  /* Faz a barra grudar... */
+    top: 0;            /* ...exatamente no limite superior da tela */
     z-index: 1001; /* Z-index alto para a barra do desktop */
     height: var(--height-nav);
 }
