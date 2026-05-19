@@ -46,6 +46,10 @@
         <input type="search" id="buscaRapidaInputMobile" placeholder="Buscar registros...">
     </div>
     
+    <p id="tabela-controle-sem-resultados-msg" class="kanban-empty-msg" style="display: none;">
+        Nenhum resultado encontrado para a busca.
+    </p>
+
     <table border="1" id="tabelaControle" class="tabela-controle-shared responsive-card-table {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
         <thead>
             <tr>
@@ -68,9 +72,6 @@
             </tr>
         </thead>
         <tbody>
-            <tr id="tabela-sem-resultados-row" style="display: none !important;">
-                <td colspan="{{ colunas_visiveis|length + 2 }}" class="kanban-empty-msg">Nenhum resultado encontrado para a busca.</td>
-            </tr>
             {% for controle in controles %}
                 {% include 'partials/_controle_table_row.html' %}
             {% else %}
@@ -338,7 +339,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- INICIALIZAÇÃO DA BUSCA RÁPIDA ---
-    new SearchEngine({ viewMode: window.APP_DATA.viewMode, tableRowsSelector: '#tabelaControle tbody tr.clickable-row' });
+    new SearchEngine({ 
+        viewMode: window.APP_DATA.viewMode,
+        tableId: 'tabelaControle', // <<< NOVO: Ensina qual é a tabela a esconder
+        tableRowsSelector: '#tabelaControle tbody tr.clickable-row',
+        cardsSelector: '.data-card',
+        tabelaSemResultadosId: 'tabela-controle-sem-resultados-msg', // <<< Aponta para a nova mensagem solta (P)
+        backendSemResultadosId: 'tabela-backend-sem-resultados',
+        cardsSemResultadosId: 'cards-sem-resultados'
+    });
+    
 });
 </script>
 {% endblock %}
