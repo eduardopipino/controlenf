@@ -30,11 +30,6 @@
             <div class="kebab-menu-dropdown">
                 <a href="#" id="btnFiltroMobile">Filtrar...</a>
                 <a href="#" id="btnConfigurarColunasMobile">Configurar Colunas</a>
-                {% if page_mode == 'concluidas' %}
-                    <a href="{{ url_for('pendencias.exportar_pendencias_concluidas_csv') }}">Exportar Concluídas</a>
-                {% else %}
-                    <a href="{{ url_for('pendencias.exportar_pendencias_pendentes_csv') }}">Exportar Pendentes</a>
-                {% endif %}
             </div>
         </div>
     </div>
@@ -277,7 +272,17 @@
                 <div><label>Pendência:</label><input type="text" name="filter_pendencia" value="{{ filter_values.get('filter_pendencia', '') }}"></div>
                 <div><label>Responsável:</label><input type="text" name="filter_responsavel" value="{{ filter_values.get('filter_responsavel', '') }}"></div>
                 <div><label>Situação:</label><input type="text" name="filter_situacao" value="{{ filter_values.get('filter_situacao', '') }}"></div>
-                <div class="button-toolbar"><button type="submit">Aplicar</button><button type="button" class="btn-cancel-modal">Cancelar</button><button type="button" onclick="window.location.href='{{ url_for('pendencias.pendencias_lista', page_mode=page_mode) }}'" class="button">Limpar</button></div>
+                <div class="button-toolbar">
+                    <div class="toolbar-group-left">
+                        <button type="submit">Aplicar</button>
+                    </div>
+                    <div class="toolbar-group-center">
+                        <button type="button" class="btn-cancel-modal">Cancelar</button>
+                    </div>
+                    <div class="toolbar-group-right">
+                        <button type="button" onclick="window.location.href='{{ url_for('pendencias.pendencias_lista', page_mode=page_mode) }}'" class="button">Limpar</button>
+                    </div>
+                </div>
             </form>
         </div>
     </div>
