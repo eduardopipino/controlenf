@@ -14,17 +14,8 @@
             {% endif %}
         </div>
         <div class="toolbar-group-center">
-            <div class="view-selector">
-            <button class="view-button {{ 'active' if view_mode == 'table' else '' }}" data-view="table" title="Visualizar como Tabela">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 4h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 10h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 16h4v4H4zm6 1h4v3h-4zm6 0h4v4h-4z"/></svg>
-            </button>
-            <button class="view-button {{ 'active' if view_mode == 'cards' else '' }}" data-view="cards" title="Visualizar como Cards">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 4h6v6H4zm9 0h6v6h-6zM4 14h6v6H4zm9 0h6v6h-6z"/></svg>
-            </button>
-            <button class="view-button {{ 'active' if view_mode == 'kanban' else '' }}" data-view="kanban" title="Visualizar como Kanban">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 3h6v18H3zm8 0h6v18h-6zm8 0h6v18h-6z"/></svg>
-            </button>
-        </div>
+            {% set view_endpoint = url_for('core.set_view_preference_pendencias') %}
+            {% include 'partials/_view_selector.html' %}
         </div>
         <div class="toolbar-group-right">
             <input type="search" id="buscaRapidaInput" placeholder="Buscar em todos os campos... (ESC para limpar)">
@@ -52,6 +43,7 @@
     <div class="mobile-search-bar hide-on-desktop">
         <input type="search" id="buscaRapidaInputMobile" placeholder="Buscar em todas as colunas...">
     </div>
+    
     <div class="card-quick-add-container-top-mobile hide-on-desktop">
         <div class="card-quick-add-trigger btnShowQuickAddCardMobileTop btn-dashed-add">
             <span class="quick-add-text">+ Adição Rápida</span>
@@ -73,17 +65,16 @@
             <input type="date" name="prazo" title="Prazo">
             <input type="text" name="situacao" placeholder="Situação">
             <textarea name="observacoes" placeholder="Observações..."></textarea>
-
             <div class="quick-form-actions">
-                <button type="button" class="btn-cancel btnCancelQuickCardMobileTop" class="btn-quick-cancel">Cancelar</button>
-                <button type="button" class="btn-confirm-success btnSaveQuickCardMobileTop" class="btn-quick-save">Salvar</button>
+                <button type="button" class="btn-cancel btnCancelQuickCardMobileTop btn-quick-cancel">Cancelar</button>
+                <button type="button" class="btn-confirm-success btnSaveQuickCardMobileTop btn-quick-save">Salvar</button>
             </div>
         </div>
     </div>
 
     {% set card_fields_map = dict(todas_as_colunas_cards) %}
 
-    <table border="1" id="tabelaPendencias" class="responsive-card-table {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
+    <table border="1" id="tabelaPendencias" class="responsive-card-table tabela-pendencias-shared {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
         <thead>
             <tr>
                 <th class="hide-on-mobile"></th> <th class="hide-on-mobile">!</th>
@@ -105,9 +96,7 @@
         <tbody>
             <tr id="row-btn-add-inline-top" class="hide-on-mobile">
                 <td colspan="{{ colunas_visiveis|length + 3 }}" class="td-no-padding">
-                    <button type="button" id="btnShowInlineCreateTop" class="btn-dashed-add top-flat">
-                        + Adição Rápida
-                    </button>
+                    <button type="button" id="btnShowInlineCreateTop" class="btn-dashed-add top-flat">+ Adição Rápida</button>
                 </td>
                 <td></td> 
             </tr>
@@ -116,55 +105,7 @@
             </tr>
             
             {% for p in pendencias %}
-            <tr class="clickable-row {{ 'pendencia-vencida' if p.vencido else '' }} {% if p.prioridade %}prioridade-ativa{% endif %}" 
-                data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" 
-                data-id="{{ p._id }}" 
-                {% if color_coding_active and p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
-                
-                <div class="card-actions-corner hide-on-desktop">
-                    <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" class="card-action-icon" title="Ver Detalhes">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor">
-                            <path d="M0 0h24v24H0V0z" fill="none"/>
-                            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                        </svg>
-                    </a>
-                    <span class="card-priority-toggle {{ 'active' if p.prioridade else '' }}" data-id="{{ p._id }}" title="Alternar Prioridade">
-                        <svg viewBox="0 0 24 24" class="icon-18"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
-                    </span>
-                </div>
-
-                <td data-label="Ações" class="hide-on-mobile">
-                    <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" class="action-icon-link" title="Ver Detalhes">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                    </a>
-                </td>
-                
-                <td class="coluna-prioridade hide-on-mobile" data-id="{{ p._id }}"></td>
-                
-                {% set editable_fields_pendencias = ['pendencia', 'prazo', 'responsavel', 'situacao', 'observacoes'] %}
-                {% set colunas_sempre_visiveis = ['instrumento_display', 'contratada', 'pendencia', 'prazo'] %}
-
-                {% for col_id, col_nome in todas_as_colunas %}
-                    {% if col_id in colunas_visiveis %}
-                        {% set is_editable = col_id in editable_fields_pendencias %}
-                        {% set is_detalhe = col_id not in colunas_sempre_visiveis %}
-                        
-                        <td data-label="{{ col_nome }}"
-                            class="{{ 'coluna-texto-longo' if col_id in ['observacoes', 'pendencia'] else '' }} {{ 'col-detalhe' if is_detalhe else '' }} {{ 'editable-cell' if is_editable else '' }}"
-                            {% if is_editable %}data-field-name="{{ col_id }}"{% endif %}>
-                            <span class="card-value">
-                                {% if col_id == 'prazo' %}{{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}{% else %}{{ p[col_id] or '' }}{% endif %}
-                            </span>
-                        </td>
-                    {% endif %}
-                {% endfor %}
-                <td data-label="Concluir" class="coluna-concluir" class="td-center-compact">
-                    <button class="btn-concluir-action" data-id="{{ p._id }}" title="Marcar como Concluído">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
-                    </button>
-                </td>
-                <td><button class="expand-card-btn">Ver mais</button></td>
-            </tr>
+                {% include 'partials/_pendencia_table_row.html' %}
             {% else %}
             <tr id="tabela-pendencias-backend-sem-resultados">
                 <td colspan="{{ colunas_visiveis|length + 3 }}">Nenhuma pendência encontrada.</td>
@@ -173,55 +114,36 @@
             
             <tr id="inline-create-template" style="display: none;">
                 <td class="td-center-compact">
-                    <button type="button" class="btn-save-inline" title="Salvar" class="btn-inline-action save">✔</button>
-                    <button type="button" class="btn-cancel-inline" title="Cancelar" class="btn-inline-action cancel">✖</button>
+                    <button type="button" class="btn-save-inline btn-inline-action save" title="Salvar">✔</button>
+                    <button type="button" class="btn-cancel-inline btn-inline-action cancel" title="Cancelar">✖</button>
                 </td>
-                
                 <td class="td-center-compact">
                     <span id="inlineCreatePriorityToggle" class="card-priority-toggle" title="Alternar Prioridade">
                         <svg viewBox="0 0 24 24" class="icon-sm"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
                     </span>
                 </td>
-                
                 {% for col_id, col_nome in todas_as_colunas %}
                     {% if col_id in colunas_visiveis %}
                         <td class="td-compact"> 
                             {% if col_id in ['pendencia', 'responsavel', 'situacao', 'observacoes', 'prazo', 'instrumento_display'] %}
-                                
-                                {% if col_id == 'observacoes' %}
-                                    <textarea name="{{ col_id }}" class="inline-add-field" placeholder="Observações..."></textarea>
-                                
-                                {% elif col_id == 'prazo' %}
-                                    <input type="date" name="{{ col_id }}" class="inline-add-field">
-                                
+                                {% if col_id == 'observacoes' %}<textarea name="{{ col_id }}" class="inline-add-field" placeholder="Observações..."></textarea>
+                                {% elif col_id == 'prazo' %}<input type="date" name="{{ col_id }}" class="inline-add-field">
                                 {% elif col_id == 'instrumento_display' %}
                                     <select name="instrumento_id" class="inline-add-field">
                                         <option value="">-- Instrumento contratual --</option>
-                                        {% for inst in instrumentos %}
-                                            <option value="{{ inst._id }}">{{ inst.n_instrumento }} - {{ inst.contratada }}</option>
-                                        {% endfor %}
+                                        {% for inst in instrumentos %}<option value="{{ inst._id }}">{{ inst.n_instrumento }} - {{ inst.contratada }}</option>{% endfor %}
                                     </select>
-                                
-                                {% else %}
-                                    <input type="text" name="{{ col_id }}" class="inline-add-field" placeholder="Digitar...">
-                                {% endif %}
-
-                            {% else %}
-                                <div class="text-not-applicable">Não aplicável</div>
-                            {% endif %}
+                                {% else %}<input type="text" name="{{ col_id }}" class="inline-add-field" placeholder="Digitar...">{% endif %}
+                            {% else %}<div class="text-not-applicable">Não aplicável</div>{% endif %}
                         </td>
                     {% endif %}
                 {% endfor %}
-                
-                <td></td> 
-                <td></td> 
+                <td></td><td></td> 
             </tr>
 
             <tr id="row-btn-add-inline" class="hide-on-mobile">
                 <td colspan="{{ colunas_visiveis|length + 3 }}" class="td-no-padding">
-                    <button type="button" id="btnShowInlineCreate" class="btn-dashed-add top-flat">
-                        + Adição Rápida
-                    </button>
+                    <button type="button" id="btnShowInlineCreate" class="btn-dashed-add bottom-flat">+ Adição Rápida</button>
                 </td>
                 <td></td>
             </tr>
@@ -240,28 +162,23 @@
             </div>
             <select name="instrumento_id" class="quick-field-select-card">
                 <option value="">-- Instrumento Contratual --</option>
-                {% for inst in instrumentos %}
-                    <option value="{{ inst._id }}">{{ inst.n_instrumento }} - {{ inst.contratada }}</option>
-                {% endfor %}
+                {% for inst in instrumentos %}<option value="{{ inst._id }}">{{ inst.n_instrumento }} - {{ inst.contratada }}</option>{% endfor %}
             </select>
             <input type="text" name="pendencia" placeholder="Título da Pendência (Obrigatório)*" required>
             <input type="text" name="responsavel" placeholder="Responsável">
             <input type="date" name="prazo" title="Prazo">
             <input type="text" name="situacao" placeholder="Situação">
             <textarea name="observacoes" placeholder="Observações..."></textarea>
-
             <div class="quick-form-actions">
-                <button type="button" class="btn-cancel btnCancelQuickCardMobile" class="btn-quick-cancel">Cancelar</button>
-                <button type="button" class="btn-confirm-success btnSaveQuickCardMobile" class="btn-quick-save">Salvar</button>
+                <button type="button" class="btn-cancel btnCancelQuickCardMobile btn-quick-cancel">Cancelar</button>
+                <button type="button" class="btn-confirm-success btnSaveQuickCardMobile btn-quick-save">Salvar</button>
             </div>
         </div>
     </div>
 
 
     {% if view_mode == 'cards' %}
-        <p id="cards-pendencias-sem-resultados" class="kanban-empty-msg hide-on-mobile" style="display: none !important;">
-            Nenhum resultado encontrado para a busca.
-        </p>
+        <p id="cards-pendencias-sem-resultados" class="kanban-empty-msg hide-on-mobile" style="display: none !important;">Nenhum resultado encontrado para a busca.</p>
         <div class="card-view-container hide-on-mobile">
             {% if page_mode == 'por_instrumento' %}
                 {% for grupo in grupos_de_pendencias %}
@@ -277,14 +194,10 @@
                         </h4>
 
                         <div class="card-grid">
-                            {% for p in grupo.pendencias %}
-                                {% include 'partials/_pendencia_card.html' %}
-                            {% endfor %}
+                            {% for p in grupo.pendencias %}{% include 'partials/_pendencia_card.html' %}{% endfor %}
                             
                             <div class="card-quick-add-container-group">
-                                <div class="card-quick-add-trigger btnShowQuickAddCardGroup">
-                                    <span class="quick-add-text">+ Adição Rápida</span>
-                                </div>
+                                <div class="card-quick-add-trigger btnShowQuickAddCardGroup"><span class="quick-add-text">+ Adição Rápida</span></div>
                                 <div class="data-card card-quick-add-form quickAddCardFormGroup" style="display: none;" data-priority="false">
                                     <input type="hidden" name="instrumento_id" value="{{ grupo.detalhes_instrumento.instrumento_id }}">
                                     <div class="card-actions-corner">
@@ -293,122 +206,61 @@
                                         </div>
                                     </div>
                                     <input type="text" name="pendencia" placeholder="Título da Pendência (Obrigatório)*" required>
-                                    <input type="text" name="responsavel" placeholder="Responsável">
-                                    <input type="date" name="prazo" title="Prazo">
-                                    <input type="text" name="situacao" placeholder="Situação">
-                                    <textarea name="observacoes" placeholder="Observações..."></textarea>
+                                    <input type="text" name="responsavel" placeholder="Responsável"><input type="date" name="prazo" title="Prazo"><input type="text" name="situacao" placeholder="Situação"><textarea name="observacoes" placeholder="Observações..."></textarea>
                                     <div class="quick-form-actions">
-                                        <button type="button" class="btn-cancel btnCancelQuickCardGroup" class="btn-quick-cancel">Cancelar</button>
-                                        <button type="button" class="btn-confirm-success btnSaveQuickCardGroup" class="btn-quick-save">Salvar</button>
+                                        <button type="button" class="btn-cancel btnCancelQuickCardGroup btn-quick-cancel">Cancelar</button>
+                                        <button type="button" class="btn-confirm-success btnSaveQuickCardGroup btn-quick-save">Salvar</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                {% else %}
-                    <p>Nenhuma pendência vinculada a instrumentos encontrada.</p>
-                {% endfor %}
+                {% else %}<p>Nenhuma pendência vinculada a instrumentos encontrada.</p>{% endfor %}
             {% else %}
             <div class="priority-section">
-                <h4>
-				<span class="priority-icon">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> 
-						<path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-					</svg>
-				</span>
-				Prioridades</h4>
+                <h4><span class="priority-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg></span>Prioridades</h4>
                 <div class="card-grid">
-                    {% for p in pendencias if p.prioridade %}
-                        {% include 'partials/_pendencia_card.html' %}
-                    {% endfor %}
+                    {% for p in pendencias if p.prioridade %}{% include 'partials/_pendencia_card.html' %}{% endfor %}
                     
                     <div class="card-quick-add-container-priority">
-                        <div class="card-quick-add-trigger btnShowQuickAddCardPriority">
-                            <span class="quick-add-text">+ Adição Rápida</span>
-                        </div>
+                        <div class="card-quick-add-trigger btnShowQuickAddCardPriority"><span class="quick-add-text">+ Adição Rápida</span></div>
                         <div class="data-card card-quick-add-form quickAddCardFormPriority" style="display: none;" data-priority="true">
                             <div class="card-actions-corner">
                                 <div class="card-priority-toggle quickCardPriorityTogglePriority active" title="Alternar Prioridade">
                                     <svg viewBox="0 0 24 24" class="icon-18"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
                                 </div>
                             </div>
-                            <select name="instrumento_id" class="quick-field-select-card">
-                                <option value="">-- Instrumento Contratual --</option>
-                                {% for inst in instrumentos %}
-                                    <option value="{{ inst._id }}">{{ inst.n_instrumento }} - {{ inst.contratada }}</option>
-                                {% endfor %}
-                            </select>
-                            <input type="text" name="pendencia" placeholder="Título da Pendência (Obrigatório)*" required>
-                            <input type="text" name="responsavel" placeholder="Responsável">
-                            <input type="date" name="prazo" title="Prazo">
-                            <input type="text" name="situacao" placeholder="Situação">
-                            <textarea name="observacoes" placeholder="Observações..."></textarea>
-                            <div class="quick-form-actions">
-                                <button type="button" class="btn-cancel btnCancelQuickCardPriority" class="btn-quick-cancel">Cancelar</button>
-                                <button type="button" class="btn-confirm-success btnSaveQuickCardPriority" class="btn-quick-save">Salvar</button>
-                            </div>
+                            <select name="instrumento_id" class="quick-field-select-card"><option value="">-- Instrumento Contratual --</option>{% for inst in instrumentos %}<option value="{{ inst._id }}">{{ inst.n_instrumento }} - {{ inst.contratada }}</option>{% endfor %}</select>
+                            <input type="text" name="pendencia" placeholder="Título da Pendência (Obrigatório)*" required><input type="text" name="responsavel" placeholder="Responsável"><input type="date" name="prazo" title="Prazo"><input type="text" name="situacao" placeholder="Situação"><textarea name="observacoes" placeholder="Observações..."></textarea>
+                            <div class="quick-form-actions"><button type="button" class="btn-cancel btnCancelQuickCardPriority btn-quick-cancel">Cancelar</button><button type="button" class="btn-confirm-success btnSaveQuickCardPriority btn-quick-save">Salvar</button></div>
                         </div>
                     </div>
-
                 </div>
             </div>
             <div class="card-grid">
-                {% for p in pendencias if not p.prioridade %}
-                    {% include 'partials/_pendencia_card.html' %}
-                {% endfor %}
-                
+                {% for p in pendencias if not p.prioridade %}{% include 'partials/_pendencia_card.html' %}{% endfor %}
                 <div id="card-quick-add-container">
-                    <div id="btnShowQuickAddCard" class="card-quick-add-trigger">
-                        <span class="quick-add-text">+ Adição Rápida</span>
-                    </div>
+                    <div id="btnShowQuickAddCard" class="card-quick-add-trigger"><span class="quick-add-text">+ Adição Rápida</span></div>
                     <div id="quickAddCardForm" class="data-card card-quick-add-form">
                         <div class="card-actions-corner">
                             <div id="quickCardPriorityToggle" class="card-priority-toggle" title="Alternar Prioridade">
                                 <svg viewBox="0 0 24 24" class="icon-18"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
                             </div>
                         </div>
-                        <select name="instrumento_id" class="quick-field-select-card">
-                            <option value="">-- Instrumento Contratual --</option>
-                            {% for inst in instrumentos %}
-                                <option value="{{ inst._id }}">{{ inst.n_instrumento }} - {{ inst.contratada }}</option>
-                            {% endfor %}
-                        </select>
-                        <input type="text" name="pendencia" placeholder="Título da Pendência (Obrigatório)*" required>
-                        <input type="text" name="responsavel" placeholder="Responsável">
-                        <input type="date" name="prazo" title="Prazo">
-                        <input type="text" name="situacao" placeholder="Situação">
-                        <textarea name="observacoes" placeholder="Observações..."></textarea>
-                        <div class="quick-form-actions">
-                            <button type="button" id="btnCancelQuickCard" class="btn-cancel" class="btn-quick-cancel">Cancelar</button>
-                            <button type="button" id="btnSaveQuickCard" class="btn-confirm-success" class="btn-quick-save">Salvar</button>
-                        </div>
+                        <select name="instrumento_id" class="quick-field-select-card"><option value="">-- Instrumento Contratual --</option>{% for inst in instrumentos %}<option value="{{ inst._id }}">{{ inst.n_instrumento }} - {{ inst.contratada }}</option>{% endfor %}</select>
+                        <input type="text" name="pendencia" placeholder="Título da Pendência (Obrigatório)*" required><input type="text" name="responsavel" placeholder="Responsável"><input type="date" name="prazo" title="Prazo"><input type="text" name="situacao" placeholder="Situação"><textarea name="observacoes" placeholder="Observações..."></textarea>
+                        <div class="quick-form-actions"><button type="button" id="btnCancelQuickCard" class="btn-cancel btn-quick-cancel">Cancelar</button><button type="button" id="btnSaveQuickCard" class="btn-confirm-success btn-quick-save">Salvar</button></div>
                     </div>
                 </div>
             </div>
             {% endif %}
         </div>
-
     {% elif view_mode == 'kanban' %}
         <div class="kanban-view-container hide-on-mobile">
             <div class="kanban-board kanban-board-wide">
-                <div class="kanban-column" id="kanban-column-sem-prazo">
-                    <div class="kanban-column-header">Sem Prazo ({{ pendencias_sem_prazo|length }})</div>
-                    <div class="kanban-cards">
-                        {% for p in pendencias_sem_prazo %}{% include 'partials/_pendencia_card.html' %}{% endfor %}
-                    </div>
-                </div>
-                <div class="kanban-column" id="kanban-column-a-vencer">
-                    <div class="kanban-column-header">Prazo a Vencer ({{ pendencias_a_vencer|length }})</div>
-                    <div class="kanban-cards">
-                        {% for p in pendencias_a_vencer %}{% include 'partials/_pendencia_card.html' %}{% endfor %}
-                    </div>
-                </div>
-                <div class="kanban-column" id="kanban-column-vencido">
-                    <div class="kanban-column-header">Prazo Vencido ({{ pendencias_vencidas|length }})</div>
-                    <div class="kanban-cards">
-                        {% for p in pendencias_vencidas %}{% include 'partials/_pendencia_card.html' %}{% endfor %}
-                    </div>
-                </div>
+                <div class="kanban-column" id="kanban-column-sem-prazo"><div class="kanban-column-header">Sem Prazo ({{ pendencias_sem_prazo|length }})</div><div class="kanban-cards">{% for p in pendencias_sem_prazo %}{% include 'partials/_pendencia_card.html' %}{% endfor %}</div></div>
+                <div class="kanban-column" id="kanban-column-a-vencer"><div class="kanban-column-header">Prazo a Vencer ({{ pendencias_a_vencer|length }})</div><div class="kanban-cards">{% for p in pendencias_a_vencer %}{% include 'partials/_pendencia_card.html' %}{% endfor %}</div></div>
+                <div class="kanban-column" id="kanban-column-vencido"><div class="kanban-column-header">Prazo Vencido ({{ pendencias_vencidas|length }})</div><div class="kanban-cards">{% for p in pendencias_vencidas %}{% include 'partials/_pendencia_card.html' %}{% endfor %}</div></div>
             </div>
         </div>
     {% endif %}
@@ -417,66 +269,20 @@
         <div class="modal-content">
             <h3>Filtrar Pendências</h3>
             <form method="GET" action="{{ url_for('pendencias.pendencias_lista', page_mode=page_mode) }}">
-            <input type="hidden" name="page_mode" value="{{ page_mode }}">
-            <input type="hidden" name="sort_by" value="{{ sort_by or 'prazo' }}">
-            <input type="hidden" name="order" value="{{ order or 'asc' }}">
                 <input type="hidden" name="page_mode" value="{{ page_mode }}">
-				<div>
-					<label for="filter_n_instrumento">Nº Instrumento:</label>
-					<input type="text" name="filter_n_instrumento" id="filter_n_instrumento" value="{{ filter_values.get('filter_n_instrumento', '') }}">
-				</div>
-				<div>
-					<label for="filter_contratada">Contratada:</label>
-					<input type="text" name="filter_contratada" id="filter_contratada" value="{{ filter_values.get('filter_contratada', '') }}">
-				</div>
-                <div>
-                    <label for="filter_pendencia">Pendência:</label>
-                    <input type="text" name="filter_pendencia" id="filter_pendencia" value="{{ filter_values.get('filter_pendencia', '') }}">
-                </div>
-                <div>
-                    <label for="filter_responsavel">Responsável:</label>
-                    <input type="text" name="filter_responsavel" id="filter_responsavel" value="{{ filter_values.get('filter_responsavel', '') }}">
-                </div>
-                <div>
-                    <label for="filter_situacao">Situação:</label>
-                    <input type="text" name="filter_situacao" id="filter_situacao" value="{{ filter_values.get('filter_situacao', '') }}">
-                </div>
-                <div class="button-toolbar">
-                    <div class="toolbar-group-left">
-                        <button type="submit">Aplicar Filtro</button>
-                    </div>
-                    <div class="toolbar-group-center">
-                        <button type="button" class="btn-cancel-modal">Cancelar</button>
-                    </div>
-                    <div class="toolbar-group-right">
-                        <button type="button" id="btnLimparFiltro" class="button">Limpar Filtro</button>
-                    </div>
-                </div>
+                <input type="hidden" name="sort_by" value="{{ sort_by or 'prazo' }}">
+                <input type="hidden" name="order" value="{{ order or 'asc' }}">
+				<div><label>Nº Instrumento:</label><input type="text" name="filter_n_instrumento" value="{{ filter_values.get('filter_n_instrumento', '') }}"></div>
+				<div><label>Contratada:</label><input type="text" name="filter_contratada" value="{{ filter_values.get('filter_contratada', '') }}"></div>
+                <div><label>Pendência:</label><input type="text" name="filter_pendencia" value="{{ filter_values.get('filter_pendencia', '') }}"></div>
+                <div><label>Responsável:</label><input type="text" name="filter_responsavel" value="{{ filter_values.get('filter_responsavel', '') }}"></div>
+                <div><label>Situação:</label><input type="text" name="filter_situacao" value="{{ filter_values.get('filter_situacao', '') }}"></div>
+                <div class="button-toolbar"><button type="submit">Aplicar</button><button type="button" class="btn-cancel-modal">Cancelar</button><button type="button" onclick="window.location.href='{{ url_for('pendencias.pendencias_lista', page_mode=page_mode) }}'" class="button">Limpar</button></div>
             </form>
         </div>
     </div>
-
-    <div id="configColunasModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3>Selecione as Colunas para Exibir</h3>
-            <div id="colunas-checklist" class="modal-colunas-list"></div>
-            <div class="button-toolbar">
-                <button id="btnSalvarColunas">Salvar</button>
-                <button type="button" class="btn-cancel-modal">Cancelar</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="configCamposModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3>Selecione os Campos para Exibir nos Cards</h3>
-            <div id="campos-checklist-pendencias" class="modal-colunas-list"></div>
-            <div class="button-toolbar">
-                <button id="btnSalvarCamposPendencias">Salvar</button>
-                <button type="button" class="btn-cancel-modal">Cancelar</button>
-            </div>
-        </div>
-    </div>
+    <div id="configColunasModal" class="modal-overlay"><div class="modal-content"><h3>Colunas (Tabela)</h3><div id="colunas-checklist" class="modal-colunas-list"></div><div class="button-toolbar"><button id="btnSalvarColunas">Salvar</button><button type="button" class="btn-cancel-modal">Cancelar</button></div></div></div>
+    <div id="configCamposModal" class="modal-overlay"><div class="modal-content"><h3>Campos (Cards)</h3><div id="campos-checklist-pendencias" class="modal-colunas-list"></div><div class="button-toolbar"><button id="btnSalvarCamposPendencias">Salvar</button><button type="button" class="btn-cancel-modal">Cancelar</button></div></div></div>
 
     <ul id="colorContextMenu" class="context-menu">
         <li class="context-menu-item" id="chooseColorOption">🎨 Escolher Cor...</li>
@@ -488,1147 +294,89 @@
 
 {% block page_scripts %}
 <script>
+    window.APP_DATA_PENDENCIAS = {
+        colorCodingIsActive: {{ color_coding_active | default(false) | tojson }},
+        viewMode: "{{ view_mode }}",
+        pageMode: "{{ page_mode }}",
+        urlQuickCreate: "{{ url_for('pendencias.quick_create_inline') }}",
+        isHub: false
+    };
+</script>
+
+<script src="{{ url_for('static', filename='js/ui_components.js', v=datetime.now().timestamp()) }}"></script>
+<script src="{{ url_for('static', filename='js/search_engine.js', v=datetime.now().timestamp()) }}"></script>
+<script src="{{ url_for('static', filename='js/pendencias_core.js', v=datetime.now().timestamp()) }}"></script>
+
+<script>
 document.addEventListener('DOMContentLoaded', function() {
-
-    const card_fields_map = {{ dict(todas_as_colunas_cards) | tojson | safe }}; 
-    let isPriorityFetchLocked = false; 
-    const viewMode = "{{ view_mode }}"; 
-    const pageMode = "{{ page_mode }}"; 
-
-    // --- LÓGICA DO SELETOR DE VISUALIZAÇÃO ---
-    const viewSelector = document.querySelector('.view-selector');
-    if (viewSelector) {
-        viewSelector.addEventListener('click', (e) => {
-            const button = e.target.closest('.view-button');
-            if (!button || button.classList.contains('active')) return;
-            fetch("{{ url_for('core.set_view_preference_pendencias') }}", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ view_mode: button.dataset.view })
-            }).then(r => r.json()).then(d => { if(d.status === 'success') window.location.reload(); });
-        });
-    }
-
+    
+    // --- LÓGICA PARA IDENTIFICAR POR CORES ---
     function handleToggleColor() {
         fetch("{{ url_for('core.toggle_color_coding_pendencias') }}", { method: 'POST' })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                window.location.reload(); 
-            } else {
-                alert('Erro ao salvar a preferência de cores.');
-            }
-        });
+        .then(r => r.json()).then(d => { if(d.status === 'success') window.location.reload(); });
     }
     document.getElementById('btnColorCode')?.addEventListener('click', handleToggleColor);
+    if (window.APP_DATA_PENDENCIAS.colorCodingIsActive) document.getElementById('btnColorCode')?.classList.add('filtro-ativo');
 
-    if ({{ color_coding_active | tojson }}) {
-        document.getElementById('btnColorCode')?.classList.add('filtro-ativo');
-    }
-    
-    // --- LÓGICA DO NOVO MODAL "CONFIGURAR CAMPOS" ---
-    const camposChecklist = document.getElementById('campos-checklist-pendencias');
-    const btnSalvarCampos = document.getElementById('btnSalvarCamposPendencias');
-    if (camposChecklist && btnSalvarCampos) {
-        const todasAsColunasCards = {{ todas_as_colunas_cards | tojson | safe }};
-        const cardFieldsVisiveis = {{ card_fields_visiveis | tojson | safe }};
-        todasAsColunasCards.forEach(campo => {
-            const [field_id, field_name] = campo;
-            if (field_name) { 
-                const isChecked = cardFieldsVisiveis.includes(field_id);
-                const wrapper = document.createElement('div');
-                wrapper.innerHTML = `<label><input type="checkbox" name="campo_pref" value="${field_id}" ${isChecked ? 'checked' : ''}> ${field_name}</label>`;
-                camposChecklist.appendChild(wrapper);
-            }
+    // --- LÓGICA DO NOVO MODAL "CONFIGURAR COLUNAS / CAMPOS" ---
+    const checklistColunas = document.getElementById('colunas-checklist');
+    if (checklistColunas) {
+        const todasCol = {{ todas_as_colunas | tojson | safe }};
+        const colVisiveis = {{ colunas_visiveis | tojson | safe }};
+        todasCol.forEach(c => {
+            const isChecked = colVisiveis.includes(c[0]);
+            checklistColunas.innerHTML += `<div><label><input type="checkbox" value="${c[0]}" ${isChecked ? 'checked' : ''}> ${c[1]}</label></div>`;
         });
-        btnSalvarCampos.addEventListener('click', () => {
-            const camposSelecionados = Array.from(camposChecklist.querySelectorAll('input:checked')).map(cb => cb.value);
-            fetch("{{ url_for('core.save_card_prefs_pendencias') }}", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ campos: camposSelecionados })
+        document.getElementById('btnSalvarColunas')?.addEventListener('click', () => {
+            const sel = Array.from(checklistColunas.querySelectorAll('input:checked')).map(cb => cb.value);
+            fetch("{{ url_for('core.save_pendencias_column_prefs') }}", {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ colunas: sel })
             }).then(r => r.json()).then(d => { if(d.status === 'success') location.reload(); });
         });
     }
 
-    const filterModal = document.getElementById('filterModal');
-    const configColunasModal = document.getElementById('configColunasModal');
-    const configCamposModal = document.getElementById('configCamposModal');
-
-    document.getElementById('btnFiltro')?.addEventListener('click', () => filterModal.classList.add('active'));
-    document.getElementById('btnFiltroMobile')?.addEventListener('click', () => filterModal.classList.add('active'));
-    document.getElementById('btnConfigurarColunas')?.addEventListener('click', () => configColunasModal.classList.add('active'));
-    document.getElementById('btnConfigurarCampos')?.addEventListener('click', () => configCamposModal.classList.add('active'));
-    document.getElementById('btnConfigurarColunasMobile')?.addEventListener('click', () => configColunasModal.classList.add('active'));
-
-    document.querySelectorAll('.modal-overlay').forEach(modal => {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) modal.classList.remove('active');
+    const camposChecklist = document.getElementById('campos-checklist-pendencias');
+    if (camposChecklist) {
+        const todasColCards = {{ todas_as_colunas_cards | tojson | safe }};
+        const cardVisiveis = {{ card_fields_visiveis | tojson | safe }};
+        todasColCards.forEach(c => {
+            if(c[1]) {
+                const isChecked = cardVisiveis.includes(c[0]);
+                camposChecklist.innerHTML += `<div><label><input type="checkbox" value="${c[0]}" ${isChecked ? 'checked' : ''}> ${c[1]}</label></div>`;
+            }
         });
-        modal.querySelectorAll('.btn-cancel-modal').forEach(cancelBtn => {
-            cancelBtn.addEventListener('click', () => modal.classList.remove('active'));
+        document.getElementById('btnSalvarCamposPendencias')?.addEventListener('click', () => {
+            const sel = Array.from(camposChecklist.querySelectorAll('input:checked')).map(cb => cb.value);
+            fetch("{{ url_for('core.save_card_prefs_pendencias') }}", {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ campos: sel })
+            }).then(r => r.json()).then(d => { if(d.status === 'success') location.reload(); });
         });
+    }
+
+    // Abertura dos Modais
+    document.getElementById('btnFiltro')?.addEventListener('click', () => document.getElementById('filterModal').classList.add('active'));
+    document.getElementById('btnFiltroMobile')?.addEventListener('click', () => document.getElementById('filterModal').classList.add('active'));
+    document.getElementById('btnConfigurarColunas')?.addEventListener('click', () => document.getElementById('configColunasModal').classList.add('active'));
+    document.getElementById('btnConfigurarCampos')?.addEventListener('click', () => document.getElementById('configCamposModal').classList.add('active'));
+    document.getElementById('btnConfigurarColunasMobile')?.addEventListener('click', () => document.getElementById('configColunasModal').classList.add('active'));
+
+    // INICIALIZAÇÃO DA BUSCA RÁPIDA E ADIÇÃO RÁPIDA (Via Pendencias Core e Search Engine)
+    new SearchEngine({
+        viewMode: window.APP_DATA_PENDENCIAS.viewMode,
+        tableRowsSelector: '.tabela-pendencias-shared tbody tr.clickable-row',
+        cardsSelector: '.data-card',
+        tabelaSemResultadosId: 'tabela-pendencias-sem-resultados-row',
+        backendSemResultadosId: 'tabela-pendencias-backend-sem-resultados',
+        cardsSemResultadosId: 'cards-pendencias-sem-resultados'
     });
 
-    // --- LÓGICA DE CLIQUE E EXPANDIR (MOBILE NATIVO NA TABELA) ---
-    document.querySelectorAll('#tabelaPendencias .clickable-row[data-url]').forEach(row => {
-        row.addEventListener('click', function(e) {
-            if (window.innerWidth <= 768) {
-                if (!e.target.closest('.action-icon-link, .expand-card-btn, input, .card-priority-toggle')) {
-                    window.location.href = this.dataset.url;
-                }
-            }
-        });
-    });
-
-    document.querySelectorAll('.responsive-card-table .expand-card-btn').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const card = this.closest('tr');
-            card.classList.toggle('card-expanded');
-            this.textContent = card.classList.contains('card-expanded') ? 'Ver menos' : 'Ver mais';
-        });
-    });
-
-    // --- LÓGICA DO MENU KEBAB ---
-    const kebabButton = document.getElementById('btnKebab');
-    const kebabDropdown = document.querySelector('.kebab-menu-dropdown');
-    if (kebabButton) {
-        kebabButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            kebabDropdown.style.display = kebabDropdown.style.display === 'block' ? 'none' : 'block';
-        });
-        document.addEventListener('click', () => {
-            if (kebabDropdown) kebabDropdown.style.display = 'none';
-        });
+    if (window.setupQuickAddCard) {
+        window.setupQuickAddCard('#card-quick-add-container', '#quickAddCardForm', '#btnShowQuickAddCard', '#quickCardPriorityToggle', '#btnCancelQuickCard', '#btnSaveQuickCard', false);
+        window.setupQuickAddCard('.card-quick-add-container-priority', '.quickAddCardFormPriority', '.btnShowQuickAddCardPriority', '.quickCardPriorityTogglePriority', '.btnCancelQuickCardPriority', '.btnSaveQuickCardPriority', true);
+        window.setupQuickAddCard('.card-quick-add-container-group', '.quickAddCardFormGroup', '.btnShowQuickAddCardGroup', '.quickCardPriorityToggleGroup', '.btnCancelQuickCardGroup', '.btnSaveQuickCardGroup', false);
+        window.setupQuickAddCard('.card-quick-add-container-group', '.quickAddCardFormMobile', '.btnShowQuickAddCardMobile', '.quickCardPriorityToggleMobile', '.btnCancelQuickCardMobile', '.btnSaveQuickCardMobile', false);
+        window.setupQuickAddCard('.card-quick-add-container-top-mobile', '.quickAddCardFormMobileTop', '.btnShowQuickAddCardMobileTop', '.quickCardPriorityToggleMobileTop', '.btnCancelQuickCardMobileTop', '.btnSaveQuickCardMobileTop', false);
     }
-
-    // --- LÓGICA PARA CONFIGURAÇÃO DE COLUNAS E FILTRO ---
-    const checklistContainer = document.getElementById('colunas-checklist');
-    const btnSalvarColunas = document.getElementById('btnSalvarColunas');
-    if (checklistContainer && btnSalvarColunas) {
-        const todasAsColunas = {{ todas_as_colunas | tojson | safe }};
-        const colunasVisiveis = {{ colunas_visiveis | tojson | safe }};
-        todasAsColunas.forEach(coluna => {
-            const [col_id, col_nome] = coluna;
-            const isChecked = colunasVisiveis.includes(col_id);
-            const wrapper = document.createElement('div');
-            wrapper.innerHTML = `<label><input type="checkbox" name="coluna_pref" value="${col_id}" ${isChecked ? 'checked' : ''}> ${col_nome}</label>`;
-            checklistContainer.appendChild(wrapper);
-        });
-        btnSalvarColunas.addEventListener('click', () => {
-            const colunasSelecionadas = Array.from(checklistContainer.querySelectorAll('input:checked')).map(cb => cb.value);
-            fetch("{{ url_for('core.save_pendencias_column_prefs') }}", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ colunas: colunasSelecionadas })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    location.reload();
-                } else { alert('Erro ao salvar as preferências.'); }
-            });
-        });
-    }
-
-    const btnLimparFiltro = document.getElementById('btnLimparFiltro');
-    if (btnLimparFiltro) {
-        btnLimparFiltro.addEventListener('click', () => {
-            window.location.href = "{{ url_for('pendencias.pendencias_lista', page_mode=page_mode) }}";
-        });
-    }
-
-    // --- LÓGICA PARA ALTERNAR PRIORIDADE (Movimentação DOM) --- 
-    document.querySelectorAll('.coluna-prioridade, .card-priority-toggle').forEach(el => {
-        el.addEventListener('click', function(e) {
-            e.preventDefault(); e.stopPropagation();
-
-            if (isPriorityFetchLocked) {
-                console.log("Fetch de prioridade já em andamento, clique ignorado.");
-                return;
-            }
-            isPriorityFetchLocked = true; 
-
-            const clickedElement = this;
-            const pendenciaId = this.dataset.id;
-            const animationDuration = 300; 
-
-            fetch(`/pendencias/toggle_prioridade/${pendenciaId}`, { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    const isActivating = data.nova_prioridade;
-                    let elementToMove = null;
-                    let targetContainer = null;
-                    
-                    const isMobile = window.innerWidth <= 768;
-
-                    // 1. Identificar elemento e destino
-                    if (isMobile || viewMode === 'table') {
-                        elementToMove = clickedElement.closest('tr');
-                        if (!elementToMove) return;
-                        targetContainer = elementToMove.closest('tbody');
-
-                    } else if (viewMode === 'cards') {
-                        elementToMove = clickedElement.closest('.data-card');
-                        if (!elementToMove) return;
-
-                        if (pageMode === 'por_instrumento') {
-                            const currentGroupSection = elementToMove.closest('.instrumento-group-section');
-                            if (!currentGroupSection) {
-                                isPriorityFetchLocked = false;
-                                return;
-                            }
-                            if (isActivating) {
-                                targetContainer = currentGroupSection.querySelector('.card-grid');
-                            } else {
-                                const allGridsInGroup = currentGroupSection.querySelectorAll('.card-grid');
-                                targetContainer = allGridsInGroup[allGridsInGroup.length - 1];
-                            }
-                        } else {
-                            if (isActivating) {
-                                targetContainer = document.querySelector('.priority-section .card-grid');
-                            } else {
-                                targetContainer = document.querySelector('.card-grid:not(.priority-section .card-grid)');
-                            }
-                        }
-
-                    } else if (viewMode === 'kanban') {
-                        elementToMove = clickedElement.closest('.data-card');
-                        if (!elementToMove) return;
-                        targetContainer = elementToMove.closest('.kanban-cards'); 
-                    }
-
-                    if (!elementToMove || !targetContainer) {
-                        isPriorityFetchLocked = false;
-                        return;
-                    }
-
-                    // 2. Animação de Fade-Out
-                    elementToMove.style.transition = 'opacity 0.3s ease-out';
-                    elementToMove.style.opacity = '0';
-
-                    // 3. Atraso para Mover e Fazer Fade-In
-                    setTimeout(() => {
-                        if (isMobile || viewMode === 'table') {
-                            elementToMove.classList.toggle('prioridade-ativa', isActivating);
-                            // Sincroniza o ícone de prioridade injetado no Mobile
-                            const iconInsideRow = elementToMove.querySelector('.card-priority-toggle');
-                            if(iconInsideRow) iconInsideRow.classList.toggle('active', isActivating);
-                        } else {
-                            clickedElement.classList.toggle('active', isActivating);
-                        }
-
-                        // Move o elemento
-                        if (isActivating) {
-                            // Correção para alinhar abaixo da linha invisível de "sem resultados"
-                            if (isMobile || viewMode === 'table') {
-                                const firstRealRow = targetContainer.querySelector('tr.clickable-row');
-                                if (firstRealRow) {
-                                    targetContainer.insertBefore(elementToMove, firstRealRow);
-                                } else {
-                                    targetContainer.prepend(elementToMove);
-                                }
-                            } else {
-                                targetContainer.prepend(elementToMove);
-                            }
-                        } else {
-                            let firstNonPriorityItem = null;
-                            let lastPriorityItem = null;
-
-                            if (isMobile || viewMode === 'table') {
-                                // CORREÇÃO: Busca APENAS nas linhas reais de dados (.clickable-row)
-                                const allNonPriorityRows = targetContainer.querySelectorAll('tr.clickable-row:not(.prioridade-ativa)');
-                                firstNonPriorityItem = Array.from(allNonPriorityRows).find(row => row !== elementToMove);
-
-                            } else if (viewMode === 'kanban') {
-                                const allNonPriorityCards = targetContainer.querySelectorAll('.data-card:not(:has(.card-priority-toggle.active))');
-                                firstNonPriorityItem = Array.from(allNonPriorityCards).find(card => card !== elementToMove);
-
-                            } else { 
-                                const allPriorityCards = targetContainer.querySelectorAll('.data-card:has(.card-priority-toggle.active)');
-                                const otherPriorityCards = Array.from(allPriorityCards).filter(card => card !== elementToMove);
-
-                                if (otherPriorityCards.length > 0) {
-                                    lastPriorityItem = otherPriorityCards[otherPriorityCards.length - 1];
-                                } else {
-                                    lastPriorityItem = null; 
-                                }
-                            }
-
-                            if (isMobile || viewMode === 'table') {
-                                if (firstNonPriorityItem) {
-                                    targetContainer.insertBefore(elementToMove, firstNonPriorityItem);
-                                } else {
-                                    // CORREÇÃO: Se não houver itens sem prioridade, garante que a linha fique 
-                                    // ANTES do botão de Adição Rápida e não no fundo da tabela quebrando o layout.
-                                    const templateRow = targetContainer.querySelector('#inline-create-template');
-                                    if (templateRow) {
-                                        targetContainer.insertBefore(elementToMove, templateRow);
-                                    } else {
-                                        targetContainer.appendChild(elementToMove);
-                                    }
-                                }
-                            } else if (viewMode === 'kanban') {
-                                if (firstNonPriorityItem) {
-                                    targetContainer.insertBefore(elementToMove, firstNonPriorityItem);
-                                } else {
-                                    targetContainer.appendChild(elementToMove);
-                                }
-                            } else { 
-                                if (lastPriorityItem) {
-                                    lastPriorityItem.after(elementToMove);
-                                } else {
-                                    targetContainer.prepend(elementToMove);
-                                }
-                            }
-                        }
-
-                        requestAnimationFrame(() => {
-                            elementToMove.style.transition = 'opacity 0.3s ease-in';
-                            elementToMove.style.opacity = '1';
-                            setTimeout(() => {
-                                elementToMove.style.transition = ''; 
-                                isPriorityFetchLocked = false; 
-                            }, animationDuration);
-                        });
-                    }, animationDuration);
-
-                } else {
-                    alert('Erro ao alterar a prioridade.');
-                    isPriorityFetchLocked = false; 
-                }
-            })
-            .catch(error => {
-                console.error('Erro no fetch da prioridade:', error);
-                isPriorityFetchLocked = false; 
-            });
-        });
-    });
-
-    // --- LÓGICA DO MENU DE CONTEXTO PARA COR (Nativa) ---
-    const contextMenu = document.getElementById('colorContextMenu');
-    const colorPicker = document.getElementById('hiddenColorPicker'); 
-    const chooseColorBtn = document.getElementById('chooseColorOption');
-    const clearColorBtn = document.getElementById('clearColorOption');
-    let activeItem = null; 
-
-    document.querySelectorAll('tbody .clickable-row, .data-card').forEach(item => {
-        item.addEventListener('contextmenu', function(event) {
-            event.preventDefault();
-            activeItem = this; 
-            contextMenu.style.top = `${event.pageY}px`;
-            contextMenu.style.left = `${event.pageX}px`;
-            contextMenu.style.display = 'block';
-        });
-    });
-
-    window.addEventListener('click', () => {
-        if (contextMenu) contextMenu.style.display = 'none';
-    });
-
-    chooseColorBtn.addEventListener('click', () => { 
-        if (colorPicker) {
-            try {
-                let currentColor = '#FFFFFF'; 
-                if (activeItem) {
-                     const computedStyle = getComputedStyle(activeItem);
-                     const bgColor = computedStyle.backgroundColor;
-                     if (bgColor && bgColor !== 'rgba(0, 0, 0, 0)' && bgColor !== 'transparent') {
-                        if (bgColor.startsWith('rgb')) {
-                           const rgb = bgColor.match(/\d+/g);
-                           if (rgb && rgb.length >= 3) {
-                               currentColor = "#" + ((1 << 24) + (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2])).toString(16).slice(1).toUpperCase();
-                           }
-                        } else {
-                             currentColor = bgColor; 
-                        }
-                     }
-                }
-                colorPicker.value = currentColor;
-            } catch(e){ console.warn("Failed to set initial color picker value", e); }
-
-            colorPicker.click(); 
-        } else {
-            console.error("Hidden color picker not found!");
-        }
-    });
-
-    clearColorBtn.addEventListener('click', () => {
-        if (!activeItem) return;
-        saveColor(activeItem.dataset.id, null); 
-    });
-
-    if (colorPicker) { 
-        colorPicker.addEventListener('change', (event) => {
-            if (!activeItem) return;
-            const newColor = event.target.value;
-            saveColor(activeItem.dataset.id, newColor);
-        });
-    }
-
-    function saveColor(pendenciaId, color) { 
-        fetch(`/pendencias/set_cor_destaque/${pendenciaId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cor: color })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success' && activeItem) {
-                activeItem.style.backgroundColor = color || ''; 
-            } else if (data.status !== 'success') { 
-                alert('Erro ao salvar a cor.');
-            }
-        }).catch(err => {
-            console.error("Fetch error saving color:", err);
-            alert('Erro de rede ao salvar a cor.');
-        });
-    }
-
-    // --- CORREÇÃO 3: LÓGICA DE BUSCA RÁPIDA (CLIENT-SIDE) UNIFICADA ---
-    const buscaInput = document.getElementById('buscaRapidaInput');
-    const buscaInputMobile = document.getElementById('buscaRapidaInputMobile'); 
-    
-    const tabelaSemResultadosBusca = document.getElementById('tabela-pendencias-sem-resultados-row');
-    const tabelaBackendSemResultados = document.getElementById('tabela-pendencias-backend-sem-resultados');
-    const cardsSemResultadosBusca = document.getElementById('cards-pendencias-sem-resultados');
-
-    function executarBusca(e) {
-        const isMobile = window.innerWidth <= 768;
-        let query = '';
-        
-        if (e && e.target && e.target.tagName === 'INPUT') {
-            query = e.target.value.toLowerCase().trim();
-            if (buscaInput && e.target.id === 'buscaRapidaInputMobile') buscaInput.value = e.target.value;
-            if (buscaInputMobile && e.target.id === 'buscaRapidaInput') buscaInputMobile.value = e.target.value;
-        } else {
-            const valDesktop = buscaInput ? buscaInput.value : '';
-            const valMobile = buscaInputMobile ? buscaInputMobile.value : '';
-            query = (isMobile ? valMobile : valDesktop).toLowerCase().trim();
-        }
-
-        let itemsToFilter = [];
-        let displayStyle = '';
-
-        if (isMobile) {
-            // No mobile filtra a tabela
-            itemsToFilter = document.querySelectorAll('#tabelaPendencias tbody tr.clickable-row');
-            displayStyle = 'block';
-        } else {
-            // No desktop filtra a view ativa
-            if (viewMode === 'table') {
-                itemsToFilter = document.querySelectorAll('#tabelaPendencias tbody tr.clickable-row');
-                displayStyle = 'table-row';
-            } else if (viewMode === 'cards' || viewMode === 'kanban') {
-                itemsToFilter = document.querySelectorAll('.data-card');
-                displayStyle = 'flex';
-            }
-        }
-
-        let itemsVisiveis = 0;
-
-        itemsToFilter.forEach(item => {
-            let itemText = '';
-            
-            // Pega o texto dos spans (Tabela e Cards)
-            const spans = item.querySelectorAll('span.card-value, span.card-field-value');
-            spans.forEach(span => { itemText += " " + span.textContent.toLowerCase(); });
-            
-            // Pega o texto do H4 (Cards)
-            const h4 = item.querySelector('h4');
-            if (h4) itemText += " " + h4.textContent.toLowerCase();
-
-            if (itemText.includes(query)) {
-                // Aqui usamos block/table-row/flex
-                item.style.setProperty('display', displayStyle, 'important');
-                itemsVisiveis++;
-            } else {
-                item.style.setProperty('display', 'none', 'important');
-            }
-        });
-
-        const noResults = (itemsVisiveis === 0);
-        const isSearching = query.length > 0;
-
-        if (isMobile || viewMode === 'table') {
-            if (tabelaSemResultadosBusca) {
-                tabelaSemResultadosBusca.style.setProperty('display', (isSearching && noResults) ? displayStyle : 'none', 'important');
-                tabelaSemResultadosBusca.style.border = 'none';
-            }
-            if (tabelaBackendSemResultados) {
-                tabelaBackendSemResultados.style.setProperty('display', isSearching ? 'none' : 'table-row', 'important');
-            }
-        } 
-        
-        if (!isMobile) {
-            if (viewMode === 'cards' && cardsSemResultadosBusca) {
-                cardsSemResultadosBusca.style.setProperty('display', (isSearching && noResults) ? 'block' : 'none', 'important');
-            } else if (viewMode === 'kanban') {
-                atualizarContagensKanban(query);
-            }
-        }
-    }
-
-    if (buscaInput) {
-        buscaInput.addEventListener('keyup', executarBusca);
-        buscaInput.addEventListener('search', executarBusca);
-        buscaInput.addEventListener('keydown', e => { if (e.key === 'Escape') { buscaInput.value = ''; executarBusca(e); }});
-    }
-    if (buscaInputMobile) {
-        buscaInputMobile.addEventListener('keyup', executarBusca);
-        buscaInputMobile.addEventListener('search', executarBusca);
-        buscaInputMobile.addEventListener('keydown', e => { if (e.key === 'Escape') { buscaInputMobile.value = ''; executarBusca(e); }});
-    }
-
-    function atualizarContagensKanban(query) {
-        if (viewMode !== 'kanban' || window.innerWidth <= 768) return;
-        const isSearching = query && query.length > 0;
-
-        document.querySelectorAll('.kanban-column').forEach(coluna => {
-            const cardsNaColuna = coluna.querySelectorAll('.data-card');
-            const totalCards = cardsNaColuna.length;
-            let cardsEscondidos = 0;
-            cardsNaColuna.forEach(card => { if (card.style.display === 'none') cardsEscondidos++; });
-
-            let msgNenhumResultado = coluna.querySelector('.kanban-empty-msg');
-            if (isSearching && totalCards > 0 && cardsEscondidos === totalCards) {
-                if (!msgNenhumResultado) {
-                    msgNenhumResultado = document.createElement('p');
-                    msgNenhumResultado.className = 'kanban-empty-msg';
-                    msgNenhumResultado.textContent = 'Nenhum resultado nesta coluna.';
-                    coluna.querySelector('.kanban-cards').appendChild(msgNenhumResultado);
-                }
-            } else if (msgNenhumResultado) {
-                msgNenhumResultado.remove();
-            }
-        });
-    }
-
-    // --- LÓGICA DE EDIÇÃO INLINE NA TABELA (PENDENCIAS) ---
-    const tableBodyPendencias = document.querySelector('#tabelaPendencias tbody');
-
-    if (tableBodyPendencias) { // Aplica sempre pois é usado no mobile
-        let currentEditInput = null;
-
-        function cancelInlineEdit(td, inputElement, originalValue) {
-            if (!td || !inputElement) return;
-            const span = document.createElement('span');
-            span.className = 'card-value';
-            span.textContent = originalValue;
-            td.innerHTML = '';
-            td.appendChild(span);
-            currentEditInput = null;
-        }
-
-        function saveInlineEdit(td, inputElement, fieldName, originalValue) {
-            const newValue = inputElement.value.trim();
-            const pendenciaId = td.closest('tr').dataset.id; 
-
-            if (newValue === originalValue) {
-                cancelInlineEdit(td, inputElement, originalValue);
-                return;
-            }
-
-            fetch(`/pendencias/update_field_inline/${pendenciaId}`, { 
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ field: fieldName, value: newValue })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    const updatedValue = data.newValue;
-                    const span = document.createElement('span');
-                    span.className = 'card-value';
-                    span.textContent = updatedValue;
-                    td.innerHTML = '';
-                    td.appendChild(span);
-                    currentEditInput = null;
-                    
-                    const isDarkTheme = document.body.classList.contains('theme-dark');
-                    td.style.backgroundColor = isDarkTheme ? '#3a3a3a' : '#e0e0e0';
-                    td.classList.add('td-feedback-flash'); 
-                    setTimeout(() => {
-                        td.style.backgroundColor = '';
-                        setTimeout(() => {
-                            td.classList.remove('td-feedback-flash');
-                        }, 300);
-                    }, 700);
-                } else {
-                    alert(`Erro ao salvar: ${data.message}`);
-                    cancelInlineEdit(td, inputElement, originalValue);
-                }
-            })
-            .catch(error => {
-                console.error('Erro de rede ao salvar:', error);
-                alert('Erro de rede ao salvar. A alteração foi cancelada.');
-                cancelInlineEdit(td, inputElement, originalValue);
-            });
-        }
-
-        tableBodyPendencias.addEventListener('dblclick', function(e) {
-            const td = e.target.closest('td.editable-cell');
-            if (!td) return;
-            if (td.querySelector('input, textarea') || currentEditInput) {
-               if(currentEditInput) currentEditInput.focus();
-               return;
-            }
-
-            const span = td.querySelector('span.card-value');
-            if (!span) return;
-
-            const originalValue = span.textContent.trim();
-            const fieldName = td.dataset.fieldName;
-            let inputElement;
-
-            if (fieldName === 'observacoes') {
-                inputElement = document.createElement('textarea');
-                inputElement.style.height = Math.max(span.offsetHeight, 60) + 'px';
-                inputElement.style.resize = 'vertical';
-            } else if (fieldName === 'prazo') {
-                inputElement = document.createElement('input');
-                inputElement.type = 'date'; 
-            } else {
-                inputElement = document.createElement('input');
-                inputElement.type = 'text';
-            }
-            
-            if (fieldName === 'prazo') {
-                inputElement.value = convertDateToISO(originalValue); 
-            } else {
-                inputElement.value = originalValue;
-            }
-            
-            currentEditInput = inputElement;
-
-            td.innerHTML = '';
-            td.appendChild(inputElement);
-            inputElement.focus();
-            if(inputElement.select) inputElement.select();
-
-            inputElement.addEventListener('keydown', function(event) {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    saveInlineEdit(td, inputElement, fieldName, originalValue);
-                } else if (event.key === 'Escape') {
-                    cancelInlineEdit(td, inputElement, originalValue);
-                }
-            });
-
-            inputElement.addEventListener('blur', function() {
-                 if (document.body.contains(inputElement)) {
-                      cancelInlineEdit(td, inputElement, originalValue);
-                 }
-            });
-        });
-    }
-
-    // --- 13.5. LÓGICA DE CRIAÇÃO INLINE (NO TOPO E NO FIM DA TABELA) ---
-    const btnShowInlineCreate = document.getElementById('btnShowInlineCreate'); // Fim
-    const btnShowInlineCreateTop = document.getElementById('btnShowInlineCreateTop'); // Topo
-    const rowBtnAddInline = document.getElementById('row-btn-add-inline');
-    const rowBtnAddInlineTop = document.getElementById('row-btn-add-inline-top');
-    const templateInlineCreate = document.getElementById('inline-create-template');
-
-    if (templateInlineCreate) {
-        const priorityToggleInline = document.getElementById('inlineCreatePriorityToggle');
-        let isInlinePriority = false;
-
-        function addHoverEffect(btn) {
-            if (!btn) return;
-            btn.addEventListener('mouseenter', () => btn.style.backgroundColor = 'var(--hover-bg)');
-            btn.addEventListener('mouseleave', () => btn.style.backgroundColor = 'transparent');
-        }
-        addHoverEffect(btnShowInlineCreate);
-        addHoverEffect(btnShowInlineCreateTop);
-
-        if (priorityToggleInline) {
-            priorityToggleInline.addEventListener('click', function() {
-                isInlinePriority = !isInlinePriority;
-                this.classList.toggle('active', isInlinePriority);
-            });
-        }
-
-        // Função que joga o formulário para cima ou para baixo
-        function openInlineForm(isTop) {
-            if (isTop) {
-                rowBtnAddInlineTop.after(templateInlineCreate);
-                rowBtnAddInlineTop.style.display = 'none';
-                if (rowBtnAddInline) rowBtnAddInline.style.display = 'table-row';
-            } else {
-                rowBtnAddInline.before(templateInlineCreate);
-                rowBtnAddInline.style.display = 'none';
-                if (rowBtnAddInlineTop) rowBtnAddInlineTop.style.display = 'table-row';
-            }
-            templateInlineCreate.style.display = 'table-row';
-            const pendenciaInput = templateInlineCreate.querySelector('[name="pendencia"]');
-            if (pendenciaInput) pendenciaInput.focus();
-            
-            isInlinePriority = false;
-            if (priorityToggleInline) priorityToggleInline.classList.remove('active');
-        }
-
-        if (btnShowInlineCreateTop) btnShowInlineCreateTop.addEventListener('click', () => openInlineForm(true));
-        if (btnShowInlineCreate) btnShowInlineCreate.addEventListener('click', () => openInlineForm(false));
-
-        const btnCancelInline = templateInlineCreate.querySelector('.btn-cancel-inline');
-        btnCancelInline.addEventListener('click', () => {
-            templateInlineCreate.querySelectorAll('input, textarea, select').forEach(el => el.value = '');
-            templateInlineCreate.style.display = 'none';
-            if (rowBtnAddInlineTop) rowBtnAddInlineTop.style.display = 'table-row';
-            if (rowBtnAddInline) rowBtnAddInline.style.display = 'table-row';
-            
-            isInlinePriority = false;
-            if (priorityToggleInline) priorityToggleInline.classList.remove('active');
-        });
-
-        const btnSaveInline = templateInlineCreate.querySelector('.btn-save-inline');
-
-        // --- NOVO: Salvar com Enter / Cancelar com ESC nos campos da tabela ---
-        templateInlineCreate.querySelectorAll('input, textarea, select').forEach(input => {
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    // Se for textarea e segurar Shift, apenas pula linha. Caso contrário, salva.
-                    if (this.tagName === 'TEXTAREA' && e.shiftKey) return; 
-                    e.preventDefault();
-                    btnSaveInline.click();
-                } else if (e.key === 'Escape') {
-                    // Clica automaticamente no botão de cancelar
-                    e.preventDefault();
-                    btnCancelInline.click();
-                }
-            });
-        });
-
-        btnSaveInline.addEventListener('click', () => {
-            const payload = { prioridade: isInlinePriority };
-            templateInlineCreate.querySelectorAll('input, textarea, select').forEach(el => {
-                if (el.name) payload[el.name] = el.value;
-            });
-
-            if (!payload.pendencia || payload.pendencia.trim() === '') {
-                alert("Por favor, digite o conteúdo da pendência.");
-                templateInlineCreate.querySelector('[name="pendencia"]').focus();
-                return;
-            }
-
-            btnSaveInline.textContent = '...';
-            btnSaveInline.disabled = true;
-
-            fetch("{{ url_for('pendencias.quick_create_inline') }}", {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-            }).then(r => r.json()).then(data => {
-                if (data.status === 'success') { window.location.reload(); } 
-                else { alert("Erro: " + data.message); btnSaveInline.textContent = '✔'; btnSaveInline.disabled = false; }
-            }).catch(err => {
-                alert("Erro de rede."); btnSaveInline.textContent = '✔'; btnSaveInline.disabled = false;
-            });
-        });
-    }
-
-    // --- 14. LÓGICA DE EDIÇÃO INLINE NOS CARDS --- 
-    const cardContainers = document.querySelectorAll('.card-view-container, .kanban-view-container');
-
-    if (cardContainers.length > 0 && viewMode !== "table") {
-        let currentCardEditInput = null;
-        let originalCardContent = null;
-        let activeCardFieldElement = null;
-        let isEditingCard = false;
-
-        function cancelInlineEditCard() {
-            if (!activeCardFieldElement || !currentCardEditInput) return;
-            activeCardFieldElement.innerHTML = originalCardContent;
-            currentCardEditInput = null;
-            originalCardContent = null;
-            activeCardFieldElement = null;
-            isEditingCard = false;
-        }
-
-        function saveInlineEditCard() {
-            if (!activeCardFieldElement || !currentCardEditInput) return;
-
-            const newValue = currentCardEditInput.value.trim();
-            const fieldName = activeCardFieldElement.dataset.fieldName;
-            const cardDiv = activeCardFieldElement.closest('.data-card');
-            const pendenciaId = cardDiv.dataset.id; 
-            const originalValueSpan = document.createElement('div');
-            originalValueSpan.innerHTML = originalCardContent;
-            const originalValueText = originalValueSpan.querySelector('.card-field-value')?.textContent.trim() || '';
-
-            if (newValue === originalValueText && fieldName !== 'prazo') { 
-                cancelInlineEditCard();
-                return;
-            }
-
-            fetch(`/pendencias/update_field_inline/${pendenciaId}`, { 
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ field: fieldName, value: newValue })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                        const updatedValue = data.newValue;
-
-                        if (activeCardFieldElement.tagName === 'H4') {
-                            activeCardFieldElement.innerHTML = `<span class="card-field-value">${updatedValue || 'Pendência sem título'}</span>`;
-                        } else {
-                            const fieldNameFromData = activeCardFieldElement.dataset.fieldName;
-                            const labelText = card_fields_map[fieldNameFromData] || fieldNameFromData;
-                            activeCardFieldElement.innerHTML = `<strong>${labelText}:</strong> <span class="card-field-value">${updatedValue || ''}</span>`;
-                        }
-
-                        currentCardEditInput = null;
-                        originalCardContent = null;
-                        activeCardFieldElement = null;
-                        isEditingCard = false;
-
-                        let moved = false; 
-                        const cardElement = cardDiv; 
-
-                        if (fieldName === 'prazo' && viewMode === "kanban") {
-                            const currentCol = cardElement.closest('.kanban-column');
-                            if (currentCol) {
-                                const hoje = new Date();
-                                hoje.setHours(0, 0, 0, 0);
-                                const newPrazoDate = parseDateFromDDMMYYYY(data.newValue); 
-
-                                let targetColumnId = '';
-                                if (!newPrazoDate) {
-                                    targetColumnId = 'kanban-column-sem-prazo';
-                                } else if (newPrazoDate < hoje) {
-                                    targetColumnId = 'kanban-column-vencido';
-                                } else {
-                                    targetColumnId = 'kanban-column-a-vencer';
-                                }
-
-                                if (currentCol.id !== targetColumnId) {
-                                    const targetColumn = document.getElementById(targetColumnId);
-                                    const targetCardContainer = targetColumn ? targetColumn.querySelector('.kanban-cards') : null;
-
-                                    if (targetCardContainer) {
-                                        moved = true; 
-                                        cardElement.style.transition = 'opacity 0.3s ease-out';
-                                        cardElement.style.opacity = '0';
-                                        setTimeout(() => {
-                                            targetCardContainer.appendChild(cardElement); 
-                                            requestAnimationFrame(() => {
-                                                cardElement.style.transition = 'opacity 0.3s ease-in';
-                                                cardElement.style.opacity = '1';
-                                                setTimeout(() => {
-                                                    cardElement.style.transition = '';
-                                                    const priorityIcon = cardElement.querySelector('.card-priority-toggle');
-                                                    if (priorityIcon && priorityIcon.classList.contains('active')) {
-                                                        targetCardContainer.prepend(cardElement); 
-                                                    } else {
-                                                        targetCardContainer.appendChild(cardElement); 
-                                                    }
-                                                }, 300);
-                                            });
-                                        }, 300);
-                                    } 
-                                }
-                            } 
-                        } 
-
-                        if (!moved) { 
-                            const isDarkTheme = document.body.classList.contains('theme-dark');
-                            const feedbackColor = isDarkTheme ? '#3a3a3a' : '#e0e0e0';
-                            cardDiv.classList.add('card-feedback-flash');
-                            const originalCardBg = cardDiv.style.backgroundColor; 
-                            cardDiv.style.backgroundColor = feedbackColor;
-                            setTimeout(() => {
-                                cardDiv.style.backgroundColor = originalCardBg || ''; 
-                                setTimeout(() => {
-                                    cardDiv.classList.remove('card-feedback-flash');
-                                }, 300);
-                            }, 700);
-                        }
-
-                } else {
-                    alert(`Erro ao salvar: ${data.message}`);
-                    isEditingCard = false;
-                    cancelInlineEditCard();
-                }
-            })
-            .catch(error => {
-                console.error('Erro de rede ao salvar card:', error);
-                alert('Erro de rede ao salvar. A alteração foi cancelada.');
-                isEditingCard = false;
-                cancelInlineEditCard();
-            });
-        }
-
-        cardContainers.forEach(container => {
-            container.addEventListener('dblclick', function(e) {
-                const fieldElement = e.target.closest('.editable-card-field');
-                if (!fieldElement) return;
-
-                if (fieldElement.querySelector('input, textarea') || currentCardEditInput) {
-                   if (currentCardEditInput) currentCardEditInput.focus();
-                   return;
-                }
-
-                activeCardFieldElement = fieldElement;
-                const valueSpan = fieldElement.querySelector('.card-field-value');
-                const labelElement = fieldElement.querySelector('strong');
-                if (!valueSpan) return; 
-
-                const originalValue = valueSpan.textContent.trim();
-                originalCardContent = fieldElement.innerHTML;
-                const fieldName = fieldElement.dataset.fieldName;
-                let inputElement;
-
-                if (fieldName === 'observacoes') {
-                    inputElement = document.createElement('textarea');
-                    inputElement.style.height = '60px';
-                } else if (fieldName === 'prazo') {
-                    inputElement = document.createElement('input');
-                    inputElement.type = 'date'; 
-                } else {
-                    inputElement = document.createElement('input');
-                    inputElement.type = 'text';
-                }
-
-                if (fieldName === 'prazo') {
-                    inputElement.value = convertDateToISO(originalValue); 
-                } else {
-                    inputElement.value = originalValue;
-                }
-
-                currentCardEditInput = inputElement;
-                isEditingCard = true; 
-
-                fieldElement.innerHTML = '';
-                if (labelElement) {
-                    fieldElement.appendChild(labelElement);
-                    fieldElement.appendChild(document.createTextNode(' '));
-                }
-                if (fieldElement.tagName === 'H4') {
-                     inputElement.value = originalValue; 
-                }
-                fieldElement.appendChild(inputElement);
-                inputElement.focus();
-                if(inputElement.select) inputElement.select();
-                let saveInProgress = false;
-
-                inputElement.addEventListener('keydown', function(event) {
-                    if (event.key === 'Enter') {
-                        event.preventDefault();
-                        saveInProgress = true;
-                        saveInlineEditCard();
-                    } else if (event.key === 'Escape') {
-                        cancelInlineEditCard();
-                    }
-                });
-
-                inputElement.addEventListener('blur', function() {
-                    setTimeout(() => {
-                        if (saveInProgress) { 
-                            return; 
-                        } 
-                        if (document.body.contains(inputElement) && currentCardEditInput === inputElement) {
-                            cancelInlineEditCard();
-                        }
-                    }, 150);
-                });
-            });
-        }); 
-    } 
-
-    function convertDateToISO(dateString) {
-        if (!dateString) return ''; 
-        const parts = dateString.split('/');
-        if (parts.length === 3 && parts[2] && parts[1] && parts[0]) {
-            return `${parts[2]}-${parts[1]}-${parts[0]}`;
-        }
-        return ''; 
-    }
-
-    function parseDateFromDDMMYYYY(dateString) {
-        if (!dateString) return null;
-        const parts = dateString.split('/');
-        if (parts.length === 3) {
-            const date = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0])); 
-            date.setHours(0, 0, 0, 0);
-            return date;
-        }
-        return null;
-    }
-
-    // --- LÓGICA DE ADIÇÃO RÁPIDA EM FORMATO DE CARD (DESKTOP E MOBILE) ---
-    function setupQuickAddCard(containerSelector, formSelector, triggerSelector, toggleSelector, btnCancelSelector, btnSaveSelector, defaultPriority = false) {
-        document.querySelectorAll(triggerSelector).forEach(btn => {
-            btn.addEventListener('click', function() {
-                // EXCLUSIVIDADE: Fecha todos os outros formulários abertos
-                document.querySelectorAll('.card-quick-add-form').forEach(f => {
-                    f.style.display = 'none';
-                    f.querySelectorAll('input:not([type="hidden"]), textarea, select').forEach(i => i.value = '');
-                });
-                document.querySelectorAll('.card-quick-add-trigger').forEach(t => t.style.display = 'flex');
-
-                const container = this.closest(containerSelector);
-                const form = container.querySelector(formSelector);
-                this.style.display = 'none';
-                form.style.display = 'flex';
-                
-                // Configura prioridade padrão
-                const priorityToggle = form.querySelector(toggleSelector);
-                form.dataset.priority = defaultPriority ? 'true' : 'false';
-                form.style.borderLeftColor = defaultPriority ? '#e74c3c' : 'var(--border-base)';
-                if (priorityToggle) {
-                    if (defaultPriority) priorityToggle.classList.add('active');
-                    else priorityToggle.classList.remove('active');
-                }
-                
-                const pendenciaInput = form.querySelector('[name="pendencia"]');
-                if(pendenciaInput) pendenciaInput.focus();
-            });
-        });
-
-        document.querySelectorAll(toggleSelector).forEach(toggle => {
-            toggle.addEventListener('click', function() {
-                const form = this.closest(formSelector);
-                let isPriority = form.dataset.priority === 'true';
-                isPriority = !isPriority; 
-                form.dataset.priority = isPriority; 
-                this.classList.toggle('active', isPriority);
-                form.style.borderLeftColor = isPriority ? '#e74c3c' : 'var(--border-base)';
-            });
-        });
-
-        document.querySelectorAll(btnCancelSelector).forEach(btn => {
-            btn.addEventListener('click', function() {
-                const container = this.closest(containerSelector);
-                container.querySelector(formSelector).style.display = 'none';
-                container.querySelector(triggerSelector).style.display = 'flex';
-            });
-        });
-
-        // --- NOVO: Salvar com Enter / Cancelar com ESC nos campos dos cards ---
-        document.querySelectorAll(formSelector).forEach(form => {
-            form.querySelectorAll('input, textarea, select').forEach(input => {
-                input.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') {
-                        if (this.tagName === 'TEXTAREA' && e.shiftKey) return; 
-                        e.preventDefault();
-                        const btnSave = form.querySelector(btnSaveSelector);
-                        if (btnSave) btnSave.click();
-                    } else if (e.key === 'Escape') {
-                        e.preventDefault();
-                        const btnCancel = form.querySelector(btnCancelSelector);
-                        if (btnCancel) btnCancel.click();
-                    }
-                });
-            });
-        });
-
-        document.querySelectorAll(btnSaveSelector).forEach(btn => {
-            btn.addEventListener('click', function() {
-                const form = this.closest(formSelector);
-                const payload = { prioridade: form.dataset.priority === 'true' };
-                form.querySelectorAll('input, textarea, select').forEach(i => {
-                    if (i.name) payload[i.name] = i.value;
-                });
-                if (!payload.pendencia.trim()) { alert("O título é obrigatório."); return; }
-                const btnSave = this; btnSave.disabled = true; btnSave.textContent = "...";
-                
-                fetch("{{ url_for('pendencias.quick_create_inline') }}", {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-                }).then(r => r.json()).then(data => {
-                    if (data.status === 'success') window.location.reload(); 
-                    else { alert("Erro: " + data.message); btnSave.disabled = false; btnSave.textContent = "Salvar"; }
-                }).catch(err => {
-                    alert("Erro de conexão."); btnSave.disabled = false; btnSave.textContent = "Salvar";
-                });
-            });
-        });
-    }
-
-    // --- LÓGICA DO BOTÃO CONCLUIR (HÍBRIDO FLASH + SHRINK) ---
-    document.addEventListener('click', function(e) {
-        const btnConcluir = e.target.closest('.btn-concluir-action');
-        if (!btnConcluir) return;
-
-        e.preventDefault();
-        e.stopPropagation(); // Impede a abertura dos detalhes
-
-        const pendenciaId = btnConcluir.dataset.id;
-
-        // Feedback imediato: O botão fica verde mal é clicado
-        btnConcluir.style.backgroundColor = '#27ae60';
-        btnConcluir.style.borderColor = '#27ae60';
-        btnConcluir.style.color = 'white';
-
-        fetch(`/pendencias/update_field_inline/${pendenciaId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ field: 'status', value: 'Concluído' }) // Manda o campo e o valor corretos
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                const elementToAnimate = btnConcluir.closest('tr, .data-card');
-                if (elementToAnimate) {
-                    
-                    // 1. Efeito Flash (A linha acende a verde escuro/claro consoante o tema)
-                    elementToAnimate.style.transition = 'background-color 0.3s ease';
-                    const isDarkTheme = document.body.classList.contains('theme-dark');
-                    elementToAnimate.style.backgroundColor = isDarkTheme ? '#1e4620' : '#d4edda';
-
-                    // 2. Efeito Shrink (Encolhimento) e Remoção
-                    setTimeout(() => {
-                        elementToAnimate.style.transition = 'opacity 0.4s ease, height 0.4s ease, padding 0.4s ease, margin 0.4s ease, transform 0.4s ease';
-                        elementToAnimate.style.opacity = '0';
-                        elementToAnimate.style.transform = 'scaleY(0)';
-                        
-                        // Zera dimensões forçadamente para garantir o colapso na Tabela e nos Cards
-                        if(elementToAnimate.tagName === 'TR') {
-                            elementToAnimate.querySelectorAll('td').forEach(td => {
-                                td.style.transition = 'padding 0.4s ease, font-size 0.4s ease';
-                                td.style.padding = '0';
-                                td.style.fontSize = '0';
-                            });
-                        } else {
-                            elementToAnimate.style.height = '0';
-                            elementToAnimate.style.padding = '0';
-                            elementToAnimate.style.margin = '0';
-                        }
-                        
-                        // Remove definitivamente do HTML após a animação
-                        setTimeout(() => elementToAnimate.remove(), 400);
-                    }, 400); // Fica verde durante 400ms antes de começar a encolher
-                }
-            } else {
-                alert('Erro ao concluir pendência: ' + data.message);
-                btnConcluir.style.backgroundColor = '';
-                btnConcluir.style.borderColor = '';
-                btnConcluir.style.color = '';
-            }
-        })
-        .catch(error => {
-            console.error('Erro de rede:', error);
-            alert('Erro de conexão ao concluir.');
-        });
-    });
-
-    // Inicializa o Desktop (Todas as pendências não-prioritárias)
-    setupQuickAddCard('#card-quick-add-container', '#quickAddCardForm', '#btnShowQuickAddCard', '#quickCardPriorityToggle', '#btnCancelQuickCard', '#btnSaveQuickCard', false);
-    
-    // Inicializa o Desktop (Pendências Prioritárias) - ESTA ERA A LINHA QUE FALTAVA!
-    setupQuickAddCard('.card-quick-add-container-priority', '.quickAddCardFormPriority', '.btnShowQuickAddCardPriority', '.quickCardPriorityTogglePriority', '.btnCancelQuickCardPriority', '.btnSaveQuickCardPriority', true);
-    
-    // Inicializa o Desktop (Por instrumento)
-    setupQuickAddCard('.card-quick-add-container-group', '.quickAddCardFormGroup', '.btnShowQuickAddCardGroup', '.quickCardPriorityToggleGroup', '.btnCancelQuickCardGroup', '.btnSaveQuickCardGroup', false);
-    
-    // Inicializa o Mobile (No fim da tabela)
-    setupQuickAddCard('.card-quick-add-container-group', '.quickAddCardFormMobile', '.btnShowQuickAddCardMobile', '.quickCardPriorityToggleMobile', '.btnCancelQuickCardMobile', '.btnSaveQuickCardMobile', false);
-
-    // Inicializa o Mobile (No Topo da Tabela)
-    setupQuickAddCard('.card-quick-add-container-top-mobile', '.quickAddCardFormMobileTop', '.btnShowQuickAddCardMobileTop', '.quickCardPriorityToggleMobileTop', '.btnCancelQuickCardMobileTop', '.btnSaveQuickCardMobileTop', false);
-
 });
 </script>
 {% endblock %}

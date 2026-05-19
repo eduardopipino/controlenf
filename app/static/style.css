@@ -3699,3 +3699,63 @@ tr#inline-create-template { background-color: var(--table-stripe); }
 }
 
 /* fim da transferência */
+
+/* ==========================================================================
+   REGRAS COMPARTILHADAS PARA A TABELA DE PENDÊNCIAS
+   ========================================================================== */
+
+.tabela-pendencias-shared th:first-child,
+.tabela-pendencias-shared td:first-child,
+.tabela-pendencias-shared th:nth-child(2),
+.tabela-pendencias-shared td:nth-child(2) {
+    width: 24px;
+    text-align: center;
+    padding: 0;
+}
+
+.tabela-pendencias-shared tbody tr {
+    transition: background-color 0.3s ease-in-out, border-left-color 0.3s ease-in-out;
+}
+
+/* Base de edição inline na tabela */
+.tabela-pendencias-shared td.editable-cell input[type="text"],
+.tabela-pendencias-shared td.editable-cell input[type="date"],
+.tabela-pendencias-shared td.editable-cell textarea {
+    font-size: inherit; font-family: inherit; padding: 0 4px; margin: 0;
+    border: 1px solid var(--primary-color);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    background-color: var(--background-secondary); color: var(--text-primary);
+    vertical-align: middle; display: block; width: calc(100% - 2px);
+    box-sizing: border-box; white-space: normal; line-height: 1;
+}
+
+.tabela-pendencias-shared td.editable-cell textarea {
+    min-height: 40px; overflow: auto; padding-top: 4px;
+}
+
+/* Tema Escuro: Edição inline */
+body.theme-dark .tabela-pendencias-shared td.editable-cell input[type="text"],
+body.theme-dark .tabela-pendencias-shared td.editable-cell input[type="date"],
+body.theme-dark .tabela-pendencias-shared td.editable-cell textarea {
+    background-color: #000000; border-color: #555;
+}
+
+/* Ícone de "Lápis" no Hover da célula editável */
+.tabela-pendencias-shared td.editable-cell { position: relative; cursor: default; }
+
+.tabela-pendencias-shared td.editable-cell::after {
+    content: ''; display: inline-block; position: absolute; right: 5px; top: 50%; transform: translateY(-50%);
+    opacity: 0; transition: opacity 0.2s ease-in-out; pointer-events: none; width: 12px; height: 12px;
+    background-color: #aaaaaa;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/%3E%3C/svg%3E");
+    -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center;
+}
+
+.tabela-pendencias-shared td.editable-cell:hover::after { opacity: 1; }
+.tabela-pendencias-shared td.editable-cell:has(input)::after,
+.tabela-pendencias-shared td.editable-cell:has(textarea)::after { opacity: 0 !important; }
+body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-color: #555555; }
+.tabela-pendencias-shared td.editable-cell > span.card-value { cursor: pointer; display: block; min-height: 1em; }
+.tabela-pendencias-shared td.td-feedback-flash { transition: background-color 0.3s ease-in-out; }
+.tabela-pendencias-shared tr.clickable-row { cursor: default; }
