@@ -46,7 +46,7 @@
         <input type="search" id="buscaRapidaInputMobile" placeholder="Buscar registros...">
     </div>
     
-    <table border="1" id="tabelaControle" class="responsive-card-table {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
+    <table border="1" id="tabelaControle" class="tabela-controle-shared responsive-card-table {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
         <thead>
             <tr>
                 <th></th>
@@ -72,66 +72,7 @@
                 <td colspan="{{ colunas_visiveis|length + 2 }}" class="kanban-empty-msg">Nenhum resultado encontrado para a busca.</td>
             </tr>
             {% for controle in controles %}
-            <tr class="clickable-row" id="controle-row-{{ controle._id }}" data-id="{{ controle._id }}" data-url="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}">   
-                <td data-label="Ações">
-                    <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id) }}" class="action-icon-link" title="Ver Detalhes">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor">
-                            <path d="M0 0h24v24H0V0z" fill="none"/>
-                            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                        </svg>
-                    </a>
-                </td>
-                
-                {% set colunas_longas = ['objeto', 'item_descricao', 'documentacao', 'observacoes'] %}
-                {% set colunas_detalhe = ['tipo_documento', 'n_instrumento', 'nota_fiscal', 'carta_de_correcao', 'documentacao', 'observacoes'] %}
-
-                {% for col_id, col_nome in todas_as_colunas %}
-                    {% if col_id in colunas_visiveis %}
-
-                        {% if col_id == 'situacao' %}
-                            <td data-label="{{ col_nome }}" class="celula-situacao coluna-situacao">
-                                <select class="situacao-dropdown" data-id="{{ controle._id }}" autocomplete="off"
-                                    {% if color_coding_active and controle.situacao in color_map %}
-                                        style="background-color: {{ color_map[controle.situacao] }};"
-                                    {% endif %}>
-                                    <option value="">-- Nenhuma --</option>
-                                    {% for sit in situacoes_para_filtro %}
-                                        <option value="{{ sit.situacao }}" {% if sit.situacao == controle.situacao %}selected{% endif %}>{{ sit.situacao }}</option>
-                                    {% endfor %}
-                                </select>
-                            </td>
-
-                        {% elif col_id == 'documentacao' %}
-                            <td data-label="{{ col_nome }}"
-                                class="coluna-texto-longo {{ 'col-detalhe' if col_id in colunas_detalhe else '' }} editable-cell"
-                                data-field-name="documentacao">
-                                <span class="card-value">
-                                    {{ controle.documentacao | join(', ') }}
-                                    {%- if controle.documentacao and controle.documentacao_pendente %}, {% endif %}
-                                    {% if controle.documentacao_pendente %}
-                                        <span class="texto-pendente">
-                                            (pendente: {{ controle.documentacao_pendente | join(', ') }})
-                                        </span>
-                                    {% endif %}
-                                </span>
-                            </td>
-
-                        {% else %}
-                            {% set is_editable = col_id in ['referencia', 'nota_fiscal', 'carta_de_correcao', 'observacoes'] %}
-                            <td data-label="{{ col_nome }}"
-                                class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }} {{ 'col-detalhe' if col_id in colunas_detalhe else '' }} {{ 'editable-cell' if is_editable else '' }}"
-                                {% if is_editable %}data-field-name="{{ col_id }}"{% endif %}>
-                                <span class="card-value">
-                                    {{ controle[col_id] }}
-                                </span>
-                            </td>
-                        {% endif %}
-
-                    {% endif %}
-                {% endfor %}
-
-                <td><button class="expand-card-btn">Ver mais</button></td>
-            </tr>
+                {% include 'partials/_controle_table_row.html' %}
             {% else %}
             <tr id="tabela-backend-sem-resultados">
                 <td colspan="{{ colunas_visiveis|length + 2 }}">Nenhum registro de controle encontrado.</td>
@@ -306,945 +247,98 @@
 {% endblock %}
 
 {% block page_scripts %}
+<script>
+    window.APP_DATA = {
+        colorMap: {{ color_map | tojson | safe }},
+        colorCodingIsActive: {{ color_coding_active | tojson }},
+        arquivadores: {{ arquivadores_json | default("[]") | safe }},
+        viewMode: "{{ view_mode }}"
+    };
+</script>
+
 <script src="{{ url_for('static', filename='js/ui_components.js', v=datetime.now().timestamp()) }}"></script>
 <script src="{{ url_for('static', filename='js/search_engine.js', v=datetime.now().timestamp()) }}"></script>
+<script src="{{ url_for('static', filename='js/controle_core.js', v=datetime.now().timestamp()) }}"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // --- DEFINIÇÃO DE CONSTANTES GLOBAIS PARA O SCRIPT ---
-    const colorMap = {{ color_map | tojson | safe }};
-    const colorCodingIsActive = {{ color_coding_active | tojson }};
-    const editableFields = ['referencia', 'nota_fiscal', 'carta_de_correcao', 'observacoes'];
-    const card_fields_map_global = {{ dict(todas_as_colunas_cards) | tojson | safe }}; 
-    const docModal = document.getElementById('documentacaoModal');
-    const docChecklist = document.getElementById('documentacao-checklist');
-    const btnSalvarDoc = document.getElementById('btnSalvarDocumentacao');
-    const docModalControleId = document.getElementById('documentacaoModalControleId');
-
-    // --- FUNÇÃO AUXILIAR: Desenhar linha com IMAGEM de lixeira ---
-    function criarLinhaDocumento(valor, isChecked, isExtra) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'doc-inline-row'; // <<< Classe CSS aplicada aqui!
-        
-        const extraStyle = isExtra ? 'style="font-style: italic; color: var(--primary-color);"' : '';
-        const extraLabel = isExtra ? ' (Extra)' : '';
-
-        // Note a ausência de estilos inline e eventos de mouse no SVG
-        const iconeLixeira = `
-            <svg class="btn-remove-doc" title="Excluir documento" xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor">
-                <path d="M0 0h24v24H0V0z" fill="none" pointer-events="none"/>
-                <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zM18 7H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z" pointer-events="none"/>
-            </svg>`;
-
-        wrapper.innerHTML = `
-            <label class="doc-inline-label">
-                <input type="checkbox" name="doc_inline_pref" value="${valor}" ${isChecked ? 'checked' : ''}> 
-                <span ${extraStyle}>${valor}${extraLabel}</span>
-            </label>
-            ${iconeLixeira}
-        `;
-        return wrapper;
-    }
-
-    docChecklist.addEventListener('click', function(e) {
-        const lixeira = e.target.closest('.btn-remove-doc');
-        if (lixeira) {
-            lixeira.closest('div').remove(); 
-        }
-    });
-
-    // --- 3. LÓGICA PARA ABERTURA DE MODAIS ---
+    
+    // --- LÓGICA PARA ABERTURA DE MODAIS ESPECÍFICOS DESTA PÁGINA ---
     const filterModal = document.getElementById('filterModal');
     const recorrenteModal = document.getElementById('recorrenteModal');
     const configColunasModal = document.getElementById('configColunasModal');
 
     document.getElementById('btnFiltro')?.addEventListener('click', () => filterModal.classList.add('active'));
     document.getElementById('btnFiltroMobile')?.addEventListener('click', () => filterModal.classList.add('active'));
-    
     document.getElementById('btnNovoRecorrente')?.addEventListener('click', () => recorrenteModal.classList.add('active'));
     document.getElementById('btnNovoRecorrenteMobile')?.addEventListener('click', () => recorrenteModal.classList.add('active'));
-    
     document.getElementById('btnConfigurarColunas')?.addEventListener('click', () => configColunasModal.classList.add('active'));
     document.getElementById('btnConfigurarColunasMobile')?.addEventListener('click', () => configColunasModal.classList.add('active'));
 
-
-    // --- 7. LÓGICA DE IDENTIFICAR POR CORES ---
+    // --- IDENTIFICAR POR CORES ---
     function handleToggleColor() {
         fetch("{{ url_for('core.toggle_color_coding') }}", { method: 'POST' })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                window.location.reload();
-            } else {
-                alert('Erro ao salvar a preferência de cores.');
-            }
-        });
+        .then(r => r.json()).then(d => { if(d.status === 'success') window.location.reload(); });
     }
     document.getElementById('btnColorCode')?.addEventListener('click', handleToggleColor);
     document.getElementById('btnColorCodeMobile')?.addEventListener('click', handleToggleColor);
+    if (window.APP_DATA.colorCodingIsActive) document.getElementById('btnColorCode')?.classList.add('filtro-ativo');
 
-    if (colorCodingIsActive) {
-        document.getElementById('btnColorCode')?.classList.add('filtro-ativo');
-    }
-
-    // --- 8. LÓGICA PARA ATUALIZAÇÃO RÁPIDA DE SITUAÇÃO ---
-    const dropdowns = document.querySelectorAll('.situacao-dropdown');
-    const situacoesArquivadoras = JSON.parse('{{ arquivadores_json | default("[]") | safe }}');
-    dropdowns.forEach(dropdown => {
-        dropdown.addEventListener('click', event => event.stopPropagation());
-        dropdown.addEventListener('change', function() {
-            const controleId = this.dataset.id;
-            const novaSituacao = this.value;
-            const linhaDaTabela = document.getElementById(`controle-row-${controleId}`);
-            
-            fetch("{{ url_for('controle.update_situacao_inline') }}", {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ controle_id: controleId, nova_situacao: novaSituacao }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    linhaDaTabela.classList.add('update-success');
-                    setTimeout(() => { linhaDaTabela.classList.remove('update-success'); }, 1500);
-                    if (colorCodingIsActive) {
-                        this.style.backgroundColor = colorMap[novaSituacao] || '';
-                    }
-                } else {
-                    linhaDaTabela.classList.add('update-error');
-                    setTimeout(() => { linhaDaTabela.classList.remove('update-error'); }, 2000);
-                }
-            })
-            .catch(error => console.error('Erro de rede:', error));
-        });
-    });
-
-    // --- 9. LÓGICA PARA CONFIGURAÇÃO DE COLUNAS ---
-    const checklistContainer = document.getElementById('colunas-checklist');
+    // --- CONFIGURAÇÃO DE COLUNAS E CAMPOS ---
     const btnSalvarColunas = document.getElementById('btnSalvarColunas');
-    const todasAsColunas = {{ todas_as_colunas | tojson | safe }};
-    const colunasVisiveis = {{ colunas_visiveis | tojson | safe }};
-    
-    if (checklistContainer.children.length === 0) {
+    if (btnSalvarColunas) {
+        // 1. Construir os checkboxes do Modal de Colunas (Tabela)
+        const colunasChecklist = document.getElementById('colunas-checklist');
+        const todasAsColunas = {{ todas_as_colunas | tojson | safe }};
+        const colunasVisiveis = {{ colunas_visiveis | tojson | safe }};
+        
         todasAsColunas.forEach(coluna => {
             const [col_id, col_nome] = coluna;
             const isChecked = colunasVisiveis.includes(col_id);
-            const wrapper = document.createElement('div');
-            wrapper.innerHTML = `<label><input type="checkbox" name="coluna_pref" value="${col_id}" ${isChecked ? 'checked' : ''}> ${col_nome}</label>`;
-            checklistContainer.appendChild(wrapper);
+            const div = document.createElement('div');
+            div.innerHTML = `<label><input type="checkbox" value="${col_id}" ${isChecked ? 'checked' : ''}> ${col_nome}</label>`;
+            colunasChecklist.appendChild(div);
+        });
+
+        // 2. Lógica para salvar
+        btnSalvarColunas.addEventListener('click', () => {
+            const selecionadas = Array.from(document.querySelectorAll('#colunas-checklist input:checked')).map(cb => cb.value);
+            fetch("{{ url_for('core.save_column_prefs') }}", {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ colunas: selecionadas })
+            }).then(r => r.json()).then(d => { if(d.status === 'success') location.reload(); });
         });
     }
 
-    btnSalvarColunas.addEventListener('click', () => {
-        const colunasSelecionadas = Array.from(checklistContainer.querySelectorAll('input:checked')).map(cb => cb.value);
-        fetch("{{ url_for('core.save_column_prefs') }}", {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ colunas: colunasSelecionadas })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                location.reload();
-            } else {
-                alert('Erro ao salvar as preferências.');
-            }
-        });
-    });
-
-    // --- 10. LÓGICA PARA O NOVO MODAL DE CONFIGURAR CAMPOS ---
-    const configCamposModal = document.getElementById('configCamposModal');
-    const camposChecklist = document.getElementById('campos-checklist');
     const btnSalvarCampos = document.getElementById('btnSalvarCampos');
-
-    document.getElementById('btnConfigurarCampos')?.addEventListener('click', () => {
-        configCamposModal.classList.add('active');
-    });
-
-    if (camposChecklist && btnSalvarCampos) {
-        const todasAsColunasCards = {{ todas_as_colunas_cards | tojson | safe }};
-        const cardFieldsVisiveis = {{ card_fields_visiveis | tojson | safe }};
-
-        todasAsColunasCards.forEach(campo => {
-            const [field_id, field_name] = campo;
-            const isChecked = cardFieldsVisiveis.includes(field_id);
-            const wrapper = document.createElement('div');
-            wrapper.innerHTML = `<label><input type="checkbox" name="campo_pref" value="${field_id}" ${isChecked ? 'checked' : ''}> ${field_name}</label>`;
-            camposChecklist.appendChild(wrapper);
-        });
-
-        btnSalvarCampos.addEventListener('click', () => {
-            const camposSelecionados = Array.from(camposChecklist.querySelectorAll('input:checked')).map(cb => cb.value);
-            fetch("{{ url_for('core.save_card_prefs') }}", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ campos: camposSelecionados })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    location.reload();
-                } else { alert('Erro ao salvar as preferências dos cards.'); }
-            });
-        });
-    }
-
-    // --- 11. LÓGICA DO MENU DE CONTEXTO PARA SITUAÇÃO NOS CARDS ---
-    const situacaoContextMenu = document.getElementById('situacaoContextMenu');
-    const situacaoOptionsContainer = document.getElementById('situacao-options-container');
-    const todasAsSituacoes = {{ situacoes_para_filtro | tojson | safe }};
-    let activeCard = null;
-
-    function popularMenuSituacao() {
-        situacaoOptionsContainer.innerHTML = ''; 
-        const nenhumaLi = document.createElement('li');
-        nenhumaLi.className = 'context-menu-item';
-        nenhumaLi.textContent = '-- Nenhuma --';
-        nenhumaLi.dataset.situacao = ''; 
-        situacaoOptionsContainer.appendChild(nenhumaLi);
+    if (btnSalvarCampos) {
+        // 1. Construir os checkboxes do Modal de Campos (Cards/Kanban)
+        const camposChecklist = document.getElementById('campos-checklist');
+        const todasAsColunasCards = {{ todas_as_colunas_cards | default([]) | tojson | safe }};
+        const cardFieldsVisiveis = {{ card_fields_visiveis | default([]) | tojson | safe }};
         
-        todasAsSituacoes.forEach(sit => {
-            const li = document.createElement('li');
-            li.className = 'context-menu-item';
-            li.textContent = sit.situacao;
-            li.dataset.situacao = sit.situacao;
-            situacaoOptionsContainer.appendChild(li);
-        });
-    }
-
-    document.querySelectorAll('.card-view-container .data-card, .kanban-view-container .data-card').forEach(card => {
-        card.addEventListener('contextmenu', function(event) {
-            event.preventDefault();
-            activeCard = this; 
-
-            popularMenuSituacao(); 
-
-            let top = event.pageY;
-            let left = event.pageX;
-            
-            situacaoContextMenu.style.display = 'block';
-
-            if (top + situacaoContextMenu.offsetHeight > window.innerHeight + window.scrollY) {
-                top = event.pageY - situacaoContextMenu.offsetHeight;
-            }
-            if (left + situacaoContextMenu.offsetWidth > window.innerWidth + window.scrollX) {
-                left = event.pageX - situacaoContextMenu.offsetWidth;
-            }
-            
-            situacaoContextMenu.style.top = `${top}px`;
-            situacaoContextMenu.style.left = `${left}px`;
-        });
-    });
-
-    situacaoContextMenu.addEventListener('click', (event) => {
-        const menuItem = event.target.closest('.context-menu-item');
-        if (!menuItem || !activeCard) return;
-
-        const novaSituacao = menuItem.dataset.situacao;
-        const controleId = activeCard.dataset.id;
-
-        fetch(`/controle/set_situacao/${controleId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ situacao: novaSituacao })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                try {
-                    const situacaoP = Array.from(activeCard.querySelectorAll('p')).find(p => {
-                        const strong = p.querySelector('strong');
-                        return strong && strong.textContent.trim() === 'Situação:';
-                    });
-
-                    if (situacaoP && typeof card_fields_map_global !== 'undefined') {
-                        const labelText = card_fields_map_global['situacao'] || 'Situação';
-                        situacaoP.innerHTML = `<strong>${labelText}:</strong> <span class="card-field-value">${novaSituacao || ''}</span>`;
-                    }
-                } catch (e) {
-                    console.error("Erro ao atualizar texto da situação no card (context menu):", e);
-                }
-
-                activeCard.dataset.situacao = novaSituacao || '';
-
-                if (document.getElementById('btnColorCode')?.classList.contains('filtro-ativo')) {
-                    activeCard.style.backgroundColor = colorMap[novaSituacao] || '';
-                }
-
-                 const isInKanban = activeCard.closest('.kanban-view-container');
-                 if (isInKanban) {
-                     const cardElement = activeCard.closest('a'); 
-                     const currentColumnSituacao = activeCard.closest('.kanban-column')?.dataset.situacao ?? "";
-                     const situacoesArquivadoras = JSON.parse('{{ arquivadores_json | default("[]") | safe }}');
-                     const targetSituacao = novaSituacao || ""; 
-
-                     if (situacoesArquivadoras.includes(novaSituacao)) {
-                         cardElement.style.transition = 'opacity 0.5s ease, height 0.5s ease, margin 0.5s ease, padding 0.5s ease';
-                         cardElement.style.opacity = '0';
-                         cardElement.style.height = '0';
-                         cardElement.style.margin = '0';
-                         cardElement.style.padding = '0';
-                         cardElement.style.border = 'none'; 
-                         setTimeout(() => cardElement.remove(), 500); 
-                     }
-                    else if (targetSituacao !== currentColumnSituacao) {
-                             const targetColumn = document.querySelector(`.kanban-column[data-situacao="${targetSituacao}"]`);
-                             if (targetColumn) {
-                                 const targetCardContainer = targetColumn.querySelector('.kanban-cards');
-                                 if (targetCardContainer) {
-                                     activeCard.style.transition = 'opacity 0.3s ease-out';
-                                     activeCard.style.opacity = '0'; 
-
-                                     setTimeout(() => {
-                                         targetCardContainer.appendChild(activeCard);
-
-                                         requestAnimationFrame(() => {
-                                             activeCard.style.transition = 'opacity 0.3s ease-in';
-                                             activeCard.style.opacity = '1'; 
-
-                                             setTimeout(() => {
-                                                 activeCard.style.transition = '';
-                                             }, 300); 
-                                         });
-                                     }, 300); 
-                                 } else {
-                                     console.error("Container de cards '.kanban-cards' não encontrado");
-                                 }
-                             } else {
-                                 console.error("Coluna de destino '.kanban-column' não encontrada");
-                             }
-                         }
-                     }
-
-            } else {
-                alert('Erro ao atualizar a situação.');
-            }
-        });
-    });
-
-    window.addEventListener('click', () => {
-        if (situacaoContextMenu) situacaoContextMenu.style.display = 'none';
-    });
-
-    // --- 12. LÓGICA DO DRAG-AND-DROP PARA O KANBAN ---
-    const kanbanColumns = document.querySelectorAll('.kanban-cards');
-    kanbanColumns.forEach(column => {
-        new Sortable(column, {
-            group: 'kanban', 
-            animation: 150,
-            ghostClass: 'dragging-card', 
-            draggable: '.data-card',
-
-            onEnd: function (evt) {
-                const cardElement = evt.item; 
-                const newColumn = evt.to;     
-
-                if (!cardElement.classList.contains('data-card')) { 
-                     console.error("Elemento arrastado não é um data-card:", cardElement);
-                     return; 
-                }
-                const controleId = cardElement.dataset.id; 
-                const novaSituacao = newColumn.parentElement.dataset.situacao || "";
-
-                fetch(`/controle/set_situacao/${controleId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ situacao: novaSituacao })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        cardElement.dataset.situacao = novaSituacao;
-
-                        try { 
-                            const situacaoP = Array.from(cardElement.querySelectorAll('p')).find(p => {
-                                const strong = p.querySelector('strong');
-                                return strong && strong.textContent.trim() === 'Situação:';
-                            });
-                            if (situacaoP && typeof card_fields_map_global !== 'undefined') { 
-                            const labelText = card_fields_map_global['situacao'] || 'Situação'; 
-                            situacaoP.innerHTML = `<strong>${labelText}:</strong> <span class="card-field-value">${novaSituacao || ''}</span>`; 
-                        }
-                        } catch (e) {
-                            console.error("Erro ao atualizar texto da situação no card:", e);
-                        }
-
-                        try { 
-                            if (typeof colorCodingIsActive !== 'undefined' && colorCodingIsActive && typeof colorMap !== 'undefined') { 
-                                cardElement.style.backgroundColor = colorMap[novaSituacao] || '';
-                            } else if (typeof colorCodingIsActive !== 'undefined' && !colorCodingIsActive) {
-                                 cardElement.style.backgroundColor = '';
-                            }
-                        } catch (e) {
-                             console.error("Erro ao atualizar cor do card:", e);
-                        }
-
-                        const situacoesArquivadoras = JSON.parse('{{ arquivadores_json | default("[]") | safe }}');
-                        if (situacoesArquivadoras.includes(novaSituacao)) {
-                            cardElement.style.transition = 'opacity 0.5s ease, height 0.5s ease, margin 0.5s ease, padding 0.5s ease';
-                            cardElement.style.opacity = '0';
-                            cardElement.style.height = '0';
-                            cardElement.style.margin = '0';
-                            cardElement.style.padding = '0';
-                            cardElement.style.border = 'none';
-                            setTimeout(() => cardElement.remove(), 500);
-                        }
-                    } else { 
-                        alert('Erro ao atualizar a situação. A página será recarregada.');
-                        location.reload(); 
-                    }
-                })
-                .catch(error => { 
-                    console.error("Erro de rede ao salvar situação via drag-drop:", error);
-                    alert('Erro de rede ao salvar a situação. A página será recarregada.');
-                    location.reload(); 
-                });
-            }, 
-
-            onMove: function (evt) {
-                document.querySelectorAll('.kanban-column').forEach(col => col.classList.remove('kanban-column-hover'));
-                evt.to.parentElement.classList.add('kanban-column-hover');
-            },
-            onUnchoose: function() {
-                 document.querySelectorAll('.kanban-column').forEach(col => col.classList.remove('kanban-column-hover'));
-            }
-        });
-    });
-
-    // --- 13. LÓGICA DE EDIÇÃO INLINE NA TABELA ---
-    const tableBody = document.querySelector('#tabelaControle tbody');
-
-    // A tabela agora SEMPRE carrega (pois é necessária no mobile), então removemos a verificação view_mode aqui
-    if (tableBody) { 
-        let currentEditInput = null; 
-
-        function cancelInlineEdit(td, inputElement, originalValue) {
-            if (!td || !inputElement) return;
-            const span = document.createElement('span');
-            span.className = 'card-value';
-            span.textContent = originalValue;
-            td.innerHTML = ''; 
-            td.appendChild(span); 
-            currentEditInput = null; 
-        }
-
-        function saveInlineEdit(td, inputElement, fieldName, originalValue) {
-            const newValue = inputElement.value.trim();
-            const controleId = td.closest('tr').dataset.id; 
-
-            if (newValue === originalValue) {
-                cancelInlineEdit(td, inputElement, originalValue);
-                return;
-            }
-
-            fetch(`/controle/update_field_inline/${controleId}`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ field: fieldName, value: newValue })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    const updatedValue = data.newValue;
-                    const span = document.createElement('span');
-                    span.className = 'card-value';
-                    span.textContent = updatedValue;
-                    td.innerHTML = '';
-                    td.appendChild(span);
-                    currentEditInput = null;
-                    const isDarkTheme = document.body.classList.contains('theme-dark');
-                    const feedbackColor = isDarkTheme ? '#3a3a3a' : '#e0e0e0'; 
-
-                    td.classList.add('td-feedback-flash'); 
-                    td.style.backgroundColor = feedbackColor; 
-
-                    setTimeout(() => {
-                        td.style.backgroundColor = ''; 
-                        setTimeout(() => { 
-                            td.classList.remove('td-feedback-flash'); 
-                        }, 300); 
-                    }, 700); 
-                } else {
-                    alert(`Erro ao salvar: ${data.message}`);
-                    cancelInlineEdit(td, inputElement, originalValue); 
-                }
-                window.opcoesOriginaisModal = data.opcoes || [];
-            })
-            .catch(error => {
-                console.error('Erro de rede ao salvar:', error);
-                alert('Erro de rede ao salvar. A alteração foi cancelada.');
-                cancelInlineEdit(td, inputElement, originalValue); 
-                isEditingCard = false; 
+        if (todasAsColunasCards.length > 0 && camposChecklist) {
+            todasAsColunasCards.forEach(campo => {
+                const [field_id, field_name] = campo;
+                const isChecked = cardFieldsVisiveis.includes(field_id);
+                const div = document.createElement('div');
+                div.innerHTML = `<label><input type="checkbox" value="${field_id}" ${isChecked ? 'checked' : ''}> ${field_name}</label>`;
+                camposChecklist.appendChild(div);
             });
         }
 
-        tableBody.addEventListener('dblclick', function(e) {
-            const td = e.target.closest('td.editable-cell'); 
-            if (!td) return; 
-
-            if (td.querySelector('input, textarea') || currentEditInput) {
-            if(currentEditInput) currentEditInput.focus(); 
-            return;
-            }
-
-            const span = td.querySelector('span.card-value');
-            if (!span) return; 
-
-            const originalValue = span.textContent.trim();
-            const fieldName = td.dataset.fieldName;
-            let inputElement;
-
-            if (fieldName === 'observacoes') {
-                inputElement = document.createElement('textarea');
-                inputElement.style.height = Math.max(span.offsetHeight, 60) + 'px'; 
-                inputElement.style.resize = 'vertical'; 
-            } else if (fieldName !== 'documentacao') { 
-                inputElement = document.createElement('input');
-                inputElement.type = 'text';
-            } else if (fieldName === 'documentacao') { 
-                const controleId = td.closest('tr').dataset.id;
-                docChecklist.innerHTML = '<p>Carregando opções...</p>';
-                docModalControleId.value = controleId; 
-                docModal.classList.add('active'); 
-
-                fetch(`/controle/get_documentacao/${controleId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            docChecklist.innerHTML = ''; 
-                            if (data.opcoes.length === 0) {
-                                docChecklist.innerHTML = '<p>Nenhuma opção de documentação cadastrada para este item.</p>';
-                                return;
-                            }
-
-                            data.opcoes.forEach(opcao => {
-                                const isChecked = data.salvos.includes(opcao);
-                                docChecklist.appendChild(criarLinhaDocumento(opcao, isChecked, false));
-                            });
-                            
-                            data.salvos.forEach(salvo => {
-                                if (!data.opcoes.includes(salvo)) {
-                                    docChecklist.appendChild(criarLinhaDocumento(salvo, true, true));
-                                }
-                            });
-                            
-                            if (data.pendentes) {
-                                data.pendentes.forEach(pendente => {
-                                    if (!data.opcoes.includes(pendente)) {
-                                        docChecklist.appendChild(criarLinhaDocumento(pendente, false, true));
-                                    }
-                                });
-                            }
-                        } else {
-                            docChecklist.innerHTML = `<p style="color: red;">Erro: ${data.message}</p>`;
-                        }
-                        window.opcoesOriginaisModal = data.opcoes || [];
-                    })
-                    .catch(err => {
-                        console.error("Erro ao buscar documentação:", err);
-                        docChecklist.innerHTML = `<p style="color: red;">Erro de rede ao buscar opções.</p>`;
-                    });
-
-                return; 
-            } else {
-                inputElement = document.createElement('input');
-                inputElement.type = 'text';
-            }
-
-            inputElement.value = originalValue;
-            inputElement.style.width = '100%'; 
-            inputElement.style.boxSizing = 'border-box'; 
-            currentEditInput = inputElement; 
-
-            td.innerHTML = '';
-            td.appendChild(inputElement);
-            inputElement.focus();
-            if(inputElement.select) inputElement.select();
-
-            inputElement.addEventListener('keydown', function(event) {
-                if (event.key === 'Enter') {
-                    event.preventDefault(); 
-                    saveInlineEdit(td, inputElement, fieldName, originalValue);
-                } else if (event.key === 'Escape') {
-                    cancelInlineEdit(td, inputElement, originalValue);
-                }
-            });
-
-            inputElement.addEventListener('blur', function() {
-                if (document.body.contains(inputElement)) {
-                    cancelInlineEdit(td, inputElement, originalValue);
-                }
-            });
+        document.getElementById('btnConfigurarCampos')?.addEventListener('click', () => document.getElementById('configCamposModal').classList.add('active'));
+        
+        // 2. Lógica para salvar
+        btnSalvarCampos.addEventListener('click', () => {
+            const selecionados = Array.from(document.querySelectorAll('#campos-checklist input:checked')).map(cb => cb.value);
+            fetch("{{ url_for('core.save_card_prefs') }}", {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ campos: selecionados })
+            }).then(r => r.json()).then(d => { if(d.status === 'success') location.reload(); });
         });
     }
 
-    // --- 14. LÓGICA DE EDIÇÃO INLINE NOS CARDS (Cards e Kanban) ---
-    const cardContainers = document.querySelectorAll('.card-view-container, .kanban-view-container');
-
-    if (cardContainers.length > 0) { 
-        let currentCardEditInput = null; 
-        let originalCardContent = null; 
-        let activeCardFieldElement = null; 
-        let isEditingCard = false; 
-
-        function cancelInlineEditCard() {
-            if (!activeCardFieldElement || !currentCardEditInput) return;
-            activeCardFieldElement.innerHTML = originalCardContent;
-            currentCardEditInput = null;
-            originalCardContent = null;
-            activeCardFieldElement = null;
-            isEditingCard = false; 
-        }
-
-        function saveInlineEditCard() {
-            if (!activeCardFieldElement || !currentCardEditInput) return;
-
-            const newValue = currentCardEditInput.value.trim();
-            const fieldName = activeCardFieldElement.dataset.fieldName;
-            const cardDiv = activeCardFieldElement.closest('.data-card');
-            const controleId = cardDiv.dataset.id;
-            const originalValueSpan = document.createElement('div'); 
-            originalValueSpan.innerHTML = originalCardContent;
-            const originalValueText = originalValueSpan.querySelector('.card-field-value')?.textContent.trim() || '';
-
-            if (newValue === originalValueText) {
-                cancelInlineEditCard();
-                return;
-            }
-
-            fetch(`/controle/update_field_inline/${controleId}`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ field: fieldName, value: newValue })
-            })
-            .then(response => response.json())
-           .then(data => {
-                if (data.status === 'success') {
-                    
-                    let updatedElement = null;
-                    let spanToUpdate = null;
-
-                    // Como no mobile a tabela sobrepõe, precisamos verificar quem vai receber o flash
-                    // Porém como o HTML do card está fixo em view_mode, este código roda na view de cards do desktop.
-                    const cardDiv = document.querySelector(`.data-card[data-id="${controleId}"]`);
-                    if (cardDiv) {
-                        updatedElement = cardDiv; 
-                        const pElement = cardDiv.querySelector('p[data-field-name="documentacao"]');
-                        if (pElement) {
-                            spanToUpdate = pElement.querySelector('.card-field-value');
-                        }
-                    }
-
-                    if (spanToUpdate) {
-                        let docEntregues = data.novos_documentos || [];
-                        let docPendentes = data.novos_pendentes || [];
-                        
-                        let novoHtml = docEntregues.join(', ');
-                        
-                        if (docPendentes.length > 0) {
-                            if (docEntregues.length > 0) novoHtml += ', ';
-                            novoHtml += `<span class="texto-pendente">(pendente: ${docPendentes.join(', ')})</span>`;
-                        }
-                        
-                        spanToUpdate.innerHTML = novoHtml;
-                    }
-
-                    if (updatedElement) {
-                        const flashClass = 'card-feedback-flash';
-                        updatedElement.classList.add(flashClass);
-                        const originalBg = updatedElement.style.backgroundColor;
-                        updatedElement.style.backgroundColor = document.body.classList.contains('theme-dark') ? '#3a3a3a' : '#e0e0e0';
-                        
-                        setTimeout(() => {
-                            updatedElement.style.backgroundColor = originalBg || '';
-                            setTimeout(() => updatedElement.classList.remove(flashClass), 300);
-                        }, 700);
-                    }
-
-                    docModal.classList.remove('active');
-                } else {
-                    alert(`Erro ao salvar: ${data.message}`);
-                }
-            })
-            .catch(error => {
-                console.error('Erro de rede ao salvar card:', error);
-                alert('Erro de rede ao salvar. A alteração foi cancelada.');
-                isEditingCard = false; 
-                cancelInlineEditCard();
-            });
-        }
-
-        cardContainers.forEach(container => {
-            container.addEventListener('dblclick', function(e) {
-                const fieldElement = e.target.closest('.editable-card-field');
-                if (!fieldElement) return; 
-
-                if (fieldElement.querySelector('input, textarea') || currentCardEditInput) {
-                    if (currentCardEditInput) currentCardEditInput.focus();
-                    return;
-                }
-
-                activeCardFieldElement = fieldElement; 
-                const valueSpan = fieldElement.querySelector('.card-field-value');
-                const labelElement = fieldElement.querySelector('strong'); 
-                if (!valueSpan && fieldElement.tagName !== 'H4') return; 
-
-                const originalValue = valueSpan ? valueSpan.textContent.trim() : fieldElement.textContent.replace(labelElement ? labelElement.textContent : '', '').trim(); 
-                originalCardContent = fieldElement.innerHTML; 
-                const fieldName = fieldElement.dataset.fieldName;
-                let inputElement;
-                isEditingCard = true; 
-
-                if (fieldName === 'observacoes') {
-                    inputElement = document.createElement('textarea');
-                    inputElement.style.height = '60px';
-                } else if (fieldName === 'documentacao') { 
-                    const controleId = fieldElement.closest('.data-card').dataset.id; 
-
-                    docChecklist.innerHTML = '<p>Carregando opções...</p>';
-                    docModalControleId.value = controleId; 
-                    docModal.classList.add('active'); 
-
-                    fetch(`/controle/get_documentacao/${controleId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === 'success') {
-                                docChecklist.innerHTML = '';
-                                if (data.opcoes.length === 0) {
-                                    docChecklist.innerHTML = '<p>Nenhuma opção de documentação cadastrada para este item.</p>';
-                                    return;
-                                }
-
-                                data.opcoes.forEach(opcao => {
-                                    const isChecked = data.salvos.includes(opcao);
-                                    docChecklist.appendChild(criarLinhaDocumento(opcao, isChecked, false));
-                                });
-                                
-                                data.salvos.forEach(salvo => {
-                                    if (!data.opcoes.includes(salvo)) {
-                                        docChecklist.appendChild(criarLinhaDocumento(salvo, true, true));
-                                    }
-                                });
-                                
-                                if (data.pendentes) {
-                                    data.pendentes.forEach(pendente => {
-                                        if (!data.opcoes.includes(pendente)) {
-                                            docChecklist.appendChild(criarLinhaDocumento(pendente, false, true));
-                                        }
-                                    });
-                                }
-                            } else {
-                                docChecklist.innerHTML = `<p style="color: red;">Erro: ${data.message}</p>`;
-                            }
-                        })
-                        .catch(err => {
-                            console.error("Erro ao buscar documentação:", err);
-                            docChecklist.innerHTML = `<p style="color: red;">Erro de rede ao buscar opções.</p>`;
-                        });
-
-                    isEditingCard = false; 
-                    return; 
-
-                } else if (fieldName === 'situacao') { 
-                    activeCard = fieldElement.closest('.data-card'); 
-                    if (!activeCard) return;
-
-                    popularMenuSituacao(); 
-
-                    let top = e.pageY;
-                    let left = e.pageX;
-
-                    situacaoContextMenu.style.display = 'block'; 
-
-                    if (top + situacaoContextMenu.offsetHeight > window.innerHeight + window.scrollY) {
-                        top = e.pageY - situacaoContextMenu.offsetHeight;
-                    }
-                    if (left + situacaoContextMenu.offsetWidth > window.innerWidth + window.scrollX) {
-                        left = e.pageX - situacaoContextMenu.offsetWidth;
-                    }
-
-                    situacaoContextMenu.style.top = `${top}px`;
-                    situacaoContextMenu.style.left = `${left}px`;
-
-                    return; 
-                } else {
-                    inputElement = document.createElement('input');
-                    inputElement.type = 'text';
-                }
-
-                inputElement.value = originalValue;
-                currentCardEditInput = inputElement; 
-
-                fieldElement.innerHTML = ''; 
-
-                if (fieldElement.tagName === 'H4') {
-                    fieldElement.appendChild(document.createTextNode('Referência: ')); 
-                } else if (labelElement) {
-                    fieldElement.appendChild(labelElement);
-                    fieldElement.appendChild(document.createTextNode(' ')); 
-                }
-
-                fieldElement.appendChild(inputElement); 
-                inputElement.focus();
-                
-                if(inputElement.select) inputElement.select();
-
-                inputElement.addEventListener('keydown', function(event) {
-                    if (event.key === 'Enter') {
-                        event.preventDefault();
-                        saveInlineEditCard();
-                    } else if (event.key === 'Escape') {
-                        cancelInlineEditCard();
-                    }
-                });
-
-                inputElement.addEventListener('blur', function() {
-                    setTimeout(() => {
-                        if (document.body.contains(inputElement) && currentCardEditInput === inputElement) {
-                            cancelInlineEditCard();
-                        }
-                    }, 150); 
-                });
-            });
-        }); 
-    } 
-
-    // --- 15. LÓGICA PARA SALVAR O MODAL DE DOCUMENTAÇÃO ---
-    if (btnSalvarDoc) {
-        btnSalvarDoc.addEventListener('click', () => {
-            const controleId = docModalControleId.value;
-            if (!controleId) {
-                alert("Erro: ID do controle não encontrado.");
-                return;
-            }
-
-            // 1. Pega os valores que ficaram na tela (marcados e desmarcados)
-            const docSelecionados = Array.from(docChecklist.querySelectorAll('input[name="doc_inline_pref"]:checked')).map(cb => cb.value);
-            const docPendentes = Array.from(docChecklist.querySelectorAll('input[name="doc_inline_pref"]:not(:checked)')).map(cb => cb.value);
-
-            // 2. Lógica de Ignorados (Lixeira)
-            // Pegamos TODAS as checkboxes atuais na tela
-            const docsAtuais = Array.from(docChecklist.querySelectorAll('input[name="doc_inline_pref"]')).map(cb => cb.value);
-            
-            // Variável global temporária onde tínhamos guardado as opções quando o modal abriu.
-            // Precisamos garantir que window.opcoesOriginaisModal foi preenchida na abertura do modal!
-            let ignorados = [];
-            if (window.opcoesOriginaisModal) {
-                // Se estava nas opções originais e NÃO está mais na tela, foi ignorado (excluído)
-                ignorados = window.opcoesOriginaisModal.filter(opt => !docsAtuais.includes(opt));
-            }
-
-            // Envia para a API
-            fetch(`/controle/update_documentacao_inline/${controleId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    documentacao: docSelecionados,
-                    documentacao_pendente: docPendentes,
-                    documentacao_ignorada: ignorados // <<< ENVIA OS IGNORADOS
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    // ... (O RESTO DO CÓDIGO AQUI FICA EXATAMENTE IGUAL, não precisa mexer nas atualizações visuais) ...
-                    let updatedElement = null; 
-                    let spanToUpdate = null; 
-
-                    const isMobile = window.innerWidth <= 768;
-                    if (isMobile || "{{ view_mode }}" === "table") {
-                        updatedElement = document.querySelector(`#tabelaControle tr[data-id="${controleId}"] td[data-field-name="documentacao"]`);
-                        if (updatedElement) {
-                            spanToUpdate = updatedElement.querySelector('span.card-value');
-                        }
-                    } else { 
-                        const cardDiv = document.querySelector(`.data-card[data-id="${controleId}"]`);
-                        if (cardDiv) {
-                            updatedElement = cardDiv; 
-                            const pElement = cardDiv.querySelector('p[data-field-name="documentacao"]');
-                            if (pElement) {
-                                spanToUpdate = pElement.querySelector('span.card-field-value');
-                            }
-                        }
-                    }
-
-                    if (spanToUpdate) {
-                        let html = data.novos_documentos.join(', ');
-                        if (data.novos_documentos.length > 0 && data.novos_pendentes.length > 0) {
-                            html += ', ';
-                        }
-                        if (data.novos_pendentes.length > 0) {
-                            html += `<span class="texto-pendente">(pendente: ${data.novos_pendentes.join(', ')})</span>`;
-                        }
-                        spanToUpdate.innerHTML = html;
-                    }
-
-                    if (updatedElement) {
-                        const isDarkTheme = document.body.classList.contains('theme-dark');
-                        const feedbackColor = isDarkTheme ? '#3a3a3a' : '#e0e0e0';
-
-                        const flashClass = (updatedElement.tagName === 'TD') ? 'td-feedback-flash' : 'card-feedback-flash';
-
-                        updatedElement.classList.add(flashClass);
-                        const originalCardBg = updatedElement.style.backgroundColor; 
-                        updatedElement.style.backgroundColor = feedbackColor;
-                        setTimeout(() => {
-                            updatedElement.style.backgroundColor = originalCardBg || ''; 
-                            setTimeout(() => {
-                                updatedElement.classList.remove(flashClass);
-                            }, 300);
-                        }, 700);
-                    }
-
-                    docModal.classList.remove('active'); 
-                } else {
-                    alert(`Erro ao salvar: ${data.message}`);
-                }
-            })
-            .catch(err => {
-                console.error("Erro de rede ao salvar documentação:", err);
-                alert("Erro de rede ao salvar.");
-            });
-        });
-    }
-
-    // --- 16. INICIALIZAÇÃO DA BUSCA RÁPIDA (CLIENT-SIDE) ---
-    const currentViewMode = "{{ view_mode }}";
-    const searchEngine = new SearchEngine({ viewMode: currentViewMode, tableRowsSelector: '#tabelaControle tbody tr.clickable-row' });
-    
-    // Atualiza a busca automaticamente quando o filtro de situação da tabela é alterado
-    document.querySelectorAll('#tabelaControle .situacao-dropdown').forEach(dropdown => {
-        dropdown.addEventListener('change', () => document.dispatchEvent(new Event('triggerSearch')));
-    });
-
-    // --- 17. LÓGICA PARA ADICIONAR DOCUMENTO EXTRA NO MODAL ---
-    const inputDocExtra = document.getElementById('novoDocumentoExtra');
-    const btnAddDocExtra = document.getElementById('btnAdicionarDocExtra');
-
-    if (btnAddDocExtra && inputDocExtra) {
-        btnAddDocExtra.addEventListener('click', () => {
-            const novoDoc = inputDocExtra.value.trim();
-            if (novoDoc) {
-                const checkExistente = Array.from(docChecklist.querySelectorAll('input[name="doc_inline_pref"]'))
-                    .find(cb => cb.value.toLowerCase() === novoDoc.toLowerCase());
-                
-                if (checkExistente) {
-                    checkExistente.checked = true;
-                } else {
-                    docChecklist.appendChild(criarLinhaDocumento(novoDoc, true, true));
-                }
-                inputDocExtra.value = '';
-                inputDocExtra.focus();
-            }
-        });
-
-        inputDocExtra.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                btnAddDocExtra.click();
-            }
-        });
-    }
-
+    // --- INICIALIZAÇÃO DA BUSCA RÁPIDA ---
+    new SearchEngine({ viewMode: window.APP_DATA.viewMode, tableRowsSelector: '#tabelaControle tbody tr.clickable-row' });
 });
 </script>
 {% endblock %}

@@ -424,30 +424,31 @@ input[type="radio"] {
 }
 
 /* Tables */
+/* --- LARGURAS DAS COLUNAS E FEEDBACKS --- */
 
-#tabelaControle th:nth-child(2),
-#tabelaControle td:nth-child(2),
-#tabelaControle th:nth-child(3),
-#tabelaControle td:nth-child(3),
-#tabelaControle th:nth-child(4),
-#tabelaControle td:nth-child(4) {
+#tabelaControle th:nth-child(2), #tabelaControle td:nth-child(2),
+#tabelaControle th:nth-child(3), #tabelaControle td:nth-child(3),
+#tabelaControle th:nth-child(4), #tabelaControle td:nth-child(4),
+.tabela-controle-shared th:nth-child(2), .tabela-controle-shared td:nth-child(2),
+.tabela-controle-shared th:nth-child(3), .tabela-controle-shared td:nth-child(3),
+.tabela-controle-shared th:nth-child(4), .tabela-controle-shared td:nth-child(4) {
     max-width: 150px;
     min-width: 50px;
     white-space: normal !important;
     overflow-wrap: break-word !important;
 }
 
-#tabelaControle th:nth-child(5),
-#tabelaControle td:nth-child(5),
-#tabelaControle th:nth-child(6),
-#tabelaControle td:nth-child(6) {
+#tabelaControle th:nth-child(5), #tabelaControle td:nth-child(5),
+#tabelaControle th:nth-child(6), #tabelaControle td:nth-child(6),
+.tabela-controle-shared th:nth-child(5), .tabela-controle-shared td:nth-child(5),
+.tabela-controle-shared th:nth-child(6), .tabela-controle-shared td:nth-child(6) {
     max-width: 200px;
     min-width: 100px;
     white-space: normal;
 }
 
-#tabelaControle th:nth-child(8),
-#tabelaControle td:nth-child(8) {
+#tabelaControle th:nth-child(8), #tabelaControle td:nth-child(8),
+.tabela-controle-shared th:nth-child(8), .tabela-controle-shared td:nth-child(8) {
     max-width: 200px;
     min-width: 100px;
     white-space: normal !important;
@@ -959,17 +960,17 @@ button.filtro-ativo:hover {
 /* ESTILOS PARA FEEDBACK DA ATUALIZAÇÃO RÁPIDA DE SITUAÇÃO */
 
 /* Efeito de transição suave para a linha da tabela */
-#tabelaControle tbody tr {
+#tabelaControle tbody tr, .tabela-controle-shared tbody tr {
     transition: background-color 0.3s ease-in-out, opacity 0.5s ease;
 }
 
 /* Cor de fundo para sucesso */
-#tabelaControle tbody tr.update-success {
+#tabelaControle tbody tr.update-success, .tabela-controle-shared tbody tr.update-success {
     background-color: #e0e0e0; /* Verde claro */
 }
 
 /* Cor de fundo para erro */
-#tabelaControle tbody tr.update-error {
+#tabelaControle tbody tr.update-error, .tabela-controle-shared tbody tr.update-error {
     background-color: #f8d7da; /* Vermelho claro */
 }
 
@@ -1240,12 +1241,12 @@ body.theme-dark .select2-container--default.select2-container--disabled .select2
 /* ====================================================================== */
 
 /* Define uma cor de fundo escura e sutil para o feedback de SUCESSO no tema escuro */
-body.theme-dark #tabelaControle tbody tr.update-success {
+body.theme-dark #tabelaControle tbody tr.update-success, body.theme-dark .tabela-controle-shared tbody tr.update-success {
     background-color: #3a3a3a; /* Um verde bem escuro, quase cinza */
 }
 
 /* Define uma cor de fundo escura e sutil para o feedback de ERRO no tema escuro */
-body.theme-dark #tabelaControle tbody tr.update-error {
+body.theme-dark #tabelaControle tbody tr.update-error, body.theme-dark .tabela-controle-shared tbody tr.update-error {
     background-color: #4c1218; /* Um vermelho bem escuro (bordô) */
 }
 
@@ -3567,7 +3568,7 @@ tr#inline-create-template { background-color: var(--table-stripe); }
     border-bottom: 1px solid var(--border-base);
 }
 
-/* 2. Modal de Documentação */
+/* 2. Modal de Documentação (Botão e Input perfeitamente iguais) */
 .modal-checklist-scroll {
     margin-top: 15px;
     max-height: 300px;
@@ -3578,15 +3579,16 @@ tr#inline-create-template { background-color: var(--table-stripe); }
     display: flex;
     gap: 10px;
     margin-top: 15px;
-    align-items: center;
+    align-items: center; /* Mudamos de 'stretch' para 'center' para eles não se influenciarem */
 }
 
 .input-modal-extra {
     flex-grow: 1;
-    height: 32px;
+    height: 38px !important;
+    min-height: 38px !important;
     padding: 0 10px;
-    margin: 0;
-    box-sizing: border-box;
+    margin: 0 !important;
+    box-sizing: border-box !important;
     border: 1px solid var(--border-base);
     border-radius: 4px;
     background-color: var(--background-secondary);
@@ -3594,16 +3596,20 @@ tr#inline-create-template { background-color: var(--table-stripe); }
 }
 
 .btn-modal-add-extra {
-    height: 32px;
-    padding: 0 20px;
-    margin: 0;
-    box-sizing: border-box;
+    flex: 0 0 38px; /* Trava a largura: não cresce, não encolhe, fica com exatos 38px */
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
     background-color: var(--primary-color);
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-weight: bold;
+    /*font-size: 1.5rem;*/
+    line-height: 1; /* O segredo: Impede que o tamanho da fonte estique o botão verticalmente */
     display: flex;
     align-items: center;
     justify-content: center;

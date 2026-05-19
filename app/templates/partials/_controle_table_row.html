@@ -1,0 +1,46 @@
+<tr class="clickable-row" id="controle-row-{{ controle._id }}" data-id="{{ controle._id }}" data-url="{{ url_for('controle.detalhes_controle', controle_id=controle._id, origem=request.full_path) }}">   
+    <td data-label="Ações">
+        <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id, origem=request.full_path) }}" class="action-icon-link" title="Ver Detalhes">
+            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor">
+                <path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+        </a>
+    </td>
+    
+    {% set colunas_longas = ['objeto', 'item_descricao', 'documentacao', 'observacoes'] %}
+    {% set colunas_detalhe = ['tipo_documento', 'n_instrumento', 'nota_fiscal', 'carta_de_correcao', 'documentacao', 'observacoes'] %}
+
+    {% for col_id, col_nome in todas_as_colunas %}
+        {% if col_id in colunas_visiveis %}
+            {% if col_id == 'situacao' %}
+                <td data-label="{{ col_nome }}" class="celula-situacao coluna-situacao">
+                    <select class="situacao-dropdown" data-id="{{ controle._id }}" autocomplete="off"
+                        {% if color_coding_active and controle.situacao in color_map %}
+                            style="background-color: {{ color_map[controle.situacao] }};"
+                        {% endif %}>
+                        <option value="">-- Nenhuma --</option>
+                        {% for sit in situacoes_para_filtro %}
+                            <option value="{{ sit.situacao }}" {% if sit.situacao == controle.situacao %}selected{% endif %}>{{ sit.situacao }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            {% elif col_id == 'documentacao' %}
+                <td data-label="{{ col_nome }}" class="coluna-texto-longo {{ 'col-detalhe' if col_id in colunas_detalhe else '' }} editable-cell" data-field-name="documentacao">
+                    <span class="card-value">
+                        {{ controle.documentacao | join(', ') }}
+                        {%- if controle.documentacao and controle.documentacao_pendente %}, {% endif %}
+                        {% if controle.documentacao_pendente %}
+                            <span class="texto-pendente">(pendente: {{ controle.documentacao_pendente | join(', ') }})</span>
+                        {% endif %}
+                    </span>
+                </td>
+            {% else %}
+                {% set is_editable = col_id in ['referencia', 'nota_fiscal', 'carta_de_correcao', 'observacoes'] %}
+                <td data-label="{{ col_nome }}" class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }} {{ 'col-detalhe' if col_id in colunas_detalhe else '' }} {{ 'editable-cell' if is_editable else '' }}" {% if is_editable %}data-field-name="{{ col_id }}"{% endif %}>
+                    <span class="card-value">{{ controle[col_id] }}</span>
+                </td>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+    <td><button class="expand-card-btn">Ver mais</button></td>
+</tr>
