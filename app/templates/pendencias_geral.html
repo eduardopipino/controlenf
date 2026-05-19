@@ -95,15 +95,15 @@
                 </td>
                 <td></td> 
             </tr>
-            <tr id="tabela-pendencias-sem-resultados-row" style="display: none !important;">
-                <td colspan="{{ colunas_visiveis|length + 3 }}" class="kanban-empty-msg">Nenhum resultado encontrado para a busca.</td>
+            <tr id="tabela-pendencias-sem-resultados-row" style="display: none;">
+                <td colspan="{{ colunas_visiveis|length + 4 }}" class="kanban-empty-msg">Nenhum resultado encontrado para a busca.</td>
             </tr>
             
             {% for p in pendencias %}
                 {% include 'partials/_pendencia_table_row.html' %}
             {% else %}
             <tr id="tabela-pendencias-backend-sem-resultados">
-                <td colspan="{{ colunas_visiveis|length + 3 }}">Nenhuma pendência encontrada.</td>
+                <td colspan="{{ colunas_visiveis|length + 4 }}">Nenhuma pendência encontrada.</td>
             </tr>
             {% endfor %}
             
@@ -365,14 +365,15 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('btnConfigurarCampos')?.addEventListener('click', () => document.getElementById('configCamposModal').classList.add('active'));
     document.getElementById('btnConfigurarColunasMobile')?.addEventListener('click', () => document.getElementById('configColunasModal').classList.add('active'));
 
-    // INICIALIZAÇÃO DA BUSCA RÁPIDA E ADIÇÃO RÁPIDA (Via Pendencias Core e Search Engine)
+    // INICIALIZAÇÃO DA BUSCA RÁPIDA
     new SearchEngine({
         viewMode: window.APP_DATA_PENDENCIAS.viewMode,
         tableRowsSelector: '.tabela-pendencias-shared tbody tr.clickable-row',
-        cardsSelector: '.data-card',
+        cardsSelector: '.data-card:not(.card-quick-add-form)', // <<< ADICIONADO :not() AQUI
         tabelaSemResultadosId: 'tabela-pendencias-sem-resultados-row',
         backendSemResultadosId: 'tabela-pendencias-backend-sem-resultados',
-        cardsSemResultadosId: 'cards-pendencias-sem-resultados'
+        cardsSemResultadosId: 'cards-pendencias-sem-resultados',
+        extraRowsSelector: '#row-btn-add-inline-top, #row-btn-add-inline, .card-quick-add-container-top-mobile, .card-quick-add-container-group'
     });
 
     if (window.setupQuickAddCard) {

@@ -11,6 +11,7 @@ class SearchEngine {
         
         this.tableRowsSelector = options.tableRowsSelector || 'tbody tr.clickable-row';
         this.cardsSelector = options.cardsSelector || '.data-card';
+        this.extraRowsSelector = options.extraRowsSelector || null;
 
         this.init();
     }
@@ -38,7 +39,6 @@ class SearchEngine {
         bindSearch(this.inputDesktop, this.inputMobile);
         bindSearch(this.inputMobile, this.inputDesktop);
         
-        // Permite invocar a busca via evento (Ex: ao mudar um select dropdown)
         document.addEventListener('triggerSearch', () => {
             const query = this.inputDesktop ? this.inputDesktop.value.toLowerCase().trim() : (this.inputMobile ? this.inputMobile.value.toLowerCase().trim() : '');
             this.filter(query);
@@ -47,6 +47,7 @@ class SearchEngine {
 
     filter(query) {
         const isMobile = window.innerWidth <= 768;
+        const isSearching = query.length > 0;
         let itemsToFilter = [];
         let displayStyle = '';
 
@@ -57,8 +58,9 @@ class SearchEngine {
             if (this.viewMode === 'table') {
                 itemsToFilter = document.querySelectorAll(this.tableRowsSelector);
                 displayStyle = 'table-row';
-            } else if (this.viewMode === 'cards' || this.viewMode === 'kanban') {
-                itemsToFilter = document.querySelectorAll(this.cardsSelector);
+            } else {
+                // Excluímos explicitamente formulários de adição rápida da filtragem
+                itemsToFilter = document.querySelectorAll(`${this.cardsSelector}:not(.card-quick-add-form)`);
                 displayStyle = 'flex';
             }
         }
@@ -66,38 +68,53 @@ class SearchEngine {
         let itemsVisiveis = 0;
 
         itemsToFilter.forEach(item => {
-            let itemText = '';
-            
+            // Ignora o template de criação da tabela
+            if (item.id === 'inline-create-template') return;
+
+            let itemText = "";
             const spans = item.querySelectorAll('span.card-value, span.card-field-value');
             spans.forEach(span => { itemText += " " + span.textContent.toLowerCase(); });
-            
             const h4 = item.querySelector('h4');
             if (h4) itemText += " " + h4.textContent.toLowerCase();
 
-            if (isMobile || this.viewMode === 'table') {
-                const situacaoSelect = item.querySelector('.situacao-dropdown');
-                if (situacaoSelect && situacaoSelect.value) {
-                    itemText += " " + situacaoSelect.value.toLowerCase();
-                }
-            }
-
             if (itemText.includes(query)) {
-                item.style.setProperty('display', displayStyle, 'important');
+                if (isSearching) {
+                    item.style.setProperty('display', displayStyle, 'important');
+                } else {
+                    item.style.display = ''; // Limpa o estilo inline para voltar ao padrão do CSS/HTML
+                }
                 itemsVisiveis++;
             } else {
                 item.style.setProperty('display', 'none', 'important');
             }
         });
 
-        const noResults = (itemsVisiveis === 0);
-        const isSearching = query.length > 0;
+        // 2. Lógica para esconder Adições Rápidas (Desktop e Mobile)
+        if (this.extraRowsSelector) {
+            document.querySelectorAll(this.extraRowsSelector).forEach(el => {
+                if (isSearching) {
+                    el.style.setProperty('display', 'none', 'important');
+                } else {
+                    el.style.display = ''; 
+                }
+            });
+        }
 
+        const noResults = (itemsVisiveis === 0);
+
+        // 3. Exibir mensagens de "Nenhum Resultado"
         if (isMobile || this.viewMode === 'table') {
             if (this.tabelaSemResultados) {
-                this.tabelaSemResultados.style.setProperty('display', (isSearching && noResults) ? displayStyle : 'none', 'important');
+                if (isSearching && noResults) {
+                    // No desktop, forçamos table-row para o TR aparecer corretamente
+                    const tableDisplay = isMobile ? 'block' : 'table-row';
+                    this.tabelaSemResultados.style.setProperty('display', tableDisplay, 'important');
+                } else {
+                    this.tabelaSemResultados.style.setProperty('display', 'none', 'important');
+                }
             }
             if (this.backendSemResultados) {
-                this.backendSemResultados.style.setProperty('display', isSearching ? 'none' : 'table-row', 'important');
+                this.backendSemResultados.style.setProperty('display', isSearching ? 'none' : '', 'important');
             }
         } 
         
@@ -113,13 +130,11 @@ class SearchEngine {
     updateKanbanCounts(query) {
         if (this.viewMode !== 'kanban' || window.innerWidth <= 768) return;
         const isSearching = query && query.length > 0;
-
         document.querySelectorAll('.kanban-column').forEach(coluna => {
-            const cardsNaColuna = coluna.querySelectorAll('.data-card');
+            const cardsNaColuna = coluna.querySelectorAll('.data-card:not(.card-quick-add-form)');
             const totalCards = cardsNaColuna.length;
             let cardsEscondidos = 0;
             cardsNaColuna.forEach(card => { if (card.style.display === 'none') cardsEscondidos++; });
-
             let msgNenhumResultado = coluna.querySelector('.kanban-empty-msg');
             if (isSearching && totalCards > 0 && cardsEscondidos === totalCards) {
                 if (!msgNenhumResultado) {
