@@ -6,6 +6,7 @@ class SearchEngine {
         this.viewMode = options.viewMode || 'table';
         
         this.tabelaSemResultados = document.getElementById(options.tabelaSemResultadosId || 'tabela-sem-resultados-row');
+        this.tableElement = document.getElementById(options.tableId || ''); // NOVO: Referência à tabela inteira
         this.cardsSemResultados = document.getElementById(options.cardsSemResultadosId || 'cards-sem-resultados');
         this.backendSemResultados = document.getElementById(options.backendSemResultadosId || 'tabela-backend-sem-resultados');
         
@@ -59,7 +60,6 @@ class SearchEngine {
                 itemsToFilter = document.querySelectorAll(this.tableRowsSelector);
                 displayStyle = 'table-row';
             } else {
-                // Excluímos explicitamente formulários de adição rápida da filtragem
                 itemsToFilter = document.querySelectorAll(`${this.cardsSelector}:not(.card-quick-add-form)`);
                 displayStyle = 'flex';
             }
@@ -68,7 +68,6 @@ class SearchEngine {
         let itemsVisiveis = 0;
 
         itemsToFilter.forEach(item => {
-            // Ignora o template de criação da tabela
             if (item.id === 'inline-create-template') return;
 
             let itemText = "";
@@ -81,7 +80,7 @@ class SearchEngine {
                 if (isSearching) {
                     item.style.setProperty('display', displayStyle, 'important');
                 } else {
-                    item.style.display = ''; // Limpa o estilo inline para voltar ao padrão do CSS/HTML
+                    item.style.display = ''; 
                 }
                 itemsVisiveis++;
             } else {
@@ -89,7 +88,6 @@ class SearchEngine {
             }
         });
 
-        // 2. Lógica para esconder Adições Rápidas (Desktop e Mobile)
         if (this.extraRowsSelector) {
             document.querySelectorAll(this.extraRowsSelector).forEach(el => {
                 if (isSearching) {
@@ -102,15 +100,26 @@ class SearchEngine {
 
         const noResults = (itemsVisiveis === 0);
 
-        // 3. Exibir mensagens de "Nenhum Resultado"
+        // 3. Exibir mensagens de "Nenhum Resultado" e ESCONDER A TABELA INTEIRA
         if (isMobile || this.viewMode === 'table') {
             if (this.tabelaSemResultados) {
                 if (isSearching && noResults) {
-                    // No desktop, forçamos table-row para o TR aparecer corretamente
-                    const tableDisplay = isMobile ? 'block' : 'table-row';
-                    this.tabelaSemResultados.style.setProperty('display', tableDisplay, 'important');
+                    // Verifica se a mensagem é um TR ou um elemento solto (como P ou DIV)
+                    const isTR = this.tabelaSemResultados.tagName === 'TR';
+                    const displayVal = isTR ? (isMobile ? 'block' : 'table-row') : 'block';
+                    
+                    this.tabelaSemResultados.style.setProperty('display', displayVal, 'important');
+                    
+                    // Se a mensagem for solta (não-TR), então podemos esconder a tabela inteira!
+                    if (!isTR && this.tableElement) {
+                        this.tableElement.style.setProperty('display', 'none', 'important');
+                    }
                 } else {
                     this.tabelaSemResultados.style.setProperty('display', 'none', 'important');
+                    // Restaura a tabela se a busca for limpa
+                    if (this.tableElement) {
+                        this.tableElement.style.display = ''; 
+                    }
                 }
             }
             if (this.backendSemResultados) {
