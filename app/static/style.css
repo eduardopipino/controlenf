@@ -2662,7 +2662,11 @@ body.theme-dark #buscaRapidaInput {
     text-align: center;
     color: var(--tertiary-color);
     font-style: italic;
+    width: 100%;
+    box-sizing: border-box; /* O segredo: faz o padding caber dentro dos 100% da largura */
+    margin: 0; /* Previne que margens padrão da tag <p> empurrem o layout */
 }
+
 /* Garante que o <td> da tabela ocupe a largura correta */
 #tabelaControle td.kanban-empty-msg,
 #tabelaPendencias td.kanban-empty-msg {
@@ -3466,7 +3470,6 @@ textarea.inline-add-field {
 /* 3. Ajustes de Linhas e Células de Tabela */
 tr#inline-create-template { background-color: var(--table-stripe); }
 .clickable-row { position: relative; }
-.kanban-empty-msg { text-align: center; width: 100%; }
 .th-icon-col { width: 40px; text-align: center; }
 
 /* Wrapper para o scroll horizontal das tabelas no Hub */
