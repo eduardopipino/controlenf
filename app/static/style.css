@@ -1365,7 +1365,9 @@ td .card-value {
 #tabelaPendencias th:last-child,
 #tabelaPendencias tbody td:last-child,
 #pendenciasPorInstrumentoTabela th:last-child,
-#pendenciasPorInstrumentoTabela tbody td:last-child {
+#pendenciasPorInstrumentoTabela tbody td:last-child,
+.tabela-hub th:last-child,            /* <<< ADICIONAR AQUI */
+.tabela-hub tbody td:last-child {     /* <<< ADICIONAR AQUI */
     display: none;
 }
 
@@ -1928,7 +1930,11 @@ body.theme-dark .action-icon-link {
 #tabelaInstrumentos th:first-child,
 #tabelaInstrumentos td:first-child,
 #tabelaSituacoes th:first-child,
-#tabelaSituacoes td:first-child {
+#tabelaSituacoes td:first-child,
+.tabela-hub th:first-child,           /* <<< ADICIONAR AQUI */
+.tabela-hub td:first-child,           /* <<< ADICIONAR AQUI */
+.tabela-hub th:nth-child(2),          /* <<< ADICIONAR AQUI (Para o ícone de prioridade) */
+.tabela-hub td:nth-child(2) {
     width: 24px;        /* Define uma largura fixa e pequena. */
     text-align: center; /* Centraliza o ícone e o texto do cabeçalho. */
 }
@@ -1937,7 +1943,8 @@ body.theme-dark .action-icon-link {
 #tabelaPendencias td:first-child,
 #pendenciasPorInstrumentoTabela td:first-child,
 #tabelaInstrumentos td:first-child,
-#tabelaSituacoes td:first-child {
+#tabelaSituacoes td:first-child,
+.tabela-hub td:first-child {
     padding: 0;
 }
 

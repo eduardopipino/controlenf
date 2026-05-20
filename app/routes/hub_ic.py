@@ -6,7 +6,7 @@ from app.models import (instrumentos_collection, pendencias_collection,
                         controle_collection, TODAS_AS_COLUNAS_PENDENCIAS, 
                         TODAS_AS_COLUNAS_CONTROLE, users_collection,
                         TODAS_AS_COLUNAS_CARDS, get_controles_pendentes_por_instrumento,
-                        itens_collection)
+                        itens_collection, get_situacoes_para_dropdown)
 
 hub_ic_bp = Blueprint('hub_ic', __name__)
 
@@ -40,6 +40,12 @@ def hub_instrumentos():
     hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     hub_dados = []
     
+    # NOVOS PARÂMETROS DE ORDENAÇÃO
+    sort_pend = request.args.get('sort_pend', 'prazo')
+    order_pend = request.args.get('order_pend', 'asc')
+    sort_nf = request.args.get('sort_nf', 'data_criacao')
+    order_nf = request.args.get('order_nf', 'asc')
+    
     for inst in instrumentos:
         inst_id = inst['_id']
         
@@ -47,7 +53,12 @@ def hub_instrumentos():
             'instrumento_id': inst_id,
             'user_id': user_id_obj,
             'status': {'$ne': 'Concluído'}
-        }).sort('prazo', 1))
+        }))
+
+        # Lógica de Ordenação das Pendências
+        rev_pend = (order_pend == 'desc')
+        pendencias_abertas.sort(key=lambda x: (x.get(sort_pend) is None, x.get(sort_pend, '')), reverse=rev_pend)
+        pendencias_abertas.sort(key=lambda x: x.get('prioridade', False), reverse=True) # Prioridade sempre no topo!
 
         pendencias_sem_prazo = [p for p in pendencias_abertas if not p.get('prazo')]
         pendencias_com_prazo = [p for p in pendencias_abertas if p.get('prazo')]
@@ -55,6 +66,10 @@ def hub_instrumentos():
         pendencias_a_vencer = [p for p in pendencias_com_prazo if p['prazo'] >= hoje]
         
         controles_pendentes = get_controles_pendentes_por_instrumento(inst_id)
+        
+        # Lógica de Ordenação dos Controles/NFs
+        rev_nf = (order_nf == 'desc')
+        controles_pendentes.sort(key=lambda x: (x.get(sort_nf) is None, x.get(sort_nf, '')), reverse=rev_nf)
         
         itens_do_instrumento = list(itens_collection.find({'instrumento_id': inst_id}))
         
@@ -92,6 +107,9 @@ def hub_instrumentos():
         'controle_por_instrumento.html',
         hub_dados=hub_dados,
         filtro_status=filtro_status,
+        situacoes_para_filtro=get_situacoes_para_dropdown(), # <<< RESOLVE O SELECT VAZIO
+        sort_pend=sort_pend, order_pend=order_pend,          # <<< PARA A ORDENAÇÃO
+        sort_nf=sort_nf, order_nf=order_nf,                  # <<< PARA A ORDENAÇÃO
         colunas_visiveis_pendencias=colunas_visiveis_pendencias,
         todas_as_colunas_pendencias=TODAS_AS_COLUNAS_PENDENCIAS,
         colunas_visiveis_controle=colunas_visiveis_controle,

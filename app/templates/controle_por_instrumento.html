@@ -10,14 +10,14 @@
                 <option value="Vigente" {% if filtro_status == 'Vigente' %}selected{% endif %}>Vigentes</option>
                 <option value="Extinto" {% if filtro_status == 'Extinto' %}selected{% endif %}>Extintos</option>
             </select>
-            <button class="btnExpandirRecolher">Expandir Todos</button>
+            <button class="btnExpandirRecolher button">Expandir Todos</button>
         </div>
         <div class="toolbar-group-center">
             {% set view_endpoint = url_for('core.set_view_preference_pendencias') %}
             {% include 'partials/_view_selector.html' %}
         </div>
         <div class="toolbar-group-right">
-            <input type="search" class="buscaRapidaInput" placeholder="Buscar em tudo... (ESC para limpar)">
+            <input type="search" id="buscaRapidaInput" class="buscaRapidaInputHub" placeholder="Buscar em tudo... (ESC para limpar)">
         </div>
     </div>
 
@@ -27,12 +27,16 @@
             <option value="Vigente" {% if filtro_status == 'Vigente' %}selected{% endif %}>Vigentes</option>
             <option value="Extinto" {% if filtro_status == 'Extinto' %}selected{% endif %}>Extintos</option>
         </select>
-        <button class="btnExpandirRecolher" style="flex: 1; height: 42px; padding: 0 10px; font-size: 14px;">Expandir Todos</button>
+        <button class="btnExpandirRecolher button" style="flex: 1; height: 42px; padding: 0 10px; font-size: 14px;">Expandir Todos</button>
     </div>
 
     <div class="mobile-search-bar hide-on-desktop" style="margin-bottom: 20px; padding: 0 5px;">
-        <input type="search" class="buscaRapidaInput" placeholder="Buscar registros..." style="width: 100%; padding: 12px; border-radius: 5px; border: 1px solid var(--border-base); background-color: var(--background-secondary); color: var(--text-primary); font-size: 14px;">
+        <input type="search" id="buscaRapidaInputMobile" class="buscaRapidaInputHub" placeholder="Buscar registros...">
     </div>
+    
+    <p id="hub-sem-resultados-msg" class="kanban-empty-msg" style="display: none;">
+        Nenhum resultado encontrado para a busca.
+    </p>
 
     <div class="hub-container" id="hubAccordionContainer" style="margin-top: 25px;">
         {% if not hub_dados %}
@@ -48,7 +52,7 @@
                                     <span style="font-style: italic; font-weight: normal; opacity: 0.7; font-size: 0.85em; margin-left: 8px;">(extinto)</span>
                                 {% endif %}
                             </h3>
-                            <a href="{{ url_for('instrumentos.gerenciar_instrumento', instrumento_id=item.instrumento._id) }}" class="btn-manage-link" title="Gerenciar Instrumento">⚙️</a>
+                            <a href="{{ url_for('instrumentos.gerenciar_instrumento', instrumento_id=item.instrumento._id, origem=request.full_path) }}" class="btn-manage-link" title="Gerenciar Instrumento">⚙️</a>
                         </div>
                         <div class="hub-summary-badges">
                             <span class="hub-badge badge-status {{ 'vigente' if item.instrumento.vigente else 'extinto' }}">{{ item.instrumento.status_texto }}</span>
@@ -76,7 +80,7 @@
                         <div class="hub-section pendencias-section">
                             <div class="hub-section-header">
                                 <h4>⏳ Pendências Gerais</h4>
-                                <a href="{{ url_for('pendencias.nova_pendencia', instrumento_id=item.instrumento.str_id, origem=request.full_path) }}" class="btn-add-mini">+ Nova Pendência</a>
+                                <a href="{{ url_for('pendencias.nova_pendencia', instrumento_id=item.instrumento.str_id, origem=request.full_path) }}" class="button">Nova pendência</a>
                             </div>
 
                             {% if not item.pendencias %}
@@ -91,7 +95,11 @@
                                                     <th class="hide-on-mobile">!</th>
                                                     {% for col_id, col_nome in todas_as_colunas_pendencias %}
                                                         {% if col_id in colunas_visiveis_pendencias %}
-                                                            <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">{{ col_nome }}</th>
+                                                            <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
+                                                                <a href="{{ url_for(request.endpoint, **dict(request.args, status=filtro_status, sort_pend=col_id, order_pend='desc' if sort_pend == col_id and order_pend == 'asc' else 'asc' )) }}">
+                                                                    {{ col_nome }} {% if sort_pend == col_id %}{{ '▲' if order_pend == 'asc' else '▼' }}{% endif %}
+                                                                </a>
+                                                            </th>
                                                         {% endif %}
                                                     {% endfor %}
                                                     <th class="hide-on-mobile th-icon-col" title="Concluir Pendência">
@@ -113,22 +121,26 @@
                                     <div class="kanban-view-container">
                                         <div class="kanban-board kanban-board-wide">
                                             <div class="kanban-column"><div class="kanban-column-header">Sem Prazo</div><div class="kanban-cards">
-                                                {% set todas_as_colunas_cards = todas_as_colunas_pendencias %}{% set card_fields_visiveis = colunas_visiveis_pendencias %}
+                                                {% set todas_as_colunas_cards = todas_as_colunas_pendencias %}
+                                                {% set card_fields_visiveis = card_fields_visiveis %}
                                                 {% for p in item.pendencias_sem_prazo %}{% include 'partials/_pendencia_card.html' %}{% endfor %}
                                             </div></div>
                                             <div class="kanban-column"><div class="kanban-column-header">A Vencer</div><div class="kanban-cards">
-                                                {% set todas_as_colunas_cards = todas_as_colunas_pendencias %}{% set card_fields_visiveis = colunas_visiveis_pendencias %}
+                                                {% set todas_as_colunas_cards = todas_as_colunas_pendencias %}
+                                                {% set card_fields_visiveis = card_fields_visiveis %}
                                                 {% for p in item.pendencias_a_vencer %}{% include 'partials/_pendencia_card.html' %}{% endfor %}
                                             </div></div>
                                             <div class="kanban-column"><div class="kanban-column-header">Vencidas</div><div class="kanban-cards">
-                                                {% set todas_as_colunas_cards = todas_as_colunas_pendencias %}{% set card_fields_visiveis = colunas_visiveis_pendencias %}
+                                                {% set todas_as_colunas_cards = todas_as_colunas_pendencias %}
+                                                {% set card_fields_visiveis = card_fields_visiveis %}
                                                 {% for p in item.pendencias_vencidas %}{% include 'partials/_pendencia_card.html' %}{% endfor %}
                                             </div></div>
                                         </div>
                                     </div>
                                 {% else %}
                                     <div class="card-grid">
-                                        {% set todas_as_colunas_cards = todas_as_colunas_pendencias %}{% set card_fields_visiveis = colunas_visiveis_pendencias %}
+                                        {% set todas_as_colunas_cards = todas_as_colunas_pendencias %}
+                                        {% set card_fields_visiveis = card_fields_visiveis %}
                                         {% for p in item.pendencias %}
                                             {% include 'partials/_pendencia_card.html' %}
                                         {% endfor %}
@@ -142,7 +154,7 @@
                         <div class="hub-section controles-section">
                             <div class="hub-section-header">
                                 <h4>🧾 Documentos Fiscais Pendentes</h4>
-                                <a href="{{ url_for('controle.novo_controle', instrumento_id=item.instrumento.str_id, origem=request.full_path) }}" class="btn-add-mini">+ Nova Nota</a>
+                                <a href="{{ url_for('controle.novo_controle', instrumento_id=item.instrumento.str_id, origem=request.full_path) }}" class="button">Novo documento fiscal</a>
                             </div>
 
                             {% if not item.controles %}
@@ -156,11 +168,11 @@
                                                     <th></th>
                                                     {% for col_id, col_nome in todas_as_colunas_controle %}
                                                         {% if col_id in colunas_visiveis_controle %}
-                                                            {% if col_id == 'situacao' %}
-                                                                <th class="coluna-situacao">{{ col_nome }}</th>
-                                                            {% else %}
-                                                                <th class="{{ 'coluna-texto-longo' if col_id in ['objeto', 'item_descricao', 'documentacao', 'observacoes'] else '' }}">{{ col_nome }}</th>
-                                                            {% endif %}
+                                                            <th class="{{ 'coluna-situacao' if col_id == 'situacao' else ('coluna-texto-longo' if col_id in ['objeto', 'item_descricao', 'documentacao', 'observacoes'] else '') }}">
+                                                                <a href="{{ url_for(request.endpoint, **dict(request.args, status=filtro_status, sort_nf=col_id, order_nf='desc' if sort_nf == col_id and order_nf == 'asc' else 'asc' )) }}">
+                                                                    {{ col_nome }} {% if sort_nf == col_id %}{{ '▲' if order_nf == 'asc' else '▼' }}{% endif %}
+                                                                </a>
+                                                            </th>
                                                         {% endif %}
                                                     {% endfor %}
                                                     <th></th>
@@ -274,7 +286,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // --- Busca Rápida Dinâmica (Específica do Hub para Acordeões) ---
-    const buscaInputs = document.querySelectorAll('.buscaRapidaInput');
+    const buscaInputs = document.querySelectorAll('.buscaRapidaInputHub');
+    const msgSemResultado = document.getElementById('hub-sem-resultados-msg');
+
     buscaInputs.forEach(input => {
         input.addEventListener('keyup', function(e) {
             const query = e.target.value.toLowerCase().trim();
@@ -282,17 +296,24 @@ document.addEventListener('DOMContentLoaded', function() {
             // Sincroniza os inputs (Mobile <-> Desktop)
             buscaInputs.forEach(other => { if(other !== input) other.value = e.target.value; });
 
+            let visiveis = 0;
             document.querySelectorAll('.hub-accordion').forEach(acc => {
                 const searchContent = acc.dataset.searchContent || '';
                 let contentText = acc.textContent.toLowerCase(); 
                 if (searchContent.includes(query) || contentText.includes(query)) {
                     acc.style.display = 'block';
                     if (query.length > 2) acc.open = true; // Abre sozinho se o termo for grande
+                    visiveis++;
                 } else {
                     acc.style.display = 'none';
                 }
             });
             
+            // Mostra a mensagem global se nenhum acordeão sobreviver à busca
+            if (msgSemResultado) {
+                msgSemResultado.style.display = (visiveis === 0 && query.length > 0) ? 'block' : 'none';
+            }
+
             // Limpa a busca com o botão Esc
             if(e.key === 'Escape') { 
                 buscaInputs.forEach(i => i.value = ''); 
@@ -307,16 +328,14 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function() {
             isAllExpanded = !isAllExpanded;
             
-            // Aplica aos acordeões visíveis
             document.querySelectorAll('.hub-accordion').forEach(acc => {
                 if (acc.style.display !== 'none') acc.open = isAllExpanded;
             });
             
-            // Atualiza o texto e estilo dos botões (Mobile e Desktop)
             document.querySelectorAll('.btnExpandirRecolher').forEach(b => {
                 b.textContent = isAllExpanded ? 'Recolher Todos' : 'Expandir Todos';
-                b.style.backgroundColor = isAllExpanded ? 'var(--primary-color)' : '';
-                b.style.color = isAllExpanded ? 'white' : '';
+                // Adicionado classes de interação estilo '.button' para melhor visual
+                b.classList.toggle('filtro-ativo', isAllExpanded); 
             });
         });
     });
