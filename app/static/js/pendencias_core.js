@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else { toggle.classList.toggle('active', isActivating); }
 
                 // Movimentação visual no DOM (Apenas se for página principal de pendências, não no hub)
-                if (window.APP_DATA_PENDENCIAS {
+                if (window.APP_DATA_PENDENCIAS) {
                     let targetContainer = elementToMove.tagName === 'TR' ? elementToMove.closest('tbody') : null;
                     if (!targetContainer && window.APP_DATA_PENDENCIAS.viewMode === 'cards') {
                         if (window.APP_DATA_PENDENCIAS.pageMode === 'por_instrumento') {
