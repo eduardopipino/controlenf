@@ -1,6 +1,6 @@
 {% set card_fields_map = dict(todas_as_colunas_cards) %}
 {% set editable_fields_in_card = ['nota_fiscal', 'carta_de_correcao', 'observacoes'] %}
-<div class="data-card" data-situacao="{{ controle.situacao or '' }}" data-id="{{ controle._id }}"
+<div class="data-card" data-type="controle" data-situacao="{{ controle.situacao or '' }}" data-id="{{ controle._id }}"
      {# data-url removido #}
     {% if color_coding_active and controle.situacao in color_map %}
         style="background-color: {{ color_map[controle.situacao] }};"

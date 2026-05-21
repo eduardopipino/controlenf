@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('dblclick', function(e) {
         // Verifica se clicou na Tabela
         let td = e.target.closest('td.editable-cell');
-        let cardField = e.target.closest('.data-card .editable-card-field');
+        let cardField = e.target.closest('.data-card[data-type="controle"] .editable-card-field');
         
         let container, fieldName, originalValue, valueElement, isCard = false;
 
@@ -265,7 +265,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     document.addEventListener('contextmenu', e => {
-        const card = e.target.closest('.data-card');
+        const card = e.target.closest('.data-card[data-type="controle"]');
         if (card) abrirMenuDeContexto(e, card);
     });
 

@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ==========================================
     document.body.addEventListener('dblclick', function(e) {
         let td = e.target.closest('td.editable-cell');
-        let cardField = e.target.closest('.data-card .editable-card-field');
+        let cardField = e.target.closest('.data-card[data-type="pendencia"] .editable-card-field');
         
         let container, fieldName, originalValue, valueElement, isCard = false;
 
@@ -252,7 +252,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // ==========================================
     if (contextMenu && colorPicker) {
         document.body.addEventListener('contextmenu', function(e) {
-            const item = e.target.closest('.tabela-pendencias-shared tbody tr.clickable-row, .data-card');
+            // Só atua se for na tabela de pendências ou num card EXCLUSIVO de Pendência
+            const item = e.target.closest('.tabela-pendencias-shared tbody tr.clickable-row, .data-card[data-type="pendencia"]');
             if (!item || !item.querySelector('.btn-concluir-action')) return; // Confirma se é uma pendência
             
             e.preventDefault(); activeItem = item;

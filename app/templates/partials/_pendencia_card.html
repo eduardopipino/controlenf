@@ -2,8 +2,7 @@
 {# --- Define quais campos são editáveis inline (baseado na sua lista) --- #}
 {% set editable_fields_pendencias = ['pendencia', 'prazo', 'responsavel', 'situacao', 'observacoes'] %}
 
-<div class="data-card"
-     data-id="{{ p._id }}"
+<div class="data-card" data-type="pendencia" data-id="{{ p._id }}"
      {% if color_coding_active and p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
 
     {# --- Área de Ações no Canto Adicionada --- #}
