@@ -3798,3 +3798,29 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
     height: max-content !important;
     flex-grow: 1; /* Se a coluna do lado for muito alta, esta estica o fundo para acompanhar de forma harmoniosa */
 }
+
+/* ==========================================================================
+   EFEITO HOVER CIRCULAR DA ENGRENAGEM (100% IDÊNTICO À PRIORIDADE)
+   ========================================================================== */
+.btn-manage-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;          /* O tamanho real da caixa dos ícones da tabela */
+    height: 24px;         /* O tamanho real da caixa dos ícones da tabela */
+    padding: 0;           /* Anula qualquer preenchimento fantasma */
+    box-sizing: border-box; /* Garante que 24px é o limite absoluto */
+    border-radius: 50%;
+    background-color: transparent;
+    text-decoration: none;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    margin-left: 8px;
+    font-size: 14px;      /* Reduzido um pouco para caber certinho nos 24px */
+    line-height: 1;       /* Impede que o emoji estique a caixa */
+    color: inherit;
+}
+
+.btn-manage-link:hover {
+    transform: scale(1.1); 
+    background-color: var(--secondary-color); 
+}
