@@ -1,7 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Controle de Notas Fiscais {% if filter_mode == 'pendentes' %}- Pendentes{% elif filter_mode == 'concluidas' %}- Concluídas{% endif %}</h2>
+    <h2>Controle de Notas Fiscais 
+        {% if filter_mode == 'todas' %}- Todas
+        {% elif filter_mode == 'por_instrumento' %}- Pendentes - Por instrumento contratual
+        {% elif filter_mode == 'concluidas' %}- Concluídas
+        {% endif %}
+    </h2>
     
     <div class="button-toolbar desktop-actions">
         <div class="toolbar-group-left">
@@ -21,13 +26,13 @@
                 
         <div class="toolbar-group-right">
             <input type="search" id="buscaRapidaInput" placeholder="Buscar em todos os campos... (ESC para limpar)">
-            <button onclick="location.href='{{ url_for('controle.novo_controle') }}'">Novo</button>
-            <button id="btnNovoRecorrente">Novo - Recorrente</button>
+            <button onclick="location.href='{{ url_for('controle.novo_controle', origem=request.full_path) }}'">Novo</button>
+            <button id="btnNovoRecorrente" onclick="location.href='{{ url_for('controle.novo_controle_recorrente', origem=request.full_path) }}'">Novo - Recorrente</button>
         </div>
     </div>
     
     <div class="mobile-actions">
-        <a href="{{ url_for('controle.novo_controle') }}" class="fab" title="Novo Registro">+</a>
+        <a href="{{ url_for('controle.novo_controle', origem=request.full_path) }}" class="fab" title="Novo Registro">+</a>
 
         <div class="kebab-menu-container">
             <button id="btnKebab" class="kebab-menu-button">&#8942;</button>
@@ -87,11 +92,26 @@
         Nenhum resultado encontrado para a busca.
     </p>
     <div class="card-view-container hide-on-mobile">
-        <div class="card-grid">
-            {% for controle in controles %}
-                {% include 'partials/_controle_card.html' %}
+        {% if page_mode == 'por_instrumento' %}
+            {% for grupo in grupos_de_controles %}
+                <div class="instrumento-group-section">
+                    <h4>{{ grupo.detalhes.instrumento_display }}</h4>
+                    <div class="card-grid">
+                        {% for controle in grupo.controles %}
+                            {% include 'partials/_controle_card.html' %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <p>Nenhum registro encontrado.</p>
             {% endfor %}
-        </div>
+        {% else %}
+            <div class="card-grid">
+                {% for controle in controles %}
+                    {% include 'partials/_controle_card.html' %}
+                {% endfor %}
+            </div>
+        {% endif %}
     </div>
     {% endif %}
 

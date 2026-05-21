@@ -32,7 +32,8 @@
                     <li class="nav-item dropdown">
                         <a href="#" class="nav-link dropbtn">Controle de Notas Fiscais</a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('controle.controle_lista', filter_mode='pendentes') }}">Pendentes</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('controle.controle_lista', filter_mode='todas') }}">Todas</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('controle.controle_lista', filter_mode='por_instrumento') }}">Por instrumento contratual</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('controle.controle_lista', filter_mode='concluidas') }}">Concluídas</a></li>
                         </ul>
                     </li>

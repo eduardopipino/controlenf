@@ -31,19 +31,21 @@ controle_bp = Blueprint('controle', __name__)
 def controle_lista(filter_mode):
     
     situacoes_arquivadoras = get_situacoes_que_arquivam()
-    
-    # O conteúdo desta função permanece idêntico ao original.
-    # A única mudança é no decorador acima (@controle_bp.route).
-
     query_filter = {}
-    if filter_mode == 'pendentes':
+    page_mode = 'geral'
+
+    # Mapeamento dos novos filtros de rota
+    if filter_mode == 'todas':
         query_filter['situacao'] = {'$nin': situacoes_arquivadoras}
+    elif filter_mode == 'por_instrumento':
+        query_filter['situacao'] = {'$nin': situacoes_arquivadoras}
+        page_mode = 'por_instrumento'
     elif filter_mode == 'concluidas':
         query_filter['situacao'] = {'$in': situacoes_arquivadoras}
+        page_mode = 'concluidas'
     else:
-        # PONTO DE ATENÇÃO: url_for() agora aponta para '.controle_lista'
-        # O '.' no início significa "dentro deste mesmo blueprint".
-        return redirect(url_for('.controle_lista', filter_mode='pendentes'))
+        # Fallback caso o usuário acesse um link antigo com 'pendentes'
+        return redirect(url_for('.controle_lista', filter_mode='todas'))
 
     filter_values = {}
     filtro_ativo = False
@@ -66,20 +68,46 @@ def controle_lista(filter_mode):
         mensagem = "Filtro ativo! Exibindo registros onde " + ", ".join(filtros_aplicados) + "."
         flash(mensagem, 'info')
 
-    sort_by = request.args.get('sort_by', 'data_criacao')
+    # Se estiver agrupando por instrumento, força a ordenação inicial por instrumento
+    sort_by = request.args.get('sort_by')
+    if not sort_by:
+        sort_by = 'n_instrumento' if page_mode == 'por_instrumento' else 'data_criacao'
+
     order = request.args.get('order', 'asc')
     sort_order_mongo = -1 if order == 'desc' else 1
-    sort_document = {sort_by: sort_order_mongo}
+    
+    if sort_by == 'n_instrumento':
+        sort_document = {'n_instrumento': sort_order_mongo, 'data_criacao': -1}
+    else:
+        sort_document = {sort_by: sort_order_mongo}
 
     controles_raw = get_controle_data(query_filter, sort_document=sort_document)
     controles = list(controles_raw)
     
-    # --- CORREÇÃO: Força a leitura dos pendentes reais diretamente do banco ---
+    # --- CORREÇÃO PENDENTES REAIS ---
     for c in controles:
         db_doc = controle_collection.find_one({'_id': c['_id']}, {'documentacao_pendente': 1})
         if db_doc and 'documentacao_pendente' in db_doc:
             c['documentacao_pendente'] = db_doc['documentacao_pendente']
-    # -------------------------------------------------------------------------
+
+    # --- NOVO BLOCO: Agrupamento para Modo 'por_instrumento' nos Cards ---
+    grupos_de_controles = []
+    if page_mode == 'por_instrumento':
+        from collections import OrderedDict
+        grupos_dict = OrderedDict()
+        for c in controles:
+            if c.get('n_instrumento'):
+                grupo_key = f"{c.get('tipo_documento', 'Instrumento')} Nº {c.get('n_instrumento', '')} - {c.get('contratada', '')}"
+            else:
+                grupo_key = "Sem Instrumento Vinculado"
+            
+            if grupo_key not in grupos_dict:
+                grupos_dict[grupo_key] = {
+                    'detalhes': {'instrumento_display': grupo_key},
+                    'controles': []
+                }
+            grupos_dict[grupo_key]['controles'].append(c)
+        grupos_de_controles = list(grupos_dict.values())
 
     situacoes_para_filtro = get_situacoes_para_dropdown()
     chart_data_json = prepare_chart_data(controles)
@@ -87,7 +115,6 @@ def controle_lista(filter_mode):
     
     situacoes_kanban = [s for s in situacoes_para_filtro if s['situacao'] not in situacoes_arquivadoras]
     
-    # Converte o ObjectId de cada situação para uma string, tornando-a "JSON serializable"
     for sit in situacoes_para_filtro:
         sit['_id'] = str(sit['_id'])
 
@@ -101,9 +128,11 @@ def controle_lista(filter_mode):
         card_fields_visiveis=card_fields_visiveis,
         todas_as_colunas_cards=opcoes_campos_cards_controle,
         controles=list(controles),
+        grupos_de_controles=grupos_de_controles, # <<< Passa a variável
         situacoes_para_filtro=situacoes_para_filtro,
         situacoes_kanban=situacoes_kanban,
         filter_mode=filter_mode,
+        page_mode=page_mode,                     # <<< Passa a variável
         filter_values=filter_values,
         chart_data=chart_data_json,
         color_map=color_map,
@@ -119,7 +148,9 @@ def controle_lista(filter_mode):
 @controle_bp.route('/novo', methods=['GET', 'POST'])
 @login_required
 def novo_controle():
-    # Lógica original, sem alterações. Apenas o redirect foi ajustado.
+    # 1. Tenta pegar a origem (de onde o usuário clicou em 'Novo')
+    origem = request.args.get('origem') or request.form.get('origem')
+
     itens_for_js = get_itens_para_dropdown_js(somente_vigentes=True)
     situacoes = get_situacoes_para_dropdown()
 
@@ -129,12 +160,13 @@ def novo_controle():
         
         if not all([item_id_str, referencia]):
             flash('Os campos "Item do Instrumento" e "Referência" são obrigatórios.', 'error')
-            return render_template('form_controle.html', controle=request.form, itens_for_js=json.dumps(itens_for_js), situacoes=situacoes, novo=True)
+            # Passa a origem de volta para o formulário em caso de erro
+            return render_template('form_controle.html', controle=request.form, itens_for_js=json.dumps(itens_for_js), situacoes=situacoes, novo=True, origem=origem)
 
         item_selecionado = itens_collection.find_one({'_id': ObjectId(item_id_str), 'user_id': ObjectId(current_user.id)})
         if not item_selecionado:
             flash("Item selecionado inválido.", "error")
-            return render_template('form_controle.html', controle=request.form, itens_for_js=json.dumps(itens_for_js), situacoes=situacoes, novo=True)
+            return render_template('form_controle.html', controle=request.form, itens_for_js=json.dumps(itens_for_js), situacoes=situacoes, novo=True, origem=origem)
 
         instrumento_pai = instrumentos_collection.find_one({'_id': item_selecionado['instrumento_id']})
 
@@ -155,26 +187,34 @@ def novo_controle():
         }
         controle_collection.insert_one(novo_registro_controle)
         flash('Registro de Controle criado com sucesso!', 'success')
-        # PONTO DE ATENÇÃO: Redirecionamento para a rota deste mesmo blueprint
-        return redirect(url_for('controle.controle_lista', filter_mode='pendentes'))
         
-    return render_template('form_controle.html', controle={}, itens_for_js=json.dumps(itens_for_js), situacoes=situacoes, novo=True)
+        # 2. Se houver uma origem guardada, redireciona de volta para ela!
+        if origem:
+            return redirect(origem)
+        return redirect(url_for('controle.controle_lista', filter_mode='todas'))
+        
+    # Envia a origem para o HTML ao carregar a página pela primeira vez
+    return render_template('form_controle.html', controle={}, itens_for_js=json.dumps(itens_for_js), situacoes=situacoes, novo=True, origem=origem)
+
 
 @controle_bp.route('/novo_recorrente', methods=['POST'])
 @login_required
 def novo_controle_recorrente():
-    # Lógica 100% idêntica ao original. Apenas o redirect foi ajustado.
+    # Como os recorrentes são criados num modal, a forma mais fácil de 
+    # lembrar de onde o usuário veio é capturando o "referrer" da requisição.
+    origem = request.referrer or url_for('controle.controle_lista', filter_mode='todas')
+
     user_id_obj = ObjectId(current_user.id)
     referencia_digitada = request.form.get('referencia_recorrente', '').strip()
 
     if not referencia_digitada:
         flash('Por favor, digite uma referência.', 'error')
-        return redirect(url_for('controle.controle_lista', filter_mode='pendentes'))
+        return redirect(origem) # Volta para a origem
 
     match = re.match(r'^\s*(\d{1,2})\s*(?:[/-]\s*(\d{4}))?\s*$', referencia_digitada)
     if not match:
         flash(f"Formato de referência '{referencia_digitada}' inválido. Use MM/AAAA ou apenas MM.", 'error')
-        return redirect(url_for('controle.controle_lista', filter_mode='pendentes'))
+        return redirect(origem) # Volta para a origem
 
     mes_num = int(match.group(1))
     ano_num = int(match.group(2)) if match.group(2) else datetime.now().year
@@ -221,15 +261,18 @@ def novo_controle_recorrente():
     if skipped_count > 0: flash(f'{skipped_count} registro(s) foram ignorados pois já existiam para essa referência.', 'info')
     if not created_count and not skipped_count: flash("Nenhum item recorrente (mensal/bimestral) encontrado nos seus instrumentos vigentes.", 'warning')
 
-    return redirect(url_for('controle.controle_lista', filter_mode='pendentes'))
+    return redirect(origem) # Volta para a origem
 
 @controle_bp.route('/detalhes/<string:controle_id>', methods=['GET', 'POST'])
 @login_required
 def detalhes_controle(controle_id):
+    # 1. Captura a origem da URL ou do formulário POST
+    origem = request.args.get('origem') or request.form.get('origem')
+
     controle = controle_collection.find_one({'_id': ObjectId(controle_id), 'user_id': ObjectId(current_user.id)})
     if not controle:
         flash('Registro de Controle não encontrado ou não pertence a você.', 'error')
-        return redirect(url_for('controle.controle_lista', filter_mode='pendentes'))
+        return redirect(origem or url_for('controle.controle_lista', filter_mode='todas'))
 
     if request.method == 'POST':
         item_id_str = request.form.get('item_id')
@@ -242,7 +285,7 @@ def detalhes_controle(controle_id):
             return render_template(
                 'form_controle.html', controle=request.form,
                 itens_for_js=json.dumps(itens_for_js), situacoes=situacoes,
-                current_item_id=item_id_str, novo=False
+                current_item_id=item_id_str, novo=False, origem=origem # <<< Envia a origem em caso de erro
             )
         
         item_selecionado = itens_collection.find_one({'_id': ObjectId(item_id_str), 'user_id': ObjectId(current_user.id)})
@@ -265,13 +308,16 @@ def detalhes_controle(controle_id):
             {'$set': update_data}
         )
         flash('Registro de Controle atualizado com sucesso!', 'success')
-        return redirect(url_for('controle.detalhes_controle', controle_id=controle_id))
+        
+        # 2. Mantém a origem na URL ao recarregar a página após salvar!
+        return redirect(url_for('controle.detalhes_controle', controle_id=controle_id, origem=origem))
 
     itens_for_js = get_itens_para_dropdown_js()
     situacoes = get_situacoes_para_dropdown()
     current_item_id_str = str(controle.get('item_id', ''))
 
-    return render_template('form_controle.html', controle=controle, itens_for_js=json.dumps(itens_for_js), situacoes=situacoes, current_item_id=current_item_id_str, novo=False)
+    # 3. Envia a variável origem para o HTML
+    return render_template('form_controle.html', controle=controle, itens_for_js=json.dumps(itens_for_js), situacoes=situacoes, current_item_id=current_item_id_str, novo=False, origem=origem)
 
 @controle_bp.route('/excluir/<string:controle_id>', methods=['POST'])
 @login_required
@@ -283,22 +329,20 @@ def excluir_controle(controle_id):
         flash('Erro ao excluir ou registro não encontrado.', 'error')
     # Linha corrigida: lê a origem diretamente do formulário
     origem = request.form.get('origem')
-    return redirect(origem or url_for('.controle_lista', filter_mode='pendentes'))
+    return redirect(origem or url_for('.controle_lista', filter_mode='todas'))
 
 # A rota /exportar/... fica logicamente agrupada aqui, resultando na URL /controle/exportar/...
 @controle_bp.route('/exportar/<string:filter_mode>')
 @login_required
 def exportar_csv(filter_mode):
     situacoes_arquivadoras = get_situacoes_que_arquivam()
-    if filter_mode == 'pendentes':
+    if filter_mode in ['todas', 'por_instrumento']: # <<< MODIFICADO AQUI
         query_filter = {'situacao': {'$nin': situacoes_arquivadoras}}
     elif filter_mode == 'concluidas':
         query_filter = {'situacao': {'$in': situacoes_arquivadoras}}
     else:
         flash("Modo de filtro inválido para exportação.", "error")
-        # PONTO DE ATENÇÃO: Redireciona para a rota 'index' no blueprint 'core'
         return redirect(url_for('core.index'))
-
     registros = get_controle_data(query_filter)
 
     colunas = {
@@ -388,7 +432,7 @@ def criar_controle_rapido():
         flash('Novo registro de controle criado com sucesso!', 'success')
         return {
             'status': 'success', 'message': 'Registro criado!',
-            'redirect_url': url_for('controle.controle_lista', filter_mode='pendentes')
+            'redirect_url': url_for('controle.controle_lista', filter_mode='todas')
         }
 
     except Exception as e:

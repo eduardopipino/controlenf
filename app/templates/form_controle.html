@@ -3,7 +3,7 @@
 {% block content %}
     <h2>{{ 'Novo Registro de Controle' if novo else 'Controle Detalhado' }}</h2>
     <form id="formControle" method="POST">
-        <input type="hidden" name="origem" value="{{ request.args.get('origem', '') }}">
+        <input type="hidden" name="origem" value="{{ origem or '' }}">
         <div>
             <label for="item_id">Item do Instrumento Contratual: *</label>
             <select id="item_id" name="item_id" required>
@@ -67,13 +67,13 @@
                 </div>
              {% else %}
                 <button type="submit" id="btnSalvarNovo">Salvar</button>
-                <a href="{{ url_for('controle.controle_lista', filter_mode='pendentes') }}" class="button" id="btnCancelarNovo">Cancelar</a>
+                <a href="{{ origem if origem else url_for('controle.controle_lista', filter_mode='todas') }}" class="button" id="btnCancelarNovo">Cancelar</a>
              {% endif %}
         </div>
     </form>
     {% if not novo %}
     <form id="formExcluirControle" method="POST" action="{{ url_for('controle.excluir_controle', controle_id=controle._id) }}" style="display: none;">
-        <input type="hidden" name="origem" value="{{ request.args.get('origem', '') }}">
+        <input type="hidden" name="origem" value="{{ origem or '' }}">
     </form>
     {% endif %}
 
@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
             chk.disabled = false;
         });
 
-            const btnCancelarNovo = document.getElementById('btnCancelarNovo');
+        const btnCancelarNovo = document.getElementById('btnCancelarNovo');
         if (btnCancelarNovo) {
             btnCancelarNovo.addEventListener('click', function(event) {
                 event.preventDefault(); // Impede a navegação imediata
@@ -262,8 +262,14 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 // Se estiver em modo "Fechar", busca a URL de origem e volta para ela
                 const urlOrigem = document.querySelector('input[name="origem"]').value;
-                // Se houver uma URL de origem, usa-a. Senão, volta para a lista padrão.
-                window.location.href = urlOrigem || "{{ url_for('controle.controle_lista', filter_mode='pendentes') }}";
+                
+                // Decodifica possíveis entidades HTML da URL para garantir que os parâmetros não quebrem
+                const divDecodificadora = document.createElement('div');
+                divDecodificadora.innerHTML = urlOrigem;
+                const origemDecodificada = divDecodificadora.textContent;
+                
+                // Se houver uma URL de origem válida, volta pra lá. Senão, volta para a lista padrão (todas).
+                window.location.href = origemDecodificada || "{{ url_for('controle.controle_lista', filter_mode='todas') }}";
             }
         });
 
