@@ -15,6 +15,7 @@
         </div>
 
         <div class="toolbar-group-right">
+            <input type="search" id="buscaRapidaInput" placeholder="Buscar registros... (ESC para limpar)">
             <button onclick="location.href='{{ url_for('instrumentos.novo_instrumento_contratual') }}'">Novo</button>
         </div>
     </div>
@@ -31,9 +32,16 @@
             </div>
         </div>
     </div>
-
     
     <br>
+
+    <div class="mobile-search-bar hide-on-desktop">
+        <input type="search" id="buscaRapidaInputMobile" placeholder="Buscar registros...">
+    </div>
+
+    <p id="tabela-instrumentos-sem-resultados-msg" class="kanban-empty-msg" style="display: none;">
+        Nenhum resultado encontrado para a busca.
+    </p>
 
     <table border="1" id="tabelaInstrumentos" class="responsive-card-table">
         <thead>
@@ -75,6 +83,8 @@
 {% endblock %}
 
 {% block page_scripts %}
+<script src="{{ url_for('static', filename='js/search_engine.js', v=datetime.now().timestamp()) }}"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // --- LÓGICA DE CLIQUE (DESKTOP E MOBILE) ---
@@ -97,6 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
     // --- LÓGICA DO MENU KEBAB (MOBILE) ---
     const kebabButton = document.getElementById('btnKebab');
     const kebabDropdown = document.querySelector('.kebab-menu-dropdown');
@@ -110,6 +121,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (kebabDropdown) kebabDropdown.style.display = 'none';
         });
     }
+
+    // --- INICIALIZAÇÃO DA BUSCA RÁPIDA ---
+    new SearchEngine({
+        viewMode: 'table', // Instrumentos utiliza apenas visualização em tabela padrão
+        tableId: 'tabelaInstrumentos',
+        tableRowsSelector: '#tabelaInstrumentos tbody tr.clickable-row',
+        tabelaSemResultadosId: 'tabela-instrumentos-sem-resultados-msg'
+    });
 });
 </script>
 {% endblock %}
