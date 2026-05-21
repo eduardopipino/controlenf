@@ -1,5 +1,10 @@
 [
   {
+    "versao": "2.8",
+    "data": "21/05/2026",
+    "descricao": "Melhorias no Controle de Instrumento Contratual. Ajustes de desempenho."
+  },
+  {
     "versao": "2.7",
     "data": "14/05/2026",
     "descricao": "Ajustes de desempenho."
