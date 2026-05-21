@@ -19,8 +19,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.status === 'success') window.location.reload();
-                    else alert('Erro ao salvar a preferência de visualização.');
+                    if (data.status === 'success') {
+                        // NOVO: Garante a troca visual forçando o parâmetro 'view' na URL
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('view', selectedView);
+                        window.location.href = url.toString();
+                    }
+                    else {
+                        alert('Erro ao salvar a preferência de visualização.');
+                    }
                 })
                 .catch(error => console.error('Erro ao salvar preferência:', error));
             }
