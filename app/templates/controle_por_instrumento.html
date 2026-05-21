@@ -43,7 +43,7 @@
             <p>Nenhum instrumento encontrado com estes filtros.</p>
         {% else %}
             {% for item in hub_dados %}
-                <details class="hub-accordion" data-search-content="{{ item.instrumento.contratada|lower }} {{ item.instrumento.objeto_resumido|lower }}">
+                <details id="acc-{{ item.instrumento.str_id }}" class="hub-accordion" data-instrumento-id="{{ item.instrumento.str_id }}" data-search-content="{{ item.instrumento.contratada|lower }} {{ item.instrumento.objeto_resumido|lower }}">
                     <summary class="hub-summary">
                         <div class="hub-summary-header">
                             <h3>
@@ -96,7 +96,7 @@
                                                     {% for col_id, col_nome in todas_as_colunas_pendencias %}
                                                         {% if col_id in colunas_visiveis_pendencias %}
                                                             <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
-                                                                <a href="{{ url_for(request.endpoint, **dict(request.args, status=filtro_status, sort_pend=col_id, order_pend='desc' if sort_pend == col_id and order_pend == 'asc' else 'asc' )) }}">
+                                                                <a href="{{ url_for(request.endpoint, **dict(request.args, status=filtro_status, sort_pend=col_id, order_pend='desc' if sort_pend == col_id and order_pend == 'asc' else 'asc' )) }}#acc-{{ item.instrumento.str_id }}">
                                                                     {{ col_nome }} {% if sort_pend == col_id %}{{ '▲' if order_pend == 'asc' else '▼' }}{% endif %}
                                                                 </a>
                                                             </th>
@@ -169,7 +169,7 @@
                                                     {% for col_id, col_nome in todas_as_colunas_controle %}
                                                         {% if col_id in colunas_visiveis_controle %}
                                                             <th class="{{ 'coluna-situacao' if col_id == 'situacao' else ('coluna-texto-longo' if col_id in ['objeto', 'item_descricao', 'documentacao', 'observacoes'] else '') }}">
-                                                                <a href="{{ url_for(request.endpoint, **dict(request.args, status=filtro_status, sort_nf=col_id, order_nf='desc' if sort_nf == col_id and order_nf == 'asc' else 'asc' )) }}">
+                                                                <a href="{{ url_for(request.endpoint, **dict(request.args, status=filtro_status, sort_nf=col_id, order_nf='desc' if sort_nf == col_id and order_nf == 'asc' else 'asc' )) }}#acc-{{ item.instrumento.str_id }}">
                                                                     {{ col_nome }} {% if sort_nf == col_id %}{{ '▲' if order_nf == 'asc' else '▼' }}{% endif %}
                                                                 </a>
                                                             </th>
@@ -322,19 +322,49 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // --- LÓGICA DE PRESERVAÇÃO DE ESTADO DOS ACORDEÕES ---
+    const accordions = document.querySelectorAll('.hub-accordion');
+    const openAccordions = JSON.parse(sessionStorage.getItem('hubOpenAccordions') || '[]');
+    
+    accordions.forEach(acc => {
+        const accId = acc.dataset.instrumentoId;
+        
+        // 1. Restaura o estado ao carregar a página
+        if (openAccordions.includes(accId)) {
+            acc.open = true;
+        }
+        
+        // 2. Salva o estado sempre que o usuário abre ou fecha um manualmente
+        acc.addEventListener('toggle', function() {
+            let currentlyOpen = JSON.parse(sessionStorage.getItem('hubOpenAccordions') || '[]');
+            if (this.open) {
+                if (!currentlyOpen.includes(accId)) currentlyOpen.push(accId);
+            } else {
+                currentlyOpen = currentlyOpen.filter(id => id !== accId);
+            }
+            sessionStorage.setItem('hubOpenAccordions', JSON.stringify(currentlyOpen));
+        });
+    });
+
     // --- Lógica de Expandir/Recolher Todos os Acordeões ---
     document.querySelectorAll('.btnExpandirRecolher').forEach(btn => {
         let isAllExpanded = false;
         btn.addEventListener('click', function() {
             isAllExpanded = !isAllExpanded;
+            let currentlyOpen = []; // Lista para atualizar a memória
             
             document.querySelectorAll('.hub-accordion').forEach(acc => {
-                if (acc.style.display !== 'none') acc.open = isAllExpanded;
+                if (acc.style.display !== 'none') {
+                    acc.open = isAllExpanded;
+                    if (isAllExpanded) currentlyOpen.push(acc.dataset.instrumentoId);
+                }
             });
+            
+            // Salva a decisão global na memória
+            sessionStorage.setItem('hubOpenAccordions', JSON.stringify(currentlyOpen));
             
             document.querySelectorAll('.btnExpandirRecolher').forEach(b => {
                 b.textContent = isAllExpanded ? 'Recolher Todos' : 'Expandir Todos';
-                // Adicionado classes de interação estilo '.button' para melhor visual
                 b.classList.toggle('filtro-ativo', isAllExpanded); 
             });
         });
