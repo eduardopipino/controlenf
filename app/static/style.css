@@ -3769,3 +3769,32 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
 .tabela-pendencias-shared td.editable-cell > span.card-value { cursor: pointer; display: block; min-height: 1em; }
 .tabela-pendencias-shared td.td-feedback-flash { transition: background-color 0.3s ease-in-out; }
 .tabela-pendencias-shared tr.clickable-row { cursor: default; }
+
+/* ==========================================================================
+   AJUSTE DE ALTURA E ESPAÇAMENTO DO KANBAN (HUB E GERAL)
+   ========================================================================== */
+
+/* Remove alturas mínimas gigantescas que forçam o buraco na tela */
+.kanban-view-container {
+    min-height: auto !important;
+    height: auto !important;
+}
+
+.kanban-board {
+    align-items: stretch !important; /* Garante que as colunas lado a lado tenham a mesma altura entre si */
+    margin-bottom: 0 !important;
+    min-height: auto !important;
+}
+
+.kanban-column {
+    height: auto !important;
+    min-height: auto !important;
+    margin-bottom: 10px; /* Dá um respiro antes da próxima seção (ex: Notas Fiscais) */
+}
+
+.kanban-cards {
+    /* 80px é o espaço exato para formar a "zona de soltar" do arrastar e soltar, sem criar buracos visuais */
+    min-height: 80px !important; 
+    height: max-content !important;
+    flex-grow: 1; /* Se a coluna do lado for muito alta, esta estica o fundo para acompanhar de forma harmoniosa */
+}
