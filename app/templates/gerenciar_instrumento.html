@@ -7,6 +7,7 @@
         <h3>Dados Gerais do Instrumento</h3>
         <form id="formInstrumento" method="POST" action="{{ url_for('instrumentos.gerenciar_instrumento', instrumento_id=instrumento._id) }}">
             <input type="hidden" name="update_instrumento" value="1">
+            <input type="hidden" name="origem" value="{{ origem or '' }}">
             <div>
                 <label>Nº do Instrumento Contratual:</label>
                 <input type="text" value="{{ instrumento.n_instrumento }}" readonly class="readonly-field">
@@ -147,16 +148,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     'As alterações não salvas serão perdidas. Deseja continuar?',
                     (confirmed) => {
                         if (confirmed) {
-                            // Se confirmado, recarrega a página para descartar as alterações.
-                            // Isso garante que o estado volte 100% ao original.
                             location.reload(true);
                         }
                     },
                     'Sim, Descartar'
                 );
             } else {
-                // Se o botão estiver no modo "Fechar" (visualização), simplesmente volta.
-                window.location.href = "{{ url_for('instrumentos.instrumentos_contratuais') }}";
+                // Se o botão estiver no modo "Fechar" (visualização), volta para a origem!
+                // Decodifica entidades HTML se houver
+                const divDecodificadora = document.createElement('div');
+                divDecodificadora.innerHTML = "{{ origem or '' }}";
+                const urlOrigem = divDecodificadora.textContent;
+                
+                if (urlOrigem) {
+                    window.location.href = urlOrigem; // <<< Volta para o Hub Central
+                } else {
+                    window.location.href = "{{ url_for('instrumentos.instrumentos_contratuais') }}"; // <<< Comportamento padrão
+                }
             }
         });
 

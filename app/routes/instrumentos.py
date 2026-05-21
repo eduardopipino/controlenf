@@ -89,10 +89,13 @@ def novo_instrumento_contratual():
 @instrumentos_bp.route('/instrumentos_contratuais/gerenciar/<string:instrumento_id>', methods=['GET', 'POST'])
 @login_required
 def gerenciar_instrumento(instrumento_id):
+    # 1. Captura a origem da URL ou do formulário
+    origem = request.args.get('origem') or request.form.get('origem')
+
     instrumento = instrumentos_collection.find_one({'_id': ObjectId(instrumento_id), 'user_id': ObjectId(current_user.id)})
     if not instrumento:
         flash('Instrumento Contratual não encontrado.', 'error')
-        return redirect(url_for('instrumentos.instrumentos_contratuais'))
+        return redirect(origem or url_for('instrumentos.instrumentos_contratuais'))
 
     if request.method == 'POST' and 'update_instrumento' in request.form:
         instrumentos_collection.update_one(
@@ -104,12 +107,13 @@ def gerenciar_instrumento(instrumento_id):
             }}
         )
         flash('Instrumento Contratual atualizado com sucesso!', 'success')
-        return redirect(url_for('instrumentos.gerenciar_instrumento', instrumento_id=instrumento_id))
+        # 2. Mantém a origem na URL ao recarregar a página após salvar
+        return redirect(url_for('instrumentos.gerenciar_instrumento', instrumento_id=instrumento_id, origem=origem))
 
     itens = list(itens_collection.find({'instrumento_id': ObjectId(instrumento_id), 'user_id': ObjectId(current_user.id)}))
     
-    return render_template('gerenciar_instrumento.html', instrumento=instrumento, itens=itens)
-
+    # 3. Passa a origem para o template HTML
+    return render_template('gerenciar_instrumento.html', instrumento=instrumento, itens=itens, origem=origem)
 
 @instrumentos_bp.route('/instrumentos_contratuais/excluir/<string:instrumento_id>', methods=['POST'])
 @login_required
