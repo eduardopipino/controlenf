@@ -92,7 +92,7 @@
                                             <thead>
                                                 <tr>
                                                     <th class="hide-on-mobile"></th> 
-                                                    <th class="hide-on-mobile">!</th>
+                                                    <th class="hide-on-mobile"></th>
                                                     {% for col_id, col_nome in todas_as_colunas_pendencias %}
                                                         {% if col_id in colunas_visiveis_pendencias %}
                                                             <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
@@ -103,7 +103,7 @@
                                                         {% endif %}
                                                     {% endfor %}
                                                     <th class="hide-on-mobile th-icon-col" title="Concluir Pendência">
-                                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+                                                        {#<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>#}
                                                     </th>
                                                     <th></th>
                                                 </tr>
