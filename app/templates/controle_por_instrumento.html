@@ -52,7 +52,7 @@
                                     <span style="font-style: italic; font-weight: normal; opacity: 0.7; font-size: 0.85em; margin-left: 8px;">(extinto)</span>
                                 {% endif %}
                             </h3>
-                            <a href="{{ url_for('instrumentos.gerenciar_instrumento', instrumento_id=item.instrumento._id, origem=request.full_path) }}" class="btn-manage-link" title="Gerenciar Instrumento">⚙️</a>
+                            <a href="{{ url_for('instrumentos.gerenciar_instrumento', instrumento_id=item.instrumento._id, origem=request.full_path) }}" class="btn-manage-link" title="Gerenciar Instrumento Contratual">⚙️</a>
                         </div>
                         <div class="hub-summary-badges">
                             <span class="hub-badge badge-status {{ 'vigente' if item.instrumento.vigente else 'extinto' }}">{{ item.instrumento.status_texto }}</span>

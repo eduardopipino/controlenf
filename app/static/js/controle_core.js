@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function criarLinhaDocumento(valor, isChecked, isExtra) {
         const div = document.createElement('div');
         div.className = 'doc-inline-row';
-        const extra = isExtra ? 'style="font-style: italic; color: var(--primary-color);"' : '';
+        const extra = isExtra ? 'style="font-style: italic;"' : '';
         div.innerHTML = `<label class="doc-inline-label"><input type="checkbox" name="doc_inline_pref" value="${valor}" ${isChecked ? 'checked' : ''}> <span ${extra}>${valor}${isExtra ? ' (Extra)' : ''}</span></label>
         <svg class="btn-remove-doc" viewBox="0 0 24 24" width="18px" fill="currentColor" style="cursor: pointer;"><path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zM18 7H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z"/></svg>`;
         return div;
