@@ -1,33 +1,36 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Controle de Notas Fiscais 
-        {% if filter_mode == 'todas' %}- Todas
-        {% elif filter_mode == 'por_instrumento' %}- Pendentes - Por instrumento contratual
-        {% elif filter_mode == 'concluidas' %}- Concluídas
-        {% endif %}
-    </h2>
     
-    <div class="button-toolbar desktop-actions">
-        <div class="toolbar-group-left">
-            <button id="btnFiltro" class="{{ 'filtro-ativo' if filtro_ativo else '' }}">Filtro...</button>
-            <button id="btnColorCode">Identificar por cores</button>
-            {% if view_mode == 'table' %}
-                <button id="btnConfigurarColunas">Configurar colunas</button>
-            {% else %}
-                <button id="btnConfigurarCampos">Configurar campos</button>
+    <div class="page-header-sticky">
+        <h2>Controle de Notas Fiscais 
+            {% if filter_mode == 'todas' %}- Todas
+            {% elif filter_mode == 'por_instrumento' %}- Pendentes - Por instrumento contratual
+            {% elif filter_mode == 'concluidas' %}- Concluídas
             {% endif %}
-        </div>
+        </h2>
         
-        <div class="toolbar-group-center">
-            {% set view_endpoint = url_for('core.set_view_preference') %}
-            {% include 'partials/_view_selector.html' %}
-        </div>
-                
-        <div class="toolbar-group-right">
-            <input type="search" id="buscaRapidaInput" placeholder="Buscar em todos os campos... (ESC para limpar)">
-            <button onclick="location.href='{{ url_for('controle.novo_controle', origem=request.full_path) }}'">Novo</button>
-            <button id="btnNovoRecorrente" onclick="location.href='{{ url_for('controle.novo_controle_recorrente', origem=request.full_path) }}'">Novo - Recorrente</button>
+        <div class="button-toolbar desktop-actions">
+            <div class="toolbar-group-left">
+                <button id="btnFiltro" class="{{ 'filtro-ativo' if filtro_ativo else '' }}">Filtro...</button>
+                <button id="btnColorCode">Identificar por cores</button>
+                {% if view_mode == 'table' %}
+                    <button id="btnConfigurarColunas">Configurar colunas</button>
+                {% else %}
+                    <button id="btnConfigurarCampos">Configurar campos</button>
+                {% endif %}
+            </div>
+            
+            <div class="toolbar-group-center">
+                {% set view_endpoint = url_for('core.set_view_preference') %}
+                {% include 'partials/_view_selector.html' %}
+            </div>
+                    
+            <div class="toolbar-group-right">
+                <input type="search" id="buscaRapidaInput" placeholder="Buscar em todos os campos... (ESC para limpar)">
+                <button onclick="location.href='{{ url_for('controle.novo_controle', origem=request.full_path) }}'">Novo</button>
+                <button id="btnNovoRecorrente" onclick="location.href='{{ url_for('controle.novo_controle_recorrente', origem=request.full_path) }}'">Novo - Recorrente</button>
+            </div>
         </div>
     </div>
     

@@ -3824,3 +3824,34 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
     transform: scale(1.1); 
     background-color: var(--secondary-color); 
 }
+
+/* ==========================================================================
+   CABEÇALHOS FIXOS (STICKY) PARA MANTER FERRAMENTAS VISÍVEIS NA ROLAGEM
+   ========================================================================== */
+.page-header-sticky {
+    position: sticky;
+    top: calc(var(--height-nav) - 1px); /* Cola perfeitamente logo abaixo da Navbar */
+    background-color: var(--background-secondary); /* Esconde o conteúdo que rola por baixo */
+    z-index: 900; /* Fica acima da tabela, mas abaixo de modais e navbars */
+    
+    /* Expande o bloco para cobrir o padding lateral e superior do container principal */
+    margin-top: -20px;
+    padding-top: 20px;
+    margin-left: -20px;
+    padding-left: 20px;
+    margin-right: -20px;
+    padding-right: 20px;
+    
+    /* Linha divisória charmosa para separar a área estática da área rolável */
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    
+    transition: background-color 0.3s ease;
+}
+
+/* O SEGREDO MÁGICO: Se o container pai tiver "overflow-x: auto", o navegador não 
+   deixa o sticky colar na janela. Forçando visible, destravamos a colagem perfeita! */
+.container:has(.page-header-sticky) {
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+}

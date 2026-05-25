@@ -1,25 +1,28 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Pendências - {% if page_mode == 'concluidas' %}Concluídas{% elif page_mode == 'diversas' %}Diversas{% elif page_mode == 'por_instrumento' %}Por Instrumento Contratual{% else %}Todas{% endif %}</h2>
+    
+    <div class="page-header-sticky">
+        <h2>Pendências - {% if page_mode == 'concluidas' %}Concluídas{% elif page_mode == 'diversas' %}Diversas{% elif page_mode == 'por_instrumento' %}Por Instrumento Contratual{% else %}Todas{% endif %}</h2>
 
-    <div class="button-toolbar desktop-actions">
-        <div class="toolbar-group-left">
-            <button id="btnFiltro">Filtro...</button>
-            <button id="btnColorCode">Identificar por cores</button>
-            {% if view_mode == 'table' %}
-                <button id="btnConfigurarColunas">Configurar colunas</button>
-            {% else %}
-                <button id="btnConfigurarCampos">Configurar campos</button>
-            {% endif %}
-        </div>
-        <div class="toolbar-group-center">
-            {% set view_endpoint = url_for('core.set_view_preference_pendencias') %}
-            {% include 'partials/_view_selector.html' %}
-        </div>
-        <div class="toolbar-group-right">
-            <input type="search" id="buscaRapidaInput" placeholder="Buscar em todos os campos... (ESC para limpar)">
-            <a href="{{ url_for('pendencias.nova_pendencia', origem=request.full_path) }}" class="button">Novo</a>
+        <div class="button-toolbar desktop-actions">
+            <div class="toolbar-group-left">
+                <button id="btnFiltro">Filtro...</button>
+                <button id="btnColorCode">Identificar por cores</button>
+                {% if view_mode == 'table' %}
+                    <button id="btnConfigurarColunas">Configurar colunas</button>
+                {% else %}
+                    <button id="btnConfigurarCampos">Configurar campos</button>
+                {% endif %}
+            </div>
+            <div class="toolbar-group-center">
+                {% set view_endpoint = url_for('core.set_view_preference_pendencias') %}
+                {% include 'partials/_view_selector.html' %}
+            </div>
+            <div class="toolbar-group-right">
+                <input type="search" id="buscaRapidaInput" placeholder="Buscar em todos os campos... (ESC para limpar)">
+                <a href="{{ url_for('pendencias.nova_pendencia', origem=request.full_path) }}" class="button">Novo</a>
+            </div>
         </div>
     </div>
 

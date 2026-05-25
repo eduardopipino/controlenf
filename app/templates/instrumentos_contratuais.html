@@ -1,22 +1,25 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Instrumentos Contratuais</h2>
 
-    <div class="button-toolbar desktop-actions">
-        <div class="toolbar-group-left">
-            <button class="{{ 'filtro-ativo' if filtro_ativo == 'todos' else '' }}" onclick="location.href='{{ url_for('instrumentos.instrumentos_contratuais', filtro='todos') }}'">Todos</button>
-            <button class="{{ 'filtro-ativo' if filtro_ativo == 'vigentes' else '' }}" onclick="location.href='{{ url_for('instrumentos.instrumentos_contratuais', filtro='vigentes') }}'">Vigentes</button>
-            <button class="{{ 'filtro-ativo' if filtro_ativo == 'extintos' else '' }}" onclick="location.href='{{ url_for('instrumentos.instrumentos_contratuais', filtro='extintos') }}'">Extintos</button>
-        </div>
+    <div class="page-header-sticky">
+        <h2>Instrumentos Contratuais</h2>
 
-        <div class="toolbar-group-center">
-            
-        </div>
+        <div class="button-toolbar desktop-actions">
+            <div class="toolbar-group-left">
+                <button class="{{ 'filtro-ativo' if filtro_ativo == 'todos' else '' }}" onclick="location.href='{{ url_for('instrumentos.instrumentos_contratuais', filtro='todos') }}'">Todos</button>
+                <button class="{{ 'filtro-ativo' if filtro_ativo == 'vigentes' else '' }}" onclick="location.href='{{ url_for('instrumentos.instrumentos_contratuais', filtro='vigentes') }}'">Vigentes</button>
+                <button class="{{ 'filtro-ativo' if filtro_ativo == 'extintos' else '' }}" onclick="location.href='{{ url_for('instrumentos.instrumentos_contratuais', filtro='extintos') }}'">Extintos</button>
+            </div>
 
-        <div class="toolbar-group-right">
-            <input type="search" id="buscaRapidaInput" placeholder="Buscar registros... (ESC para limpar)">
-            <button onclick="location.href='{{ url_for('instrumentos.novo_instrumento_contratual') }}'">Novo</button>
+            <div class="toolbar-group-center">
+                
+            </div>
+
+            <div class="toolbar-group-right">
+                <input type="search" id="buscaRapidaInput" placeholder="Buscar registros... (ESC para limpar)">
+                <button onclick="location.href='{{ url_for('instrumentos.novo_instrumento_contratual') }}'">Novo</button>
+            </div>
         </div>
     </div>
 

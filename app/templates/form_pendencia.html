@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>{{ 'Nova Pendência' if novo else 'Detalhes da Pendência' }}</h2>
+
+    <div class="page-header-sticky">
+        <h2>{{ 'Nova Pendência' if novo else 'Detalhes da Pendência' }}</h2>
+    </div>
     
     <form id="formPendencia" method="POST">
         <input type="hidden" name="origem" value="{{ origem or request.referrer }}">

@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>{{ 'Novo Registro de Controle' if novo else 'Controle Detalhado' }}</h2>
+    <div class="page-header-sticky">
+        <h2>{{ 'Novo Registro de Controle' if novo else 'Controle Detalhado' }}</h2>
+    </div>
     <form id="formControle" method="POST">
         <input type="hidden" name="origem" value="{{ origem or '' }}">
         <div>
