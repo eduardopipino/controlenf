@@ -3855,3 +3855,27 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
     overflow-x: visible !important;
     overflow-y: visible !important;
 }
+
+/* ==========================================================================
+   PREVENÇÃO DE SELEÇÃO DE TEXTO NO DUPLO CLIQUE (EDIÇÃO INLINE)
+   ========================================================================== */
+
+/* Bloqueia a seleção de texto (fundo azul) nos campos que aceitam duplo clique */
+.editable-cell, 
+.editable-card-field {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Garante que o texto DENTRO do campo volte a ser selecionável assim que a caixa de edição abrir */
+.editable-cell input, 
+.editable-cell textarea, 
+.editable-card-field input, 
+.editable-card-field textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
