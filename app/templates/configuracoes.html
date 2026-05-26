@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Configurações de Aparência</h2>
-    <p>Ajuste as configurações visuais do sistema para sua preferência.</p>
+    <h2>Configurações do Sistema</h2>
+    <p>Ajuste as preferências da sua conta e do sistema.</p>
 
     <div class="container container-darker">
+        <h3>Aparência</h3>
         <form method="POST">
             <div>
                 <label for="font_size">Tamanho da Fonte</label>
@@ -15,14 +16,6 @@
                     <option value="extra_grande" {% if current_user.font_size_preference == 'extra_grande' %}selected{% endif %}>Extra Grande</option>
                 </select>
             </div>
-            <!--<div>
-                <label for="spacing">Densidade da Interface (Espaçamento)</label>
-                <select name="spacing" id="spacing">
-                    <option value="compacto" {% if current_user.spacing_preference == 'compacto' %}selected{% endif %}>Compacto</option>
-                    <option value="regular" {% if current_user.spacing_preference == 'regular' %}selected{% endif %}>Regular (Padrão)</option>
-                    <option value="espacado" {% if current_user.spacing_preference == 'espacado' %}selected{% endif %}>Espaçado</option>
-                </select>
-            </div>-->
             <br>
             <div class="button-toolbar">
                 <button type="submit">Salvar Alterações</button>
@@ -30,4 +23,79 @@
             </div>
         </form>
     </div>
+
+    <div class="container container-darker" style="margin-top: 25px;">
+        <h3>Segurança e Acesso</h3>
+        {#<p>Mantenha sua conta protegida. Recomendamos não utilizar senhas padronizadas.</p>#}
+        <div class="button-toolbar">
+            <button type="button" id="btnOpenPasswordModal">Alterar Senha de Acesso</button>
+        </div>
+    </div>
+
+    <div id="passwordModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Alterar Senha</h3>
+            <form method="POST" action="{{ url_for('auth.change_password') }}">
+                <div>
+                    <label for="current_password">Senha Atual:</label>
+                    <input type="password" id="current_password" name="current_password" placeholder="Digite sua senha atual" required>
+                </div>
+                <div>
+                    <label for="new_password">Nova Senha:</label>
+                    <input type="password" id="new_password" name="new_password" placeholder="Digite a nova senha" required>
+                </div>
+                <div>
+                    <label for="confirm_password">Confirmar Nova Senha:</label>
+                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Repita a nova senha" required>
+                </div>
+                
+                <div class="button-toolbar" style="margin-top: 25px;">
+                    <button type="submit">Salvar Nova Senha</button>
+                    <button type="button" class="btn-cancel-modal" id="btnCancelPasswordModal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Referências dos elementos do Modal
+    const passwordModal = document.getElementById('passwordModal');
+    const btnOpenModal = document.getElementById('btnOpenPasswordModal');
+    const btnCancelModal = document.getElementById('btnCancelPasswordModal');
+    const passwordInputs = passwordModal.querySelectorAll('input[type="password"]');
+
+    // Função para limpar os campos quando o modal é fechado
+    function clearPasswordInputs() {
+        passwordInputs.forEach(input => input.value = '');
+    }
+
+    // Abrir Modal
+    if (btnOpenModal) {
+        btnOpenModal.addEventListener('click', () => {
+            passwordModal.classList.add('active');
+            document.getElementById('current_password').focus();
+        });
+    }
+
+    // Fechar Modal (botão cancelar)
+    if (btnCancelModal) {
+        btnCancelModal.addEventListener('click', () => {
+            passwordModal.classList.remove('active');
+            clearPasswordInputs();
+        });
+    }
+
+    // Fechar Modal (clicando fora da caixa)
+    passwordModal.addEventListener('click', (e) => {
+        if (e.target === passwordModal) {
+            passwordModal.classList.remove('active');
+            clearPasswordInputs();
+        }
+    });
+});
+</script>
 {% endblock %}
