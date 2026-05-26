@@ -3879,3 +3879,38 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
     -ms-user-select: text;
     user-select: text;
 }
+
+/* ==========================================================================
+   OCULTAR ÍCONES DE AÇÃO E BOTÃO CONCLUIR NOS CARDS ATÉ O HOVER (CLEAN UI)
+   ========================================================================== */
+@media (min-width: 769px) {
+    /* 1. Esconde a lupa e a área do botão concluir por padrão */
+    .data-card .card-action-icon,
+    .data-card .coluna-concluir {
+        opacity: 0;
+        /* Transição suave idêntica para todos os elementos visuais */
+        transition: opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+    }
+    
+    /* 2. Esconde o ícone de prioridade APENAS se estiver inativo (cinza) */
+    .data-card .card-priority-toggle:not(.active) {
+        opacity: 0 !important;
+        transition: opacity 0.2s ease, color 0.2s ease;
+    }
+
+    /* 3. Ao passar o mouse em qualquer lugar do CARD, mostra todos os controles simultaneamente */
+    .data-card:hover .card-action-icon,
+    .data-card:hover .coluna-concluir {
+        opacity: 1;
+    }
+
+    .data-card:hover .card-priority-toggle:not(.active) {
+        opacity: 0.6 !important; /* Restaura a opacidade suave original do cinza */
+    }
+    
+    /* 4. Garante que o hover DIRETO no ícone de prioridade inativo brilhe 100% */
+    .data-card:hover .card-priority-toggle:not(.active):hover {
+        opacity: 1 !important;
+        color: #e74c3c !important; /* Amarelo de destaque no hover */
+    }
+}
