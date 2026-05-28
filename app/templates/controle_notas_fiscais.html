@@ -29,7 +29,7 @@
             <div class="toolbar-group-right">
                 <input type="search" id="buscaRapidaInput" placeholder="Buscar em todos os campos... (ESC para limpar)">
                 <button onclick="location.href='{{ url_for('controle.novo_controle', origem=request.full_path) }}'">Novo</button>
-                <button id="btnNovoRecorrente" onclick="location.href='{{ url_for('controle.novo_controle_recorrente', origem=request.full_path) }}'">Novo - Recorrente</button>
+                <button type="button" id="btnNovoRecorrente">Novo - Recorrente</button>
             </div>
         </div>
     </div>
@@ -43,7 +43,7 @@
                 <a href="#" id="btnFiltroMobile">Filtrar...</a>
                 <a href="#" id="btnConfigurarColunasMobile">Configurar Colunas</a>
                 <a href="#" id="btnColorCodeMobile">Identificar por Cores</a>
-                <a href="#" id="btnNovoRecorrenteMobile">Novo - Recorrente</a>
+                <button type="button" class="view-btn-mock" id="btnNovoRecorrenteMobile" style="border:none; text-align: left; padding: 12px 20px; font-size: 14px; background: transparent; color: inherit; width: 100%; cursor: pointer;">Novo - Recorrente</button>
             </div>
         </div>
     </div>
@@ -294,8 +294,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('btnFiltro')?.addEventListener('click', () => filterModal.classList.add('active'));
     document.getElementById('btnFiltroMobile')?.addEventListener('click', () => filterModal.classList.add('active'));
-    document.getElementById('btnNovoRecorrente')?.addEventListener('click', () => recorrenteModal.classList.add('active'));
-    document.getElementById('btnNovoRecorrenteMobile')?.addEventListener('click', () => recorrenteModal.classList.add('active'));
+    document.getElementById('btnNovoRecorrente')?.addEventListener('click', (e) => { 
+        e.preventDefault(); 
+        recorrenteModal.classList.add('active'); 
+    });
+    document.getElementById('btnNovoRecorrenteMobile')?.addEventListener('click', (e) => { 
+        e.preventDefault(); 
+        recorrenteModal.classList.add('active'); 
+    });
     document.getElementById('btnConfigurarColunas')?.addEventListener('click', () => configColunasModal.classList.add('active'));
     document.getElementById('btnConfigurarColunasMobile')?.addEventListener('click', () => configColunasModal.classList.add('active'));
 
