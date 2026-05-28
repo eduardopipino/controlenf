@@ -1,5 +1,10 @@
 [
   {
+    "versao": "2.9",
+    "data": "28/05/2026",
+    "descricao": "Melhorias visuais. Nova função de redefinição de senha."
+  },
+  {
     "versao": "2.8",
     "data": "21/05/2026",
     "descricao": "Melhorias no Controle de Instrumento Contratual. Ajustes de desempenho."
