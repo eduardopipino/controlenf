@@ -3937,3 +3937,46 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
     border-left: 3px solid var(--primary-color);
     padding-left: 5px;
 }
+
+/* ==========================================================================
+   MOTOR DE MENSAGENS FLUTUANTES (TOOLTIPS DE ATALHOS)
+   ========================================================================== */
+[data-shortcut-hint] {
+    position: relative;
+}
+
+[data-shortcut-hint]::after {
+    content: "Atalho: " attr(data-shortcut-hint);
+    position: absolute;
+    bottom: -32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-2px);
+    background-color: #000000;
+    border: 1px solid #454a54;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+[data-shortcut-hint]:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Ajuste lateral para o botão "Novo" não cortar na tela */
+.hint-left[data-shortcut-hint]::after {
+    left: auto;
+    right: 0;
+    transform: translateX(0) translateY(-2px);
+}
+.hint-left[data-shortcut-hint]:hover::after {
+    transform: translateX(0) translateY(0);
+}

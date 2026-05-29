@@ -12,24 +12,26 @@
         
         <div class="button-toolbar desktop-actions">
             <div class="toolbar-group-left">
-                <button id="btnFiltro" class="{{ 'filtro-ativo' if filtro_ativo else '' }}">Filtro...</button>
-                <button id="btnColorCode">Identificar por cores</button>
+                <button id="btnFiltro" data-shortcut-hint="Alt + F" class="{{ 'filtro-ativo' if filtro_ativo else '' }}">Filtro...</button>
+                <button id="btnColorCode" data-shortcut-hint="Alt + I">Identificar por cores</button>
                 {% if view_mode == 'table' %}
-                    <button id="btnConfigurarColunas">Configurar colunas</button>
+                    <button id="btnConfigurarColunas" data-shortcut-hint="Alt + O">Configurar colunas</button>
                 {% else %}
-                    <button id="btnConfigurarCampos">Configurar campos</button>
+                    <button id="btnConfigurarCampos" data-shortcut-hint="Alt + O">Configurar campos</button>
                 {% endif %}
             </div>
             
             <div class="toolbar-group-center">
                 {% set view_endpoint = url_for('core.set_view_preference') %}
-                {% include 'partials/_view_selector.html' %}
-            </div>
+                {% include 'partials/_view_selector.html' %} 
+                </div>
                     
             <div class="toolbar-group-right">
-                <input type="search" id="buscaRapidaInput" placeholder="Buscar em todos os campos... (ESC para limpar)">
-                <button id="btnNovo" onclick="location.href='{{ url_for('controle.novo_controle', origem=request.full_path) }}'">Novo</button>
-                <button type="button" id="btnNovoRecorrente">Novo - Recorrente</button>
+                <div style="position: relative; display: inline-block; width: 280px;" data-shortcut-hint="Alt + B">
+                    <input type="search" id="buscaRapidaInput" placeholder="Buscar em todos os campos... (ESC para limpar)" style="width: 100%;">
+                </div>
+                <button type="button" id="btnNovo" data-shortcut-hint="Alt + N" class="hint-left">Novo</button>
+                <button type="button" id="btnNovoRecorrente" data-shortcut-hint="Alt + R" class="hint-left">Novo - Recorrente</button>
             </div>
         </div>
     </div>
@@ -192,7 +194,7 @@
                         <button type="button" class="btn-cancel-modal">Cancelar</button>
                     </div>
                     <div class="toolbar-group-right">
-                        <button id="btnNovo" type="button" class="button" onclick="window.location.href='{{ url_for('controle.controle_lista', filter_mode=filter_mode) }}'">Limpar Filtro</button>
+                        <button id="btnLimparFiltro" type="button" class="button" onclick="window.location.href='{{ url_for('controle.controle_lista', filter_mode=filter_mode) }}'">Limpar Filtro</button>
                     </div>
                 </div>
             </form>
@@ -277,41 +279,49 @@
         colorCodingIsActive: {{ color_coding_active | tojson }},
         arquivadores: {{ arquivadores_json | default("[]") | safe }},
         viewMode: "{{ view_mode }}",
-        atalhosAtivos: {{ current_user.atalhos_ativos | lower }} // <<< NOVO
+        atalhosAtivos: {{ 'true' if current_user.atalhos_ativos else 'false' }} // Blindagem contra valores nulos
     };
 </script>
 
 <script src="{{ url_for('static', filename='js/ui_components.js', v=datetime.now().timestamp()) }}"></script>
 <script src="{{ url_for('static', filename='js/search_engine.js', v=datetime.now().timestamp()) }}"></script>
 <script src="{{ url_for('static', filename='js/controle_core.js', v=datetime.now().timestamp()) }}"></script>
-<script src="{{ url_for('static', filename='js/navegacao_espacial.js', v=datetime.now().timestamp()) }}"></script> <script>
+<script src="{{ url_for('static', filename='js/navegacao_espacial.js', v=datetime.now().timestamp()) }}"></script>
+
+<script>
 document.addEventListener('DOMContentLoaded', function() {
     
-    // --- LÓGICA PARA ABERTURA DE MODAIS ESPECÍFICOS DESTA PÁGINA ---
+    // --- GERENCIAMENTO DE ABERTURA DE MODAIS ---
     const filterModal = document.getElementById('filterModal');
     const recorrenteModal = document.getElementById('recorrenteModal');
     const configColunasModal = document.getElementById('configColunasModal');
+    const configCamposModal = document.getElementById('configCamposModal');
 
-    // Foco automático nos inputs ao abrir modais
     function focusFirstInput(modalElement) {
+        if (!modalElement) return;
         setTimeout(() => { const i = modalElement.querySelector('input'); if(i) i.focus(); }, 100);
     }
 
-    document.getElementById('btnFiltro')?.addEventListener('click', () => { filterModal.classList.add('active'); focusFirstInput(filterModal); });
-    document.getElementById('btnFiltroMobile')?.addEventListener('click', () => { filterModal.classList.add('active'); focusFirstInput(filterModal); });
+    document.getElementById('btnFiltro')?.addEventListener('click', () => { filterModal?.classList.add('active'); focusFirstInput(filterModal); });
+    document.getElementById('btnFiltroMobile')?.addEventListener('click', () => { filterModal?.classList.add('active'); focusFirstInput(filterModal); });
     
-    document.getElementById('btnNovoRecorrente')?.addEventListener('click', (e) => { e.preventDefault(); recorrenteModal.classList.add('active'); focusFirstInput(recorrenteModal); });
-    document.getElementById('btnNovoRecorrenteMobile')?.addEventListener('click', (e) => { e.preventDefault(); recorrenteModal.classList.add('active'); focusFirstInput(recorrenteModal); });
+    document.getElementById('btnNovoRecorrente')?.addEventListener('click', (e) => { e.preventDefault(); recorrenteModal?.classList.add('active'); focusFirstInput(recorrenteModal); });
+    document.getElementById('btnNovoRecorrenteMobile')?.addEventListener('click', (e) => { e.preventDefault(); recorrenteModal?.classList.add('active'); focusFirstInput(recorrenteModal); });
     
-    document.getElementById('btnConfigurarColunas')?.addEventListener('click', () => configColunasModal.classList.add('active'));
-    document.getElementById('btnConfigurarColunasMobile')?.addEventListener('click', () => configColunasModal.classList.add('active'));
+    document.getElementById('btnConfigurarColunas')?.addEventListener('click', () => configColunasModal?.classList.add('active'));
+    document.getElementById('btnConfigurarColunasMobile')?.addEventListener('click', () => configColunasModal?.classList.add('active'));
+    document.getElementById('btnConfigurarCampos')?.addEventListener('click', () => configCamposModal?.classList.add('active'));
+    document.getElementById('btnConfigurarCamposMobile')?.addEventListener('click', () => configCamposModal?.classList.add('active'));
 
-    // --- DICIONÁRIO DE ATALHOS DA PÁGINA (SIMPLES E LIMPO) ---
+    // --- DICIONÁRIO DE ATALHOS DA PÁGINA ---
     window.MEUS_ATALHOS = {
         'alt+f': 'btnFiltro',
         'alt+l': 'btnLimparFiltro',
         'alt+i': 'btnColorCode',
-        'alt+o': 'btnConfigurarColunas',
+        'alt+o': () => {
+            document.getElementById('btnConfigurarColunas')?.click();
+            document.getElementById('btnConfigurarCampos')?.click();
+        },
         'alt+t': () => document.querySelector('.view-button[data-view="table"]')?.click(),
         'alt+c': () => document.querySelector('.view-button[data-view="cards"]')?.click(),
         'alt+k': () => document.querySelector('.view-button[data-view="kanban"]')?.click(),
@@ -321,7 +331,6 @@ document.addEventListener('DOMContentLoaded', function() {
         'alt+x': () => document.getElementById('novoDocumentoExtra')?.focus()
     };
 
-    // ... (Mantenha o restante do seu script: Identificar por cores, config de colunas, search engine) ...
     // --- IDENTIFICAR POR CORES ---
     function handleToggleColor() {
         fetch("{{ url_for('core.toggle_color_coding') }}", { method: 'POST' })
@@ -331,52 +340,57 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('btnColorCodeMobile')?.addEventListener('click', handleToggleColor);
     if (window.APP_DATA.colorCodingIsActive) document.getElementById('btnColorCode')?.classList.add('filtro-ativo');
 
-    // --- CONFIGURAÇÃO DE COLUNAS E CAMPOS ---
-    const btnSalvarColunas = document.getElementById('btnSalvarColunas');
-    if (btnSalvarColunas) {
-        const colunasChecklist = document.getElementById('colunas-checklist');
-        const todasAsColunas = {{ todas_as_colunas | tojson | safe }};
-        const colunasVisiveis = {{ colunas_visiveis | tojson | safe }};
+    // --- POPULAR CHECKLIST DE COLUNAS (MODO TABELA) ---
+    const colunasChecklist = document.getElementById('colunas-checklist');
+    if (colunasChecklist) {
+        colunasChecklist.innerHTML = ''; // Limpa antes de renderizar
+        const todasAsColunas = {{ todas_as_colunas | default([]) | tojson | safe }};
+        const colunasVisiveis = {{ colunas_visiveis | default([]) | tojson | safe }};
+        
         todasAsColunas.forEach(coluna => {
             const [col_id, col_nome] = coluna;
             const isChecked = colunasVisiveis.includes(col_id);
             const div = document.createElement('div');
-            div.className = "modal-checklist-item"; // Usado para navegação via setas
+            div.className = "modal-checklist-item";
             div.innerHTML = `<label style="width:100%; cursor:pointer;"><input type="checkbox" value="${col_id}" ${isChecked ? 'checked' : ''}> ${col_nome}</label>`;
             colunasChecklist.appendChild(div);
         });
-        btnSalvarColunas.addEventListener('click', () => {
-            const selecionadas = Array.from(document.querySelectorAll('#colunas-checklist input:checked')).map(cb => cb.value);
-            fetch("{{ url_for('core.save_column_prefs') }}", {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ colunas: selecionadas })
-            }).then(r => r.json()).then(d => { if(d.status === 'success') location.reload(); });
-        });
     }
 
-    const btnSalvarCampos = document.getElementById('btnSalvarCampos');
-    if (btnSalvarCampos) {
-        const camposChecklist = document.getElementById('campos-checklist');
+    // --- LOGICA SALVAR COLUNAS ---
+    document.getElementById('btnSalvarColunas')?.addEventListener('click', () => {
+        const selecionadas = Array.from(document.querySelectorAll('#colunas-checklist input:checked')).map(cb => cb.value);
+        fetch("{{ url_for('core.save_column_prefs') }}", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ colunas: selecionadas })
+        }).then(r => r.json()).then(d => { if(d.status === 'success') location.reload(); });
+    });
+
+    // --- POPULAR CHECKLIST DE CAMPOS (MODO CARDS) ---
+    const camposChecklist = document.getElementById('campos-checklist');
+    if (camposChecklist) {
+        camposChecklist.innerHTML = ''; // Limpa antes de renderizar
         const todasAsColunasCards = {{ todas_as_colunas_cards | default([]) | tojson | safe }};
         const cardFieldsVisiveis = {{ card_fields_visiveis | default([]) | tojson | safe }};
-        if (todasAsColunasCards.length > 0 && camposChecklist) {
-            todasAsColunasCards.forEach(campo => {
-                const [field_id, field_name] = campo;
-                const isChecked = cardFieldsVisiveis.includes(field_id);
-                const div = document.createElement('div');
-                div.className = "modal-checklist-item"; // Usado para navegação via setas
-                div.innerHTML = `<label style="width:100%; cursor:pointer;"><input type="checkbox" value="${field_id}" ${isChecked ? 'checked' : ''}> ${field_name}</label>`;
-                camposChecklist.appendChild(div);
-            });
-        }
-        document.getElementById('btnConfigurarCampos')?.addEventListener('click', () => document.getElementById('configCamposModal').classList.add('active'));
-        btnSalvarCampos.addEventListener('click', () => {
-            const selecionados = Array.from(document.querySelectorAll('#campos-checklist input:checked')).map(cb => cb.value);
-            fetch("{{ url_for('core.save_card_prefs') }}", {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ campos: selecionados })
-            }).then(r => r.json()).then(d => { if(d.status === 'success') location.reload(); });
+        
+        todasAsColunasCards.forEach(campo => {
+            const [field_id, field_name] = campo;
+            const isChecked = cardFieldsVisiveis.includes(field_id);
+            const div = document.createElement('div');
+            div.className = "modal-checklist-item";
+            div.innerHTML = `<label style="width:100%; cursor:pointer;"><input type="checkbox" value="${field_id}" ${isChecked ? 'checked' : ''}> ${field_name}</label>`;
+            camposChecklist.appendChild(div);
         });
     }
 
+    // --- LOGICA SALVAR CAMPOS ---
+    document.getElementById('btnSalvarCampos')?.addEventListener('click', () => {
+        const selecionados = Array.from(document.querySelectorAll('#campos-checklist input:checked')).map(cb => cb.value);
+        fetch("{{ url_for('core.save_card_prefs') }}", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ campos: selecionados })
+        }).then(r => r.json()).then(d => { if(d.status === 'success') location.reload(); });
+    });
+
+    // --- INICIALIZAÇÃO DO MOTOR DE BUSCA ---
     new SearchEngine({ 
         viewMode: window.APP_DATA.viewMode,
         tableId: 'tabelaControle',
