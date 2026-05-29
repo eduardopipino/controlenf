@@ -1,5 +1,10 @@
 [
   {
+    "versao": "2.10",
+    "data": "xx/06/2026",
+    "descricao": "Implantação de atalhos."
+  },
+  {
     "versao": "2.9",
     "data": "28/05/2026",
     "descricao": "Melhorias visuais. Nova função de redefinição de senha."

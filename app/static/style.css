@@ -3914,3 +3914,26 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
         color: #e74c3c !important; /* Amarelo de destaque no hover */
     }
 }
+
+/* ==========================================================================
+   NAVEGAÇÃO ESPACIAL E FOCO DE TECLADO
+   ========================================================================== */
+.keyboard-focused-row {
+    outline: 2px solid var(--primary-color) !important;
+    outline-offset: -2px;
+    background-color: var(--hover-bg) !important;
+    box-shadow: 0 0 10px rgba(52, 152, 219, 0.5) !important;
+}
+
+.keyboard-focused-field {
+    outline: 2px dashed #e67e22 !important;
+    outline-offset: 2px;
+    border-radius: 4px;
+    background-color: rgba(230, 126, 34, 0.1);
+}
+
+.keyboard-focused-modal-item {
+    background-color: var(--secondary-color);
+    border-left: 3px solid var(--primary-color);
+    padding-left: 5px;
+}

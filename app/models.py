@@ -69,7 +69,9 @@ class User(UserMixin):
                  colunas_visiveis=None, colunas_visiveis_pendencias=None, 
                  font_size_preference=None, spacing_preference=None,
                  view_mode_controle=None, card_fields_controle=None,
-                 color_coding_controle=None, view_mode_pendencias=None, card_fields_pendencias=None,color_coding_pendencias=None):
+                 color_coding_controle=None, view_mode_pendencias=None,
+                 card_fields_pendencias=None,color_coding_pendencias=None,
+                 atalhos_ativos=None):
         self.username = username
         self.email = email
         self.password_hash = password_hash

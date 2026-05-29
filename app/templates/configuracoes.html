@@ -16,6 +16,13 @@
                     <option value="extra_grande" {% if current_user.font_size_preference == 'extra_grande' %}selected{% endif %}>Extra Grande</option>
                 </select>
             </div>
+            <div style="margin-top: 15px; border-top: 1px dashed var(--border-base); padding-top: 15px;">
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                    <input type="checkbox" name="atalhos_ativos" id="atalhos_ativos" {% if current_user.atalhos_ativos %}checked{% endif %}>
+                    <span style="margin-left: 8px;">Ativar Atalhos de Teclado (Navegação Avançada)</span>
+                </label>
+                <span class="form-help-text">Permite o uso da tecla "Alt + Letras" e navegação por setas nas tabelas.</span>
+            </div>
             <br>
             <div class="button-toolbar">
                 <button type="submit">Salvar Alterações</button>

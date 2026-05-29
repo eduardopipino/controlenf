@@ -119,11 +119,14 @@ def configuracoes():
         if spacing not in allowed_spacing:
             spacing = 'regular'
 
+        atalhos = 'atalhos_ativos' in request.form
+
         users_collection.update_one(
             {'_id': ObjectId(current_user.id)},
             {'$set': {
                 'font_size_preference': font_size,
-                'spacing_preference': spacing
+                'spacing_preference': spacing,
+                'atalhos_ativos': atalhos
             }}
         )
         flash('Configurações salvas com sucesso! Para que as alterações tenham efeito completo, por favor, faça login novamente.', 'success')
@@ -131,6 +134,7 @@ def configuracoes():
         # Atualiza o objeto do usuário na sessão atual para reflexo imediato
         current_user.font_size_preference = font_size
         current_user.spacing_preference = spacing
+        current_user.atalhos_ativos = atalhos
         
         # PONTO DE ATENÇÃO: Redireciona para a própria página de configurações.
         # Forçar um novo login pode ser uma experiência ruim para o usuário.
