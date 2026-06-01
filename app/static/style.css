@@ -3926,10 +3926,10 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
 }
 
 .keyboard-focused-field {
-    outline: 2px dashed #e67e22 !important;
+    outline: 2px solid var(--primary-color) !important; /* Linha sólida e azulada (cor primária do tema) */
     outline-offset: 2px;
     border-radius: 4px;
-    background-color: rgba(230, 126, 34, 0.1);
+    background-color: rgba(52, 152, 219, 0.15) !important; /* Fundo azul suave correspondente */
 }
 
 .keyboard-focused-modal-item {
