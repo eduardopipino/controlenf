@@ -27,11 +27,25 @@
                 </div>
                     
             <div class="toolbar-group-right">
-                <div style="position: relative; display: inline-block; width: 280px;" data-shortcut-hint="Alt + B">
-                    <input type="search" id="buscaRapidaInput" placeholder="Buscar em todos os campos... (ESC para limpar)" style="width: 100%;">
-                </div>
-                <button type="button" id="btnNovo" data-shortcut-hint="Alt + N" class="hint-left">Novo</button>
-                <button type="button" id="btnNovoRecorrente" data-shortcut-hint="Alt + R" class="hint-left">Novo - Recorrente</button>
+                <input type="search" id="buscaRapidaInput" 
+                       placeholder="Buscar em todos os campos... (ESC para limpar)" 
+                       title="Focar na Busca (Alt + B)"
+                       style="vertical-align: middle; margin-right: 8px;">
+                
+                <button type="button" id="btnNovo" 
+                        data-shortcut-hint="Alt + N" 
+                        class="hint-left" 
+                        style="vertical-align: middle; margin-right: 8px;"
+                        onclick="location.href='{{ url_for('controle.novo_controle', origem=request.full_path) }}'">
+                    Novo
+                </button>
+                
+                <button type="button" id="btnNovoRecorrente" 
+                        data-shortcut-hint="Alt + R" 
+                        class="hint-left" 
+                        style="vertical-align: middle;">
+                    Novo - Recorrente
+                </button>
             </div>
         </div>
     </div>
