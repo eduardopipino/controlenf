@@ -30,8 +30,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 modalAtivo.querySelector('.btn-cancel-modal')?.click();
                 return;
             }
-            if (e.key === 'Enter' && !isTextInput && !e.target.closest('.btn-remove-doc')) {
-                // Se não estiver dentro de um textarea, clica no botão principal de salvar
+            
+            // CORREÇÃO AQUI: O Enter salva o modal mesmo dentro do input (a menos que seja um Textarea para pular linha)
+            const isTextArea = e.target.tagName === 'TEXTAREA';
+            if (e.key === 'Enter' && !isTextArea && !e.target.closest('.btn-remove-doc')) {
                 e.preventDefault();
                 const saveBtn = modalAtivo.querySelector('button:not(.btn-cancel-modal):not(.btn-modal-add-extra)');
                 if (saveBtn) saveBtn.click();

@@ -88,6 +88,7 @@ class User(UserMixin):
         self.view_mode_pendencias = view_mode_pendencias or 'table'
         self.card_fields_pendencias = card_fields_pendencias or ['pendencia', 'responsavel', 'prazo']
         self.color_coding_pendencias = color_coding_pendencias or False
+        self.atalhos_ativos = atalhos_ativos if atalhos_ativos is not None else True
 
     def get_id(self):
         return self.id

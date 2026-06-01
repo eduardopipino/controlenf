@@ -35,7 +35,8 @@ def login():
                 color_coding_controle=user_data.get('color_coding_controle', False),
                 view_mode_pendencias=user_data.get('view_mode_pendencias'),
                 card_fields_pendencias=user_data.get('card_fields_pendencias'),
-                color_coding_pendencias=user_data.get('color_coding_pendencias', False)
+                color_coding_pendencias=user_data.get('color_coding_pendencias', False),
+                atalhos_ativos=user_data.get('atalhos_ativos', True)
             )
             login_user(user)
             flash('Login realizado com sucesso!', 'success')
