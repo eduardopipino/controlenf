@@ -299,7 +299,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function focusFirstInput(modalElement) {
         if (!modalElement) return;
-        setTimeout(() => { const i = modalElement.querySelector('input'); if(i) i.focus(); }, 100);
+        setTimeout(() => { 
+            // Procura o primeiro input, select ou textarea que NÃO seja do tipo hidden
+            const i = modalElement.querySelector('input:not([type="hidden"]), select, textarea'); 
+            if(i) i.focus(); 
+        }, 150); // Aumentei ligeiramente o tempo para 150ms para garantir que a animação do modal terminou
     }
 
     document.getElementById('btnFiltro')?.addEventListener('click', () => { filterModal?.classList.add('active'); focusFirstInput(filterModal); });
