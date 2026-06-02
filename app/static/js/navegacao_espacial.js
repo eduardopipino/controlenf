@@ -79,6 +79,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // LÓGICA 4: Navegação Espacial e Edição
         if (e.key === 'Escape') {
+            // Nova Exceção: Se estiver num Select, o Esc apenas tira o foco dele
+            if (document.activeElement && document.activeElement.tagName === 'SELECT') {
+                document.activeElement.blur();
+                return;
+            }
             if (editMode) {
                 // Sai do modo de edição e volta pra navegação de linha
                 editMode = false;
@@ -106,6 +111,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Setas direcionais (Sem Alt)
         if (['arrowdown', 'arrowup', 'arrowleft', 'arrowright'].includes(atalho) && navActive) {
+            // NOVA EXCEÇÃO: Se um <select> estiver focado, deixe o navegador usar as setas nativamente nele!
+            if (document.activeElement && document.activeElement.tagName === 'SELECT') return;
             e.preventDefault();
             if (editMode) navegarCampos(atalho);
             else navegarElementos(atalho);
@@ -119,8 +126,23 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Enter no Modo de Edição (Gatilho para DblClick)
+        // Enter no Modo de Edição (Gatilho para DblClick ou Select)
         if (atalho === 'enter' && editMode && selectedField) {
+            
+            // Tratamento especial para o campo Select (Situação)
+            const selectElement = selectedField.tagName === 'SELECT' ? selectedField : selectedField.querySelector('select');
+            
+            if (selectElement) {
+                if (document.activeElement === selectElement) {
+                    selectElement.blur(); // Se já estava focado, o Enter confirma a saída
+                } else {
+                    e.preventDefault();
+                    selectElement.focus(); // Dá o foco real ao componente
+                }
+                return;
+            }
+
+            // Para campos normais de texto (Input)
             e.preventDefault();
             const event = new MouseEvent('dblclick', { bubbles: true, cancelable: true, view: window });
             selectedField.dispatchEvent(event);
