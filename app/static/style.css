@@ -3980,3 +3980,8 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
 .hint-left[data-shortcut-hint]:hover::after {
     transform: translateX(0) translateY(0);
 }
+
+.keyboard-focused-context-item {
+    background-color: var(--primary-color) !important;
+    color: #ffffff !important;
+}

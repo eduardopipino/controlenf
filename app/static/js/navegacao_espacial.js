@@ -15,7 +15,42 @@ document.addEventListener('DOMContentLoaded', function() {
         const isTextInput = ['INPUT', 'TEXTAREA'].includes(e.target.tagName);
         const modalAtivo = document.querySelector('.modal-overlay.active');
 
-        // LÓGICA 1: Tratamento Especial para o Modal Extra do Input
+        // === NOVO BLOCO: NAVEGAÇÃO DO MENU DE CONTEXTO DOS CARDS ===
+        const contextMenu = document.getElementById('situacaoContextMenu');
+        const contextMenuAtivo = contextMenu && contextMenu.style.display === 'block';
+
+        if (contextMenuAtivo) {
+            // Se apertar uma dessas teclas, intercepta a ação
+            if (['Escape', 'Enter', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                e.preventDefault(); // Impede a tela de rolar
+                
+                if (e.key === 'Escape') {
+                    contextMenu.style.display = 'none';
+                    return;
+                }
+                
+                const itens = Array.from(contextMenu.querySelectorAll('.context-menu-item'));
+                let atual = contextMenu.querySelector('.keyboard-focused-context-item');
+                
+                if (e.key === 'Enter') {
+                    if (atual) atual.click(); // Simula o clique do mouse na opção
+                    else contextMenu.style.display = 'none'; 
+                    return;
+                }
+                
+                // Lógica de descer e subir
+                let idx = atual ? itens.indexOf(atual) : -1;
+                if (e.key === 'ArrowDown') idx = Math.min(idx + 1, itens.length - 1);
+                else if (e.key === 'ArrowUp') idx = Math.max(idx - 1, 0);
+                
+                if (atual) atual.classList.remove('keyboard-focused-context-item');
+                if (itens[idx]) itens[idx].classList.add('keyboard-focused-context-item');
+                return;
+            }
+        }
+        // === FIM DO NOVO BLOCO ===
+		
+		// LÓGICA 1: Tratamento Especial para o Modal Extra do Input
         if (e.target.id === 'novoDocumentoExtra' && e.key === 'Enter') {
             e.preventDefault();
             document.getElementById('btnAdicionarDocExtra')?.click();
@@ -111,8 +146,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Setas direcionais (Sem Alt)
         if (['arrowdown', 'arrowup', 'arrowleft', 'arrowright'].includes(atalho) && navActive) {
-            // NOVA EXCEÇÃO: Se um <select> estiver focado, deixe o navegador usar as setas nativamente nele!
-            if (document.activeElement && document.activeElement.tagName === 'SELECT') return;
+            
+            // PROTEÇÃO TOTAL: Se o cursor estiver dentro de QUALQUER campo de edição, deixa o navegador agir!
+            const tagAtiva = document.activeElement ? document.activeElement.tagName : '';
+            if (['SELECT', 'INPUT', 'TEXTAREA'].includes(tagAtiva)) return;
+
             e.preventDefault();
             if (editMode) navegarCampos(atalho);
             else navegarElementos(atalho);
@@ -129,23 +167,26 @@ document.addEventListener('DOMContentLoaded', function() {
         // Enter no Modo de Edição (Gatilho para DblClick ou Select)
         if (atalho === 'enter' && editMode && selectedField) {
             
-            // Tratamento especial para o campo Select (Situação)
+            // 1. Se JÁ for um Select (como ocorre na Tabela)
             const selectElement = selectedField.tagName === 'SELECT' ? selectedField : selectedField.querySelector('select');
             
             if (selectElement) {
-                if (document.activeElement === selectElement) {
-                    selectElement.blur(); // Se já estava focado, o Enter confirma a saída
-                } else {
-                    e.preventDefault();
-                    selectElement.focus(); // Dá o foco real ao componente
-                }
+                if (document.activeElement === selectElement) selectElement.blur(); // Confirma/Sai
+                else { e.preventDefault(); selectElement.focus(); } // Entra
                 return;
             }
 
-            // Para campos normais de texto (Input)
+            // 2. Para os Cards: Dispara o clique que cria o campo dinamicamente
             e.preventDefault();
             const event = new MouseEvent('dblclick', { bubbles: true, cancelable: true, view: window });
             selectedField.dispatchEvent(event);
+
+            // 3. A MÁGICA: Dá tempo para o HTML nascer e puxa o foco para ele!
+            setTimeout(() => {
+                const campoDinamico = selectedField.querySelector('select, input, textarea');
+                if (campoDinamico) campoDinamico.focus();
+            }, 50);
+            
             return;
         }
 
