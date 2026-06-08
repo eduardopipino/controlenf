@@ -7,12 +7,12 @@
 
         <div class="button-toolbar desktop-actions">
             <div class="toolbar-group-left">
-                <button id="btnFiltro">Filtro...</button>
-                <button id="btnColorCode">Identificar por cores</button>
+                <button id="btnFiltro" data-shortcut-hint="Alt + F">Filtro...</button>
+                <button id="btnColorCode" data-shortcut-hint="Alt + I">Identificar por cores</button>
                 {% if view_mode == 'table' %}
-                    <button id="btnConfigurarColunas">Configurar colunas</button>
+                    <button id="btnConfigurarColunas" data-shortcut-hint="Alt + O">Configurar colunas</button>
                 {% else %}
-                    <button id="btnConfigurarCampos">Configurar campos</button>
+                    <button id="btnConfigurarCampos" data-shortcut-hint="Alt + O">Configurar campos</button>
                 {% endif %}
             </div>
             <div class="toolbar-group-center">
@@ -20,8 +20,8 @@
                 {% include 'partials/_view_selector.html' %}
             </div>
             <div class="toolbar-group-right">
-                <input type="search" id="buscaRapidaInput" placeholder="Buscar em todos os campos... (ESC para limpar)">
-                <a href="{{ url_for('pendencias.nova_pendencia', origem=request.full_path) }}" class="button">Novo</a>
+                <input type="search" id="buscaRapidaInput" placeholder="Buscar em todos os campos... (ESC para limpar)" title="Focar na Busca (Alt + B)" style="vertical-align: middle; margin-right: 8px;">
+                <a href="{{ url_for('pendencias.nova_pendencia', origem=request.full_path) }}" id="btnNovo" data-shortcut-hint="Alt + N" class="button hint-left" style="vertical-align: middle;">Novo</a>
             </div>
         </div>
     </div>
@@ -284,7 +284,7 @@
                         <button type="button" class="btn-cancel-modal">Cancelar</button>
                     </div>
                     <div class="toolbar-group-right">
-                        <button type="button" onclick="window.location.href='{{ url_for('pendencias.pendencias_lista', page_mode=page_mode) }}'" class="button">Limpar</button>
+                        <button type="button" id="btnLimparFiltro" onclick="window.location.href='{{ url_for('pendencias.pendencias_lista', page_mode=page_mode) }}'" class="button">Limpar</button>
                     </div>
                 </div>
             </form>
@@ -308,13 +308,15 @@
         viewMode: "{{ view_mode }}",
         pageMode: "{{ page_mode }}",
         urlQuickCreate: "{{ url_for('pendencias.quick_create_inline') }}",
-        isHub: false
+        isHub: false,
+        atalhosAtivos: {{ 'false' if current_user.atalhos_ativos == False else 'true' }} // Blindagem de Sessão
     };
 </script>
 
 <script src="{{ url_for('static', filename='js/ui_components.js', v=datetime.now().timestamp()) }}"></script>
 <script src="{{ url_for('static', filename='js/search_engine.js', v=datetime.now().timestamp()) }}"></script>
 <script src="{{ url_for('static', filename='js/pendencias_core.js', v=datetime.now().timestamp()) }}"></script>
+<script src="{{ url_for('static', filename='js/navegacao_espacial.js', v=datetime.now().timestamp()) }}"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -327,14 +329,27 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('btnColorCode')?.addEventListener('click', handleToggleColor);
     if (window.APP_DATA_PENDENCIAS.colorCodingIsActive) document.getElementById('btnColorCode')?.classList.add('filtro-ativo');
 
+    // --- FUNÇÃO PARA FOCAR PRIMEIRO INPUT DE MODAIS ---
+    function focusFirstInput(modalElement) {
+        if (!modalElement) return;
+        setTimeout(() => { 
+            const i = modalElement.querySelector('input:not([type="hidden"]), select, textarea'); 
+            if(i) i.focus(); 
+        }, 150);
+    }
+
     // --- LÓGICA DO NOVO MODAL "CONFIGURAR COLUNAS / CAMPOS" ---
     const checklistColunas = document.getElementById('colunas-checklist');
     if (checklistColunas) {
-        const todasCol = {{ todas_as_colunas | tojson | safe }};
-        const colVisiveis = {{ colunas_visiveis | tojson | safe }};
+        checklistColunas.innerHTML = '';
+        const todasCol = {{ todas_as_colunas | default([]) | tojson | safe }};
+        const colVisiveis = {{ colunas_visiveis | default([]) | tojson | safe }};
         todasCol.forEach(c => {
             const isChecked = colVisiveis.includes(c[0]);
-            checklistColunas.innerHTML += `<div><label><input type="checkbox" value="${c[0]}" ${isChecked ? 'checked' : ''}> ${c[1]}</label></div>`;
+            const div = document.createElement('div');
+            div.className = "modal-checklist-item";
+            div.innerHTML = `<label style="width:100%; cursor:pointer;"><input type="checkbox" value="${c[0]}" ${isChecked ? 'checked' : ''}> ${c[1]}</label>`;
+            checklistColunas.appendChild(div);
         });
         document.getElementById('btnSalvarColunas')?.addEventListener('click', () => {
             const sel = Array.from(checklistColunas.querySelectorAll('input:checked')).map(cb => cb.value);
@@ -346,12 +361,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const camposChecklist = document.getElementById('campos-checklist-pendencias');
     if (camposChecklist) {
-        const todasColCards = {{ todas_as_colunas_cards | tojson | safe }};
-        const cardVisiveis = {{ card_fields_visiveis | tojson | safe }};
+        camposChecklist.innerHTML = '';
+        const todasColCards = {{ todas_as_colunas_cards | default([]) | tojson | safe }};
+        const cardVisiveis = {{ card_fields_visiveis | default([]) | tojson | safe }};
         todasColCards.forEach(c => {
             if(c[1]) {
                 const isChecked = cardVisiveis.includes(c[0]);
-                camposChecklist.innerHTML += `<div><label><input type="checkbox" value="${c[0]}" ${isChecked ? 'checked' : ''}> ${c[1]}</label></div>`;
+                const div = document.createElement('div');
+                div.className = "modal-checklist-item";
+                div.innerHTML = `<label style="width:100%; cursor:pointer;"><input type="checkbox" value="${c[0]}" ${isChecked ? 'checked' : ''}> ${c[1]}</label>`;
+                camposChecklist.appendChild(div);
             }
         });
         document.getElementById('btnSalvarCamposPendencias')?.addEventListener('click', () => {
@@ -362,20 +381,37 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Abertura dos Modais
-    document.getElementById('btnFiltro')?.addEventListener('click', () => document.getElementById('filterModal').classList.add('active'));
-    document.getElementById('btnFiltroMobile')?.addEventListener('click', () => document.getElementById('filterModal').classList.add('active'));
+    // Abertura dos Modais com Foco Automático
+    document.getElementById('btnFiltro')?.addEventListener('click', () => { const m = document.getElementById('filterModal'); m.classList.add('active'); focusFirstInput(m); });
+    document.getElementById('btnFiltroMobile')?.addEventListener('click', () => { const m = document.getElementById('filterModal'); m.classList.add('active'); focusFirstInput(m); });
+    
     document.getElementById('btnConfigurarColunas')?.addEventListener('click', () => document.getElementById('configColunasModal').classList.add('active'));
     document.getElementById('btnConfigurarCampos')?.addEventListener('click', () => document.getElementById('configCamposModal').classList.add('active'));
     document.getElementById('btnConfigurarColunasMobile')?.addEventListener('click', () => document.getElementById('configColunasModal').classList.add('active'));
 
+    // --- DICIONÁRIO DE ATALHOS DA PÁGINA DE PENDÊNCIAS ---
+    window.MEUS_ATALHOS = {
+        'alt+f': 'btnFiltro',
+        'alt+l': 'btnLimparFiltro',
+        'alt+i': 'btnColorCode',
+        'alt+o': () => {
+            document.getElementById('btnConfigurarColunas')?.click();
+            document.getElementById('btnConfigurarCampos')?.click();
+        },
+        'alt+t': () => document.querySelector('.view-button[data-view="table"]')?.click(),
+        'alt+c': () => document.querySelector('.view-button[data-view="cards"]')?.click(),
+        'alt+k': () => document.querySelector('.view-button[data-view="kanban"]')?.click(),
+        'alt+b': () => document.getElementById('buscaRapidaInput')?.focus(),
+        'alt+n': 'btnNovo'
+    };
+
     // INICIALIZAÇÃO DA BUSCA RÁPIDA
     new SearchEngine({
         viewMode: window.APP_DATA_PENDENCIAS.viewMode,
-        tableId: 'tabelaPendencias', // <<< NOVO: Ensina qual é a tabela a esconder
+        tableId: 'tabelaPendencias',
         tableRowsSelector: '.tabela-pendencias-shared tbody tr.clickable-row',
         cardsSelector: '.data-card:not(.card-quick-add-form)',
-        tabelaSemResultadosId: 'tabela-pendencias-sem-resultados-msg', // <<< ALTERADO PARA '-msg'
+        tabelaSemResultadosId: 'tabela-pendencias-sem-resultados-msg',
         backendSemResultadosId: 'tabela-pendencias-backend-sem-resultados',
         cardsSemResultadosId: 'cards-pendencias-sem-resultados',
         extraRowsSelector: '#row-btn-add-inline-top, #row-btn-add-inline, .card-quick-add-container-top-mobile, .card-quick-add-container-group'

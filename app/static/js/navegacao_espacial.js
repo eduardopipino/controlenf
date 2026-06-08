@@ -1,7 +1,11 @@
 // static/js/navegacao_espacial.js
 
 document.addEventListener('DOMContentLoaded', function() {
-    if (window.APP_DATA && window.APP_DATA.atalhosAtivos === false) return; // KILL SWITCH
+    // KILL SWITCH TOLERANTE: Só desliga se for EXPLICITAMENTE false.
+    let atalhosLigados = true;
+    if (window.APP_DATA && window.APP_DATA.atalhosAtivos === false) atalhosLigados = false;
+    if (window.APP_DATA_PENDENCIAS && window.APP_DATA_PENDENCIAS.atalhosAtivos === false) atalhosLigados = false;
+    if (!atalhosLigados) return;
 
     let navActive = false;
     let selectedElement = null; // A Linha ou o Card
@@ -15,8 +19,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const isTextInput = ['INPUT', 'TEXTAREA'].includes(e.target.tagName);
         const modalAtivo = document.querySelector('.modal-overlay.active');
 
-        // === NOVO BLOCO: NAVEGAÇÃO DO MENU DE CONTEXTO DOS CARDS ===
-        const contextMenu = document.getElementById('situacaoContextMenu');
+        // === NAVEGAÇÃO DO MENU DE CONTEXTO DOS CARDS (AMBAS AS PÁGINAS) ===
+        // Procura tanto o menu de Notas Fiscais quanto o de Pendências
+        const contextMenu = document.getElementById('situacaoContextMenu') || document.getElementById('colorContextMenu');
         const contextMenuAtivo = contextMenu && contextMenu.style.display === 'block';
 
         if (contextMenuAtivo) {
@@ -195,6 +200,15 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             const btnLupa = selectedElement.querySelector('.action-icon-link, .card-action-icon[title*="Detalhe"]');
             if (btnLupa) window.location.href = btnLupa.href;
+            return;
+        }
+
+        // Alt + P (Ativar/Desativar Prioridade)
+        if (atalho === 'alt+p' && navActive && selectedElement) {
+            e.preventDefault();
+            // Procura o ícone de prioridade da tabela ou do card da linha focada
+            const btnPrioridade = selectedElement.querySelector('.coluna-prioridade, .card-priority-toggle');
+            if (btnPrioridade) btnPrioridade.click();
             return;
         }
     });
