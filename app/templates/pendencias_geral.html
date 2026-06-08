@@ -402,7 +402,14 @@ document.addEventListener('DOMContentLoaded', function() {
         'alt+c': () => document.querySelector('.view-button[data-view="cards"]')?.click(),
         'alt+k': () => document.querySelector('.view-button[data-view="kanban"]')?.click(),
         'alt+b': () => document.getElementById('buscaRapidaInput')?.focus(),
-        'alt+n': 'btnNovo'
+        'alt+n': 'btnNovo',
+        'alt+a': () => { // <<< NOVO ATALHO ADICIONADO
+            const btnTabela = document.getElementById('btnShowInlineCreateTop');
+            const btnCard = document.getElementById('btnShowQuickAddCard');
+            // Clica no botão da Tabela se estiver visível, senão clica no botão do Card
+            if (btnTabela && window.getComputedStyle(btnTabela.closest('tr')).display !== 'none') btnTabela.click();
+            else if (btnCard) btnCard.click();
+        }
     };
 
     // INICIALIZAÇÃO DA BUSCA RÁPIDA
