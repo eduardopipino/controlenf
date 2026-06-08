@@ -238,33 +238,37 @@ document.addEventListener('DOMContentLoaded', function() {
                         elementToMove.style.opacity = '0';
                         setTimeout(() => {
                             if (elementToMove.tagName === 'TR') {
-                                // LÓGICA CORRIGIDA PARA A TABELA (Respeitando as Adições Rápidas)
+                                // LÓGICA PARA A TABELA
                                 if (isActivating) {
                                     const topBtn = targetContainer.querySelector('#row-btn-add-inline-top');
                                     const inlineForm = targetContainer.querySelector('#inline-create-template');
                                     let refNode = null;
-                                    
-                                    // Se existir o botão de topo, vamos inserir a linha LOGO ABAIXO dele
                                     if (topBtn) {
                                         refNode = topBtn.nextElementSibling;
-                                        // Proteção: Se o formulário de edição estiver aberto logo abaixo do botão, pula ele também
                                         if (inlineForm && inlineForm.style.display !== 'none' && refNode === inlineForm) {
                                             refNode = inlineForm.nextElementSibling;
                                         }
                                     }
-                                    
                                     if (refNode) targetContainer.insertBefore(elementToMove, refNode);
                                     else targetContainer.prepend(elementToMove);
                                 } else {
-                                    // Desativando prioridade: Inserir LOGO ACIMA do botão de adição rápida inferior
                                     const bottomBtn = targetContainer.querySelector('#row-btn-add-inline');
                                     if (bottomBtn) targetContainer.insertBefore(elementToMove, bottomBtn);
                                     else targetContainer.appendChild(elementToMove);
                                 }
                             } else {
-                                // LÓGICA MANTIDA PARA OS CARDS (Onde não há as linhas fixas)
-                                if (isActivating) targetContainer.prepend(elementToMove);
-                                else targetContainer.appendChild(elementToMove);
+                                // LÓGICA CORRIGIDA PARA OS CARDS (Respeitando as Adições Rápidas)
+                                if (isActivating) {
+                                    // Se existir botão rápido de topo (Mobile), insere LOGO ABAIXO dele
+                                    const topCard = targetContainer.querySelector('.card-quick-add-container-top-mobile');
+                                    if (topCard) targetContainer.insertBefore(elementToMove, topCard.nextElementSibling);
+                                    else targetContainer.prepend(elementToMove);
+                                } else {
+                                    // Desativando prioridade: Inserir LOGO ACIMA do card de adição rápida inferior
+                                    const bottomCard = targetContainer.querySelector('#card-quick-add-container, .card-quick-add-container-group');
+                                    if (bottomCard) targetContainer.insertBefore(elementToMove, bottomCard);
+                                    else targetContainer.appendChild(elementToMove);
+                                }
                             }
                             elementToMove.style.opacity = '1';
                         }, 300);
