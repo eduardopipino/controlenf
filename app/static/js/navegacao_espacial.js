@@ -1,12 +1,14 @@
 // static/js/navegacao_espacial.js
 
 document.addEventListener('DOMContentLoaded', function() {
-    // KILL SWITCH TOLERANTE: Só desliga se for EXPLICITAMENTE false.
+    // KILL SWITCH GLOBAL E TOLERANTE
     let atalhosLigados = true;
+    if (typeof window.ATALHOS_ATIVOS_GLOBAL !== 'undefined' && window.ATALHOS_ATIVOS_GLOBAL === false) atalhosLigados = false;
     if (window.APP_DATA && window.APP_DATA.atalhosAtivos === false) atalhosLigados = false;
     if (window.APP_DATA_PENDENCIAS && window.APP_DATA_PENDENCIAS.atalhosAtivos === false) atalhosLigados = false;
     if (!atalhosLigados) return;
 
+    let menuNavActive = false; // Estado do Menu Principal
     let navActive = false;
     let selectedElement = null; // A Linha ou o Card
     let editMode = false;
@@ -18,6 +20,18 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const isTextInput = ['INPUT', 'TEXTAREA'].includes(e.target.tagName);
         const modalAtivo = document.querySelector('.modal-overlay.active');
+
+        // === CONTROLE DE NAVEGAÇÃO DO MENU PRINCIPAL ===
+        if (menuNavActive) {
+            // Se estiver no menu, domina as setas, o Enter e o Esc
+            if (['Escape', 'Enter', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                e.preventDefault();
+                if (e.key === 'Escape') sairNavegacaoMenu();
+                else if (e.key === 'Enter') acionarMenuAtual();
+                else navegarMenu(e.key);
+                return; // Para a execução do script aqui
+            }
+        }
 
         // === NAVEGAÇÃO DO MENU DE CONTEXTO DOS CARDS (AMBAS AS PÁGINAS) ===
         // Procura tanto o menu de Notas Fiscais quanto o de Pendências
@@ -106,6 +120,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.altKey) atalho += 'alt+';
         if (e.key !== 'Alt' && e.key !== 'Control' && e.key !== 'Shift') {
             atalho += e.key.toLowerCase();
+        }
+
+        // === ALT + M (Focar Menu Principal) ===
+        if (atalho === 'alt+m') {
+            e.preventDefault();
+            iniciarNavegacaoMenu();
+            return;
         }
 
         // LÓGICA 3: Dicionário de Atalhos da Página
@@ -291,5 +312,87 @@ document.addEventListener('DOMContentLoaded', function() {
         const novoFoco = itens[idx];
         novoFoco.classList.add('keyboard-focused-modal-item');
         novoFoco.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // --- FUNÇÕES DE NAVEGAÇÃO DO MENU PRINCIPAL ---
+
+    function iniciarNavegacaoMenu() {
+        // Desliga a navegação da tabela/cards para não haver conflito
+        navActive = false; editMode = false; limparFocoCampos();
+        if(selectedElement) selectedElement.classList.remove('keyboard-focused-row');
+        
+        menuNavActive = true;
+        const topItens = obterItensMenuTopo();
+        if (topItens.length > 0) focarItemMenu(topItens[0]);
+    }
+
+    function sairNavegacaoMenu() {
+        menuNavActive = false;
+        limparFocoMenu();
+    }
+
+    function obterItensMenuTopo() {
+        // Encontra todos os links principais e o botão do Notepad no topo
+        return Array.from(document.querySelectorAll('#main-nav-menu > .nav-item > .nav-link, #main-nav-menu > .nav-item > .notepad-btn'));
+    }
+
+    function focarItemMenu(elemento) {
+        limparFocoMenu();
+        if (!elemento) return;
+        elemento.classList.add('keyboard-focused-menu-item');
+        
+        // Magia: Se for um link de um dropdown, abre o dropdown pai adicionando a classe "open" (que já existe no seu base.html)
+        const parentLi = elemento.closest('.nav-item.dropdown');
+        if (parentLi) parentLi.classList.add('open'); 
+        
+        elemento.focus(); // Informa os Leitores de Ecrã (Acessibilidade)
+    }
+
+    function limparFocoMenu() {
+        document.querySelectorAll('.keyboard-focused-menu-item').forEach(el => el.classList.remove('keyboard-focused-menu-item'));
+        document.querySelectorAll('#main-nav-menu .dropdown.open').forEach(el => el.classList.remove('open'));
+    }
+
+    function navegarMenu(tecla) {
+        const focado = document.querySelector('.keyboard-focused-menu-item');
+        if (!focado) return iniciarNavegacaoMenu();
+
+        const topItens = obterItensMenuTopo();
+        const isTopLevel = topItens.includes(focado);
+        const parentDropdown = focado.closest('.nav-item.dropdown');
+        const dropdownItens = parentDropdown ? Array.from(parentDropdown.querySelectorAll('.dropdown-item')) : [];
+
+        if (tecla === 'ArrowRight' || tecla === 'ArrowLeft') {
+            // Caminha para a esquerda ou direita na barra superior (Faz loop infinito)
+            let idx = isTopLevel ? topItens.indexOf(focado) : topItens.indexOf(parentDropdown.querySelector('.dropbtn'));
+            if (tecla === 'ArrowRight') idx = (idx + 1) % topItens.length;
+            else idx = (idx - 1 + topItens.length) % topItens.length;
+            focarItemMenu(topItens[idx]);
+        } 
+        else if (tecla === 'ArrowDown') {
+            // Abre o dropdown e vai para o primeiro item, OU desce pela lista
+            if (isTopLevel && dropdownItens.length > 0) focarItemMenu(dropdownItens[0]);
+            else if (!isTopLevel) {
+                let idx = Math.min(dropdownItens.indexOf(focado) + 1, dropdownItens.length - 1);
+                focarItemMenu(dropdownItens[idx]);
+            }
+        }
+        else if (tecla === 'ArrowUp') {
+            // Sobe pela lista. Se estiver no topo da lista, volta para a barra superior
+            if (!isTopLevel) {
+                let idx = dropdownItens.indexOf(focado);
+                if (idx > 0) focarItemMenu(dropdownItens[idx - 1]);
+                else focarItemMenu(parentDropdown.querySelector('.dropbtn'));
+            }
+        }
+    }
+
+    function acionarMenuAtual() {
+        const focado = document.querySelector('.keyboard-focused-menu-item');
+        if (focado) {
+            focado.click(); // O JS clica por si!
+            // Fecha a navegação de menu se não for apenas um abridor de dropdown
+            if (!focado.classList.contains('dropbtn')) sairNavegacaoMenu();
+        }
     }
 });

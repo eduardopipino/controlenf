@@ -267,7 +267,8 @@ nav {
     margin: 0;
 }
 
-#main-nav-menu > li:hover > .dropdown-menu {
+#main-nav-menu > li:hover > .dropdown-menu,
+#main-nav-menu > li.open > .dropdown-menu {
     display: block;
 }
 
@@ -3984,4 +3985,15 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
 .keyboard-focused-context-item {
     background-color: var(--primary-color) !important;
     color: #ffffff !important;
+}
+
+/* ==========================================================================
+   FOCO DO MENU PRINCIPAL (Alt + M)
+   ========================================================================== */
+.keyboard-focused-menu-item {
+    background-color: var(--primary-color) !important;
+    color: #ffffff !important;
+    outline: 2px solid #ffffff !important;
+    outline-offset: -2px;
+    border-radius: 4px;
 }
