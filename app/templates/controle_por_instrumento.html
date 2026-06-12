@@ -19,7 +19,7 @@
                 {% include 'partials/_view_selector.html' %}
             </div>
             <div class="toolbar-group-right">
-                <input type="search" id="buscaRapidaInput" class="buscaRapidaInputHub" placeholder="Buscar em tudo... (ESC para limpar)">
+                <input type="search" id="buscaRapidaInput" class="buscaRapidaInputHub" placeholder="Buscar em tudo... (ESC para limpar)" title="Focar na Busca (Alt + B)" style="vertical-align: middle;">
             </div>
         </div>
     </div>
@@ -30,7 +30,7 @@
             <option value="Vigente" {% if filtro_status == 'Vigente' %}selected{% endif %}>Vigentes</option>
             <option value="Extinto" {% if filtro_status == 'Extinto' %}selected{% endif %}>Extintos</option>
         </select>
-        <button class="btnExpandirRecolher button" style="flex: 1; height: 42px; padding: 0 10px; font-size: 14px;">Expandir Todos</button>
+        <button class="btnExpandirRecolher button" id="btnExpandirTodos" data-shortcut-hint="Alt + X">Expandir Todos</button>
     </div>
 
     <div class="mobile-search-bar hide-on-desktop" style="margin-bottom: 20px; padding: 0 5px;">
@@ -256,7 +256,8 @@
         colorMap: {{ color_map | default({}) | tojson | safe }},
         colorCodingIsActive: {{ color_coding_active | default(false) | tojson }},
         arquivadores: {{ arquivadores_json | default("[]") | safe }},
-        viewMode: "{{ view_mode }}"
+        viewMode: "{{ view_mode }}",
+        atalhosAtivos: {{ 'false' if current_user.atalhos_ativos == False else 'true' }}
     };
 
     window.APP_DATA_PENDENCIAS = {
@@ -264,7 +265,8 @@
         viewMode: "{{ view_mode }}",
         pageMode: "hub",
         urlQuickCreate: "{{ url_for('pendencias.quick_create_inline') }}",
-        isHub: true
+        isHub: true,
+        atalhosAtivos: {{ 'false' if current_user.atalhos_ativos == False else 'true' }}
     };
 </script>
 
@@ -274,6 +276,15 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+
+    // --- DICIONÁRIO DE ATALHOS DA PÁGINA (HUB) ---
+    window.MEUS_ATALHOS = {
+        'alt+t': () => document.querySelector('.view-button[data-view="table"]')?.click(),
+        'alt+c': () => document.querySelector('.view-button[data-view="cards"]')?.click(),
+        'alt+k': () => document.querySelector('.view-button[data-view="kanban"]')?.click(),
+        'alt+b': () => document.getElementById('buscaRapidaInput')?.focus(),
+        'alt+x': () => document.getElementById('btnExpandirTodos')?.click()
+    };
     
     // --- Select Inline de Status (Filtra a página) ---
     document.querySelectorAll('.filtroStatusInline').forEach(select => {
