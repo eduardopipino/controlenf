@@ -12,7 +12,7 @@
                     <option value="Vigente" {% if filtro_status == 'Vigente' %}selected{% endif %}>Vigentes</option>
                     <option value="Extinto" {% if filtro_status == 'Extinto' %}selected{% endif %}>Extintos</option>
                 </select>
-                <button class="btnExpandirRecolher button">Expandir Todos</button>
+                <button class="btnExpandirRecolher button" id="btnExpandirTodos" data-shortcut-hint="Alt + X">Expandir Todos</button>
             </div>
             <div class="toolbar-group-center">
                 {% set view_endpoint = url_for('core.set_view_preference_pendencias') %}
