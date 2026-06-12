@@ -129,6 +129,14 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        // === ALT + Q (Abrir/Fechar Notas Rápidas) ===
+        if (atalho === 'alt+q') {
+            e.preventDefault();
+            const btnNotas = document.querySelector('.notepad-btn');
+            if (btnNotas) btnNotas.click();
+            return;
+        }
+
         // LÓGICA 3: Dicionário de Atalhos da Página
         if (window.MEUS_ATALHOS && window.MEUS_ATALHOS[atalho]) {
             e.preventDefault();
