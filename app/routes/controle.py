@@ -109,7 +109,8 @@ def controle_lista(filter_mode):
             grupos_dict[grupo_key]['controles'].append(c)
         grupos_de_controles = list(grupos_dict.values())
 
-    situacoes_para_filtro = get_situacoes_para_dropdown()
+    # Ordena as situações em ordem alfabética para a interface
+    situacoes_para_filtro = sorted(get_situacoes_para_dropdown(), key=lambda x: x.get('situacao', '').lower())
     chart_data_json = prepare_chart_data(controles)
     color_map = get_color_map_for_user()
     
@@ -152,7 +153,7 @@ def novo_controle():
     origem = request.args.get('origem') or request.form.get('origem')
 
     itens_for_js = get_itens_para_dropdown_js(somente_vigentes=True)
-    situacoes = get_situacoes_para_dropdown()
+    situacoes = sorted(get_situacoes_para_dropdown(), key=lambda x: x.get('situacao', '').lower())
 
     if request.method == 'POST':
         item_id_str = request.form.get('item_id')
@@ -281,7 +282,7 @@ def detalhes_controle(controle_id):
         if not all([item_id_str, referencia]):
             flash('Os campos "Item do Instrumento" e "Referência" são obrigatórios.', 'error')
             itens_for_js = get_itens_para_dropdown_js()
-            situacoes = get_situacoes_para_dropdown()
+            situacoes = sorted(get_situacoes_para_dropdown(), key=lambda x: x.get('situacao', '').lower())
             return render_template(
                 'form_controle.html', controle=request.form,
                 itens_for_js=json.dumps(itens_for_js), situacoes=situacoes,
@@ -313,7 +314,7 @@ def detalhes_controle(controle_id):
         return redirect(url_for('controle.detalhes_controle', controle_id=controle_id, origem=origem))
 
     itens_for_js = get_itens_para_dropdown_js()
-    situacoes = get_situacoes_para_dropdown()
+    situacoes = sorted(get_situacoes_para_dropdown(), key=lambda x: x.get('situacao', '').lower())
     current_item_id_str = str(controle.get('item_id', ''))
 
     # 3. Envia a variável origem para o HTML
