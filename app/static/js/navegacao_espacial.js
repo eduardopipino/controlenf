@@ -251,6 +251,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function iniciarNavegacao() {
+        // Tira o foco de qualquer campo de texto (como a busca) para liberar as setas
+        if (document.activeElement) document.activeElement.blur();
         const elementos = obterElementosVisiveis();
         if (elementos.length === 0) return;
         navActive = true; editMode = false; limparFocoCampos();
