@@ -17,6 +17,39 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 700);
     }
 
+    // Função auxiliar para o Modal Customizado (Substitui o prompt)
+    function showCustomPrompt(titleText) {
+        return new Promise((resolve) => {
+            const modal = document.getElementById('customPromptModal');
+            const title = document.getElementById('customPromptTitle');
+            const input = document.getElementById('customPromptInput');
+            const btnConfirm = document.getElementById('btnCustomPromptConfirm');
+            const btnCancel = document.getElementById('btnCustomPromptCancel');
+
+            title.textContent = titleText;
+            input.value = '';
+            modal.classList.add('active');
+            setTimeout(() => input.focus(), 100);
+
+            function cleanup() {
+                modal.classList.remove('active');
+                btnConfirm.removeEventListener('click', onConfirm);
+                btnCancel.removeEventListener('click', onCancel);
+                input.removeEventListener('keydown', onKey);
+            }
+            function onConfirm() { cleanup(); resolve(input.value); }
+            function onCancel() { cleanup(); resolve(null); }
+            function onKey(e) {
+                if (e.key === 'Enter') { e.preventDefault(); onConfirm(); }
+                if (e.key === 'Escape') onCancel();
+            }
+
+            btnConfirm.addEventListener('click', onConfirm);
+            btnCancel.addEventListener('click', onCancel);
+            input.addEventListener('keydown', onKey);
+        });
+    }
+
     // ==========================================
     // 1. ATUALIZAÇÃO RÁPIDA DE SITUAÇÃO (SELECT)
     // ==========================================
@@ -24,41 +57,42 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target.classList.contains('situacao-dropdown')) {
             const dropdown = e.target;
             const controleId = dropdown.dataset.id;
-            let novaSituacao = dropdown.value;
+            const novaSituacaoRaw = dropdown.value;
             const linhaDaTabela = document.getElementById(`controle-row-${controleId}`);
             
-            // Lógica para Nova Situação (Texto Livre) via Tabela
-            if (novaSituacao === '*custom*') {
-                const promptValue = prompt("Digite a nova situação para este registro:");
-                if (!promptValue || promptValue.trim() === '') {
-                    // Usuário cancelou, volta o dropdown ao estado anterior
-                    dropdown.value = dropdown.getAttribute('data-last-value') || "";
-                    return;
-                }
-                novaSituacao = promptValue.trim();
-                
-                // Cria e insere a nova opção na lista
-                const newOpt = new Option(novaSituacao, novaSituacao, true, true);
-                dropdown.add(newOpt, dropdown.options[dropdown.options.length - 1]);
+            function saveSituacao(sitParaSalvar) {
+                dropdown.setAttribute('data-last-value', sitParaSalvar);
+                fetch(`/controle/update_situacao_inline`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ controle_id: controleId, nova_situacao: sitParaSalvar }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        flashElement(linhaDaTabela);
+                        if (window.APP_DATA && window.APP_DATA.colorCodingIsActive) {
+                            dropdown.style.backgroundColor = window.APP_DATA.colorMap[sitParaSalvar] || '';
+                        }
+                    } else alert('Erro ao atualizar situação.');
+                }).catch(error => console.error('Erro de rede:', error));
             }
-            dropdown.setAttribute('data-last-value', novaSituacao); // Memoriza o último valor salvo
             
-            fetch(`/controle/update_situacao_inline`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ controle_id: controleId, nova_situacao: novaSituacao }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    flashElement(linhaDaTabela);
-                    if (window.APP_DATA && window.APP_DATA.colorCodingIsActive) {
-                        dropdown.style.backgroundColor = window.APP_DATA.colorMap[novaSituacao] || '';
+            if (novaSituacaoRaw === '*custom*') {
+                showCustomPrompt("Digite a nova situação para este registro:").then(promptValue => {
+                    if (!promptValue || promptValue.trim() === '') {
+                        // Usuário cancelou, volta o dropdown ao estado anterior
+                        dropdown.value = dropdown.getAttribute('data-last-value') || "";
+                        return;
                     }
-                } else {
-                    alert('Erro ao atualizar situação.');
-                }
-            }).catch(error => console.error('Erro de rede:', error));
+                    const novaSituacao = promptValue.trim();
+                    const newOpt = new Option(novaSituacao, novaSituacao, true, true);
+                    dropdown.add(newOpt, dropdown.options[dropdown.options.length - 1]);
+                    saveSituacao(novaSituacao);
+                });
+            } else {
+                saveSituacao(novaSituacaoRaw);
+            }
         }
     });
 
@@ -291,28 +325,32 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const menuItem = e.target.closest('.context-menu-item');
         if (menuItem && activeCard) {
-            let novaSit = menuItem.dataset.situacao;
+            let novaSitRaw = menuItem.dataset.situacao;
             
-            // Lógica para Nova Situação (Texto Livre) via Menu Contexto (Cards)
-            if (novaSit === '*custom*') {
-                const promptValue = prompt("Digite a nova situação para este registro:");
-                if (!promptValue || promptValue.trim() === '') return;
-                novaSit = promptValue.trim();
+            function performSetSituacao(sitParaSalvar) {
+                fetch(`/controle/set_situacao/${activeCard.dataset.id}`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ situacao: sitParaSalvar })
+                }).then(r => r.json()).then(data => {
+                    if (data.status === 'success') {
+                        const situacaoField = activeCard.querySelector('p[data-field-name="situacao"] .card-field-value');
+                        if (situacaoField) situacaoField.textContent = sitParaSalvar;
+                        if (window.APP_DATA && window.APP_DATA.colorCodingIsActive) activeCard.style.backgroundColor = window.APP_DATA.colorMap[sitParaSalvar] || '';
+                        
+                        if (window.APP_DATA && window.APP_DATA.arquivadores.includes(sitParaSalvar)) {
+                            activeCard.style.opacity = '0'; setTimeout(() => activeCard.remove(), 400);
+                        }
+                    }
+                });
             }
 
-            fetch(`/controle/set_situacao/${activeCard.dataset.id}`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ situacao: novaSit })
-            }).then(r => r.json()).then(data => {
-                if (data.status === 'success') {
-                    const situacaoField = activeCard.querySelector('p[data-field-name="situacao"] .card-field-value');
-                    if (situacaoField) situacaoField.textContent = novaSit;
-                    if (window.APP_DATA && window.APP_DATA.colorCodingIsActive) activeCard.style.backgroundColor = window.APP_DATA.colorMap[novaSit] || '';
-                    
-                    if (window.APP_DATA && window.APP_DATA.arquivadores.includes(novaSit)) {
-                        activeCard.style.opacity = '0'; setTimeout(() => activeCard.remove(), 400);
-                    }
-                }
-            });
+            if (novaSitRaw === '*custom*') {
+                showCustomPrompt("Digite a nova situação para este registro:").then(promptValue => {
+                    if (!promptValue || promptValue.trim() === '') return;
+                    performSetSituacao(promptValue.trim());
+                });
+            } else {
+                performSetSituacao(novaSitRaw);
+            }
         }
     });
 
