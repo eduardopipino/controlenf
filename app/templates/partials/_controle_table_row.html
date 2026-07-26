@@ -1,4 +1,13 @@
-<tr class="clickable-row" id="controle-row-{{ controle._id }}" data-id="{{ controle._id }}" data-url="{{ url_for('controle.detalhes_controle', controle_id=controle._id, origem=request.full_path) }}">   
+{% set title_hidden = namespace(text='') %}
+{% for col_id, col_nome in todas_as_colunas %}
+    {% if col_id not in colunas_visiveis %}
+        {% set valor = controle.documentacao | join(', ') if col_id == 'documentacao' else controle[col_id] %}
+        {% if valor %}
+            {% set title_hidden.text = title_hidden.text ~ col_nome ~ ': ' ~ (valor | string) ~ '\n' %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
+<tr class="clickable-row" id="controle-row-{{ controle._id }}" data-id="{{ controle._id }}" data-url="{{ url_for('controle.detalhes_controle', controle_id=controle._id, origem=request.full_path) }}" title="{{ title_hidden.text }}">   
     <td data-label="Ações">
         <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id, origem=request.full_path) }}" class="action-icon-link" title="Ver Detalhes - Atalho: Alt + D">
             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor">

@@ -2,7 +2,18 @@
 {# --- Define quais campos são editáveis inline (baseado na sua lista) --- #}
 {% set editable_fields_pendencias = ['pendencia', 'prazo', 'responsavel', 'situacao', 'observacoes'] %}
 
+{% set title_hidden = namespace(text='') %}
+{% for col_id, col_nome in todas_as_colunas_cards %}
+    {% if col_id not in card_fields_visiveis %}
+        {% set valor = p.prazo.strftime('%d/%m/%Y') if col_id == 'prazo' and p.prazo else p[col_id] %}
+        {% if valor %}
+            {% set title_hidden.text = title_hidden.text ~ col_nome ~ ': ' ~ (valor | string) ~ '\n' %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
+
 <div class="data-card" data-type="pendencia" data-id="{{ p._id }}"
+     title="{{ title_hidden.text }}"
      {% if color_coding_active and p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
 
     {# --- Área de Ações no Canto Adicionada --- #}

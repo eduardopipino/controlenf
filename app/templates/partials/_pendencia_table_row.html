@@ -1,6 +1,16 @@
+{% set title_hidden = namespace(text='') %}
+{% for col_id, col_nome in todas_as_colunas %}
+    {% if col_id not in colunas_visiveis %}
+        {% set valor = p.prazo.strftime('%d/%m/%Y') if col_id == 'prazo' and p.prazo else p[col_id] %}
+        {% if valor %}
+            {% set title_hidden.text = title_hidden.text ~ col_nome ~ ': ' ~ (valor | string) ~ '\n' %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
 <tr class="clickable-row {{ 'pendencia-vencida' if p.vencido else '' }} {% if p.prioridade %}prioridade-ativa{% endif %}" 
     data-url="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" 
     data-id="{{ p._id }}" 
+    title="{{ title_hidden.text }}"
     {% if color_coding_active and p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
     
     <div class="card-actions-corner hide-on-desktop">

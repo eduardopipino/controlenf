@@ -1,6 +1,18 @@
 {% set card_fields_map = dict(todas_as_colunas_cards) %}
 {% set editable_fields_in_card = ['nota_fiscal', 'carta_de_correcao', 'observacoes'] %}
+
+{% set title_hidden = namespace(text='') %}
+{% for col_id, col_nome in todas_as_colunas_cards %}
+    {% if col_id not in card_fields_visiveis %}
+        {% set valor = controle.documentacao | join(', ') if col_id == 'documentacao' else controle[col_id] %}
+        {% if valor %}
+            {% set title_hidden.text = title_hidden.text ~ col_nome ~ ': ' ~ (valor | string) ~ '\n' %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
+
 <div class="data-card" data-type="controle" data-situacao="{{ controle.situacao or '' }}" data-id="{{ controle._id }}"
+     title="{{ title_hidden.text }}"
      {# data-url removido #}
     {% if color_coding_active and controle.situacao in color_map %}
         style="background-color: {{ color_map[controle.situacao] }};"
