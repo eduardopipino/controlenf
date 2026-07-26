@@ -977,7 +977,8 @@ button.filtro-ativo:hover {
 
 /* Estilo para o dropdown dentro da célula da tabela */
 .situacao-dropdown {
-    width: auto;
+    width: 100%;
+    min-width: max-content; /* Impede que o select fique menor que o texto dentro dele */
     padding: 5px;
     border: 1px solid var(--border-base);
     background-color: var(--background-secondary);
