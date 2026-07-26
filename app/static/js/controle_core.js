@@ -24,8 +24,24 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target.classList.contains('situacao-dropdown')) {
             const dropdown = e.target;
             const controleId = dropdown.dataset.id;
-            const novaSituacao = dropdown.value;
+            let novaSituacao = dropdown.value;
             const linhaDaTabela = document.getElementById(`controle-row-${controleId}`);
+            
+            // Lógica para Nova Situação (Texto Livre) via Tabela
+            if (novaSituacao === '*custom*') {
+                const promptValue = prompt("Digite a nova situação para este registro:");
+                if (!promptValue || promptValue.trim() === '') {
+                    // Usuário cancelou, volta o dropdown ao estado anterior
+                    dropdown.value = dropdown.getAttribute('data-last-value') || "";
+                    return;
+                }
+                novaSituacao = promptValue.trim();
+                
+                // Cria e insere a nova opção na lista
+                const newOpt = new Option(novaSituacao, novaSituacao, true, true);
+                dropdown.add(newOpt, dropdown.options[dropdown.options.length - 1]);
+            }
+            dropdown.setAttribute('data-last-value', novaSituacao); // Memoriza o último valor salvo
             
             fetch(`/controle/update_situacao_inline`, {
                 method: 'POST',
@@ -254,8 +270,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Pega as situações do select da tabela invisível (forma fácil de obter sem Jinja)
         document.querySelectorAll('select.situacao-dropdown option').forEach(opt => {
-            if (opt.value && !Array.from(situacaoOptionsContainer.children).some(li => li.dataset.situacao === opt.value)) {
-                situacaoOptionsContainer.innerHTML += `<li class="context-menu-item" data-situacao="${opt.value}">${opt.value}</li>`;
+            // Ignora o *custom* (pois já está fixo no HTML) e evita duplicados
+            if (opt.value && opt.value !== '*custom*' && !Array.from(situacaoOptionsContainer.children).some(li => li.dataset.situacao === opt.value)) {
+                situacaoOptionsContainer.innerHTML += `<li class="context-menu-item" data-situacao="${opt.value}">${opt.textContent}</li>`;
             }
         });
 
@@ -274,7 +291,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const menuItem = e.target.closest('.context-menu-item');
         if (menuItem && activeCard) {
-            const novaSit = menuItem.dataset.situacao;
+            let novaSit = menuItem.dataset.situacao;
+            
+            // Lógica para Nova Situação (Texto Livre) via Menu Contexto (Cards)
+            if (novaSit === '*custom*') {
+                const promptValue = prompt("Digite a nova situação para este registro:");
+                if (!promptValue || promptValue.trim() === '') return;
+                novaSit = promptValue.trim();
+            }
+
             fetch(`/controle/set_situacao/${activeCard.dataset.id}`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ situacao: novaSit })
             }).then(r => r.json()).then(data => {

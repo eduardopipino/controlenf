@@ -28,9 +28,17 @@
                             style="background-color: {{ color_map[controle.situacao] }};"
                         {% endif %}>
                         <option value="">-- Nenhuma --</option>
+                        {% set ns = namespace(encontrou=false) %}
                         {% for sit in situacoes_para_filtro %}
-                            <option value="{{ sit.situacao }}" {% if sit.situacao == controle.situacao %}selected{% endif %}>{{ sit.situacao }}</option>
+                            <option value="{{ sit.situacao }}" {% if sit.situacao == controle.situacao %}{% set ns.encontrou = true %}selected{% endif %}>{{ sit.situacao }}</option>
                         {% endfor %}
+                        
+                        {# Mantém a situação visível se for um texto livre digitado anteriormente #}
+                        {% if controle.situacao and not ns.encontrou %}
+                            <option value="{{ controle.situacao }}" selected>{{ controle.situacao }}</option>
+                        {% endif %}
+                        
+                        <option value="*custom*">+ Adicionar...</option>
                     </select>
                 </td>
             {% elif col_id == 'documentacao' %}
