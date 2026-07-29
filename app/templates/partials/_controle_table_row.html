@@ -1,13 +1,4 @@
-{% set title_hidden = namespace(text='') %}
-{% for col_id, col_nome in todas_as_colunas %}
-    {% if col_id not in colunas_visiveis %}
-        {% set valor = controle.documentacao | join(', ') if col_id == 'documentacao' else controle[col_id] %}
-        {% if valor %}
-            {% set title_hidden.text = title_hidden.text ~ col_nome ~ ': ' ~ (valor | string) ~ '\n' %}
-        {% endif %}
-    {% endif %}
-{% endfor %}
-<tr class="clickable-row" id="controle-row-{{ controle._id }}" data-id="{{ controle._id }}" data-url="{{ url_for('controle.detalhes_controle', controle_id=controle._id, origem=request.full_path) }}" title="{{ title_hidden.text }}">   
+<tr class="clickable-row main-data-row" id="controle-row-{{ controle._id }}" data-id="{{ controle._id }}" data-url="{{ url_for('controle.detalhes_controle', controle_id=controle._id, origem=request.full_path) }}">   
     <td data-label="Ações">
         <a href="{{ url_for('controle.detalhes_controle', controle_id=controle._id, origem=request.full_path) }}" class="action-icon-link" title="Ver Detalhes - Atalho: Alt + D">
             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor">
@@ -32,12 +23,9 @@
                         {% for sit in situacoes_para_filtro %}
                             <option value="{{ sit.situacao }}" {% if sit.situacao == controle.situacao %}{% set ns.encontrou = true %}selected{% endif %}>{{ sit.situacao }}</option>
                         {% endfor %}
-                        
-                        {# Mantém a situação visível se for um texto livre digitado anteriormente #}
                         {% if controle.situacao and not ns.encontrou %}
                             <option value="{{ controle.situacao }}" selected>{{ controle.situacao }}</option>
                         {% endif %}
-                        
                         <option value="*custom*">+ Adicionar...</option>
                     </select>
                 </td>
@@ -61,3 +49,37 @@
     {% endfor %}
     <td><button class="expand-card-btn">Ver mais</button></td>
 </tr>
+
+{# --- INÍCIO DA SEGUNDA LINHA (COLUNAS SECUNDÁRIAS) --- #}
+{% set tem_colunas_secundarias = namespace(existe=false) %}
+{% for col_id, col_nome in todas_as_colunas %}
+    {% if col_id not in colunas_visiveis %}{% set tem_colunas_secundarias.existe = true %}{% endif %}
+{% endfor %}
+
+{% if tem_colunas_secundarias.existe %}
+<tr class="secondary-data-row" data-id="{{ controle._id }}">
+    <td></td> {# Espaço vazio abaixo da lupa #}
+    <td colspan="100%">
+        <div class="secondary-fields-container">
+            {% for col_id, col_nome in todas_as_colunas %}
+                {% if col_id not in colunas_visiveis %}
+                    {% set is_editable = col_id in ['referencia', 'nota_fiscal', 'carta_de_correcao', 'observacoes', 'documentacao'] %}
+                    
+                    <div class="secondary-field-item {{ 'editable-cell' if is_editable else '' }}" {% if is_editable %}data-field-name="{{ col_id }}"{% endif %}>
+                        <span class="secondary-label">{{ col_nome }}:</span>
+                        <span class="card-value secondary-value">
+                            {% if col_id == 'documentacao' %}
+                                {{ controle.documentacao | join(', ') if controle.documentacao else '+ Adicionar...' }}
+                                {% if controle.documentacao_pendente %} <span class="texto-pendente">(pendente: {{ controle.documentacao_pendente | join(', ') }})</span>{% endif %}
+                            {% else %}
+                                {{ controle[col_id] if controle[col_id] else '+ Adicionar...' }}
+                            {% endif %}
+                        </span>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </td>
+</tr>
+{% endif %}
+{# --- FIM DA SEGUNDA LINHA --- #}
