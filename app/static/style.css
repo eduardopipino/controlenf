@@ -4010,12 +4010,11 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
 }
 
 .data-grid-table th {
-    background-color: transparent;
-    color: var(--text-muted);
+    background-color: var(--primary-color);
+    color: var(--text-secondary);
     border: none;
-    border-bottom: 2px solid var(--border-base);
     font-size: 0.85em;
-    text-align: left !important;
+    text-align: left;
     padding: 15px 12px;
 }
 
