@@ -4017,7 +4017,7 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
     background-color: var(--nav-bg-color) !important; 
     color: var(--text-secondary); /* Texto claro para contrastar com o fundo escuro do cabeçalho */
     border: none;
-    font-size: 0.85em;
+    font-size: 1.2em;
     padding: 16px 15px; /* Mais respiro vertical */
     letter-spacing: 0.5px;
     text-transform: uppercase;
