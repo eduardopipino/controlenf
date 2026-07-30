@@ -59,7 +59,7 @@
 {% if tem_colunas_secundarias.existe %}
 <tr class="secondary-data-row" data-id="{{ controle._id }}">
     <td></td> {# Espaço vazio abaixo da lupa #}
-    <td colspan="100%">
+    <td colspan="{{ colunas_visiveis|length + 1 }}" style="display: table-cell !important;">
         <div class="secondary-fields-container">
             {% for col_id, col_nome in todas_as_colunas %}
                 {% if col_id not in colunas_visiveis %}

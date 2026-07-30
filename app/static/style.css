@@ -1363,13 +1363,13 @@ td .card-value {
 
 /* Esconde a última coluna (que contém o botão "Ver mais") nas tabelas do desktop */
 #tabelaControle th:last-child,
-#tabelaControle tbody td:last-child,
+#tabelaControle tbody tr:not(.secondary-data-row) td:last-child, /* REGRA ALTERADA AQUI */
 #tabelaPendencias th:last-child,
 #tabelaPendencias tbody td:last-child,
 #pendenciasPorInstrumentoTabela th:last-child,
 #pendenciasPorInstrumentoTabela tbody td:last-child,
-.tabela-hub th:last-child,            /* <<< ADICIONAR AQUI */
-.tabela-hub tbody td:last-child {     /* <<< ADICIONAR AQUI */
+.tabela-hub th:last-child,
+.tabela-hub tbody td:last-child {
     display: none;
 }
 
@@ -4108,4 +4108,18 @@ body.theme-dark .data-grid-table .situacao-dropdown[style*="background-color"] {
 .data-grid-table tbody tr.secondary-data-row:hover,
 .data-grid-table tbody tr:has(+ tr.secondary-data-row:hover) {
     background-color: var(--table-hover);
+}
+
+/* Anula o fundo zebrado e o hover na segunda linha do Data Grid */
+.data-grid-table tbody tr.secondary-data-row {
+    background-color: transparent !important;
+}
+
+/* Remove qualquer linha divisória entre a primeira e a segunda linha do mesmo registro */
+.data-grid-table tbody tr.main-data-row td {
+    border-bottom: none !important;
+}
+
+.data-grid-table tbody tr.secondary-data-row td {
+    border-top: none !important;
 }
