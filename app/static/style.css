@@ -3999,7 +3999,7 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
 }
 
 /* ==========================================================================
-   MODERNIZAÇÃO DA TABELA (Estilo Clean/SaaS)
+   MODERNIZAÇÃO DA TABELA (Estilo Clean/SaaS) - VERSÃO 2
    ========================================================================== */
 
 /* 1. Reset da Tabela Principal */
@@ -4011,19 +4011,20 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
     background-color: var(--background-secondary);
 }
 
-/* 2. Cabeçalho Clean e Suave */
+/* 2. Cabeçalho com Cor do Tema (Suavizado) */
 #tabelaControle th {
-    background-color: transparent !important;
-    color: var(--tertiary-color); /* Uma cor mais forte que o texto comum, mas sem bloco de fundo */
+    /* Usa a cor da navegação, mas com uma leve transparência para parecer mais leve */
+    background-color: var(--nav-bg-color) !important; 
+    color: var(--text-secondary); /* Texto claro para contrastar com o fundo escuro do cabeçalho */
     border: none;
-    border-bottom: 2px solid var(--border-base);
     font-size: 0.85em;
     padding: 16px 15px; /* Mais respiro vertical */
     letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 
 #tabelaControle th a {
-    color: var(--tertiary-color);
+    color: var(--text-secondary); /* Garante que os links de ordenação fiquem com a cor certa */
 }
 
 /* 3. Células sem grade e com mais espaço */
@@ -4031,22 +4032,19 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
     border-left: none;
     border-right: none;
     border-bottom: 1px solid var(--border-base);
-    padding: 16px 15px; /* Aumentado o padding vertical de 12 para 16px */
-    vertical-align: middle; /* Alinha o texto bonitinho ao centro da linha */
+    padding: 16px 15px; 
+    vertical-align: middle; 
 }
 
-/* Tira a borda da última linha para não sobrar um traço no final do card */
 #tabelaControle tr:last-child td {
     border-bottom: none;
 }
 
 /* 4. Substituição do efeito Zebrado pelo Hover */
-/* Remove a cor cinza das linhas pares */
 #tabelaControle tr:nth-child(even) {
     background-color: transparent; 
 }
 
-/* Garante que o hover ilumine a linha inteira */
 #tabelaControle tr.clickable-row:hover {
     background-color: var(--table-hover);
     transition: background-color 0.2s ease;
@@ -4054,7 +4052,7 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
 
 /* 5. Transformação do Dropdown de Situação em Pílula */
 #tabelaControle .situacao-dropdown {
-    border-radius: 20px; /* Bordas totalmente redondas */
+    border-radius: 20px; 
     padding: 6px 15px;
     font-weight: 600;
     font-size: 0.85em;
@@ -4065,20 +4063,22 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
     transition: filter 0.2s ease, transform 0.2s ease;
 }
 
-/* Efeito ao passar o mouse na pílula */
 #tabelaControle .situacao-dropdown:hover {
     filter: brightness(0.95);
     transform: translateY(-1px);
 }
 
-/* Melhora a legibilidade do texto branco em pílulas com cor de fundo */
+/* 6. CORREÇÃO DE CONTRASTE DA PÍLULA (Mágica do CSS) */
+
+/* REGRA PADRÃO (Temas Claros): Fundo colorido claro -> Texto ESCOURO */
 #tabelaControle .situacao-dropdown[style*="background-color"] {
-    color: #ffffff;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    color: #1a1a1a; /* Texto quase preto para alto contraste com fundos claros */
+    border-color: rgba(0,0,0,0.15); /* Escurece um pouco a borda */
 }
 
-/* Ajuste específico para garantir legibilidade no tema escuro */
+/* EXCEÇÃO (Tema Escuro): Fundo colorido escuro -> Texto CLARO */
 body.theme-dark #tabelaControle .situacao-dropdown[style*="background-color"] {
-    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-    border-color: rgba(255,255,255,0.1);
+    color: #ffffff; /* Texto branco puro */
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8); /* Sombra para garantir leitura */
+    border-color: rgba(255,255,255,0.15);
 }
