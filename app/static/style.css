@@ -3997,3 +3997,88 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
     outline-offset: -2px;
     border-radius: 4px;
 }
+
+/* ==========================================================================
+   MODERNIZAÇÃO DA TABELA (Estilo Clean/SaaS)
+   ========================================================================== */
+
+/* 1. Reset da Tabela Principal */
+#tabelaControle {
+    border: none;
+    box-shadow: 0 4px 12px var(--shadow-base);
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: var(--background-secondary);
+}
+
+/* 2. Cabeçalho Clean e Suave */
+#tabelaControle th {
+    background-color: transparent !important;
+    color: var(--tertiary-color); /* Uma cor mais forte que o texto comum, mas sem bloco de fundo */
+    border: none;
+    border-bottom: 2px solid var(--border-base);
+    font-size: 0.85em;
+    padding: 16px 15px; /* Mais respiro vertical */
+    letter-spacing: 0.5px;
+}
+
+#tabelaControle th a {
+    color: var(--tertiary-color);
+}
+
+/* 3. Células sem grade e com mais espaço */
+#tabelaControle td {
+    border-left: none;
+    border-right: none;
+    border-bottom: 1px solid var(--border-base);
+    padding: 16px 15px; /* Aumentado o padding vertical de 12 para 16px */
+    vertical-align: middle; /* Alinha o texto bonitinho ao centro da linha */
+}
+
+/* Tira a borda da última linha para não sobrar um traço no final do card */
+#tabelaControle tr:last-child td {
+    border-bottom: none;
+}
+
+/* 4. Substituição do efeito Zebrado pelo Hover */
+/* Remove a cor cinza das linhas pares */
+#tabelaControle tr:nth-child(even) {
+    background-color: transparent; 
+}
+
+/* Garante que o hover ilumine a linha inteira */
+#tabelaControle tr.clickable-row:hover {
+    background-color: var(--table-hover);
+    transition: background-color 0.2s ease;
+}
+
+/* 5. Transformação do Dropdown de Situação em Pílula */
+#tabelaControle .situacao-dropdown {
+    border-radius: 20px; /* Bordas totalmente redondas */
+    padding: 6px 15px;
+    font-weight: 600;
+    font-size: 0.85em;
+    border: 1px solid rgba(0,0,0,0.1);
+    min-width: 120px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+/* Efeito ao passar o mouse na pílula */
+#tabelaControle .situacao-dropdown:hover {
+    filter: brightness(0.95);
+    transform: translateY(-1px);
+}
+
+/* Melhora a legibilidade do texto branco em pílulas com cor de fundo */
+#tabelaControle .situacao-dropdown[style*="background-color"] {
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* Ajuste específico para garantir legibilidade no tema escuro */
+body.theme-dark #tabelaControle .situacao-dropdown[style*="background-color"] {
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    border-color: rgba(255,255,255,0.1);
+}
