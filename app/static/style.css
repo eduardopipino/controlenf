@@ -198,8 +198,8 @@ body.theme-dark {
 /* --- ESTILOS GERAIS PARA COMPONENTES (APLICADOS SEMPRE) --- */
 
 body {
-    font-family: Arial, sans-serif;
-	font-size: var(--font-size-base); /* <<< APLICA A VARIÁVEL BASE */
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: var(--font-size-base); /* <<< APLICA A VARIÁVEL BASE */
     margin: 0;
     padding: 0;
     background-color: var(--background-primary);
@@ -349,8 +349,9 @@ nav {
 }
 
 /* Regra geral para os títulos (agora com uma cor de texto primária) */
-h1, h2, h3 {
-    color: var(--text-primary); /* <<< ALTERADO AQUI */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', Arial, sans-serif; /* <<< ADICIONE ESTA LINHA AQUI */
+    color: var(--text-primary); 
     border-bottom: 2px solid var(--secondary-color);
     padding-bottom: 10px;
     margin-top: 0;
