@@ -48,7 +48,7 @@
     --text-secondary: #f4f4f4;     /* Texto claro (para fundos escuros, ex: nav, botões) */
 
     /* Cores de Fundo */
-    --background-primary: #f4f4f4; /* Fundo geral claro */
+    --background-primary: #e8ebf0; /* Fundo geral claro */
     --background-secondary: #ffffff; /* Fundo de containers/cards, modais */
 
     /* Cores de Borda e Sombra */
@@ -93,7 +93,7 @@ body.theme-light {
     --accent-color: #c0c0c0;
     --text-primary: #444;
     --text-secondary: #ffffff;
-    --background-primary: #f9f9f9;
+    --background-primary: #eeeeee;
     --background-secondary: #ffffff;
     --border-base: #ddd;
     --shadow-base: rgba(0, 0, 0, 0.1);
@@ -123,7 +123,7 @@ body.theme-green {
     --accent-color: #218838;
     --text-primary: #222;
     --text-secondary: #f8f8f8;
-    --background-primary: #f0fdf4;
+    --background-primary: #e2f2e6;
     --background-secondary: #ffffff;
     --border-base: #c3e6cb;
     --shadow-base: rgba(0, 0, 0, 0.2);
@@ -149,7 +149,7 @@ body.theme-pink {
     --text-secondary: #ffffff;    /* Texto claro para botões e navegação */
     
     /* Cores de Fundo */
-    --background-primary: #fff5f7; /* Fundo geral quase branco, com toque rosado */
+    --background-primary: #f8eaef; /* Fundo geral quase branco, com toque rosado */
     --background-secondary: #ffffff; /* Fundo branco para os containers */
 
     /* Cores de Mensagem Flash de Sucesso (para combinar com o tema) */
@@ -4050,17 +4050,30 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
     transition: background-color 0.2s ease;
 }
 
-/* 5. Transformação do Dropdown de Situação em Pílula */
+/* 5. Transformação do Dropdown de Situação em Pílula (Sem contorno) */
 #tabelaControle .situacao-dropdown {
     border-radius: 20px; 
     padding: 6px 15px;
     font-weight: 600;
     font-size: 0.85em;
-    border: 1px solid rgba(0,0,0,0.1);
+    
+    /* REMOÇÃO DA BORDA */
+    border: none;
+    outline: none;
+    
+    /* FUNDO PADRÃO (Cinza claro para quando não tem cor ativa) */
+    background-color: #e2e8f0; 
+    color: #475569; /* Texto cinza escuro correspondente */
+    
     min-width: 120px;
     text-align: center;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    transition: filter 0.2s ease, transform 0.2s ease;
+    transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Foco na pílula sem a borda do navegador */
+#tabelaControle .situacao-dropdown:focus {
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3); /* Anel suave de foco */
 }
 
 #tabelaControle .situacao-dropdown:hover {
@@ -4068,17 +4081,26 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
     transform: translateY(-1px);
 }
 
-/* 6. CORREÇÃO DE CONTRASTE DA PÍLULA (Mágica do CSS) */
+/* 6. CORREÇÃO DE CONTRASTE DA PÍLULA (Com Cor Ativa) */
 
-/* REGRA PADRÃO (Temas Claros): Fundo colorido claro -> Texto ESCOURO */
+/* REGRA PADRÃO (Temas Claros): Quando JS insere cor inline */
 #tabelaControle .situacao-dropdown[style*="background-color"] {
     color: #1a1a1a; /* Texto quase preto para alto contraste com fundos claros */
-    border-color: rgba(0,0,0,0.15); /* Escurece um pouco a borda */
+    /* Remove a borda que estava aqui na versão anterior */
 }
 
-/* EXCEÇÃO (Tema Escuro): Fundo colorido escuro -> Texto CLARO */
+/* ==================================
+   AJUSTES ESPECÍFICOS: TEMA ESCURO
+   ================================== */
+   
+/* Fundo padrão para Pílula "Sem Cor" no Tema Escuro */
+body.theme-dark #tabelaControle .situacao-dropdown:not([style*="background-color"]) {
+    background-color: #1b232d; /* Cinza bem escuro (Slate) */
+    color: #cbd5e1; /* Texto cinza claro correspondente */
+}
+
+/* Quando tem Cor Ativa no Tema Escuro */
 body.theme-dark #tabelaControle .situacao-dropdown[style*="background-color"] {
     color: #ffffff; /* Texto branco puro */
-    text-shadow: 0 1px 3px rgba(0,0,0,0.8); /* Sombra para garantir leitura */
-    border-color: rgba(255,255,255,0.15);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8); /* Sombra para leitura sobre o fundo escuro */
 }
