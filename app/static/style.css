@@ -3241,36 +3241,38 @@ hr.divider-spaced {
     border: 1px solid #777;
 }
 
-/* Botões Tracejados para Adição Rápida */
+/* Botões Tracejados para Adição Rápida (Modernizados) */
 .btn-dashed-add {
-    background: transparent;
+    background-color: var(--table-stripe); /* Fundo suave em vez de transparente */
     border: 2px dashed var(--border-base);
-    color: var(--tertiary-color);
-    padding: 10px;
+    color: var(--primary-color); /* Cor do texto chamando para a ação */
+    padding: 12px; /* Um pouquinho mais de respiro */
     border-radius: 8px;
     text-align: center;
-    font-weight: bold;
+    font-weight: 600; /* Negrito mais refinado (combina com a fonte Inter) */
     cursor: pointer;
-    display: block; /* Alterado de 'flex' para 'block' para respeitar a tabela */
+    display: block; 
     width: 100%;
-    box-sizing: border-box; /* Garante que o padding de 10px não estoure a largura da coluna */
-    transition: background-color 0.2s, border-color 0.2s;
+    box-sizing: border-box; 
+    transition: all 0.2s ease;
+    letter-spacing: 0.5px;
 }
 
 .btn-dashed-add:hover {
-    background-color: var(--hover-bg);
+    background-color: var(--secondary-color); /* Preenche com a cor do tema no hover */
     border-color: var(--primary-color);
+    color: var(--tertiary-color);
 }
 
-/* Variações de borda para acoplar na tabela */
-.btn-dashed-add.top-flat { 
-    border-bottom: none; 
-    border-radius: 8px 8px 0 0; 
+/* Ajuste sutil para o Tema Escuro (Fundo translúcido elegante) */
+body.theme-dark .btn-dashed-add {
+    background-color: rgba(255, 255, 255, 0.03); 
+    border-color: #444;
 }
 
-.btn-dashed-add.bottom-flat { 
-    border-top: none; 
-    border-radius: 0 0 8px 8px; 
+body.theme-dark .btn-dashed-add:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: var(--primary-color);
 }
 
 .mobile-search-bar {
