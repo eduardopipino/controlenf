@@ -3,6 +3,18 @@
 document.addEventListener('DOMContentLoaded', function() {
     let currentEditInput = null;
 
+    // ==========================================
+    // 0. PINTURA INICIAL DAS PÍLULAS DE SITUAÇÃO
+    // ==========================================
+    if (window.APP_DATA && window.APP_DATA.colorCodingIsActive) {
+        document.querySelectorAll('.situacao-dropdown').forEach(dropdown => {
+            const sit = dropdown.value;
+            if (sit && window.APP_DATA.colorMap[sit]) {
+                dropdown.style.backgroundColor = window.APP_DATA.colorMap[sit];
+            }
+        });
+    }
+
     // Função auxiliar para dar feedback visual (piscar verde/cinza)
     function flashElement(element) {
         if (!element) return;
