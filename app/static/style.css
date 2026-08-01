@@ -4052,4 +4052,62 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
     transition: background-color 0.2s ease;
 }
 
-/* O restante do código (itens 5 e 6 referentes à situacao-dropdown) permanece igual abaixo desta linha... */
+/* 5. Transformação do Dropdown de Situação em Pílula (Sem contorno) */
+#tabelaControle .situacao-dropdown, 
+.tabela-hub .situacao-dropdown {
+    border-radius: 20px; 
+    padding: 6px 15px;
+    font-weight: 600;
+    font-size: 0.85em;
+    
+    /* REMOÇÃO DA BORDA */
+    border: none;
+    outline: none;
+    
+    /* FUNDO PADRÃO (Cinza claro para quando não tem cor ativa) */
+    background-color: #e2e8f0; 
+    color: #475569; 
+    
+    min-width: 120px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Foco na pílula sem a borda do navegador */
+#tabelaControle .situacao-dropdown:focus,
+.tabela-hub .situacao-dropdown:focus {
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3); /* Anel suave de foco */
+}
+
+#tabelaControle .situacao-dropdown:hover,
+.tabela-hub .situacao-dropdown:hover {
+    filter: brightness(0.95);
+    transform: translateY(-1px);
+}
+
+/* 6. CORREÇÃO DE CONTRASTE DA PÍLULA (Com Cor Ativa) */
+
+/* REGRA PADRÃO (Temas Claros): Quando JS insere cor inline */
+#tabelaControle .situacao-dropdown[style*="background-color"],
+.tabela-hub .situacao-dropdown[style*="background-color"] {
+    color: #1a1a1a; /* Texto quase preto para alto contraste com fundos claros */
+}
+
+/* ==================================
+   AJUSTES ESPECÍFICOS: TEMA ESCURO
+   ================================== */
+   
+/* Fundo padrão para Pílula "Sem Cor" no Tema Escuro */
+body.theme-dark #tabelaControle .situacao-dropdown:not([style*="background-color"]),
+body.theme-dark .tabela-hub .situacao-dropdown:not([style*="background-color"]) {
+    background-color: #1b232d; /* Cinza bem escuro (Slate) */
+    color: #cbd5e1; /* Texto cinza claro correspondente */
+}
+
+/* Quando tem Cor Ativa no Tema Escuro */
+body.theme-dark #tabelaControle .situacao-dropdown[style*="background-color"],
+body.theme-dark .tabela-hub .situacao-dropdown[style*="background-color"] {
+    color: #ffffff; /* Texto branco puro */
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8); /* Sombra para leitura sobre o fundo escuro */
+}
