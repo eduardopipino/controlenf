@@ -4006,7 +4006,7 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
    ========================================================================== */
 
 /* 1. Reset das Tabelas Principais */
-#tabelaControle, #tabelaPendencias {
+#tabelaControle, #tabelaPendencias, .tabela-hub {
     border: none;
     box-shadow: 0 4px 12px var(--shadow-base);
     border-radius: 8px;
@@ -4015,22 +4015,22 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
 }
 
 /* 2. Cabeçalho com Cor do Tema (Suavizado) */
-#tabelaControle th, #tabelaPendencias th {
+#tabelaControle th, #tabelaPendencias th, .tabela-hub th {
     background-color: var(--nav-bg-color) !important; 
     color: var(--text-secondary); 
     border: none;
-    font-size: 1.2em;
+    font-size: 1.1em;
     padding: 16px 15px; 
     letter-spacing: 0.5px;
     text-transform: uppercase;
 }
 
-#tabelaControle th a, #tabelaPendencias th a {
+#tabelaControle th a, #tabelaPendencias th a, .tabela-hub th a {
     color: var(--text-secondary); 
 }
 
 /* 3. Células sem grade e com mais espaço */
-#tabelaControle td, #tabelaPendencias td {
+#tabelaControle td, #tabelaPendencias td, .tabela-hub td {
     border-left: none;
     border-right: none;
     border-bottom: 1px solid var(--border-base);
@@ -4038,16 +4038,16 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
     vertical-align: middle; 
 }
 
-#tabelaControle tr:last-child td, #tabelaPendencias tr:last-child td {
+#tabelaControle tr:last-child td, #tabelaPendencias tr:last-child td, .tabela-hub tr:last-child td {
     border-bottom: none;
 }
 
 /* 4. Substituição do efeito Zebrado pelo Hover */
-#tabelaControle tr:nth-child(even), #tabelaPendencias tr:nth-child(even) {
+#tabelaControle tr:nth-child(even), #tabelaPendencias tr:nth-child(even), .tabela-hub tr:nth-child(even) {
     background-color: transparent; 
 }
 
-#tabelaControle tr.clickable-row:hover, #tabelaPendencias tr.clickable-row:hover {
+#tabelaControle tr.clickable-row:hover, #tabelaPendencias tr.clickable-row:hover, .tabela-hub tr.clickable-row:hover {
     background-color: var(--table-hover);
     transition: background-color 0.2s ease;
 }
