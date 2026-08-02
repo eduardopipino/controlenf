@@ -1622,7 +1622,7 @@ td .card-value {
     /* ====================================================================== */
     
     /* 1. Esconde APENAS os botões da esquerda (Filtro, Cores) e os de Criar (Novo, Recorrente) */
-    .toolbar-group-left { display: none !important; }
+    .toolbar-group-left:not(.hub-toolbar-left) { display: none !important; }
     .toolbar-group-right button, .toolbar-group-right a.button 
         { display: none !important; } /* <<< REGRA ATUALIZADA AQUI */    
     /* 2. Mostra o Kebab Menu para compensar a perda dos botões de ação */
