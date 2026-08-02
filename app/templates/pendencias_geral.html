@@ -32,6 +32,7 @@
             <button id="btnKebab" class="kebab-menu-button">&#8942;</button>
             <div class="kebab-menu-dropdown">
                 <a href="#" id="btnFiltroMobile">Filtrar...</a>
+                <a href="#" id="btnColorCodeMobile">Identificar por Cores</a>
                 <a href="#" id="btnConfigurarColunasMobile">Configurar Colunas</a>
             </div>
         </div>
@@ -326,6 +327,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(r => r.json()).then(d => { if(d.status === 'success') window.location.reload(); });
     }
     document.getElementById('btnColorCode')?.addEventListener('click', handleToggleColor);
+    document.getElementById('btnColorCodeMobile')?.addEventListener('click', handleToggleColor); // <<< ADICIONE ESTA LINHA
     if (window.APP_DATA_PENDENCIAS.colorCodingIsActive) document.getElementById('btnColorCode')?.classList.add('filtro-ativo');
 
     // --- FUNÇÃO PARA FOCAR PRIMEIRO INPUT DE MODAIS ---
