@@ -1386,387 +1386,114 @@ td .card-value {
 }
 
 /* ====================================================================== */
-/* ESTILOS DE RESPONSIVIDADE PARA TELAS PEQUENAS                        */
+/* RESPONSIVIDADE DE DADOS E CARDS (Telas Pequenas / Celulares)         */
 /* ====================================================================== */
 @media (max-width: 768px) {
     
-    /* NOVA CLASSE: Esconde Cards e Kanban nativos no celular */
-    .hide-on-mobile {
-        display: none !important;
-    }
-
-    body {
-        padding-top: var(--height-nav);
-    }
-
-    nav {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-    }
-    
-    .nav-brand-container {
-        display: none;
-    }
-    
-    #nav-links-container {
-        display: none;
-    }
-
-    .hamburger-menu {
-        display: flex;
-        position: absolute;
-        top: 0;
-        left: 0;
-        height: 100%;
-        width: 60px;
-        background: none;
-        border: none;
-        color: var(--text-secondary);
-        font-size: 30px;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        z-index: 1002;
-    }
-    .hamburger-menu .close-icon { display: none; }
-    body.nav-open .hamburger-menu .close-icon { display: block; }
-    body.nav-open .hamburger-menu .hamburger-icon { display: none; }
-
-    body.nav-open #nav-links-container {
-        display: block;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 280px;
-        height: 100%;
-        background-color: var(--nav-bg-color);
-        box-shadow: 2px 0 10px rgba(0,0,0,0.5);
-        transform: translateX(0);
-        transition: transform 0.3s ease-in-out;
-        z-index: 1001;
-        padding-top: var(--height-nav);
-        box-sizing: border-box;
-        overflow-y: auto;
-    }
-    
-    #main-nav-menu {
-        flex-direction: column;
-        height: auto;
-    }
-    #main-nav-menu > li {
-        width: 100%;
-        height: auto;
-    }
-
-    #main-nav-menu > li > a {
-        color: var(--text-secondary); 
-        padding: 15px 20px;
-        width: 100%;
-        box-sizing: border-box;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .nav-item-right {
-        margin-left: 0 !important;
-    }
-    .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        border-radius: 0;
-        background-color: rgba(0,0,0,0.2);
-    }
-    body:not(.theme-dark) .dropdown-menu {
-        background-color: var(--secondary-color);
-        opacity: 0.8;
-    }
-    
-    .nav-overlay {
-        display: none;
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background-color: rgba(0, 0, 0, 0.6);
-        z-index: 1000;
-    }
-    body.nav-open .nav-overlay {
-        display: block;
-    }
-
-    .desktop-actions {
-        display: none;
-    }
-
-    .mobile-actions {
-        display: block;
-    }
+    /* Esconde elementos exclusivos do desktop */
+    .hide-on-mobile { display: none !important; }
+    .desktop-actions { display: none; }
+    .mobile-actions { display: block; }
 
     .kebab-menu-container {
-        position: fixed;
-        top: calc(var(--height-nav) + 10px);
-        right: 15px;
-        z-index: 998;
+        position: fixed; top: calc(var(--height-nav) + 10px); right: 15px; z-index: 998;
     }
 
     .kebab-menu-button {
-        width: 48px;
-        height: 48px;
-        background-color: var(--primary-color);
-        border: none;
-        border-radius: 50%;
-        color: var(--text-secondary);
-        font-size: 28px;
-        font-weight: bold;
-        line-height: 1;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        transition: background-color 0.2s ease;
-        box-shadow: 0 2px 5px var(--shadow-base);
+        width: 48px; height: 48px; background-color: var(--primary-color); border: none;
+        border-radius: 50%; color: var(--text-secondary); font-size: 28px; font-weight: bold;
+        line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        padding: 0; transition: background-color 0.2s ease; box-shadow: 0 2px 5px var(--shadow-base);
     }
     
-    .kebab-menu-button:hover, .kebab-menu-button:active {
-        background-color: var(--accent-color);
-    }
-
-    body.theme-dark .kebab-menu-button {
-        background-color: var(--primary-color);
-    }
-    body.theme-dark .kebab-menu-button:hover, 
-    body.theme-dark .kebab-menu-button:active {
-        background-color: var(--accent-color);
-    }
+    .kebab-menu-button:hover, .kebab-menu-button:active { background-color: var(--accent-color); }
+    body.theme-dark .kebab-menu-button { background-color: var(--primary-color); }
+    body.theme-dark .kebab-menu-button:hover, body.theme-dark .kebab-menu-button:active { background-color: var(--accent-color); }
 
     /* --- TRANSFORMAÇÃO DA TABELA EM CARDS --- */
     .responsive-card-table {
-        display: block;
-        width: 100%;                  
-        box-sizing: border-box;       
-        border: none;
-        box-shadow: none;
-        background-color: transparent;
-        margin-top: 0;
+        display: block; width: 100%; box-sizing: border-box; border: none;
+        box-shadow: none; background-color: transparent; margin-top: 0;
     }
-    .responsive-card-table thead {
-        display: none;
-    }
+    .responsive-card-table thead { display: none; }
+    
     .responsive-card-table tr:not(#tabela-sem-resultados-row):not(#tabela-pendencias-sem-resultados-row):not(#tabela-backend-sem-resultados):not(.hide-on-mobile) {
-        display: block !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-        border: 1px solid var(--border-base);
-        border-radius: 8px;
-        margin-bottom: 20px;
-        padding: 15px;
-        background-color: var(--background-secondary);
-        box-shadow: 0 2px 5px var(--shadow-base);
-        cursor: pointer;
+        display: block !important; width: 100% !important; box-sizing: border-box !important;
+        border: 1px solid var(--border-base); border-radius: 8px; margin-bottom: 20px;
+        padding: 15px; background-color: var(--background-secondary);
+        box-shadow: 0 2px 5px var(--shadow-base); cursor: pointer;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .responsive-card-table tr:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 12px var(--shadow-base);
-    }
-    body.theme-dark .responsive-card-table tr {
-        background-color: #181818;
-    }
-    .responsive-card-table td {
-        display: block;
-        width: 100% ;
-        box-sizing: border-box;
-        padding: 10px 0;
-        text-align: left;
-        border: none !important;
-        overflow-wrap: break-word;
-        word-break: break-word; 
-        white-space: normal !important;
-    }
-    .responsive-card-table td:last-child {
-        border-bottom: none;
-    }
-    .responsive-card-table td::before {
-        content: attr(data-label);
-        font-weight: bold;
-        color: var(--tertiary-color);
-        margin-bottom: 5px;
-        display: block;
-        text-align: left;
-    }
-    .responsive-card-table .celula-situacao {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-    .responsive-card-table .situacao-dropdown {
-        width: 100%;
-    }
+    .responsive-card-table tr:hover { transform: translateY(-3px); box-shadow: 0 6px 12px var(--shadow-base); }
+    body.theme-dark .responsive-card-table tr { background-color: #181818; }
     
-    .responsive-card-table td.col-detalhe {
-        display: none;
-    }
-    .responsive-card-table tr.card-expanded td.col-detalhe {
-        display: block !important;
-        width: 100% !important;
-    }
-    .expand-card-btn {
-        display: block;
-        width: 100%;
-        margin-top: 15px;
-        padding: 10px;
-        height: auto;
-        background-color: var(--secondary-color);
-        color: var(--text-primary);
-        font-weight: bold;
-        border: 1px solid var(--border-base);
-    }
-     td, td .card-value {
-        width: 100% !important;
-    }
-    .responsive-card-table .coluna-texto-longo {
-        max-width: none;
-        min-width: 0;
-    }
-    .responsive-card-table tr,
     .responsive-card-table td {
-        display: block !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        float: none !important;
-        clear: both !important;
-        box-sizing: border-box;
+        display: block; width: 100%; box-sizing: border-box; padding: 10px 0; text-align: left;
+        border: none !important; overflow-wrap: break-word; word-break: break-word; white-space: normal !important;
     }
-
-    .responsive-card-table tr.card-expanded > td.col-detalhe {
-        display: block !important;
-        width: 100% !important;
-    }
-
-    .responsive-card-table td > *,
-    .responsive-card-table td > * > * {
-        display: block !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        float: none !important;
-        box-sizing: border-box;
-    }
-
+    .responsive-card-table td:last-child { border-bottom: none; display: block !important; }
     .responsive-card-table td::before {
-        display: block !important;
-        width: 100% !important;
-        margin-bottom: 6px;
-        white-space: normal !important;
+        content: attr(data-label); font-weight: bold; color: var(--tertiary-color);
+        margin-bottom: 5px; display: block; text-align: left; width: 100% !important; white-space: normal !important;
     }
-
+    .responsive-card-table .celula-situacao { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .responsive-card-table .situacao-dropdown { width: 100%; }
+    
+    .responsive-card-table td.col-detalhe { display: none !important; }
+    .responsive-card-table tr.card-expanded td.col-detalhe { display: block !important; width: 100% !important; }
+    
+    .expand-card-btn {
+        display: block !important; width: 100% !important; margin-top: 15px; padding: 10px;
+        height: auto; background-color: var(--secondary-color); color: var(--text-primary);
+        font-weight: bold; border: 1px solid var(--border-base); box-sizing: border-box !important;
+    }
+    td, td .card-value { width: 100% !important; }
+    .responsive-card-table .coluna-texto-longo { max-width: none; min-width: 0; }
+    .responsive-card-table tr, .responsive-card-table td {
+        display: block !important; width: 100% !important; max-width: 100% !important;
+        min-width: 0 !important; float: none !important; clear: both !important; 
+        box-sizing: border-box;
+    }
+    .responsive-card-table td > *, .responsive-card-table td > * > * {
+        display: block !important; width: 100% !important; max-width: 100% !important;
+        min-width: 0 !important; float: none !important; box-sizing: border-box;
+    }
     .responsive-card-table .card-value {
-        display: flex;         
-        align-items: center;   
-        flex-wrap: wrap;       
-        display: block !important;      
-        width: 100% !important;         
-        box-sizing: border-box;         
-        white-space: normal !important; 
-        overflow-wrap: break-word;      
-        word-break: break-word;         
-        text-align: left !important;      
+        display: block !important; width: 100% !important; box-sizing: border-box;
+        white-space: normal !important; overflow-wrap: break-word; word-break: break-word; text-align: left !important;      
     }    
-
-    .responsive-card-table tr.card-expanded,
-    .responsive-card-table tr.card-expanded td,
-    .responsive-card-table tr.card-expanded td.col-detalhe {
-        flex: 0 0 auto !important;
-    }
-
-    .responsive-card-table td:first-child {
-        display: none !important;
-    }
-
-    .responsive-card-table td.col-detalhe {
-        display: none !important;
-    }
-
-    .responsive-card-table tr.card-expanded td.col-detalhe {
-        display: block !important;
-    }
-
-    .expand-card-btn {
-        display: block !important;
-    }
-    table.responsive-card-table td:last-of-type {
-        border-bottom: none !important; 
-    }
-    .responsive-card-table td:last-child {
-        display: block !important;
-        border-bottom: none !important; 
-    }
-    .responsive-card-table .card-actions-toolbar {
-        display: flex !important;
-        flex-direction: row !important;
-        justify-content: center !important;
-        margin-top: 15px;
-        width: 100% !important;
-    }
-    .responsive-card-table .card-actions-toolbar > a.button,
-    .responsive-card-table .card-actions-toolbar > button {
-        margin: 0 5px; 
-    }
-    .responsive-card-table .card-actions-toolbar a.button {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        height: var(--element-height);
-    }
-    .responsive-card-table td > * {
-        display: block !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-        text-align: left !important;
-        white-space: normal !important;
-    }
-
-    .responsive-card-table .color-preview {
-        width: 25px !important;     
-        height: 25px !important;    
-        display: block !important;    
-    }
-    #tabelaSituacoes.responsive-card-table tr {
-        width: 100%;
-        box-sizing: border-box; 
-    }
-
-    .responsive-card-table td[data-label^="Cor"] {
-        justify-content: flex-start;
-        width: auto !important;
-    }
-
-    .responsive-card-table td[data-label^="Cor"] > * {
-        width: 25px !important;
-        height: 25px !important;
-    }
-
-    .responsive-card-table tbody {
-        display: block;
-        width: 100%;
-    }
-
-    /* Mostra a barra de busca mobile */
-    .mobile-search-bar {
-        display: block !important;
-    }
-
-    /* ====================================================================== */
-    /* AJUSTE PARA O WIDGET DE NOTAS RÁPIDAS NO MOBILE                        */
-    /* ====================================================================== */
+    .responsive-card-table tr.card-expanded, .responsive-card-table tr.card-expanded td,
+    .responsive-card-table tr.card-expanded td.col-detalhe { flex: 0 0 auto !important; }
+    .responsive-card-table td:first-child { display: none !important; }
+    table.responsive-card-table td:last-of-type { border-bottom: none !important; }
     
-    .nav-item-notepad {
-        flex-direction: column; /* Empilha o botão e a janela de notas */
-        padding: 10px 20px;
-        box-sizing: border-box;
-        width: 100%;
+    .responsive-card-table .card-actions-toolbar {
+        display: flex !important; flex-direction: row !important; justify-content: center !important;
+        margin-top: 15px; width: 100% !important;
+    }
+    .responsive-card-table .card-actions-toolbar > a.button, .responsive-card-table .card-actions-toolbar > button { margin: 0 5px; }
+    .responsive-card-table .card-actions-toolbar a.button {
+        display: flex !important; align-items: center !important; justify-content: center !important; height: var(--element-height);
+    }
+    .responsive-card-table td > * { text-align: left !important; white-space: normal !important; }
+    .responsive-card-table .color-preview { width: 25px !important; height: 25px !important; display: block !important; }
+    #tabelaSituacoes.responsive-card-table tr { width: 100%; box-sizing: border-box; }
+    .responsive-card-table td[data-label^="Cor"] { justify-content: flex-start; width: auto !important; }
+    .responsive-card-table td[data-label^="Cor"] > * { width: 25px !important; height: 25px !important; }
+    .responsive-card-table tbody { display: block; width: 100%; }
+
+    .mobile-search-bar { display: block !important; }
+
+    .card-actions-corner .card-priority-toggle {
+        opacity: 0.5; /* Mantém o cinza suave visível */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5px; /* Aumenta a área de toque no mobile */
+    }
+    
+    .card-actions-corner .card-priority-toggle.active {
+        opacity: 1;
     }
 
     .notepad-widget {
@@ -1782,6 +1509,113 @@ td .card-value {
     .notepad-widget::before {
         display: none !important;
     }
+
+    /* Regra para aniquilar as linhas de criação do desktop no mobile */
+    table#tabelaPendencias tr#inline-create-template,
+    table#tabelaPendencias tr#row-btn-add-inline,
+    table#tabelaPendencias tr#row-btn-add-inline-top,
+    table#tabelaPendencias tr.hide-on-mobile,
+    table#tabelaPendencias tr.hide-on-mobile-always {
+        display: none !important;
+        border: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    /* O SEGREDINHO: Corrigir a Célula (TD) que contém o botão */
+    .responsive-card-table td.coluna-concluir {
+        position: absolute !important;
+        bottom: 12px !important;
+        right: 15px !important;
+        
+        /* Em vez de 100%, forçamos a célula a encolher para caber apenas o botão */
+        width: auto !important; 
+        min-width: 0 !important;
+        max-width: fit-content !important;
+        
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        
+        /* Flex é melhor que Block aqui para evitar estiramento acidental */
+        display: flex !important; 
+        justify-content: center;
+        align-items: center;
+        z-index: 5;
+    }
+
+    /* Garante que o botão dentro da célula móvel obedeça ao tamanho */
+    .responsive-card-table td.coluna-concluir .btn-concluir-action {
+        width: 20px !important;
+        height: 20px !important;
+        margin: 0 !important; /* Remove o margin: 0 auto; do desktop */
+    }
+
+    /* Esconde o pseudoelemento "Concluir" (rótulo) no mobile */
+    .responsive-card-table td.coluna-concluir::before {
+        display: none !important; 
+    }
+
+    /* Garante que o botão "Ver mais" ocupe 100% da largura em todas as páginas */
+    .responsive-card-table td:last-child {
+        width: 100% !important;
+        display: block !important;
+        padding-bottom: 30px !important;
+    }
+
+}
+
+/* ====================================================================== */
+/* RESPONSIVIDADE DO MENU PRINCIPAL (Telas Médias e Tablets)            */
+/* ====================================================================== */
+@media (max-width: 1150px) {
+    body { padding-top: var(--height-nav); }
+
+    nav { position: fixed; top: 0; left: 0; width: 100%; z-index: 1001; }
+    
+    .nav-brand-container { display: none; }
+    #nav-links-container { display: none; }
+
+    .hamburger-menu {
+        display: flex; position: absolute; top: 0; left: 0; height: 100%; width: 60px;
+        background: none; border: none; color: var(--text-secondary); font-size: 30px;
+        align-items: center; justify-content: center; cursor: pointer; z-index: 1002;
+    }
+    .hamburger-menu .close-icon { display: none; }
+    body.nav-open .hamburger-menu .close-icon { display: block; }
+    body.nav-open .hamburger-menu .hamburger-icon { display: none; }
+
+    body.nav-open #nav-links-container {
+        display: block; position: fixed; top: 0; left: 0; width: 280px; height: 100%;
+        background-color: var(--nav-bg-color); box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+        transform: translateX(0); transition: transform 0.3s ease-in-out; z-index: 1001;
+        padding-top: var(--height-nav); box-sizing: border-box; overflow-y: auto;
+    }
+    
+    #main-nav-menu { flex-direction: column; height: auto; }
+    #main-nav-menu > li { width: 100%; height: auto; }
+    #main-nav-menu > li > a {
+        color: var(--text-secondary); padding: 15px 20px; width: 100%;
+        box-sizing: border-box; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-item-right { margin-left: 0 !important; }
+    
+    .dropdown-menu {
+        position: static; box-shadow: none; border-radius: 0; background-color: rgba(0,0,0,0.2);
+    }
+    body:not(.theme-dark) .dropdown-menu {
+        background-color: var(--secondary-color); opacity: 0.8;
+    }
+    
+    .nav-overlay {
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.6); z-index: 1000;
+    }
+    body.nav-open .nav-overlay { display: block; }
+
 }
 
 table {
@@ -2934,70 +2768,6 @@ body.theme-dark #buscaRapidaInput {
     display: block; 
 }
 
-/* REGRAS ESPECÍFICAS PARA O MODO MOBILE (CARDS) */
-@media (max-width: 768px) {
-    /* Regra para aniquilar as linhas de criação do desktop no mobile */
-    table#tabelaPendencias tr#inline-create-template,
-    table#tabelaPendencias tr#row-btn-add-inline,
-    table#tabelaPendencias tr#row-btn-add-inline-top,
-    table#tabelaPendencias tr.hide-on-mobile,
-    table#tabelaPendencias tr.hide-on-mobile-always {
-        display: none !important;
-        border: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        height: 0 !important;
-        overflow: hidden !important;
-    }
-
-    /* O SEGREDINHO: Corrigir a Célula (TD) que contém o botão */
-    .responsive-card-table td.coluna-concluir {
-        position: absolute !important;
-        bottom: 12px !important;
-        right: 15px !important;
-        
-        /* Em vez de 100%, forçamos a célula a encolher para caber apenas o botão */
-        width: auto !important; 
-        min-width: 0 !important;
-        max-width: fit-content !important;
-        
-        border: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        
-        /* Flex é melhor que Block aqui para evitar estiramento acidental */
-        display: flex !important; 
-        justify-content: center;
-        align-items: center;
-        z-index: 5;
-    }
-
-    /* Garante que o botão dentro da célula móvel obedeça ao tamanho */
-    .responsive-card-table td.coluna-concluir .btn-concluir-action {
-        width: 20px !important;
-        height: 20px !important;
-        margin: 0 !important; /* Remove o margin: 0 auto; do desktop */
-    }
-
-    /* Esconde o pseudoelemento "Concluir" (rótulo) no mobile */
-    .responsive-card-table td.coluna-concluir::before {
-        display: none !important; 
-    }
-
-    /* Garante que o botão "Ver mais" ocupe 100% da largura em todas as páginas */
-    .responsive-card-table td:last-child {
-        width: 100% !important;
-        display: block !important;
-        padding-bottom: 30px !important;
-    }
-
-    /* Ajuste para o botão não vazar o limite do card */
-    .expand-card-btn {
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
-}
-
 /* ====================================================================== */
 /* ESTILOS DO HUB CENTRAL DE INSTRUMENTOS (ACORDEÕES E BADGES)            */
 /* ====================================================================== */
@@ -3162,20 +2932,6 @@ body.theme-dark #buscaRapidaInput {
     opacity: 1 !important;
 }
 
-/* Garantia extra para visibilidade perfeita no Mobile */
-@media (max-width: 768px) {
-    .card-actions-corner .card-priority-toggle {
-        opacity: 0.5; /* Mantém o cinza suave visível */
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 5px; /* Aumenta a área de toque no mobile */
-    }
-    
-    .card-actions-corner .card-priority-toggle.active {
-        opacity: 1;
-    }
-}
 
 /* ====================================================================== */
 /* CORES DO ÍCONE DE PRIORIDADE (SEGURO - NÃO QUEBRA LAYOUT)              */
