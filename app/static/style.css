@@ -3483,11 +3483,28 @@ tr#inline-create-template { background-color: var(--table-stripe); }
 .clickable-row { position: relative; }
 .th-icon-col { width: 40px; text-align: center; }
 
-/* Wrapper para o scroll horizontal das tabelas no Hub */
+/* ==========================================================================
+   WRAPPER DE ROLAGEM PARA TABELAS (Evita que a tabela quebre a tela)
+   ========================================================================== */
 .table-responsive-wrapper {
+    display: block;
     overflow-x: auto;
     width: 100%;
-    padding-bottom: 10px;
+    max-width: 100%; /* O segredo: Impede o container de ser maior que a tela! */
+    margin-top: 20px;
+    padding-bottom: 5px;
+    
+    /* Movemos o design arredondado para a caixa de fora, garantindo 
+       que a sombra não fique "cortada" quando você rolar a tabela */
+    border-radius: 8px;
+    box-shadow: 0 4px 12px var(--shadow-base);
+    background-color: var(--background-secondary);
+}
+/* Retira o sombreamento e as margens da tabela de dentro para evitar conflitos */
+.table-responsive-wrapper table {
+    margin-top: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
 }
 
 /* 4. HUB CENTRAL (controle_por_instrumento.html) */
