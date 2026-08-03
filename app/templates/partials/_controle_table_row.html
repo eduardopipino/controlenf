@@ -24,6 +24,7 @@
             {% if col_id == 'situacao' %}
                 <td data-label="{{ col_nome }}" class="celula-situacao coluna-situacao">
                     <select class="situacao-dropdown" data-id="{{ controle._id }}" autocomplete="off"
+                        data-last-value="{{ controle.situacao or '' }}"
                         {% if color_coding_active %}
                             {% if controle.cor_temporaria %}
                                 style="background-color: {{ controle.cor_temporaria }};"
