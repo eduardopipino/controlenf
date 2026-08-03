@@ -3274,21 +3274,23 @@ tr#inline-create-template { background-color: var(--table-stripe); }
     display: block;
     overflow-x: auto;
     width: 100%;
-    max-width: 100%; /* O segredo: Impede o container de ser maior que a tela! */
+    max-width: 100%; 
     margin-top: 20px;
-    padding-bottom: 5px;
+    /* Removemos o padding-bottom que causava o espaço vazio */
+    padding-bottom: 0; 
     
-    /* Movemos o design arredondado para a caixa de fora, garantindo 
-       que a sombra não fique "cortada" quando você rolar a tabela */
     border-radius: 8px;
     box-shadow: 0 4px 12px var(--shadow-base);
     background-color: var(--background-secondary);
 }
+
 /* Retira o sombreamento e as margens da tabela de dentro para evitar conflitos */
 .table-responsive-wrapper table {
     margin-top: 0 !important;
+    margin-bottom: 0 !important; /* Garante que a tabela cole perfeitamente no fundo do envelope */
     box-shadow: none !important;
-    border-radius: 0 !important;
+    border: none !important; /* Elimina qualquer borda residual (como os border="1" do HTML) */
+    /* Removemos a regra de border-radius 0. Agora a tabela herda a curva do envelope perfeitamente! */
 }
 
 /* 4. HUB CENTRAL (controle_por_instrumento.html) */
