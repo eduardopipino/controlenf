@@ -1,5 +1,15 @@
 [
   {
+    "versao": "3.0",
+    "data": "03/08/2026",
+    "descricao": "Modernização do visual das tabelas."
+  },
+  {
+    "versao": "2.11",
+    "data": "26/07/2026",
+    "descricao": "Correção de atalhos, tooltip para colunas/campos ocultos e ajustes de Controle de Notas fiscais (ordenação de opção de select, nova situação temporária)."
+  },
+  {
     "versao": "2.10",
     "data": "14/06/2026",
     "descricao": "Implantação de atalhos."

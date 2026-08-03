@@ -290,8 +290,9 @@
     <div id="customPromptModal" class="modal-overlay">
         <div class="modal-content" style="max-width: 400px;">
             <h3 id="customPromptTitle">Digite a nova situação</h3>
-            <div style="margin: 15px 0;">
-                <input type="text" id="customPromptInput" placeholder="Nova situação..." style="width: 100%; box-sizing: border-box;" autocomplete="off">
+            <div style="margin: 15px 0; display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="customPromptInput" placeholder="Nova situação..." style="flex-grow: 1; box-sizing: border-box;" autocomplete="off">
+                <input type="color" id="customPromptColor" value="#e2e8f0" title="Escolha uma cor" style="width: 40px; height: 38px; padding: 0; border: 1px solid var(--border-base); border-radius: 4px; cursor: pointer;">
             </div>
             <div class="button-toolbar">
                 <button id="btnCustomPromptConfirm">Confirmar</button>

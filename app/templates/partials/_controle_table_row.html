@@ -24,8 +24,12 @@
             {% if col_id == 'situacao' %}
                 <td data-label="{{ col_nome }}" class="celula-situacao coluna-situacao">
                     <select class="situacao-dropdown" data-id="{{ controle._id }}" autocomplete="off"
-                        {% if color_coding_active and controle.situacao in color_map %}
-                            style="background-color: {{ color_map[controle.situacao] }};"
+                        {% if color_coding_active %}
+                            {% if controle.cor_temporaria %}
+                                style="background-color: {{ controle.cor_temporaria }};"
+                            {% elif controle.situacao in color_map %}
+                                style="background-color: {{ color_map[controle.situacao] }};"
+                            {% endif %}
                         {% endif %}>
                         <option value="">-- Nenhuma --</option>
                         {% set ns = namespace(encontrou=false) %}
