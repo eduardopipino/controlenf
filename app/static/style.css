@@ -3807,7 +3807,13 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
    ========================================================================== */
 
 /* 1. Reset das Tabelas Principais */
-#tabelaControle, #tabelaPendencias, #tabelaInstrumentos, #tabelaTiposDocumento, #tabelaSituacoes, .tabela-hub {
+#tabelaControle, 
+#tabelaPendencias, 
+#tabelaInstrumentos, 
+#tabelaTiposDocumento, 
+#tabelaSituacoes, 
+#tabelaItens,
+.tabela-hub {
     border: none;
     box-shadow: 0 4px 12px var(--shadow-base);
     border-radius: 8px;
@@ -3816,7 +3822,13 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
 }
 
 /* 2. Cabeçalho com Cor do Tema (Suavizado) */
-#tabelaControle th, #tabelaPendencias th, #tabelaInstrumentos th, #tabelaTiposDocumento th, #tabelaSituacoes th, .tabela-hub th {
+#tabelaControle th, 
+#tabelaPendencias th, 
+#tabelaInstrumentos th, 
+#tabelaTiposDocumento th, 
+#tabelaSituacoes th, 
+#tabelaItens th,
+.tabela-hub th {
     background-color: var(--nav-bg-color) !important; 
     color: var(--text-secondary); 
     border: none;
@@ -3826,12 +3838,23 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
     text-transform: uppercase;
 }
 
-#tabelaControle th a, #tabelaPendencias th a, #tabelaInstrumentos th a, #tabelaTiposDocumento th a, #tabelaSituacoes th a, .tabela-hub th a {
+#tabelaControle th a, 
+#tabelaPendencias th a, 
+#tabelaInstrumentos th a, 
+#tabelaTiposDocumento th a, 
+#tabelaSituacoes th a, 
+#tabelaItens th a,
+.tabela-hub th a {
     color: var(--text-secondary); 
 }
 
 /* 3. Células sem grade e com mais espaço */
-#tabelaControle td, #tabelaPendencias td, #tabelaInstrumentos td, #tabelaTiposDocumento td, #tabelaSituacoes td, .tabela-hub td {
+#tabelaControle td, #tabelaPendencias td, 
+#tabelaInstrumentos td, 
+#tabelaTiposDocumento td, 
+#tabelaSituacoes td, 
+#tabelaItens td,
+.tabela-hub td {
     border-left: none;
     border-right: none;
     border-bottom: 1px solid var(--border-base);
@@ -3839,16 +3862,34 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
     vertical-align: middle; 
 }
 
-#tabelaControle tr:last-child td, #tabelaPendencias tr:last-child td, #tabelaInstrumentos tr:last-child td, #tabelaTiposDocumento tr:last-child td, #tabelaSituacoes tr:last-child td, .tabela-hub tr:last-child td {
+#tabelaControle tr:last-child td, 
+#tabelaPendencias tr:last-child td, 
+#tabelaInstrumentos tr:last-child td, 
+#tabelaTiposDocumento tr:last-child td, 
+#tabelaSituacoes tr:last-child td, 
+##tabelaItens tr:last-child td, 
+.tabela-hub tr:last-child td {
     border-bottom: none;
 }
 
 /* 4. Substituição do efeito Zebrado pelo Hover */
-#tabelaControle tr:nth-child(even), #tabelaPendencias tr:nth-child(even), #tabelaInstrumentos tr:nth-child(even), #tabelaTiposDocumento tr:nth-child(even), #tabelaSituacoes tr:nth-child(even), .tabela-hub tr:nth-child(even) {
+#tabelaControle tr:nth-child(even), 
+#tabelaPendencias tr:nth-child(even),
+#tabelaInstrumentos tr:nth-child(even), 
+#tabelaTiposDocumento tr:nth-child(even), 
+#tabelaSituacoes tr:nth-child(even), 
+#tabelaItens tr:nth-child(even), 
+.tabela-hub tr:nth-child(even) {
     background-color: transparent; 
 }
 
-#tabelaControle tr.clickable-row:hover, #tabelaPendencias tr.clickable-row:hover, #tabelaInstrumentos tr.clickable-row:hover, #tabelaTiposDocumento tr.clickable-row:hover, #tabelaSituacoes tr.clickable-row:hover, .tabela-hub tr.clickable-row:hover {
+#tabelaControle tr.clickable-row:hover, 
+#tabelaPendencias tr.clickable-row:hover, 
+#tabelaInstrumentos tr.clickable-row:hover, 
+#tabelaTiposDocumento tr.clickable-row:hover, 
+#tabelaSituacoes tr.clickable-row:hover, 
+#tabelaItens tr.clickable-row:hover, 
+.tabela-hub tr.clickable-row:hover {
     background-color: var(--table-hover);
     transition: background-color 0.2s ease;
 }
