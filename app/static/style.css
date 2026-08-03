@@ -3807,7 +3807,7 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
    ========================================================================== */
 
 /* 1. Reset das Tabelas Principais */
-#tabelaControle, #tabelaPendencias, #tabelaInstrumentos, #tabelaTiposDocumento, .tabela-hub {
+#tabelaControle, #tabelaPendencias, #tabelaInstrumentos, #tabelaTiposDocumento, #tabelaSituacoes, .tabela-hub {
     border: none;
     box-shadow: 0 4px 12px var(--shadow-base);
     border-radius: 8px;
@@ -3816,7 +3816,7 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
 }
 
 /* 2. Cabeçalho com Cor do Tema (Suavizado) */
-#tabelaControle th, #tabelaPendencias th, #tabelaInstrumentos th, #tabelaTiposDocumento th, .tabela-hub th {
+#tabelaControle th, #tabelaPendencias th, #tabelaInstrumentos th, #tabelaTiposDocumento th, #tabelaSituacoes th, .tabela-hub th {
     background-color: var(--nav-bg-color) !important; 
     color: var(--text-secondary); 
     border: none;
@@ -3826,12 +3826,12 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
     text-transform: uppercase;
 }
 
-#tabelaControle th a, #tabelaPendencias th a, #tabelaInstrumentos th a, #tabelaTiposDocumento th a, .tabela-hub th a {
+#tabelaControle th a, #tabelaPendencias th a, #tabelaInstrumentos th a, #tabelaTiposDocumento th a, #tabelaSituacoes th a, .tabela-hub th a {
     color: var(--text-secondary); 
 }
 
 /* 3. Células sem grade e com mais espaço */
-#tabelaControle td, #tabelaPendencias td, #tabelaInstrumentos td, #tabelaTiposDocumento td, .tabela-hub td {
+#tabelaControle td, #tabelaPendencias td, #tabelaInstrumentos td, #tabelaTiposDocumento td, #tabelaSituacoes td, .tabela-hub td {
     border-left: none;
     border-right: none;
     border-bottom: 1px solid var(--border-base);
@@ -3839,16 +3839,16 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
     vertical-align: middle; 
 }
 
-#tabelaControle tr:last-child td, #tabelaPendencias tr:last-child td, #tabelaInstrumentos tr:last-child td, #tabelaTiposDocumento tr:last-child td, .tabela-hub tr:last-child td {
+#tabelaControle tr:last-child td, #tabelaPendencias tr:last-child td, #tabelaInstrumentos tr:last-child td, #tabelaTiposDocumento tr:last-child td, #tabelaSituacoes tr:last-child td, .tabela-hub tr:last-child td {
     border-bottom: none;
 }
 
 /* 4. Substituição do efeito Zebrado pelo Hover */
-#tabelaControle tr:nth-child(even), #tabelaPendencias tr:nth-child(even), #tabelaInstrumentos tr:nth-child(even), #tabelaTiposDocumento tr:nth-child(even), .tabela-hub tr:nth-child(even) {
+#tabelaControle tr:nth-child(even), #tabelaPendencias tr:nth-child(even), #tabelaInstrumentos tr:nth-child(even), #tabelaTiposDocumento tr:nth-child(even), #tabelaSituacoes tr:nth-child(even), .tabela-hub tr:nth-child(even) {
     background-color: transparent; 
 }
 
-#tabelaControle tr.clickable-row:hover, #tabelaPendencias tr.clickable-row:hover, #tabelaInstrumentos tr.clickable-row:hover, #tabelaTiposDocumento tr.clickable-row:hover, .tabela-hub tr.clickable-row:hover {
+#tabelaControle tr.clickable-row:hover, #tabelaPendencias tr.clickable-row:hover, #tabelaInstrumentos tr.clickable-row:hover, #tabelaTiposDocumento tr.clickable-row:hover, #tabelaSituacoes tr.clickable-row:hover, .tabela-hub tr.clickable-row:hover {
     background-color: var(--table-hover);
     transition: background-color 0.2s ease;
 }
@@ -3918,22 +3918,36 @@ body.theme-dark .tabela-hub .situacao-dropdown[style*="background-color"] {
    ========================================================================== */
 @media (min-width: 769px) {
     .table-responsive-wrapper.wrapper-compacto {
-        max-width: 600px !important; /* Trava o crescimento em telas grandes */
-        /* Se quiser que a tabela fique centralizada na tela, descomente a linha abaixo: */
-        /* margin-left: auto; margin-right: auto; */
+        /* O segredo: deixa o container esticar empurrado pela tabela, mas sem vazar da tela */
+        width: fit-content !important; 
+        max-width: 100% !important;
+        min-width: 600px; /* Apenas para garantir um tamanho mínimo elegante */
     }
     
-    /* Garante que o Nome do Documento ocupe o espaço livre, empurrando o botão Excluir para o final */
+    /* --- TABELA TIPO DOCUMENTO --- */
     #tabelaTiposDocumento th:first-child,
     #tabelaTiposDocumento td:first-child {
-        width: 100%;
+        width: 100%; /* Nome empurra tudo */
     }
-    
-    /* Mantém a coluna de ações pequena e ajustada ao botão */
     #tabelaTiposDocumento th:last-child,
     #tabelaTiposDocumento td:last-child {
         width: 1%;
         white-space: nowrap;
-        text-align: right; /* Alinha o botão à direita */
+        text-align: right; 
+    }
+
+    /* --- TABELA DE SITUAÇÕES --- */
+    /* Faz a coluna 'Nome da Situação' (a 2ª) esticar e ocupar todo o espaço livre */
+    #tabelaSituacoes th:nth-child(2),
+    #tabelaSituacoes td:nth-child(2) {
+        width: 100%;
+    }
+    
+    /* Mantém as outras colunas (Ações, Arquiva e Cores) restritas ao tamanho do seu conteúdo */
+    #tabelaSituacoes th:not(:nth-child(2)),
+    #tabelaSituacoes td:not(:nth-child(2)) {
+        width: 1%;
+        white-space: nowrap;
+        text-align: center; /* Centraliza os ícones e bolinhas de cor */
     }
 }
