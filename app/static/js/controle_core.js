@@ -3,6 +3,18 @@
 document.addEventListener('DOMContentLoaded', function() {
     let currentEditInput = null;
 
+    // ==========================================
+    // 0. PINTURA INICIAL DAS PÍLULAS DE SITUAÇÃO
+    // ==========================================
+    if (window.APP_DATA && window.APP_DATA.colorCodingIsActive) {
+        document.querySelectorAll('.situacao-dropdown').forEach(dropdown => {
+            const sit = dropdown.value;
+            if (sit && window.APP_DATA.colorMap[sit]) {
+                dropdown.style.backgroundColor = window.APP_DATA.colorMap[sit];
+            }
+        });
+    }
+
     // Função auxiliar para dar feedback visual (piscar verde/cinza)
     function flashElement(element) {
         if (!element) return;
@@ -23,11 +35,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const modal = document.getElementById('customPromptModal');
             const title = document.getElementById('customPromptTitle');
             const input = document.getElementById('customPromptInput');
+            const colorInput = document.getElementById('customPromptColor');
             const btnConfirm = document.getElementById('btnCustomPromptConfirm');
             const btnCancel = document.getElementById('btnCustomPromptCancel');
 
             title.textContent = titleText;
             input.value = '';
+            colorInput.value = '#e2e8f0'; // Reseta para cinza claro no JS
             modal.classList.add('active');
             setTimeout(() => input.focus(), 100);
 
@@ -37,7 +51,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 btnCancel.removeEventListener('click', onCancel);
                 input.removeEventListener('keydown', onKey);
             }
-            function onConfirm() { cleanup(); resolve(input.value); }
+            function onConfirm() { 
+                cleanup(); 
+                resolve({ nome: input.value, cor: colorInput.value }); 
+            }
             function onCancel() { cleanup(); resolve(null); }
             function onKey(e) {
                 if (e.key === 'Enter') { e.preventDefault(); onConfirm(); }
@@ -51,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ==========================================
-    // 1. ATUALIZAÇÃO RÁPIDA DE SITUAÇÃO (SELECT)
+    // 1. ATUALIZAÇÃO RÁPIDA DE SITUAÇÃO (SELECT DA TABELA)
     // ==========================================
     document.addEventListener('change', function(e) {
         if (e.target.classList.contains('situacao-dropdown')) {
@@ -60,19 +77,27 @@ document.addEventListener('DOMContentLoaded', function() {
             const novaSituacaoRaw = dropdown.value;
             const linhaDaTabela = document.getElementById(`controle-row-${controleId}`);
             
-            function saveSituacao(sitParaSalvar) {
+            function saveSituacao(sitParaSalvar, corCustomizada = null) {
                 dropdown.setAttribute('data-last-value', sitParaSalvar);
                 fetch(`/controle/update_situacao_inline`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ controle_id: controleId, nova_situacao: sitParaSalvar }),
+                    body: JSON.stringify({ 
+                        controle_id: controleId, 
+                        nova_situacao: sitParaSalvar,
+                        cor_temporaria: corCustomizada // <<< Envia a cor
+                    }),
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
                         flashElement(linhaDaTabela);
                         if (window.APP_DATA && window.APP_DATA.colorCodingIsActive) {
-                            dropdown.style.backgroundColor = window.APP_DATA.colorMap[sitParaSalvar] || '';
+                            if (corCustomizada) {
+                                dropdown.style.backgroundColor = corCustomizada; // Pinta a temporária
+                            } else {
+                                dropdown.style.backgroundColor = window.APP_DATA.colorMap[sitParaSalvar] || '';
+                            }
                         }
                     } else alert('Erro ao atualizar situação.');
                 }).catch(error => console.error('Erro de rede:', error));
@@ -80,15 +105,16 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (novaSituacaoRaw === '*custom*') {
                 showCustomPrompt("Digite a nova situação para este registro:").then(promptValue => {
-                    if (!promptValue || promptValue.trim() === '') {
-                        // Usuário cancelou, volta o dropdown ao estado anterior
+                    if (!promptValue || !promptValue.nome || promptValue.nome.trim() === '') {
                         dropdown.value = dropdown.getAttribute('data-last-value') || "";
                         return;
                     }
-                    const novaSituacao = promptValue.trim();
+                    const novaSituacao = promptValue.nome.trim();
+                    const novaCor = promptValue.cor;
+                    
                     const newOpt = new Option(novaSituacao, novaSituacao, true, true);
                     dropdown.add(newOpt, dropdown.options[dropdown.options.length - 1]);
-                    saveSituacao(novaSituacao);
+                    saveSituacao(novaSituacao, novaCor); // <<< Passa a cor para salvar
                 });
             } else {
                 saveSituacao(novaSituacaoRaw);
@@ -345,8 +371,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (novaSitRaw === '*custom*') {
                 showCustomPrompt("Digite a nova situação para este registro:").then(promptValue => {
-                    if (!promptValue || promptValue.trim() === '') return;
-                    performSetSituacao(promptValue.trim());
+                    if (!promptValue || !promptValue.nome || promptValue.nome.trim() === '') return;
+                    const novaSituacao = promptValue.nome.trim();
+                    const novaCor = promptValue.cor;
+                    
+                    fetch(`/controle/set_situacao/${activeCard.dataset.id}`, {
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify({ situacao: novaSituacao, cor_temporaria: novaCor })
+                    }).then(r => r.json()).then(data => {
+                        if (data.status === 'success') {
+                            const situacaoField = activeCard.querySelector('p[data-field-name="situacao"] .card-field-value');
+                            if (situacaoField) situacaoField.textContent = novaSituacao;
+                            if (window.APP_DATA && window.APP_DATA.colorCodingIsActive) {
+                                activeCard.style.backgroundColor = novaCor; // Pinta com a cor do modal
+                            }
+                        }
+                    });
                 });
             } else {
                 performSetSituacao(novaSitRaw);

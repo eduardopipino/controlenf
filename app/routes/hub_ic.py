@@ -6,7 +6,8 @@ from app.models import (instrumentos_collection, pendencias_collection,
                         controle_collection, TODAS_AS_COLUNAS_PENDENCIAS, 
                         TODAS_AS_COLUNAS_CONTROLE, users_collection,
                         TODAS_AS_COLUNAS_CARDS, get_controles_pendentes_por_instrumento,
-                        itens_collection, get_situacoes_para_dropdown)
+                        itens_collection, get_situacoes_para_dropdown,
+                        get_color_map_for_user)
 
 hub_ic_bp = Blueprint('hub_ic', __name__)
 
@@ -101,7 +102,10 @@ def hub_instrumentos():
     colunas_visiveis_pendencias = user_prefs.get('colunas_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_PENDENCIAS])
     colunas_visiveis_controle = user_prefs.get('colunas_visiveis_controle', [c[0] for c in TODAS_AS_COLUNAS_CONTROLE])
     card_fields_visiveis = user_prefs.get('card_fields_visiveis_pendencias', [c[0] for c in TODAS_AS_COLUNAS_CARDS])
-    color_coding_active = user_prefs.get('color_coding_active_pendencias', False)
+
+    # Busca se a cor está ativa para as NFs (como no controle) e pega o mapa de cores real
+    color_coding_active = getattr(current_user, 'color_coding_controle', False) 
+    color_map = get_color_map_for_user()
 
     return render_template(
         'controle_por_instrumento.html',
@@ -116,7 +120,8 @@ def hub_instrumentos():
         todas_as_colunas_controle=TODAS_AS_COLUNAS_CONTROLE,
         todas_as_colunas_cards=TODAS_AS_COLUNAS_CARDS,
         card_fields_visiveis=card_fields_visiveis,
-        color_coding_active=color_coding_active,
+        color_coding_active=color_coding_active,             # <<< Envia se está ativo
+        color_map=color_map,                                 # <<< Envia as cores reais
         view_mode=view_mode,
         page_mode='hub_ic'
     )

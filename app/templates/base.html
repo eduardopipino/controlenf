@@ -8,6 +8,12 @@
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
     
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    
+    <!-- Importação da fonte Inter do Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v=datetime.now().timestamp()) }}">
 </head>
 <body class="{{ current_user.theme if current_user.is_authenticated else 'theme-blue' }} font-size-{{ current_user.font_size_preference or 'media' }} spacing-{{ current_user.spacing_preference or 'regular' }}">

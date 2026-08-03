@@ -378,13 +378,32 @@ def update_situacao_inline():
     data = request.get_json()
     controle_id = data.get('controle_id')
     nova_situacao = data.get('nova_situacao')
+    cor_temporaria = data.get('cor_temporaria')
 
     if not controle_id or nova_situacao is None:
         return {'status': 'error', 'message': 'Dados incompletos.'}, 400
 
+    # 1. Prepara o que vai ser atualizado ($set)
+    update_dict = {'situacao': nova_situacao, 'data_ultima_atualizacao': datetime.now()}
+    
+    # 2. Prepara o que vai ser apagado ($unset)
+    unset_dict = {}
+
+    if cor_temporaria:
+        update_dict['cor_temporaria'] = cor_temporaria
+    else:
+        # Se não enviou cor, significa que escolheu uma situação padrão. 
+        # Então mandamos apagar qualquer cor temporária antiga do banco.
+        unset_dict['cor_temporaria'] = ""
+
+    # 3. Monta a instrução final para o banco
+    update_query = {'$set': update_dict}
+    if unset_dict:
+        update_query['$unset'] = unset_dict
+
     result = controle_collection.update_one(
         {'_id': ObjectId(controle_id), 'user_id': ObjectId(current_user.id)},
-        {'$set': {'situacao': nova_situacao, 'data_ultima_atualizacao': datetime.now()}}
+        update_query
     )
 
     if result.matched_count > 0:
@@ -447,13 +466,29 @@ def criar_controle_rapido():
 def set_situacao_card(controle_id):
     data = request.get_json()
     nova_situacao = data.get('situacao')
+    cor_temporaria = data.get('cor_temporaria') # <<< Pega a nova cor
 
-    if nova_situacao is None:
-        return {'status': 'error', 'message': 'Nenhuma situação fornecida'}, 400
+    if nova_situacao is None: # (ou not controle_id)
+        return {'status': 'error', 'message': '...'}, 400
+
+    # Monta o dicionário dinamicamente
+    update_dict = {'situacao': nova_situacao, 'data_ultima_atualizacao': datetime.now()}
+    unset_dict = {}
+
+    if cor_temporaria:
+        update_dict['cor_temporaria'] = cor_temporaria
+    else:
+        # Se não enviou cor temporária, ele escolheu algo da lista padrão.
+        # Precisamos apagar qualquer cor temporária antiga deste registro.
+        unset_dict['cor_temporaria'] = ""
+
+    update_query = {'$set': update_dict}
+    if unset_dict:
+        update_query['$unset'] = unset_dict
 
     result = controle_collection.update_one(
         {'_id': ObjectId(controle_id), 'user_id': ObjectId(current_user.id)},
-        {'$set': {'situacao': nova_situacao, 'data_ultima_atualizacao': datetime.now()}}
+        update_query
     )
 
     if result.matched_count > 0:

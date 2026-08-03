@@ -57,9 +57,9 @@
             <button id="btnKebab" class="kebab-menu-button">&#8942;</button>
             <div class="kebab-menu-dropdown">
                 <a href="#" id="btnFiltroMobile">Filtrar...</a>
-                <a href="#" id="btnConfigurarColunasMobile">Configurar Colunas</a>
                 <a href="#" id="btnColorCodeMobile">Identificar por Cores</a>
-                <button type="button" class="view-btn-mock" id="btnNovoRecorrenteMobile" style="border:none; text-align: left; padding: 12px 20px; font-size: 14px; background: transparent; color: inherit; width: 100%; cursor: pointer;">Novo - Recorrente</button>
+                <a href="#" id="btnConfigurarColunasMobile">Configurar Colunas</a>
+                <a href="#" id="btnNovoRecorrenteMobile">Novo - Recorrente</a>
             </div>
         </div>
     </div>
@@ -74,37 +74,39 @@
         Nenhum resultado encontrado para a busca.
     </p>
 
-    <table border="1" id="tabelaControle" class="tabela-controle-shared responsive-card-table {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
-        <thead>
-            <tr>
-                <th></th>
-                {% for col_id, col_nome in todas_as_colunas %}
-                    {% if col_id in colunas_visiveis %}
-                        {% if col_id == 'situacao' %}
-                            <th class="coluna-situacao">
-                        {% else %}
-                            <th class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }}">
+    <div class="table-responsive-wrapper {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
+        <table border="1" id="tabelaControle" class="tabela-controle-shared responsive-card-table {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
+            <thead>
+                <tr>
+                    <th></th>
+                    {% for col_id, col_nome in todas_as_colunas %}
+                        {% if col_id in colunas_visiveis %}
+                            {% if col_id == 'situacao' %}
+                                <th class="coluna-situacao">
+                            {% else %}
+                                <th class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }}">
+                            {% endif %}
+                                <a href="{{ url_for(request.endpoint, **dict(request.args, filter_mode=filter_mode, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc'  )) }}">
+                                    {{ col_nome }}
+                                    {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}
+                                </a>
+                            </th>
                         {% endif %}
-                            <a href="{{ url_for(request.endpoint, **dict(request.args, filter_mode=filter_mode, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc'  )) }}">
-                                {{ col_nome }}
-                                {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}
-                            </a>
-                        </th>
-                    {% endif %}
+                    {% endfor %}
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for controle in controles %}
+                    {% include 'partials/_controle_table_row.html' %}
+                {% else %}
+                <tr id="tabela-backend-sem-resultados">
+                    <td colspan="{{ colunas_visiveis|length + 2 }}">Nenhum registro de controle encontrado.</td>
+                </tr>
                 {% endfor %}
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for controle in controles %}
-                {% include 'partials/_controle_table_row.html' %}
-            {% else %}
-            <tr id="tabela-backend-sem-resultados">
-                <td colspan="{{ colunas_visiveis|length + 2 }}">Nenhum registro de controle encontrado.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
 
     {% if view_mode == 'cards' %}
     <p id="cards-sem-resultados" class="kanban-empty-msg hide-on-mobile" style="display: none !important;">
@@ -288,8 +290,9 @@
     <div id="customPromptModal" class="modal-overlay">
         <div class="modal-content" style="max-width: 400px;">
             <h3 id="customPromptTitle">Digite a nova situação</h3>
-            <div style="margin: 15px 0;">
-                <input type="text" id="customPromptInput" placeholder="Nova situação..." style="width: 100%; box-sizing: border-box;" autocomplete="off">
+            <div style="margin: 15px 0; display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="customPromptInput" placeholder="Nova situação..." style="flex-grow: 1; box-sizing: border-box;" autocomplete="off">
+                <input type="color" id="customPromptColor" value="#e2e8f0" title="Escolha uma cor" style="width: 40px; height: 38px; padding: 0; border: 1px solid var(--border-base); border-radius: 4px; cursor: pointer;">
             </div>
             <div class="button-toolbar">
                 <button id="btnCustomPromptConfirm">Confirmar</button>

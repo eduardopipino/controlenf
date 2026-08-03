@@ -48,7 +48,7 @@
     --text-secondary: #f4f4f4;     /* Texto claro (para fundos escuros, ex: nav, botões) */
 
     /* Cores de Fundo */
-    --background-primary: #f4f4f4; /* Fundo geral claro */
+    --background-primary: #e8ebf0; /* Fundo geral claro */
     --background-secondary: #ffffff; /* Fundo de containers/cards, modais */
 
     /* Cores de Borda e Sombra */
@@ -93,7 +93,7 @@ body.theme-light {
     --accent-color: #c0c0c0;
     --text-primary: #444;
     --text-secondary: #ffffff;
-    --background-primary: #f9f9f9;
+    --background-primary: #eeeeee;
     --background-secondary: #ffffff;
     --border-base: #ddd;
     --shadow-base: rgba(0, 0, 0, 0.1);
@@ -123,7 +123,7 @@ body.theme-green {
     --accent-color: #218838;
     --text-primary: #222;
     --text-secondary: #f8f8f8;
-    --background-primary: #f0fdf4;
+    --background-primary: #e2f2e6;
     --background-secondary: #ffffff;
     --border-base: #c3e6cb;
     --shadow-base: rgba(0, 0, 0, 0.2);
@@ -149,7 +149,7 @@ body.theme-pink {
     --text-secondary: #ffffff;    /* Texto claro para botões e navegação */
     
     /* Cores de Fundo */
-    --background-primary: #fff5f7; /* Fundo geral quase branco, com toque rosado */
+    --background-primary: #f8eaef; /* Fundo geral quase branco, com toque rosado */
     --background-secondary: #ffffff; /* Fundo branco para os containers */
 
     /* Cores de Mensagem Flash de Sucesso (para combinar com o tema) */
@@ -198,8 +198,8 @@ body.theme-dark {
 /* --- ESTILOS GERAIS PARA COMPONENTES (APLICADOS SEMPRE) --- */
 
 body {
-    font-family: Arial, sans-serif;
-	font-size: var(--font-size-base); /* <<< APLICA A VARIÁVEL BASE */
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: var(--font-size-base); /* <<< APLICA A VARIÁVEL BASE */
     margin: 0;
     padding: 0;
     background-color: var(--background-primary);
@@ -349,8 +349,9 @@ nav {
 }
 
 /* Regra geral para os títulos (agora com uma cor de texto primária) */
-h1, h2, h3 {
-    color: var(--text-primary); /* <<< ALTERADO AQUI */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', Arial, sans-serif; /* <<< ADICIONE ESTA LINHA AQUI */
+    color: var(--text-primary); 
     border-bottom: 2px solid var(--secondary-color);
     padding-bottom: 10px;
     margin-top: 0;
@@ -1386,387 +1387,128 @@ td .card-value {
 }
 
 /* ====================================================================== */
-/* ESTILOS DE RESPONSIVIDADE PARA TELAS PEQUENAS                        */
+/* RESPONSIVIDADE DE DADOS E CARDS (Telas Pequenas / Celulares)         */
 /* ====================================================================== */
 @media (max-width: 768px) {
     
-    /* NOVA CLASSE: Esconde Cards e Kanban nativos no celular */
-    .hide-on-mobile {
-        display: none !important;
-    }
-
-    body {
-        padding-top: var(--height-nav);
-    }
-
-    nav {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-    }
+    /* 1. Esconde a visão em Cards/Tabelas e remove o resto da barra desktop */
+    .hide-on-mobile { display: none !important; }
+    .toolbar-group-center { display: none !important; } /* Esconde o Seletor de Visão */
+    .toolbar-group-right input[type="search"] { display: none !important; } /* Esconde a busca do desktop */
     
-    .nav-brand-container {
-        display: none;
-    }
-    
-    #nav-links-container {
-        display: none;
-    }
+    /* 2. Mostra a barra de busca nativa do celular e esconde outras ações extras se houverem */
+    .mobile-search-bar { display: block !important; }
+    .desktop-actions { display: none; } /* Garantia extra de limpeza no mobile */
 
-    .hamburger-menu {
-        display: flex;
-        position: absolute;
-        top: 0;
-        left: 0;
-        height: 100%;
-        width: 60px;
-        background: none;
-        border: none;
-        color: var(--text-secondary);
-        font-size: 30px;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        z-index: 1002;
-    }
-    .hamburger-menu .close-icon { display: none; }
-    body.nav-open .hamburger-menu .close-icon { display: block; }
-    body.nav-open .hamburger-menu .hamburger-icon { display: none; }
-
-    body.nav-open #nav-links-container {
-        display: block;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 280px;
-        height: 100%;
-        background-color: var(--nav-bg-color);
-        box-shadow: 2px 0 10px rgba(0,0,0,0.5);
-        transform: translateX(0);
-        transition: transform 0.3s ease-in-out;
-        z-index: 1001;
-        padding-top: var(--height-nav);
-        box-sizing: border-box;
-        overflow-y: auto;
-    }
-    
-    #main-nav-menu {
-        flex-direction: column;
-        height: auto;
-    }
-    #main-nav-menu > li {
-        width: 100%;
-        height: auto;
-    }
-
-    #main-nav-menu > li > a {
-        color: var(--text-secondary); 
-        padding: 15px 20px;
-        width: 100%;
-        box-sizing: border-box;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .nav-item-right {
-        margin-left: 0 !important;
-    }
-    .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        border-radius: 0;
-        background-color: rgba(0,0,0,0.2);
-    }
-    body:not(.theme-dark) .dropdown-menu {
-        background-color: var(--secondary-color);
-        opacity: 0.8;
-    }
-    
-    .nav-overlay {
-        display: none;
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background-color: rgba(0, 0, 0, 0.6);
-        z-index: 1000;
-    }
-    body.nav-open .nav-overlay {
-        display: block;
-    }
-
-    .desktop-actions {
-        display: none;
-    }
-
-    .mobile-actions {
-        display: block;
-    }
-
-    .kebab-menu-container {
-        position: fixed;
-        top: calc(var(--height-nav) + 10px);
-        right: 15px;
-        z-index: 998;
-    }
-
-    .kebab-menu-button {
-        width: 48px;
-        height: 48px;
-        background-color: var(--primary-color);
-        border: none;
-        border-radius: 50%;
-        color: var(--text-secondary);
-        font-size: 28px;
-        font-weight: bold;
-        line-height: 1;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        transition: background-color 0.2s ease;
-        box-shadow: 0 2px 5px var(--shadow-base);
-    }
-    
-    .kebab-menu-button:hover, .kebab-menu-button:active {
-        background-color: var(--accent-color);
-    }
-
-    body.theme-dark .kebab-menu-button {
-        background-color: var(--primary-color);
-    }
-    body.theme-dark .kebab-menu-button:hover, 
-    body.theme-dark .kebab-menu-button:active {
-        background-color: var(--accent-color);
-    }
-
-    /* --- TRANSFORMAÇÃO DA TABELA EM CARDS --- */
+    /* 3. Transformação da Tabela em Cards */
     .responsive-card-table {
-        display: block;
-        width: 100%;                  
-        box-sizing: border-box;       
-        border: none;
-        box-shadow: none;
-        background-color: transparent;
-        margin-top: 0;
+        display: block; width: 100%; box-sizing: border-box; border: none;
+        box-shadow: none; background-color: transparent; margin-top: 0;
     }
-    .responsive-card-table thead {
-        display: none;
-    }
+    .responsive-card-table thead { display: none; }
+    
     .responsive-card-table tr:not(#tabela-sem-resultados-row):not(#tabela-pendencias-sem-resultados-row):not(#tabela-backend-sem-resultados):not(.hide-on-mobile) {
-        display: block !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-        border: 1px solid var(--border-base);
-        border-radius: 8px;
-        margin-bottom: 20px;
-        padding: 15px;
-        background-color: var(--background-secondary);
-        box-shadow: 0 2px 5px var(--shadow-base);
-        cursor: pointer;
+        display: block !important; width: 100% !important; box-sizing: border-box !important;
+        border: 1px solid var(--border-base); border-radius: 8px; margin-bottom: 20px;
+        padding: 15px; background-color: var(--background-secondary);
+        box-shadow: 0 2px 5px var(--shadow-base); cursor: pointer;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .responsive-card-table tr:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 12px var(--shadow-base);
-    }
-    body.theme-dark .responsive-card-table tr {
-        background-color: #181818;
-    }
+    .responsive-card-table tr:hover { transform: translateY(-3px); box-shadow: 0 6px 12px var(--shadow-base); }
+    body.theme-dark .responsive-card-table tr { background-color: #181818; }
+    
+    /* --- REGRAS UNIFICADAS DA TABELA EM CARDS --- */
+    .responsive-card-table tr, 
     .responsive-card-table td {
-        display: block;
-        width: 100% ;
-        box-sizing: border-box;
-        padding: 10px 0;
-        text-align: left;
-        border: none !important;
-        overflow-wrap: break-word;
+        display: block !important; 
+        width: 100% !important; 
+        max-width: 100% !important;
+        min-width: 0 !important; 
+        float: none !important; 
+        clear: both !important; 
+        box-sizing: border-box !important;
+    }
+
+    .responsive-card-table td {
+        padding: 10px 0; 
+        text-align: left !important;
+        border: none !important; 
+        overflow-wrap: break-word; 
         word-break: break-word; 
         white-space: normal !important;
     }
-    .responsive-card-table td:last-child {
-        border-bottom: none;
+
+    .responsive-card-table td:last-child { 
+        border-bottom: none !important; 
+        padding-bottom: 30px !important; 
     }
+
     .responsive-card-table td::before {
-        content: attr(data-label);
-        font-weight: bold;
+        content: attr(data-label); 
+        font-weight: bold; 
         color: var(--tertiary-color);
-        margin-bottom: 5px;
-        display: block;
-        text-align: left;
-    }
-    .responsive-card-table .celula-situacao {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-    .responsive-card-table .situacao-dropdown {
-        width: 100%;
-    }
-    
-    .responsive-card-table td.col-detalhe {
-        display: none;
-    }
-    .responsive-card-table tr.card-expanded td.col-detalhe {
-        display: block !important;
-        width: 100% !important;
-    }
-    .expand-card-btn {
-        display: block;
-        width: 100%;
-        margin-top: 15px;
-        padding: 10px;
-        height: auto;
-        background-color: var(--secondary-color);
-        color: var(--text-primary);
-        font-weight: bold;
-        border: 1px solid var(--border-base);
-    }
-     td, td .card-value {
-        width: 100% !important;
-    }
-    .responsive-card-table .coluna-texto-longo {
-        max-width: none;
-        min-width: 0;
-    }
-    .responsive-card-table tr,
-    .responsive-card-table td {
-        display: block !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        float: none !important;
-        clear: both !important;
-        box-sizing: border-box;
+        margin-bottom: 5px; 
+        display: block; 
+        text-align: left; 
+        width: 100% !important; 
+        white-space: normal !important;
     }
 
-    .responsive-card-table tr.card-expanded > td.col-detalhe {
-        display: block !important;
-        width: 100% !important;
-    }
-
-    .responsive-card-table td > *,
+    .responsive-card-table td > *, 
     .responsive-card-table td > * > * {
-        display: block !important;
-        width: 100% !important;
+        display: block !important; 
+        width: 100% !important; 
         max-width: 100% !important;
-        min-width: 0 !important;
-        float: none !important;
+        min-width: 0 !important; 
+        float: none !important; 
         box-sizing: border-box;
     }
 
-    .responsive-card-table td::before {
-        display: block !important;
-        width: 100% !important;
-        margin-bottom: 6px;
-        white-space: normal !important;
-    }
-
-    .responsive-card-table .card-value {
-        display: flex;         
-        align-items: center;   
-        flex-wrap: wrap;       
-        display: block !important;      
-        width: 100% !important;         
-        box-sizing: border-box;         
-        white-space: normal !important; 
-        overflow-wrap: break-word;      
-        word-break: break-word;         
-        text-align: left !important;      
-    }    
-
-    .responsive-card-table tr.card-expanded,
-    .responsive-card-table tr.card-expanded td,
-    .responsive-card-table tr.card-expanded td.col-detalhe {
-        flex: 0 0 auto !important;
-    }
-
-    .responsive-card-table td:first-child {
-        display: none !important;
-    }
-
-    .responsive-card-table td.col-detalhe {
-        display: none !important;
-    }
-
-    .responsive-card-table tr.card-expanded td.col-detalhe {
-        display: block !important;
-    }
-
-    .expand-card-btn {
-        display: block !important;
-    }
-    table.responsive-card-table td:last-of-type {
-        border-bottom: none !important; 
-    }
-    .responsive-card-table td:last-child {
-        display: block !important;
-        border-bottom: none !important; 
-    }
-    .responsive-card-table .card-actions-toolbar {
-        display: flex !important;
-        flex-direction: row !important;
-        justify-content: center !important;
-        margin-top: 15px;
-        width: 100% !important;
-    }
-    .responsive-card-table .card-actions-toolbar > a.button,
-    .responsive-card-table .card-actions-toolbar > button {
-        margin: 0 5px; 
-    }
-    .responsive-card-table .card-actions-toolbar a.button {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        height: var(--element-height);
-    }
-    .responsive-card-table td > * {
-        display: block !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-        text-align: left !important;
-        white-space: normal !important;
-    }
-
-    .responsive-card-table .color-preview {
-        width: 25px !important;     
-        height: 25px !important;    
-        display: block !important;    
-    }
-    #tabelaSituacoes.responsive-card-table tr {
-        width: 100%;
-        box-sizing: border-box; 
-    }
-
-    .responsive-card-table td[data-label^="Cor"] {
-        justify-content: flex-start;
-        width: auto !important;
-    }
-
-    .responsive-card-table td[data-label^="Cor"] > * {
-        width: 25px !important;
-        height: 25px !important;
-    }
-
-    .responsive-card-table tbody {
-        display: block;
-        width: 100%;
-    }
-
-    /* Mostra a barra de busca mobile */
-    .mobile-search-bar {
-        display: block !important;
-    }
-
-    /* ====================================================================== */
-    /* AJUSTE PARA O WIDGET DE NOTAS RÁPIDAS NO MOBILE                        */
-    /* ====================================================================== */
+    .responsive-card-table .celula-situacao { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .responsive-card-table .situacao-dropdown { width: 100%; }
     
-    .nav-item-notepad {
-        flex-direction: column; /* Empilha o botão e a janela de notas */
-        padding: 10px 20px;
-        box-sizing: border-box;
-        width: 100%;
+    .responsive-card-table td.col-detalhe { display: none !important; }
+    .responsive-card-table tr.card-expanded td.col-detalhe { display: block !important; width: 100% !important; }
+    
+    .expand-card-btn {
+        display: block !important; width: 100% !important; margin-top: 15px; padding: 10px;
+        height: auto; background-color: var(--secondary-color); color: var(--text-primary);
+        font-weight: bold; border: 1px solid var(--border-base); box-sizing: border-box !important;
+    }
+    
+    .responsive-card-table .card-value {
+        display: block !important; width: 100% !important; box-sizing: border-box;
+        white-space: normal !important; overflow-wrap: break-word; word-break: break-word; text-align: left !important;      
+    }    
+    .responsive-card-table tr.card-expanded, .responsive-card-table tr.card-expanded td,
+    .responsive-card-table tr.card-expanded td.col-detalhe { flex: 0 0 auto !important; }
+    .responsive-card-table td:first-child { display: none !important; }
+    table.responsive-card-table td:last-of-type { border-bottom: none !important; }
+    
+    .responsive-card-table .card-actions-toolbar {
+        display: flex !important; flex-direction: row !important; justify-content: center !important;
+        margin-top: 15px; width: 100% !important;
+    }
+    .responsive-card-table .card-actions-toolbar > a.button, .responsive-card-table .card-actions-toolbar > button { margin: 0 5px; }
+    .responsive-card-table .card-actions-toolbar a.button {
+        display: flex !important; align-items: center !important; justify-content: center !important; height: var(--element-height);
+    }
+    .responsive-card-table .color-preview { width: 25px !important; height: 25px !important; display: block !important; }
+    #tabelaSituacoes.responsive-card-table tr { width: 100%; box-sizing: border-box; }
+    .responsive-card-table td[data-label^="Cor"] { justify-content: flex-start; width: auto !important; }
+    .responsive-card-table td[data-label^="Cor"] > * { width: 25px !important; height: 25px !important; }
+    .responsive-card-table tbody { display: block; width: 100%; }
+
+    .card-actions-corner .card-priority-toggle {
+        opacity: 0.5; /* Mantém o cinza suave visível */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5px; /* Aumenta a área de toque no mobile */
+    }
+    
+    .card-actions-corner .card-priority-toggle.active {
+        opacity: 1;
     }
 
     .notepad-widget {
@@ -1782,6 +1524,127 @@ td .card-value {
     .notepad-widget::before {
         display: none !important;
     }
+
+    /* Regra para aniquilar as linhas de criação do desktop no mobile */
+    table#tabelaPendencias tr#inline-create-template,
+    table#tabelaPendencias tr#row-btn-add-inline,
+    table#tabelaPendencias tr#row-btn-add-inline-top,
+    table#tabelaPendencias tr.hide-on-mobile,
+    table#tabelaPendencias tr.hide-on-mobile-always {
+        display: none !important;
+        border: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    /* O SEGREDINHO: Corrigir a Célula (TD) que contém o botão */
+    .responsive-card-table td.coluna-concluir {
+        position: absolute !important;
+        bottom: 12px !important;
+        right: 15px !important;
+        width: auto !important; 
+        min-width: 0 !important;
+        max-width: fit-content !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: flex !important; 
+        justify-content: center;
+        align-items: center;
+        z-index: 5;
+    }
+
+    /* Garante que o botão dentro da célula móvel obedeça ao tamanho */
+    .responsive-card-table td.coluna-concluir .btn-concluir-action {
+        width: 20px !important;
+        height: 20px !important;
+        margin: 0 !important; /* Remove o margin: 0 auto; do desktop */
+    }
+
+    /* Esconde o pseudoelemento "Concluir" (rótulo) no mobile */
+    .responsive-card-table td.coluna-concluir::before {
+        display: none !important; 
+    }
+}
+
+/* ====================================================================== */
+/* RESPONSIVIDADE DO MENU PRINCIPAL (Telas Médias e Tablets)            */
+/* ====================================================================== */
+@media (max-width: 1150px) {
+    body { padding-top: var(--height-nav); }
+
+    nav { position: fixed; top: 0; left: 0; width: 100%; z-index: 1001; }
+    
+    .nav-brand-container { display: none; }
+    #nav-links-container { display: none; }
+
+    .hamburger-menu {
+        display: flex; position: absolute; top: 0; left: 0; height: 100%; width: 60px;
+        background: none; border: none; color: var(--text-secondary); font-size: 30px;
+        align-items: center; justify-content: center; cursor: pointer; z-index: 1002;
+    }
+    .hamburger-menu .close-icon { display: none; }
+    body.nav-open .hamburger-menu .close-icon { display: block; }
+    body.nav-open .hamburger-menu .hamburger-icon { display: none; }
+
+    body.nav-open #nav-links-container {
+        display: block; position: fixed; top: 0; left: 0; width: 280px; height: 100%;
+        background-color: var(--nav-bg-color); box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+        transform: translateX(0); transition: transform 0.3s ease-in-out; z-index: 1001;
+        padding-top: var(--height-nav); box-sizing: border-box; overflow-y: auto;
+    }
+    
+    #main-nav-menu { flex-direction: column; height: auto; }
+    #main-nav-menu > li { width: 100%; height: auto; }
+    #main-nav-menu > li > a {
+        color: var(--text-secondary); padding: 15px 20px; width: 100%;
+        box-sizing: border-box; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-item-right { margin-left: 0 !important; }
+    
+    .dropdown-menu {
+        position: static; box-shadow: none; border-radius: 0; background-color: rgba(0,0,0,0.2);
+    }
+    body:not(.theme-dark) .dropdown-menu {
+        background-color: var(--secondary-color); opacity: 0.8;
+    }
+    
+    .nav-overlay {
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.6); z-index: 1000;
+    }
+    body.nav-open .nav-overlay { display: block; }
+
+    /* ====================================================================== */
+    /* AJUSTES DA BARRA DE FERRAMENTAS (Mantendo a busca visível)             */
+    /* ====================================================================== */
+    
+    /* 1. Esconde APENAS os botões da esquerda (Filtro, Cores) e os de Criar (Novo, Recorrente) */
+    .toolbar-group-left:not(.hub-toolbar-left) { display: none !important; }
+    .toolbar-group-right button, .toolbar-group-right a.button 
+        { display: none !important; } /* <<< REGRA ATUALIZADA AQUI */    
+    /* 2. Mostra o Kebab Menu para compensar a perda dos botões de ação */
+    .mobile-actions { display: block; }
+
+    /* 3. Estiliza e posiciona o Kebab Menu na altura correta */
+    .kebab-menu-container {
+        position: fixed; top: calc(var(--height-nav) + 10px); right: 15px; z-index: 998;
+    }
+    .kebab-menu-button {
+        width: 48px; height: 48px; background-color: var(--primary-color); border: none;
+        border-radius: 50%; color: var(--text-secondary); font-size: 28px; font-weight: bold;
+        line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        padding: 0; transition: background-color 0.2s ease; box-shadow: 0 2px 5px var(--shadow-base);
+    }
+    .kebab-menu-button:hover, .kebab-menu-button:active { background-color: var(--accent-color); }
+    body.theme-dark .kebab-menu-button { background-color: var(--primary-color); }
+    body.theme-dark .kebab-menu-button:hover, body.theme-dark .kebab-menu-button:active { background-color: var(--accent-color); }
+    
+    /* 4. Encolhe um pouquinho a barra de busca original para evitar sobreposições */
+    #buscaRapidaInput { width: 200px; }
 }
 
 table {
@@ -2934,70 +2797,6 @@ body.theme-dark #buscaRapidaInput {
     display: block; 
 }
 
-/* REGRAS ESPECÍFICAS PARA O MODO MOBILE (CARDS) */
-@media (max-width: 768px) {
-    /* Regra para aniquilar as linhas de criação do desktop no mobile */
-    table#tabelaPendencias tr#inline-create-template,
-    table#tabelaPendencias tr#row-btn-add-inline,
-    table#tabelaPendencias tr#row-btn-add-inline-top,
-    table#tabelaPendencias tr.hide-on-mobile,
-    table#tabelaPendencias tr.hide-on-mobile-always {
-        display: none !important;
-        border: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        height: 0 !important;
-        overflow: hidden !important;
-    }
-
-    /* O SEGREDINHO: Corrigir a Célula (TD) que contém o botão */
-    .responsive-card-table td.coluna-concluir {
-        position: absolute !important;
-        bottom: 12px !important;
-        right: 15px !important;
-        
-        /* Em vez de 100%, forçamos a célula a encolher para caber apenas o botão */
-        width: auto !important; 
-        min-width: 0 !important;
-        max-width: fit-content !important;
-        
-        border: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        
-        /* Flex é melhor que Block aqui para evitar estiramento acidental */
-        display: flex !important; 
-        justify-content: center;
-        align-items: center;
-        z-index: 5;
-    }
-
-    /* Garante que o botão dentro da célula móvel obedeça ao tamanho */
-    .responsive-card-table td.coluna-concluir .btn-concluir-action {
-        width: 20px !important;
-        height: 20px !important;
-        margin: 0 !important; /* Remove o margin: 0 auto; do desktop */
-    }
-
-    /* Esconde o pseudoelemento "Concluir" (rótulo) no mobile */
-    .responsive-card-table td.coluna-concluir::before {
-        display: none !important; 
-    }
-
-    /* Garante que o botão "Ver mais" ocupe 100% da largura em todas as páginas */
-    .responsive-card-table td:last-child {
-        width: 100% !important;
-        display: block !important;
-        padding-bottom: 30px !important;
-    }
-
-    /* Ajuste para o botão não vazar o limite do card */
-    .expand-card-btn {
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
-}
-
 /* ====================================================================== */
 /* ESTILOS DO HUB CENTRAL DE INSTRUMENTOS (ACORDEÕES E BADGES)            */
 /* ====================================================================== */
@@ -3162,20 +2961,6 @@ body.theme-dark #buscaRapidaInput {
     opacity: 1 !important;
 }
 
-/* Garantia extra para visibilidade perfeita no Mobile */
-@media (max-width: 768px) {
-    .card-actions-corner .card-priority-toggle {
-        opacity: 0.5; /* Mantém o cinza suave visível */
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 5px; /* Aumenta a área de toque no mobile */
-    }
-    
-    .card-actions-corner .card-priority-toggle.active {
-        opacity: 1;
-    }
-}
 
 /* ====================================================================== */
 /* CORES DO ÍCONE DE PRIORIDADE (SEGURO - NÃO QUEBRA LAYOUT)              */
@@ -3241,36 +3026,38 @@ hr.divider-spaced {
     border: 1px solid #777;
 }
 
-/* Botões Tracejados para Adição Rápida */
+/* Botões Tracejados para Adição Rápida (Modernizados) */
 .btn-dashed-add {
-    background: transparent;
+    background-color: var(--table-stripe); /* Fundo suave em vez de transparente */
     border: 2px dashed var(--border-base);
-    color: var(--tertiary-color);
-    padding: 10px;
+    color: var(--primary-color); /* Cor do texto chamando para a ação */
+    padding: 12px; /* Um pouquinho mais de respiro */
     border-radius: 8px;
     text-align: center;
-    font-weight: bold;
+    font-weight: 600; /* Negrito mais refinado (combina com a fonte Inter) */
     cursor: pointer;
-    display: block; /* Alterado de 'flex' para 'block' para respeitar a tabela */
+    display: block; 
     width: 100%;
-    box-sizing: border-box; /* Garante que o padding de 10px não estoure a largura da coluna */
-    transition: background-color 0.2s, border-color 0.2s;
+    box-sizing: border-box; 
+    transition: all 0.2s ease;
+    letter-spacing: 0.5px;
 }
 
 .btn-dashed-add:hover {
-    background-color: var(--hover-bg);
+    background-color: var(--secondary-color); /* Preenche com a cor do tema no hover */
     border-color: var(--primary-color);
+    color: var(--tertiary-color);
 }
 
-/* Variações de borda para acoplar na tabela */
-.btn-dashed-add.top-flat { 
-    border-bottom: none; 
-    border-radius: 8px 8px 0 0; 
+/* Ajuste sutil para o Tema Escuro (Fundo translúcido elegante) */
+body.theme-dark .btn-dashed-add {
+    background-color: rgba(255, 255, 255, 0.03); 
+    border-color: #444;
 }
 
-.btn-dashed-add.bottom-flat { 
-    border-top: none; 
-    border-radius: 0 0 8px 8px; 
+body.theme-dark .btn-dashed-add:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: var(--primary-color);
 }
 
 .mobile-search-bar {
@@ -3481,11 +3268,30 @@ tr#inline-create-template { background-color: var(--table-stripe); }
 .clickable-row { position: relative; }
 .th-icon-col { width: 40px; text-align: center; }
 
-/* Wrapper para o scroll horizontal das tabelas no Hub */
+/* ==========================================================================
+   WRAPPER DE ROLAGEM PARA TABELAS (Evita que a tabela quebre a tela)
+   ========================================================================== */
 .table-responsive-wrapper {
+    display: block;
     overflow-x: auto;
     width: 100%;
-    padding-bottom: 10px;
+    max-width: 100%; 
+    margin-top: 20px;
+    /* Removemos o padding-bottom que causava o espaço vazio */
+    padding-bottom: 0; 
+    
+    border-radius: 8px;
+    box-shadow: 0 4px 12px var(--shadow-base);
+    background-color: var(--background-secondary);
+}
+
+/* Retira o sombreamento e as margens da tabela de dentro para evitar conflitos */
+.table-responsive-wrapper table {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important; /* Garante que a tabela cole perfeitamente no fundo do envelope */
+    box-shadow: none !important;
+    border: none !important; /* Elimina qualquer borda residual (como os border="1" do HTML) */
+    /* Removemos a regra de border-radius 0. Agora a tabela herda a curva do envelope perfeitamente! */
 }
 
 /* 4. HUB CENTRAL (controle_por_instrumento.html) */
@@ -3997,4 +3803,195 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
     outline: 2px solid #ffffff !important;
     outline-offset: -2px;
     border-radius: 4px;
+}
+
+/* ==========================================================================
+   MODERNIZAÇÃO DA TABELA (Estilo Clean/SaaS) - VERSÃO 2
+   ========================================================================== */
+
+/* 1. Reset das Tabelas Principais */
+#tabelaControle, 
+#tabelaPendencias, 
+#tabelaInstrumentos, 
+#tabelaTiposDocumento, 
+#tabelaSituacoes, 
+#tabelaItens,
+.tabela-hub {
+    border: none;
+    box-shadow: 0 4px 12px var(--shadow-base);
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: var(--background-secondary);
+}
+
+/* 2. Cabeçalho com Cor do Tema (Suavizado) */
+#tabelaControle th, 
+#tabelaPendencias th, 
+#tabelaInstrumentos th, 
+#tabelaTiposDocumento th, 
+#tabelaSituacoes th, 
+#tabelaItens th,
+.tabela-hub th {
+    background-color: var(--nav-bg-color) !important; 
+    color: var(--text-secondary); 
+    border: none;
+    font-size: 1.1em;
+    padding: 16px 15px; 
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+#tabelaControle th a, 
+#tabelaPendencias th a, 
+#tabelaInstrumentos th a, 
+#tabelaTiposDocumento th a, 
+#tabelaSituacoes th a, 
+#tabelaItens th a,
+.tabela-hub th a {
+    color: var(--text-secondary); 
+}
+
+/* 3. Células sem grade e com mais espaço */
+#tabelaControle td, #tabelaPendencias td, 
+#tabelaInstrumentos td, 
+#tabelaTiposDocumento td, 
+#tabelaSituacoes td, 
+#tabelaItens td,
+.tabela-hub td {
+    border-left: none;
+    border-right: none;
+    border-bottom: 1px solid var(--border-base);
+    padding: 16px 15px; 
+    vertical-align: middle; 
+}
+
+#tabelaControle tr:last-child td, 
+#tabelaPendencias tr:last-child td, 
+#tabelaInstrumentos tr:last-child td, 
+#tabelaTiposDocumento tr:last-child td, 
+#tabelaSituacoes tr:last-child td, 
+##tabelaItens tr:last-child td, 
+.tabela-hub tr:last-child td {
+    border-bottom: none;
+}
+
+/* 4. Substituição do efeito Zebrado pelo Hover */
+#tabelaControle tr:nth-child(even), 
+#tabelaPendencias tr:nth-child(even),
+#tabelaInstrumentos tr:nth-child(even), 
+#tabelaTiposDocumento tr:nth-child(even), 
+#tabelaSituacoes tr:nth-child(even), 
+#tabelaItens tr:nth-child(even), 
+.tabela-hub tr:nth-child(even) {
+    background-color: transparent; 
+}
+
+#tabelaControle tr.clickable-row:hover, 
+#tabelaPendencias tr.clickable-row:hover, 
+#tabelaInstrumentos tr.clickable-row:hover, 
+#tabelaTiposDocumento tr.clickable-row:hover, 
+#tabelaSituacoes tr.clickable-row:hover, 
+#tabelaItens tr.clickable-row:hover, 
+.tabela-hub tr.clickable-row:hover {
+    background-color: var(--table-hover);
+    transition: background-color 0.2s ease;
+}
+
+/* 5. Transformação do Dropdown de Situação em Pílula (Sem contorno) */
+#tabelaControle .situacao-dropdown, 
+.tabela-hub .situacao-dropdown {
+    border-radius: 20px; 
+    padding: 6px 15px;
+    font-weight: 600;
+    font-size: 0.85em;
+    
+    /* REMOÇÃO DA BORDA */
+    border: none;
+    outline: none;
+    
+    /* FUNDO PADRÃO (Cinza claro para quando não tem cor ativa) */
+    background-color: #e2e8f0; 
+    color: #475569; 
+    
+    min-width: 120px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Foco na pílula sem a borda do navegador */
+#tabelaControle .situacao-dropdown:focus,
+.tabela-hub .situacao-dropdown:focus {
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3); /* Anel suave de foco */
+}
+
+#tabelaControle .situacao-dropdown:hover,
+.tabela-hub .situacao-dropdown:hover {
+    filter: brightness(0.95);
+    transform: translateY(-1px);
+}
+
+/* 6. CORREÇÃO DE CONTRASTE DA PÍLULA (Com Cor Ativa) */
+
+/* REGRA PADRÃO (Temas Claros): Quando JS insere cor inline */
+#tabelaControle .situacao-dropdown[style*="background-color"],
+.tabela-hub .situacao-dropdown[style*="background-color"] {
+    color: #1a1a1a; /* Texto quase preto para alto contraste com fundos claros */
+}
+
+/* ==================================
+   AJUSTES ESPECÍFICOS: TEMA ESCURO
+   ================================== */
+   
+/* Fundo padrão para Pílula "Sem Cor" no Tema Escuro */
+body.theme-dark #tabelaControle .situacao-dropdown:not([style*="background-color"]),
+body.theme-dark .tabela-hub .situacao-dropdown:not([style*="background-color"]) {
+    background-color: #1b232d; /* Cinza bem escuro (Slate) */
+    color: #cbd5e1; /* Texto cinza claro correspondente */
+}
+
+/* Quando tem Cor Ativa no Tema Escuro */
+body.theme-dark #tabelaControle .situacao-dropdown[style*="background-color"],
+body.theme-dark .tabela-hub .situacao-dropdown[style*="background-color"] {
+    color: #ffffff; /* Texto branco puro */
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8); /* Sombra para leitura sobre o fundo escuro */
+}
+
+/* ==========================================================================
+   AJUSTE PARA TABELAS COMPACTAS (Ex: Cadastros com poucas colunas)
+   ========================================================================== */
+@media (min-width: 769px) {
+    .table-responsive-wrapper.wrapper-compacto {
+        /* O segredo: deixa o container esticar empurrado pela tabela, mas sem vazar da tela */
+        width: fit-content !important; 
+        max-width: 100% !important;
+        min-width: 600px; /* Apenas para garantir um tamanho mínimo elegante */
+    }
+    
+    /* --- TABELA TIPO DOCUMENTO --- */
+    #tabelaTiposDocumento th:first-child,
+    #tabelaTiposDocumento td:first-child {
+        width: 100%; /* Nome empurra tudo */
+    }
+    #tabelaTiposDocumento th:last-child,
+    #tabelaTiposDocumento td:last-child {
+        width: 1%;
+        white-space: nowrap;
+        text-align: right; 
+    }
+
+    /* --- TABELA DE SITUAÇÕES --- */
+    /* Faz a coluna 'Nome da Situação' (a 2ª) esticar e ocupar todo o espaço livre */
+    #tabelaSituacoes th:nth-child(2),
+    #tabelaSituacoes td:nth-child(2) {
+        width: 100%;
+    }
+    
+    /* Mantém as outras colunas (Ações, Arquiva e Cores) restritas ao tamanho do seu conteúdo */
+    #tabelaSituacoes th:not(:nth-child(2)),
+    #tabelaSituacoes td:not(:nth-child(2)) {
+        width: 1%;
+        white-space: nowrap;
+        text-align: center; /* Centraliza os ícones e bolinhas de cor */
+    }
 }

@@ -50,35 +50,38 @@
 
     <div class="container container-darker">
         <h3>Itens de Faturamento</h3>
-        <table id="tabelaItens" class="responsive-card-table">
-            <thead>
-                <tr>
-                    <th>Descrição do Item</th>
-                    <th>Tipo/Frequência</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in itens %}
-                <tr>
-                    <td data-label="Descrição">{{ item.descricao_item }}</td>
-                    <td data-label="Frequência">{{ item.tipo_frequencia }}</td>
-                    <td data-label="Ações">
-                        <div class="card-actions-toolbar">
-                            <a href="{{ url_for('instrumentos.editar_item_instrumento', item_id=item._id) }}" class="button">Editar</a>
-                            <button type="button" class="button-danger btn-excluir-item" data-item-id="{{ item._id }}" data-item-descricao="{{ item.descricao_item }}">Excluir</button>
-                            <button type="button" class="button btn-novo-controle" data-item-id="{{ item._id }}" data-item-descricao="{{ item.descricao_item }}">Novo controle</button>
-                        </div>
-                        <form id="formExcluirItem-{{ item._id }}" method="POST" action="{{ url_for('instrumentos.excluir_item_instrumento', item_id=item._id) }}" style="display: none;"></form>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="3">Nenhum item cadastrado para este instrumento.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <!-- NOVO ENVELOPE DE ROLAGEM E TABELA LIMPA -->
+        <div class="table-responsive-wrapper">
+            <table id="tabelaItens" class="responsive-card-table">
+                <thead>
+                    <tr>
+                        <th>Descrição do Item</th>
+                        <th>Tipo/Frequência</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in itens %}
+                    <tr>
+                        <td data-label="Descrição">{{ item.descricao_item }}</td>
+                        <td data-label="Frequência">{{ item.tipo_frequencia }}</td>
+                        <td data-label="Ações">
+                            <div class="card-actions-toolbar">
+                                <a href="{{ url_for('instrumentos.editar_item_instrumento', item_id=item._id) }}" class="button">Editar</a>
+                                <button type="button" class="button-danger btn-excluir-item" data-item-id="{{ item._id }}" data-item-descricao="{{ item.descricao_item }}">Excluir</button>
+                                <button type="button" class="button btn-novo-controle" data-item-id="{{ item._id }}" data-item-descricao="{{ item.descricao_item }}">Novo controle</button>
+                            </div>
+                            <form id="formExcluirItem-{{ item._id }}" method="POST" action="{{ url_for('instrumentos.excluir_item_instrumento', item_id=item._id) }}" style="display: none;"></form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3">Nenhum item cadastrado para este instrumento.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         
         <br>
         
