@@ -77,78 +77,81 @@
         Nenhum resultado encontrado para a busca.
     </p>
     
-    <table border="1" id="tabelaPendencias" class="responsive-card-table tabela-pendencias-shared {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
-        <thead>
-            <tr>
-                <th class="hide-on-mobile"></th> <th class="hide-on-mobile"></th>
-                {% for col_id, col_nome in todas_as_colunas %}
-                    {% if col_id in colunas_visiveis %}
-                        <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
-                           <a href="{{ url_for(request.endpoint, **dict(request.args, page_mode=page_mode, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc' )) }}">
-                                {{ col_nome }} {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}
-                            </a>
-                        </th>
-                    {% endif %}
+<!-- NOVO ENVELOPE DE ROLAGEM -->
+    <div class="table-responsive-wrapper {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
+        <table border="1" id="tabelaPendencias" class="responsive-card-table tabela-pendencias-shared {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">        
+            <thead>
+                <tr>
+                    <th class="hide-on-mobile"></th> <th class="hide-on-mobile"></th>
+                    {% for col_id, col_nome in todas_as_colunas %}
+                        {% if col_id in colunas_visiveis %}
+                            <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
+                            <a href="{{ url_for(request.endpoint, **dict(request.args, page_mode=page_mode, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc' )) }}">
+                                    {{ col_nome }} {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}
+                                </a>
+                            </th>
+                        {% endif %}
+                    {% endfor %}
+                    <th class="hide-on-mobile th-icon-col" title="Concluir Pendência">
+                        {#<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>#}
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="row-btn-add-inline-top" class="hide-on-mobile">
+                    <td colspan="{{ colunas_visiveis|length + 3 }}" class="td-no-padding">
+                        <button type="button" id="btnShowInlineCreateTop" class="btn-dashed-add top-flat">+ Adição Rápida</button>
+                    </td>
+                    <td></td> 
+                </tr>
+                
+                {% for p in pendencias %}
+                    {% include 'partials/_pendencia_table_row.html' %}
+                {% else %}
+                <tr id="tabela-pendencias-backend-sem-resultados">
+                    <td colspan="{{ colunas_visiveis|length + 4 }}">Nenhuma pendência encontrada.</td>
+                </tr>
                 {% endfor %}
-                <th class="hide-on-mobile th-icon-col" title="Concluir Pendência">
-                    {#<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>#}
-                </th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr id="row-btn-add-inline-top" class="hide-on-mobile">
-                <td colspan="{{ colunas_visiveis|length + 3 }}" class="td-no-padding">
-                    <button type="button" id="btnShowInlineCreateTop" class="btn-dashed-add top-flat">+ Adição Rápida</button>
-                </td>
-                <td></td> 
-            </tr>
-            
-            {% for p in pendencias %}
-                {% include 'partials/_pendencia_table_row.html' %}
-            {% else %}
-            <tr id="tabela-pendencias-backend-sem-resultados">
-                <td colspan="{{ colunas_visiveis|length + 4 }}">Nenhuma pendência encontrada.</td>
-            </tr>
-            {% endfor %}
-            
-            <tr id="inline-create-template" style="display: none;">
-                <td class="td-center-compact">
-                    <button type="button" class="btn-save-inline btn-inline-action save" title="Salvar">✔</button>
-                    <button type="button" class="btn-cancel-inline btn-inline-action cancel" title="Cancelar">✖</button>
-                </td>
-                <td class="td-center-compact">
-                    <span id="inlineCreatePriorityToggle" class="card-priority-toggle" title="Alternar Prioridade">
-                        <svg viewBox="0 0 24 24" class="icon-sm"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
-                    </span>
-                </td>
-                {% for col_id, col_nome in todas_as_colunas %}
-                    {% if col_id in colunas_visiveis %}
-                        <td class="td-compact"> 
-                            {% if col_id in ['pendencia', 'responsavel', 'situacao', 'observacoes', 'prazo', 'instrumento_display'] %}
-                                {% if col_id == 'observacoes' %}<textarea name="{{ col_id }}" class="inline-add-field" placeholder="Observações..."></textarea>
-                                {% elif col_id == 'prazo' %}<input type="date" name="{{ col_id }}" class="inline-add-field">
-                                {% elif col_id == 'instrumento_display' %}
-                                    <select name="instrumento_id" class="inline-add-field">
-                                        <option value="">-- Instrumento contratual --</option>
-                                        {% for inst in instrumentos %}<option value="{{ inst._id }}">{{ inst.n_instrumento }} - {{ inst.contratada }}</option>{% endfor %}
-                                    </select>
-                                {% else %}<input type="text" name="{{ col_id }}" class="inline-add-field" placeholder="Digitar...">{% endif %}
-                            {% else %}<div class="text-not-applicable">Não aplicável</div>{% endif %}
-                        </td>
-                    {% endif %}
-                {% endfor %}
-                <td></td><td></td> 
-            </tr>
+                
+                <tr id="inline-create-template" style="display: none;">
+                    <td class="td-center-compact">
+                        <button type="button" class="btn-save-inline btn-inline-action save" title="Salvar">✔</button>
+                        <button type="button" class="btn-cancel-inline btn-inline-action cancel" title="Cancelar">✖</button>
+                    </td>
+                    <td class="td-center-compact">
+                        <span id="inlineCreatePriorityToggle" class="card-priority-toggle" title="Alternar Prioridade">
+                            <svg viewBox="0 0 24 24" class="icon-sm"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
+                        </span>
+                    </td>
+                    {% for col_id, col_nome in todas_as_colunas %}
+                        {% if col_id in colunas_visiveis %}
+                            <td class="td-compact"> 
+                                {% if col_id in ['pendencia', 'responsavel', 'situacao', 'observacoes', 'prazo', 'instrumento_display'] %}
+                                    {% if col_id == 'observacoes' %}<textarea name="{{ col_id }}" class="inline-add-field" placeholder="Observações..."></textarea>
+                                    {% elif col_id == 'prazo' %}<input type="date" name="{{ col_id }}" class="inline-add-field">
+                                    {% elif col_id == 'instrumento_display' %}
+                                        <select name="instrumento_id" class="inline-add-field">
+                                            <option value="">-- Instrumento contratual --</option>
+                                            {% for inst in instrumentos %}<option value="{{ inst._id }}">{{ inst.n_instrumento }} - {{ inst.contratada }}</option>{% endfor %}
+                                        </select>
+                                    {% else %}<input type="text" name="{{ col_id }}" class="inline-add-field" placeholder="Digitar...">{% endif %}
+                                {% else %}<div class="text-not-applicable">Não aplicável</div>{% endif %}
+                            </td>
+                        {% endif %}
+                    {% endfor %}
+                    <td></td><td></td> 
+                </tr>
 
-            <tr id="row-btn-add-inline" class="hide-on-mobile">
-                <td colspan="{{ colunas_visiveis|length + 3 }}" class="td-no-padding">
-                    <button type="button" id="btnShowInlineCreate" class="btn-dashed-add bottom-flat">+ Adição Rápida</button>
-                </td>
-                <td></td>
-            </tr>
-        </tbody>
-    </table>
+                <tr id="row-btn-add-inline" class="hide-on-mobile">
+                    <td colspan="{{ colunas_visiveis|length + 3 }}" class="td-no-padding">
+                        <button type="button" id="btnShowInlineCreate" class="btn-dashed-add bottom-flat">+ Adição Rápida</button>
+                    </td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
     <div class="card-quick-add-container-group hide-on-desktop">
         <div class="card-quick-add-trigger btnShowQuickAddCardMobile">
