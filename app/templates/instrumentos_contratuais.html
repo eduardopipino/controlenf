@@ -48,33 +48,34 @@
 
     <!-- NOVO ENVELOPE DE ROLAGEM E TABELA LIMPA -->
     <div class="table-responsive-wrapper">
-        <table id="tabelaInstrumentos" class="responsive-card-table">            <thead>
+        <table id="tabelaInstrumentos" class="responsive-card-table">
+            <thead>
                 <tr>
-                    <th></th>
-                    <th>Nº Instrumento</th>
-                    <th>Tipo Documento</th>
-                    <th>Contratada</th>
-                    <th>Objeto Resumido</th>
-                    <th>Itens</th>
-                    <th>Vigente</th>
+                    <th class="text-center"></th>
+                    <th class="text-left">Nº Instrumento</th>
+                    <th class="text-left">Tipo Documento</th>
+                    <th class="text-left">Contratada</th>
+                    <th class="text-left">Objeto Resumido</th>
+                    <th class="text-left">Itens</th>
+                    <th class="text-center">Vigente</th>
                 </tr>
             </thead>
             <tbody>
                 {% for instrumento in instrumentos %}
                 <tr class="clickable-row" data-url="{{ url_for('instrumentos.gerenciar_instrumento', instrumento_id=instrumento._id) }}">
-                    <td data-label="Ações" class="hide-on-mobile">
+                    <td data-label="Ações" class="hide-on-mobile text-center">
                         <a href="{{ url_for('instrumentos.gerenciar_instrumento', instrumento_id=instrumento._id) }}" class="action-icon-link" title="Ver Detalhes">
                             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
                                 <path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
                             </svg>
                         </a>
                     </td>
-                    <td data-label="Nº Instrumento"><span class="card-value">{{ instrumento.n_instrumento }}</span></td>
-                    <td data-label="Tipo Documento"><span class="card-value">{{ instrumento.tipo_documento }}</span></td>
-                    <td data-label="Contratada"><span class="card-value">{{ instrumento.contratada }}</span></td>
-                    <td data-label="Objeto Resumido"><span class="card-value">{{ instrumento.objeto_resumido }}</span></td>
-                    <td data-label="Itens"><span class="card-value">{{ instrumento.itens_string or '' }}</span></td>
-                    <td data-label="Vigente"><span class="card-value">{{ 'Sim' if instrumento.vigente else 'Não' }}</span></td>
+                    <td data-label="Nº Instrumento" class="text-left"><span class="card-value">{{ instrumento.n_instrumento }}</span></td>
+                    <td data-label="Tipo Documento" class="text-left"><span class="card-value">{{ instrumento.tipo_documento }}</span></td>
+                    <td data-label="Contratada" class="text-left"><span class="card-value">{{ instrumento.contratada }}</span></td>
+                    <td data-label="Objeto Resumido" class="text-left"><span class="card-value">{{ instrumento.objeto_resumido }}</span></td>
+                    <td data-label="Itens" class="text-left"><span class="card-value">{{ instrumento.itens_string or '' }}</span></td>
+                    <td data-label="Vigente" class="text-center"><span class="card-value">{{ 'Sim' if instrumento.vigente else 'Não' }}</span></td>
                 </tr>
                 {% else %}
                 <tr>
