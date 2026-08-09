@@ -79,14 +79,14 @@
     
 <!-- NOVO ENVELOPE DE ROLAGEM -->
     <div class="table-responsive-wrapper {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
-        <table border="1" id="tabelaPendencias" class="responsive-card-table tabela-pendencias-shared {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">        
+        <table id="tabelaPendencias" class="responsive-card-table tabela-pendencias-shared {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">        
             <thead>
                 <tr>
-                    <th class="hide-on-mobile"></th> <th class="hide-on-mobile"></th>
+                    <th class="hide-on-mobile text-center"></th> <th class="hide-on-mobile text-center"></th>
+                    {% set cols_center_pend = ['prazo', 'situacao', 'responsavel'] %}
                     {% for col_id, col_nome in todas_as_colunas %}
                         {% if col_id in colunas_visiveis %}
-                            <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
-                            <a href="{{ url_for(request.endpoint, **dict(request.args, page_mode=page_mode, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc' )) }}">
+                            <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }} {{ 'text-center' if col_id in cols_center_pend else 'text-left' }}">                            <a href="{{ url_for(request.endpoint, **dict(request.args, page_mode=page_mode, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc' )) }}">
                                     {{ col_nome }} {% if sort_by == col_id %}{{ '▲' if order == 'asc' else '▼' }}{% endif %}
                                 </a>
                             </th>

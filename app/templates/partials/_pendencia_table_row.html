@@ -25,13 +25,13 @@
         </span>
     </div>
 
-    <td data-label="Ações" class="hide-on-mobile">
+    <td data-label="Ações" class="hide-on-mobile text-center">
         <a href="{{ url_for('pendencias.detalhes_pendencia', pendencia_id=p._id, origem=request.full_path) }}" class="action-icon-link" title="Ver Detalhes (Alt + D)">
             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
         </a>
     </td>
     
-    <td class="coluna-prioridade hide-on-mobile" data-id="{{ p._id }}" title="Alternar Prioridade (Alt + P)"></td>
+    <td class="coluna-prioridade hide-on-mobile text-center" data-id="{{ p._id }}" title="Alternar Prioridade (Alt + P)"></td>
     
     {% set editable_fields_pendencias = ['pendencia', 'prazo', 'responsavel', 'situacao', 'observacoes'] %}
     {% set colunas_sempre_visiveis = ['instrumento_display', 'contratada', 'pendencia', 'prazo'] %}
@@ -41,8 +41,9 @@
             {% set is_editable = col_id in editable_fields_pendencias %}
             {% set is_detalhe = col_id not in colunas_sempre_visiveis %}
             
+            {% set cols_center_pend = ['prazo', 'situacao', 'responsavel'] %}
             <td data-label="{{ col_nome }}"
-                class="{{ 'coluna-texto-longo' if col_id in ['observacoes', 'pendencia'] else '' }} {{ 'col-detalhe' if is_detalhe else '' }} {{ 'editable-cell' if is_editable else '' }}"
+                class="{{ 'coluna-texto-longo' if col_id in ['observacoes', 'pendencia'] else '' }} {{ 'col-detalhe' if is_detalhe else '' }} {{ 'editable-cell' if is_editable else '' }} {{ 'text-center' if col_id in cols_center_pend else 'text-left' }}"
                 {% if is_editable %}data-field-name="{{ col_id }}"{% endif %}>
                 <span class="card-value">
                     {% if col_id == 'prazo' %}{{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '' }}{% else %}{{ p[col_id] or '' }}{% endif %}
