@@ -75,16 +75,17 @@
     </p>
 
     <div class="table-responsive-wrapper {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
-        <table border="1" id="tabelaControle" class="tabela-controle-shared responsive-card-table {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
+        <table id="tabelaControle" class="tabela-controle-shared responsive-card-table {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
             <thead>
                 <tr>
                     <th></th>
+                    {% set cols_center_controle = ['tipo_documento', 'n_instrumento', 'referencia', 'nota_fiscal', 'carta_de_correcao', 'situacao'] %}
                     {% for col_id, col_nome in todas_as_colunas %}
                         {% if col_id in colunas_visiveis %}
                             {% if col_id == 'situacao' %}
-                                <th class="coluna-situacao">
+                                <th class="coluna-situacao text-center">
                             {% else %}
-                                <th class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }}">
+                                <th class="{{ 'coluna-texto-longo' if col_id in colunas_longas else '' }} {{ 'text-center' if col_id in cols_center_controle else 'text-left' }}">
                             {% endif %}
                                 <a href="{{ url_for(request.endpoint, **dict(request.args, filter_mode=filter_mode, sort_by=col_id, order='desc' if sort_by == col_id and order == 'asc' else 'asc'  )) }}">
                                     {{ col_nome }}

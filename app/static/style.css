@@ -1666,8 +1666,15 @@ th {
     font-weight: bold;
     text-transform: uppercase;
     transition: background-color 0.3s ease, color 0.3s ease;
-    text-align: center !important
+    text-align: left;
 }
+
+/* ====================================================================== */
+/* CLASSES UTILITÁRIAS DE ALINHAMENTO MODERNOS                            */
+/* ====================================================================== */
+.text-left { text-align: left !important; }
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }
 
 th, td {
     border: 1px solid var(--table-stripe);
