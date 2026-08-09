@@ -94,12 +94,12 @@
                                         <table class="responsive-card-table tabela-hub tabela-pendencias-shared" data-type="pendencia">
                                             <thead>
                                                 <tr>
-                                                    <th class="hide-on-mobile"></th> 
-                                                    <th class="hide-on-mobile"></th>
+                                                    <th class="hide-on-mobile text-center"></th> 
+                                                    <th class="hide-on-mobile text-center"></th>
+                                                    {% set cols_center_pend = ['prazo', 'situacao', 'responsavel'] %}
                                                     {% for col_id, col_nome in todas_as_colunas_pendencias %}
                                                         {% if col_id in colunas_visiveis_pendencias %}
-                                                            <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }}">
-                                                                <a href="{{ url_for(request.endpoint, **dict(request.args, status=filtro_status, sort_pend=col_id, order_pend='desc' if sort_pend == col_id and order_pend == 'asc' else 'asc' )) }}#acc-{{ item.instrumento.str_id }}">
+                                                            <th class="{{ 'coluna-texto-longo' if col_id in ['pendencia', 'observacoes'] else '' }} {{ 'text-center' if col_id in cols_center_pend else 'text-left' }}">                                                                <a href="{{ url_for(request.endpoint, **dict(request.args, status=filtro_status, sort_pend=col_id, order_pend='desc' if sort_pend == col_id and order_pend == 'asc' else 'asc' )) }}#acc-{{ item.instrumento.str_id }}">
                                                                     {{ col_nome }} {% if sort_pend == col_id %}{{ '▲' if order_pend == 'asc' else '▼' }}{% endif %}
                                                                 </a>
                                                             </th>
@@ -168,10 +168,11 @@
                                         <table class="responsive-card-table tabela-hub tabela-controle-shared" data-type="controle">
                                             <thead>
                                                 <tr>
-                                                    <th></th>
+                                                    <th class="text-center"></th>
+                                                    {% set cols_center_controle = ['tipo_documento', 'n_instrumento', 'referencia', 'nota_fiscal', 'carta_de_correcao', 'situacao'] %}
                                                     {% for col_id, col_nome in todas_as_colunas_controle %}
                                                         {% if col_id in colunas_visiveis_controle %}
-                                                            <th class="{{ 'coluna-situacao' if col_id == 'situacao' else ('coluna-texto-longo' if col_id in ['objeto', 'item_descricao', 'documentacao', 'observacoes'] else '') }}">
+                                                            <th class="{{ 'coluna-situacao' if col_id == 'situacao' else ('coluna-texto-longo' if col_id in ['objeto', 'item_descricao', 'documentacao', 'observacoes'] else '') }} {{ 'text-center' if col_id in cols_center_controle else 'text-left' }}">
                                                                 <a href="{{ url_for(request.endpoint, **dict(request.args, status=filtro_status, sort_nf=col_id, order_nf='desc' if sort_nf == col_id and order_nf == 'asc' else 'asc' )) }}#acc-{{ item.instrumento.str_id }}">
                                                                     {{ col_nome }} {% if sort_nf == col_id %}{{ '▲' if order_nf == 'asc' else '▼' }}{% endif %}
                                                                 </a>
