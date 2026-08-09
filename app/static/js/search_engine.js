@@ -33,7 +33,16 @@ class SearchEngine {
             input.addEventListener('keyup', execute);
             input.addEventListener('search', execute);
             input.addEventListener('keydown', e => { 
-                if (e.key === 'Escape') { input.value = ''; execute(e); }
+                if (e.key === 'Escape') { 
+                    e.preventDefault();
+                    input.value = ''; 
+                    execute(e); 
+                    
+                    // setTimeout engana o ciclo do navegador e garante o foco
+                    setTimeout(() => {
+                        input.focus();
+                    }, 10); 
+                }
             });
         };
 
