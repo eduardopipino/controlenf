@@ -267,7 +267,7 @@ nav {
     margin: 0;
 }
 
-#main-nav-menu > li:hover > .dropdown-menu,
+/* Que o menu abra SOMENTE por clique (classe .open) */
 #main-nav-menu > li.open > .dropdown-menu {
     display: block;
 }
@@ -1393,8 +1393,8 @@ td .card-value {
     
     /* 1. Esconde a visão em Cards/Tabelas e remove o resto da barra desktop */
     .hide-on-mobile { display: none !important; }
-    .toolbar-group-center { display: none !important; } /* Esconde o Seletor de Visão */
-    .toolbar-group-right input[type="search"] { display: none !important; } /* Esconde a busca do desktop */
+    .desktop-actions .toolbar-group-center { display: none !important; } /* Esconde o Seletor de Visão */
+    .desktop-actions .toolbar-group-right input[type="search"] { display: none !important; } /* Esconde a busca do desktop */
     
     /* 2. Mostra a barra de busca nativa do celular e esconde outras ações extras se houverem */
     .mobile-search-bar { display: block !important; }
@@ -1618,14 +1618,14 @@ td .card-value {
     }
     body.nav-open .nav-overlay { display: block; }
 
-    /* ====================================================================== */
+/* ====================================================================== */
     /* AJUSTES DA BARRA DE FERRAMENTAS (Mantendo a busca visível)             */
     /* ====================================================================== */
     
     /* 1. Esconde APENAS os botões da esquerda (Filtro, Cores) e os de Criar (Novo, Recorrente) */
-    .toolbar-group-left:not(.hub-toolbar-left) { display: none !important; }
-    .toolbar-group-right button, .toolbar-group-right a.button 
-        { display: none !important; } /* <<< REGRA ATUALIZADA AQUI */    
+    .desktop-actions .toolbar-group-left:not(.hub-toolbar-left) { display: none !important; }
+    .desktop-actions .toolbar-group-right button, .desktop-actions .toolbar-group-right a.button 
+        { display: none !important; } /* <<< REGRA ATUALIZADA AQUI */ 
     /* 2. Mostra o Kebab Menu para compensar a perda dos botões de ação */
     .mobile-actions { display: block; }
 
