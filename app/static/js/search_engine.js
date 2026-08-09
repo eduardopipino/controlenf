@@ -67,16 +67,37 @@ class SearchEngine {
 
         let itemsVisiveis = 0;
 
+        // Divide a busca por espaços em várias palavras (ignorando espaços vazios)
+        const termosDaBusca = query.split(/\s+/).filter(termo => termo.length > 0);
+
         itemsToFilter.forEach(item => {
             if (item.id === 'inline-create-template') return;
 
             let itemText = "";
+            
+            // 1. Pega os textos padrão (spans e títulos)
             const spans = item.querySelectorAll('span.card-value, span.card-field-value');
             spans.forEach(span => { itemText += " " + span.textContent.toLowerCase(); });
             const h4 = item.querySelector('h4');
             if (h4) itemText += " " + h4.textContent.toLowerCase();
 
-            if (itemText.includes(query)) {
+            // 2. Pega os textos das opções selecionadas nos dropdowns (como Situação)
+            const selects = item.querySelectorAll('select');
+            selects.forEach(select => {
+                if (select.selectedIndex >= 0 && select.options.length > 0) {
+                    itemText += " " + select.options[select.selectedIndex].text.toLowerCase();
+                }
+            });
+
+            // 3. Verifica se ALGUMA das palavras digitadas existe no texto do item (Lógica OU)
+            let corresponde = true;
+            if (isSearching) {
+                // Se o texto contiver pelo menos UM dos termos digitados, ele será exibido
+                corresponde = termosDaBusca.some(termo => itemText.includes(termo));
+            }
+
+            // 4. Aplica o visual dependendo do resultado
+            if (corresponde) {
                 if (isSearching) {
                     item.style.setProperty('display', displayStyle, 'important');
                 } else {
