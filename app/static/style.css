@@ -1651,6 +1651,27 @@ td .card-value {
         background-color: transparent !important;
         box-shadow: none !important;
     }
+
+    /* ====================================================================== */
+    /* REMOVE A SOBRA INFERIOR NO CARD DE ITENS DE FATURAMENTO                */
+    /* ====================================================================== */
+    
+    /* 1. Remove o preenchimento fantasma da última célula (onde estão os botões) */
+    #tabelaItens td:last-child {
+        padding-bottom: 0 !important;
+        margin-bottom: 0 !important;
+    }
+
+    /* 2. Garante que a barra de botões não empurre o fundo do card para baixo */
+    #tabelaItens .card-actions-toolbar {
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    /* 3. Remove a margem externa do último card para que ele não empurre o container */
+    #tabelaItens tr:not(#tabela-backend-sem-resultados):last-child {
+        margin-bottom: 0 !important;
+    }
 }
 
 /* ====================================================================== */
