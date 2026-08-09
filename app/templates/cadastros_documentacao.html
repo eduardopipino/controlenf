@@ -9,17 +9,17 @@
     <!-- NOVO ENVELOPE DE ROLAGEM E TABELA LIMPA -->
     <div class="table-responsive-wrapper wrapper-compacto">
         <table id="tabelaTiposDocumento" class="responsive-card-table">
-            <thead>        <thead>
+            <thead>
                 <tr>
-                    <th>Nome do Documento</th>
-                    <th>Ações</th>
+                    <th class="text-left">Nome do Documento</th>
+                    <th class="text-center">Ações</th>
                 </tr>
             </thead>
             <tbody>
                 {% for doc in documentos %}
                 <tr>
-                    <td>{{ doc.nome }}</td>
-                    <td>
+                    <td class="text-left">{{ doc.nome }}</td>
+                    <td class="text-center">
                         <form id="formExcluirDoc-{{ doc._id }}" method="POST" action="{{ url_for('cadastros.excluir_tipo_documento', doc_id=doc._id) }}" style="display: none;"></form>
                         
                         <button type="button" class="button-danger btn-excluir-doc" 
