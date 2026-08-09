@@ -41,7 +41,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
             title.textContent = titleText;
             input.value = '';
-            colorInput.value = '#e2e8f0'; // Reseta para cinza claro no JS
+            
+            // 1. Verifica o tema ativo
+            const isDarkTheme = document.body.classList.contains('theme-dark');
+            
+            // 2. Define a cor (Lembrete: #171f2b é quase idêntica ao fundo padrão #1b232d)
+            const defaultColor = isDarkTheme ? '#171f2b' : '#e2e8f0'; 
+            
+            // 3. Força a aplicação da cor tanto na propriedade JS quanto no atributo visual do HTML
+            colorInput.value = defaultColor;
+            colorInput.setAttribute('value', defaultColor);
+            
             modal.classList.add('active');
             setTimeout(() => input.focus(), 100);
 
