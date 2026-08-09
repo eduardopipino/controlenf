@@ -50,22 +50,22 @@
 
     <div class="container container-darker">
         <h3>Itens de Faturamento</h3>
-    <!-- NOVO ENVELOPE DE ROLAGEM E TABELA LIMPA -->
+        <!-- NOVO ENVELOPE DE ROLAGEM E TABELA LIMPA -->
         <div class="table-responsive-wrapper">
-            <table id="tabelaItens" class="responsive-card-table">
+            <table id="tabelaItens" class="responsive-card-table tabela-itens">
                 <thead>
                     <tr>
-                        <th>Descrição do Item</th>
-                        <th>Tipo/Frequência</th>
-                        <th>Ações</th>
+                        <th class="text-left">Descrição do Item</th>
+                        <th class="text-center">Tipo/Frequência</th>
+                        <th class="text-center">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in itens %}
                     <tr>
-                        <td data-label="Descrição">{{ item.descricao_item }}</td>
-                        <td data-label="Frequência">{{ item.tipo_frequencia }}</td>
-                        <td data-label="Ações">
+                        <td data-label="Descrição" class="text-left">{{ item.descricao_item }}</td>
+                        <td data-label="Frequência" class="text-center">{{ item.tipo_frequencia }}</td>
+                        <td data-label="Ações" class="text-center">
                             <div class="card-actions-toolbar">
                                 <a href="{{ url_for('instrumentos.editar_item_instrumento', item_id=item._id) }}" class="button">Editar</a>
                                 <button type="button" class="button-danger btn-excluir-item" data-item-id="{{ item._id }}" data-item-descricao="{{ item.descricao_item }}">Excluir</button>

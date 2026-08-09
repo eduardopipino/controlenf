@@ -1567,6 +1567,90 @@ td .card-value {
     .responsive-card-table td.coluna-concluir::before {
         display: none !important; 
     }
+
+    /* ====================================================================== */
+    /* AJUSTES ESPECÍFICOS PARA ITENS DE FATURAMENTO (MOBILE E DESKTOP)       */
+    /* ====================================================================== */
+
+    /* Força o nome do atributo (Ações) a aparecer corretamente e garante o espaço do card */
+    #tabelaItens .coluna-acoes-mobile {
+        display: flex !important;
+        flex-direction: column;
+        align-items: flex-start;
+        padding-bottom: 15px !important; /* Resolve a "sobra" na parte inferior do card */
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    /* Permite que o container de ações enrole caso não haja espaço em linha */
+    #tabelaItens .card-actions-toolbar-mobile-fix {
+        display: flex;
+        flex-wrap: wrap; /* Enrola os botões se a tela for estreita */
+        gap: 10px; /* Cria um espaçamento elegante entre botões em vez de margem na mão */
+        margin-top: 10px;
+        width: 100%;
+        justify-content: flex-start; /* Alinha à esquerda na visão móvel */
+    }
+
+    /* Ajuste fino dos botões do toolbar de ações (apenas no modo mobile para não quebrar a largura inteira do card) */
+    #tabelaItens .card-actions-toolbar-mobile-fix .button, 
+    #tabelaItens .card-actions-toolbar-mobile-fix .button-danger {
+        flex: 1 1 auto; /* Os botões ocuparão o espaço flexivelmente */
+        margin: 0 !important;
+        min-width: 120px; /* Mantém pelo menos um tamanho decente para toque */
+    }
+
+    /* ====================================================================== */
+    /* AJUSTES DEFINITIVOS: TABELA DE ITENS NO MOBILE                         */
+    /* ====================================================================== */
+    
+    /* 1. Garante que a primeira coluna (Descrição) apareça */
+    #tabelaItens td:first-child { 
+        display: block !important; 
+    }
+    
+    /* 2. Remove sobras de margin e o formulário invisível que cria o "buraco" embaixo */
+    #tabelaItens tr:not(#tabela-backend-sem-resultados) {
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        box-sizing: border-box !important;
+    }
+    
+    #tabelaItens td form {
+        display: none !important; /* Esconde o formulário de exclusão que estava ocupando espaço */
+    }
+    
+    #tabelaItens td:last-child {
+        padding-bottom: 10px !important; /* Remove o espaçamento gigante do último item */
+    }
+
+    /* 3. DEVOLVE OS BOTÕES LADO A LADO (Anula a regra global de 100% de largura) */
+    #tabelaItens .card-actions-toolbar {
+        display: flex !important;
+        flex-direction: row !important; /* Mantém os 3 lado a lado */
+        flex-wrap: nowrap !important;   /* Proíbe que pulem de linha */
+        justify-content: space-between !important;
+        gap: 6px !important;
+        margin-top: 15px !important;
+        width: 100% !important;
+    }
+    
+    #tabelaItens .card-actions-toolbar > * {
+        display: inline-flex !important; /* Vence o 'display: block !important' global */
+        width: auto !important;          /* Vence o 'width: 100% !important' global */
+        flex: 1 1 0 !important;          /* Distribui a largura exatamente igual entre os 3 */
+        margin: 0 !important;
+        padding: 8px 2px !important;     /* Respiro interno ajustado */
+        font-size: 0.8rem !important;    /* Reduz a fonte minimamente para caber "Novo controle" */
+        white-space: nowrap !important;
+    }
+
+    /* 4. Remove a "caixa dupla" do container pai */
+    .table-responsive-wrapper {
+        background-color: transparent !important;
+        box-shadow: none !important;
+    }
 }
 
 /* ====================================================================== */
@@ -1618,7 +1702,7 @@ td .card-value {
     }
     body.nav-open .nav-overlay { display: block; }
 
-/* ====================================================================== */
+    /* ====================================================================== */
     /* AJUSTES DA BARRA DE FERRAMENTAS (Mantendo a busca visível)             */
     /* ====================================================================== */
     
