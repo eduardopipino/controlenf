@@ -131,3 +131,26 @@ def excluir_tipo_documento(doc_id):
     documentacao_tipos_collection.delete_one({'_id': ObjectId(doc_id), 'user_id': ObjectId(current_user.id)})
     flash('Tipo de documento excluído com sucesso!', 'success')
     return redirect(url_for('.cadastros_documentacao'))
+
+@cadastros_bp.route('/documentacao/editar/<string:doc_id>', methods=['GET', 'POST'])
+@login_required
+def editar_tipo_documento(doc_id):
+    documento = documentacao_tipos_collection.find_one({'_id': ObjectId(doc_id), 'user_id': ObjectId(current_user.id)})
+    if not documento:
+        flash('Tipo de documento não encontrado.', 'error')
+        return redirect(url_for('.cadastros_documentacao'))
+    
+    if request.method == 'POST':
+        novo_nome = request.form.get('nome_documento', '').strip()
+        if not novo_nome:
+            flash('O nome do documento não pode ser vazio.', 'error')
+            return render_template('form_documentacao.html', documento=documento, novo=False)
+        
+        documentacao_tipos_collection.update_one(
+            {'_id': ObjectId(doc_id), 'user_id': ObjectId(current_user.id)},
+            {'$set': {'nome': novo_nome}}
+        )
+        flash('Tipo de documento atualizado com sucesso!', 'success')
+        return redirect(url_for('.cadastros_documentacao'))
+
+    return render_template('form_documentacao.html', documento=documento, novo=False)

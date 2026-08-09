@@ -1,32 +1,35 @@
 {% extends "base.html" %}
 {% block content %}
     <h2>Tipos de Documento</h2>
-    <div class="button-toolbar">
-        <a href="{{ url_for('cadastros.novo_tipo_documento') }}" class="button">Novo</a>
+    <div class="button-toolbar desktop-actions">
+        <button onclick="location.href='{{ url_for('cadastros.novo_tipo_documento') }}'">Novo</button>
+    </div>
+
+    <div class="mobile-actions">
+        <a href="{{ url_for('cadastros.novo_tipo_documento') }}" class="fab" title="Novo Documento">+</a>
     </div>
     <br>
 
-    <!-- NOVO ENVELOPE DE ROLAGEM E TABELA LIMPA -->
     <div class="table-responsive-wrapper wrapper-compacto">
         <table id="tabelaTiposDocumento" class="responsive-card-table">
             <thead>
                 <tr>
+                    <th class="text-center"></th>
                     <th class="text-left">Nome do Documento</th>
-                    <th class="text-center">Ações</th>
                 </tr>
             </thead>
             <tbody>
                 {% for doc in documentos %}
-                <tr>
-                    <td class="text-left">{{ doc.nome }}</td>
-                    <td class="text-center">
-                        <form id="formExcluirDoc-{{ doc._id }}" method="POST" action="{{ url_for('cadastros.excluir_tipo_documento', doc_id=doc._id) }}" style="display: none;"></form>
-                        
-                        <button type="button" class="button-danger btn-excluir-doc" 
-                                data-doc-id="{{ doc._id }}" 
-                                data-doc-nome="{{ doc.nome }}">
-                            Excluir
-                        </button>
+                <tr class="clickable-row" data-url="{{ url_for('cadastros.editar_tipo_documento', doc_id=doc._id) }}">
+                    <td data-label="Ações" class="hide-on-mobile text-center">
+                        <a href="{{ url_for('cadastros.editar_tipo_documento', doc_id=doc._id) }}" class="action-icon-link" title="Ver Detalhes">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
+                                <path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                            </svg>
+                        </a>
+                    </td>
+                    <td data-label="Nome do Documento" class="text-left">
+                        <span class="card-value">{{ doc.nome }}</span>
                     </td>
                 </tr>
                 {% else %}
@@ -42,31 +45,17 @@
 {% block page_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Encontra todos os botões de exclusão da página
-    const btnsExcluir = document.querySelectorAll('.btn-excluir-doc');
-
-    // Adiciona a lógica de clique a cada um deles
-    btnsExcluir.forEach(button => {
-        button.addEventListener('click', function() {
-            // Pega os dados do botão que foi clicado
-            const docId = this.dataset.docId;
-            const docNome = this.dataset.docNome;
-            
-            // Encontra o formulário correspondente usando o ID
-            const formParaSubmeter = document.getElementById(`formExcluirDoc-${docId}`);
-
-            // Chama o nosso modal customizado
-            showCustomConfirm(
-                'Confirmar Exclusão',
-                `Tem certeza que deseja excluir o tipo de documento "${docNome}"? Esta ação não pode ser desfeita.`,
-                (confirmed) => {
-                    // Se o usuário clicar em 'Confirmar', submete o formulário
-                    if (confirmed) {
-                        formParaSubmeter.submit();
-                    }
-                },
-                'Excluir Permanentemente'
-            );
+    // Lógica para duplo clique (desktop) e clique simples (mobile) na linha da tabela
+    document.querySelectorAll('#tabelaTiposDocumento .clickable-row[data-url]').forEach(row => {
+        row.addEventListener('dblclick', function(e) {
+            if (window.innerWidth > 768 && !e.target.closest('a, button, input')) {
+                window.location.href = this.dataset.url;
+            }
+        });
+        row.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768 && !e.target.closest('.action-icon-link, input')) {
+                window.location.href = this.dataset.url;
+            }
         });
     });
 });

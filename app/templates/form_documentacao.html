@@ -1,36 +1,72 @@
 {% extends "base.html" %}
+
 {% block content %}
     <h2>{{ 'Novo Tipo de Documento' if novo else 'Editar Tipo de Documento' }}</h2>
-    <form method="POST">
+    <form id="formDocumento" method="POST">
         <div>
             <label for="nome_documento">Nome do Documento: *</label>
-            <input type="text" id="nome_documento" name="nome_documento" value="{{ documento.nome or '' }}" required>
+            <input type="text" id="nome_documento" name="nome_documento" value="{{ documento.nome if documento else '' }}" required>
         </div>
         <br>
         <div class="button-toolbar">
-            <button type="submit">Salvar</button>
-            <a href="{{ url_for('cadastros.cadastros_documentacao') }}" class="button" id="btnCancelar">Cancelar</a>
+            <div class="toolbar-group-left">
+                <button type="submit" id="btnSalvar" disabled>Salvar</button>
+                <button type="button" id="btnCancelar">Cancelar</button>
+            </div>
+            
+            {% if not novo %}
+            <div class="toolbar-group-right">
+                <button type="button" id="btnExcluir" class="button-danger">Excluir</button>
+            </div>
+            {% endif %}
         </div>
     </form>
+
+    {% if not novo %}
+        <form id="formExcluirDoc" method="POST" action="{{ url_for('cadastros.excluir_tipo_documento', doc_id=documento._id) }}" style="display: none;"></form>
+    {% endif %}
 {% endblock %}
 
 {% block page_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const inputNome = document.getElementById('nome_documento');
+    const btnSalvar = document.getElementById('btnSalvar');
     const btnCancelar = document.getElementById('btnCancelar');
-    if (btnCancelar) {
-        btnCancelar.addEventListener('click', function(event) {
-            event.preventDefault();
-            const urlDestino = this.href;
+
+    // Desativa o botão salvar se o campo estiver vazio
+    function checkInput() {
+        btnSalvar.disabled = inputNome.value.trim() === '';
+    }
+    inputNome.addEventListener('input', checkInput);
+    checkInput(); 
+
+    // Ação do botão cancelar com modal
+    btnCancelar.addEventListener('click', () => {
+        showCustomConfirm('Cancelar Alterações?', 'Os dados não salvos serão perdidos. Deseja continuar?',
+            (confirmed) => {
+                if (confirmed) {
+                    window.location.href = "{{ url_for('cadastros.cadastros_documentacao') }}";
+                }
+            }, 'Sim');
+    });
+
+    // Lógica do botão Excluir com modal
+    const btnExcluir = document.getElementById('btnExcluir');
+    const formExcluir = document.getElementById('formExcluirDoc');
+
+    if (btnExcluir && formExcluir) {
+        btnExcluir.addEventListener('click', () => {
+            const docNome = inputNome.value; 
             showCustomConfirm(
-                'Cancelar Cadastro?',
-                'Os dados inseridos serão perdidos. Deseja continuar?',
+                'Confirmar Exclusão', 
+                `Tem certeza que deseja excluir o tipo de documento "${docNome}"? Esta ação não pode ser desfeita.`,
                 (confirmed) => {
                     if (confirmed) {
-                        window.location.href = urlDestino;
+                        formExcluir.submit();
                     }
                 },
-                'Sim, Cancelar'
+                'Excluir Permanentemente'
             );
         });
     }
