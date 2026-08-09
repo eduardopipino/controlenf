@@ -1609,47 +1609,66 @@ td .card-value {
         display: block !important; 
     }
     
-    /* 2. Remove sobras de margin e o formulário invisível que cria o "buraco" embaixo */
+    /* 2. Remove sobras de margin e REDUZ O PADDING LATERAL do card (tr) */
     #tabelaItens tr:not(#tabela-backend-sem-resultados) {
         width: 100% !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         box-sizing: border-box !important;
+        
+        /* NOVO: Mantém 12px em cima/baixo, mas reduz para apenas 8px na esquerda/direita */
+        padding: 12px 8px !important; 
     }
     
+    /* NOVO: Zera as margens e paddings laterais de dentro das células (td) */
+    #tabelaItens td {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    
+    /* 3. Remove o formulário invisível e o espaço extra do final do card */
     #tabelaItens td form {
-        display: none !important; /* Esconde o formulário de exclusão que estava ocupando espaço */
+        display: none !important; 
     }
-    
     #tabelaItens td:last-child {
-        padding-bottom: 10px !important; /* Remove o espaçamento gigante do último item */
+        padding-bottom: 0 !important;
+        margin-bottom: 0 !important;
     }
 
-    /* 3. DEVOLVE OS BOTÕES LADO A LADO (Anula a regra global de 100% de largura) */
+    /* 4. DEVOLVE OS BOTÕES LADO A LADO */
     #tabelaItens .card-actions-toolbar {
         display: flex !important;
-        flex-direction: row !important; /* Mantém os 3 lado a lado */
-        flex-wrap: nowrap !important;   /* Proíbe que pulem de linha */
+        flex-direction: row !important; 
+        flex-wrap: nowrap !important;   
         justify-content: space-between !important;
         gap: 6px !important;
         margin-top: 15px !important;
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
         width: 100% !important;
     }
     
     #tabelaItens .card-actions-toolbar > * {
-        display: inline-flex !important; /* Vence o 'display: block !important' global */
-        width: auto !important;          /* Vence o 'width: 100% !important' global */
-        flex: 1 1 0 !important;          /* Distribui a largura exatamente igual entre os 3 */
+        display: inline-flex !important; 
+        width: auto !important;          
+        flex: 1 1 0 !important;          
         margin: 0 !important;
-        padding: 8px 2px !important;     /* Respiro interno ajustado */
-        font-size: 0.8rem !important;    /* Reduz a fonte minimamente para caber "Novo controle" */
-        white-space: nowrap !important;
+        padding: 8px 4px !important;     /* Um pouquinho mais de respiro lateral */
+        font-size: 12px !important;    
+        
+        /* --- MÁGICA DA QUEBRA DE LINHA AQUI --- */
+        white-space: normal !important;  /* Permite que o texto pule de linha */
+        height: auto !important;         /* Libera o botão para crescer na vertical */
+        min-height: 38px !important;     /* Garante que não fique fino demais */
+        line-height: 1.2 !important;     /* Dá um respiro entre as linhas do texto */
+        text-align: center !important;   /* Centraliza o texto quebrado */
+        align-items: center !important;  /* Centraliza verticalmente */
+        justify-content: center !important;
     }
 
-    /* 4. Remove a "caixa dupla" do container pai */
-    .table-responsive-wrapper {
-        background-color: transparent !important;
-        box-shadow: none !important;
+    /* 5. Remove a margem externa do último card */
+    #tabelaItens tr:not(#tabela-backend-sem-resultados):last-child {
+        margin-bottom: 0 !important;
     }
 
     /* ====================================================================== */
@@ -1672,6 +1691,8 @@ td .card-value {
     #tabelaItens tr:not(#tabela-backend-sem-resultados):last-child {
         margin-bottom: 0 !important;
     }
+
+    
 }
 
 /* ====================================================================== */
@@ -2138,6 +2159,7 @@ body.theme-dark tr[style*="background-color"]:hover {
         display: none !important;
     }
     /* As outras regras de body.view-mode-* foram removidas */
+    
 }
 
 a.data-card-link {
