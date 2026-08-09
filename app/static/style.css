@@ -1929,6 +1929,8 @@ body.theme-dark .action-icon-link {
 #tabelaInstrumentos td:first-child,
 #tabelaSituacoes th:first-child,
 #tabelaSituacoes td:first-child,
+#tabelaTiposDocumento th:first-child,  /* <<< ADICIONE ESTA LINHA */
+#tabelaTiposDocumento td:first-child,  /* <<< ADICIONE ESTA LINHA */
 .tabela-hub th:first-child,           /* <<< ADICIONAR AQUI */
 .tabela-hub td:first-child,           /* <<< ADICIONAR AQUI */
 .tabela-hub th:nth-child(2),          /* <<< ADICIONAR AQUI (Para o ícone de prioridade) */
@@ -3857,6 +3859,8 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
         opacity: 1 !important;
         color: #e74c3c !important; /* Amarelo de destaque no hover */
     }
+
+
 }
 
 /* ==========================================================================
@@ -4116,13 +4120,13 @@ body.theme-dark .tabela-hub .situacao-dropdown[style*="background-color"] {
     /* --- TABELA TIPO DOCUMENTO --- */
     #tabelaTiposDocumento th:first-child,
     #tabelaTiposDocumento td:first-child {
-        width: 100%; /* Nome empurra tudo */
+        width: 24px;         /* Trava a lupa num tamanho pequeno */
+        text-align: center;
+        padding: 0;          /* Remove preenchimentos para a lupa caber certinho */
     }
-    #tabelaTiposDocumento th:last-child,
-    #tabelaTiposDocumento td:last-child {
-        width: 1%;
-        white-space: nowrap;
-        text-align: right; 
+    #tabelaTiposDocumento th:nth-child(2),
+    #tabelaTiposDocumento td:nth-child(2) {
+        width: 100%;         /* Agora é o Nome que empurra tudo */
     }
 
     /* --- TABELA DE SITUAÇÕES --- */

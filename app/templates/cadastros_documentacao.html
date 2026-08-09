@@ -1,12 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
     <h2>Tipos de Documento</h2>
-    <div class="button-toolbar desktop-actions">
+    <div class="button-toolbar">
         <button onclick="location.href='{{ url_for('cadastros.novo_tipo_documento') }}'">Novo</button>
-    </div>
-
-    <div class="mobile-actions">
-        <a href="{{ url_for('cadastros.novo_tipo_documento') }}" class="fab" title="Novo Documento">+</a>
     </div>
     <br>
 
