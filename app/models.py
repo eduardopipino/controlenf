@@ -36,6 +36,7 @@ TODAS_AS_COLUNAS_CONTROLE = [
     ['carta_de_correcao', 'Carta de Correção'],
     ['documentacao', 'Documentação'],
     ['observacoes', 'Observações'],
+    ['prazo', 'Prazo'],
     ['situacao', 'Situação']
 ]
 
@@ -51,6 +52,7 @@ TODAS_AS_COLUNAS_CARDS = [
     ['carta_de_correcao', 'Carta de Correção'],
     ['documentacao', 'Documentação'],
     ['observacoes', 'Observações'],
+    ['prazo', 'Prazo'],
     ['situacao', 'Situação']
 ]
 
@@ -168,10 +170,12 @@ def get_controle_data(query_filter=None, sort_document=None):
             'objeto':         {'$ifNull': [{'$ifNull': ['$instrumento_join.objeto_resumido', '$objeto']}, ""]},
             'item_descricao': {'$ifNull': ['$item_join.descricao_item', ""]},
             
+            
             # <<< ADICIONAMOS OS CAMPOS DA TABELA CONTROLE PARA GARANTIR QUE NÃO SEJAM NULOS >>>
             'nota_fiscal':      {'$ifNull': ['$nota_fiscal', ""]},
             'referencia':       {'$ifNull': ['$referencia', ""]},
             'observacoes':      {'$ifNull': ['$observacoes', ""]},
+            'prazo':            {'$ifNull': ['$prazo', None]},
             'documentacao':     {'$ifNull': ['$documentacao', []]}, # Documentação deve ser uma lista vazia, não string
             'documentacao_pendente': {
                 '$ifNull': [

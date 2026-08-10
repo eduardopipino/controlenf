@@ -18,7 +18,7 @@ from app.models import (controle_collection, get_situacoes_que_arquivam,
                         get_itens_para_dropdown_js, itens_collection,
                         instrumentos_collection, TODAS_AS_COLUNAS_CONTROLE, TODAS_AS_COLUNAS_CARDS)
 
-EDITABLE_FIELDS = ['referencia', 'nota_fiscal', 'carta_de_correcao', 'observacoes']
+EDITABLE_FIELDS = ['referencia', 'nota_fiscal', 'carta_de_correcao', 'observacoes', 'prazo']
 
 # 3. Criação do Blueprint de Controle
 # O nome 'controle' será usado nos comandos url_for().
@@ -84,11 +84,21 @@ def controle_lista(filter_mode):
     controles_raw = get_controle_data(query_filter, sort_document=sort_document)
     controles = list(controles_raw)
     
-    # --- CORREÇÃO PENDENTES REAIS ---
+    # --- CORREÇÃO PENDENTES REAIS E LÓGICA DE VENCIMENTO ---
+    hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     for c in controles:
         db_doc = controle_collection.find_one({'_id': c['_id']}, {'documentacao_pendente': 1})
         if db_doc and 'documentacao_pendente' in db_doc:
             c['documentacao_pendente'] = db_doc['documentacao_pendente']
+            
+        c['vencido'] = False
+        if c.get('prazo') and isinstance(c['prazo'], datetime):
+            # Só marca como vencido se não estiver arquivado/concluído
+            if c['prazo'] < hoje and c.get('situacao') not in situacoes_arquivadoras:
+                c['vencido'] = True
+
+    # Força os registros vencidos para o topo da tabela
+    controles.sort(key=lambda x: 0 if x.get('vencido') else 1)
 
     # --- NOVO BLOCO: Agrupamento para Modo 'por_instrumento' nos Cards ---
     grupos_de_controles = []
@@ -171,6 +181,17 @@ def novo_controle():
 
         instrumento_pai = instrumentos_collection.find_one({'_id': item_selecionado['instrumento_id']})
 
+        instrumento_pai = instrumentos_collection.find_one({'_id': item_selecionado['instrumento_id']})
+
+        # --- Tratamento do campo Prazo ---
+        prazo_str = request.form.get('prazo', '').strip()
+        prazo_dt = None
+        if prazo_str:
+            try:
+                prazo_dt = datetime.strptime(prazo_str, '%Y-%m-%d')
+            except ValueError:
+                flash('Data de prazo inválida.', 'error')
+
         novo_registro_controle = {
             'item_id': ObjectId(item_id_str),
             'n_instrumento': instrumento_pai['n_instrumento'],
@@ -182,10 +203,12 @@ def novo_controle():
             'carta_de_correcao': request.form.get('carta_de_correcao', '').strip(),
             'documentacao': request.form.getlist('documentacao'),
             'observacoes': request.form.get('observacoes', '').strip(),
+            'prazo': prazo_dt, # <<< ADICIONADO AQUI
             'situacao': request.form.get('situacao', '').strip(),
             'data_criacao': datetime.now(),
             'user_id': ObjectId(current_user.id)
         }
+
         controle_collection.insert_one(novo_registro_controle)
         flash('Registro de Controle criado com sucesso!', 'success')
         
@@ -292,6 +315,15 @@ def detalhes_controle(controle_id):
         item_selecionado = itens_collection.find_one({'_id': ObjectId(item_id_str), 'user_id': ObjectId(current_user.id)})
         instrumento_pai = instrumentos_collection.find_one({'_id': item_selecionado['instrumento_id']})
 
+        # --- Tratamento do campo Prazo ---
+        prazo_str = request.form.get('prazo', '').strip()
+        prazo_dt = None
+        if prazo_str:
+            try:
+                prazo_dt = datetime.strptime(prazo_str, '%Y-%m-%d')
+            except ValueError:
+                flash('Data de prazo inválida.', 'error')
+
         update_data = {
             'item_id': item_selecionado['_id'], 'n_instrumento': instrumento_pai['n_instrumento'],
             'tipo_documento': instrumento_pai['tipo_documento'], 'contratada': instrumento_pai['contratada'],
@@ -300,6 +332,7 @@ def detalhes_controle(controle_id):
             'carta_de_correcao': request.form.get('carta_de_correcao', '').strip(),
             'documentacao': request.form.getlist('documentacao'),
             'observacoes': request.form.get('observacoes', '').strip(),
+            'prazo': prazo_dt, # <<< ADICIONADO AQUI
             'situacao': request.form.get('situacao', '').strip(),
             'data_ultima_atualizacao': datetime.now()
         }
@@ -502,17 +535,29 @@ def update_field_inline(controle_id):
     """ Atualiza um campo específico de um registro de controle via edição inline. """
     data = request.get_json()
     field_name = data.get('field')
-    new_value = data.get('value', '').strip() # Pega valor, default '', remove espaços extras
+    new_value = data.get('value', '').strip() 
+    return_value = new_value # <<< NOVO: Variável separada para devolver à tela
 
     if not controle_id or not field_name:
-        return {'status': 'error', 'message': 'Dados incompletos (ID ou campo faltando).'}, 400
+        return {'status': 'error', 'message': 'Dados incompletos.'}, 400
 
-    # Validação: Verifica se o campo está na lista de editáveis
     if field_name not in EDITABLE_FIELDS:
-        return {'status': 'error', 'message': f'Campo "{field_name}" não é editável inline.'}, 403 # Forbidden
+        return {'status': 'error', 'message': f'Campo "{field_name}" não é editável inline.'}, 403
 
     try:
-        # Prepara o update (apenas o campo recebido)
+        # --- NOVA LÓGICA: Tratamento do Prazo ---
+        if field_name == 'prazo':
+            if new_value:
+                try:
+                    new_value = datetime.strptime(new_value, '%Y-%m-%d')
+                    return_value = new_value.strftime('%d/%m/%Y') # Formata para a tela
+                except ValueError:
+                    return {'status': 'error', 'message': 'Data inválida.'}, 400
+            else:
+                new_value = None
+                return_value = ""
+
+        # Prepara o update 
         update_data = {
             field_name: new_value,
             'data_ultima_atualizacao': datetime.now()
@@ -525,12 +570,11 @@ def update_field_inline(controle_id):
 
         if result.matched_count > 0:
             if result.modified_count > 0:
-                return {'status': 'success', 'message': 'Campo atualizado.', 'newValue': new_value}
+                return {'status': 'success', 'message': 'Campo atualizado.', 'newValue': return_value} # <<< ALTERADO
             else:
-                # Encontrou mas não modificou (valor era o mesmo)
-                return {'status': 'success', 'message': 'Nenhuma alteração detectada.', 'newValue': new_value}
+                return {'status': 'success', 'message': 'Nenhuma alteração.', 'newValue': return_value} # <<< ALTERADO
         else:
-            return {'status': 'error', 'message': 'Registro não encontrado ou não pertence ao usuário.'}, 404
+            return {'status': 'error', 'message': 'Registro não encontrado.'}, 404
 
     except Exception as e:
         print(f"Erro ao atualizar campo inline: {e}") # Log do erro no servidor

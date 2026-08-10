@@ -309,3 +309,4 @@ def save_quick_note():
         upsert=True
     )
     return {'status': 'success'}
+

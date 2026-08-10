@@ -1,6 +1,14 @@
 // static/js/controle_core.js
 
 document.addEventListener('DOMContentLoaded', function() {
+    
+    function convertDateToISO(dateString) {
+        if (!dateString) return ''; 
+        const parts = dateString.split('/');
+        if (parts.length === 3 && parts[2] && parts[1] && parts[0]) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        return ''; 
+    }
+    
     let currentEditInput = null;
 
     // ==========================================
@@ -27,6 +35,18 @@ document.addEventListener('DOMContentLoaded', function() {
             element.style.backgroundColor = originalBg || '';
             setTimeout(() => { element.style.transition = ''; }, 300);
         }, 700);
+    }
+
+    // Função auxiliar para a data
+    function parseDateFromDDMMYYYY(dateString) {
+        if (!dateString) return null;
+        const parts = dateString.split('/');
+        if (parts.length === 3) {
+            const date = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0])); 
+            date.setHours(0, 0, 0, 0);
+            return date;
+        }
+        return null;
     }
 
     // Função auxiliar para o Modal Customizado (Substitui o prompt)
@@ -184,11 +204,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (fieldName === 'observacoes') {
             inputElement.style.height = '60px';
             inputElement.style.resize = 'vertical';
+            inputElement.value = originalValue;
+        } else if (fieldName === 'prazo') {
+            inputElement.type = 'date';
+            inputElement.value = convertDateToISO(originalValue);
         } else {
             inputElement.type = 'text';
+            inputElement.value = originalValue;
         }
-        
-        inputElement.value = originalValue;
         inputElement.style.width = '100%';
         inputElement.style.boxSizing = 'border-box';
         if (isCard) inputElement.style.flexGrow = '1';
@@ -234,7 +257,34 @@ document.addEventListener('DOMContentLoaded', function() {
                         container.innerHTML = `<span class="card-value">${data.newValue}</span>`;
                     }
                     currentEditInput = null;
+                    
+                    const rowOrCard = isCard ? container.closest('.data-card') : container.closest('tr');
                     flashElement(isCard ? container.closest('.data-card') : container);
+
+                    // --- NOVA LÓGICA DE VENCIMENTO IMEDIATO ---
+                    if (fieldName === 'prazo') {
+                        const hoje = new Date();
+                        hoje.setHours(0, 0, 0, 0);
+                        const dataPrazo = parseDateFromDDMMYYYY(data.newValue);
+                        
+                        // Verifica a situação para não pintar de vermelho caso a nota já esteja arquivada/concluída
+                        let currentSit = "";
+                        if (isCard) {
+                            currentSit = rowOrCard.dataset.situacao || "";
+                        } else {
+                            const selectSit = rowOrCard.querySelector('.situacao-dropdown');
+                            currentSit = selectSit ? selectSit.value : "";
+                        }
+                        const isArquivado = window.APP_DATA && window.APP_DATA.arquivadores.includes(currentSit);
+
+                        rowOrCard.classList.remove('pendencia-vencida'); // Reseta a cor por garantia
+                        
+                        // Se for menor que hoje E não estiver arquivado, pinta de vermelho!
+                        if (dataPrazo && dataPrazo < hoje && !isArquivado) {
+                            rowOrCard.classList.add('pendencia-vencida');
+                        }
+                    }
+                    
                 } else {
                     alert(`Erro ao salvar: ${data.message}`);
                     cancelarEdicao();
