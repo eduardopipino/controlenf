@@ -124,6 +124,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     currentEditInput = null;
                     flashElement(isCard ? container.closest('.data-card') : container);
                     
+                    // --- NOVA LÓGICA DE VENCIMENTO IMEDIATO ---
+                    const rowOrCard = isCard ? container.closest('.data-card') : container.closest('tr');
+                    if (fieldName === 'prazo') {
+                        const hoje = new Date();
+                        hoje.setHours(0, 0, 0, 0);
+                        const dataPrazo = parseDateFromDDMMYYYY(data.newValue);
+                        
+                        // Remove a classe por garantia
+                        rowOrCard.classList.remove('pendencia-vencida');
+                        
+                        // Se for menor que hoje, pinta de vermelho!
+                        if (dataPrazo && dataPrazo < hoje) {
+                            rowOrCard.classList.add('pendencia-vencida');
+                        }
+                    }
+
                     // Movimentação Kanban (se aplicável)
                     if (fieldName === 'prazo' && isCard && window.APP_DATA_PENDENCIAS?.viewMode === 'kanban') {
                         const cardElement = container.closest('.data-card');
