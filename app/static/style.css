@@ -988,27 +988,6 @@ button.filtro-ativo:hover {
     cursor: pointer; /* Indica que é um elemento interativo */
 }
 
-/* ====================================================================== */
-/* AJUSTE DE LARGURA PARA A TABELA DE TIPOS DE DOCUMENTO                  */
-/* ====================================================================== */
-
-/* Faz com que a tabela se ajuste ao conteúdo, em vez de ocupar 100% */
-#tabelaTiposDocumento {
-    width: auto;
-}
-
-/* Define uma largura mínima para a primeira coluna (Nome do Documento) */
-#tabelaTiposDocumento th:nth-child(1),
-#tabelaTiposDocumento td:nth-child(1) {
-    min-width: 100px;
-}
-
-/* Opcional: Centraliza o conteúdo da segunda coluna (Ações) */
-#tabelaTiposDocumento th:nth-child(2),
-#tabelaTiposDocumento td:nth-child(2) {
-    text-align: center;
-}
-
 /* Estilos para o modal de configuração de colunas */
 .modal-colunas-list {
     display: grid;
@@ -4118,15 +4097,17 @@ body.theme-dark .tabela-hub .situacao-dropdown[style*="background-color"] {
     }
     
     /* --- TABELA TIPO DOCUMENTO --- */
-    #tabelaTiposDocumento th:first-child,
-    #tabelaTiposDocumento td:first-child {
-        width: 24px;         /* Trava a lupa num tamanho pequeno */
-        text-align: center;
-        padding: 0;          /* Remove preenchimentos para a lupa caber certinho */
-    }
     #tabelaTiposDocumento th:nth-child(2),
     #tabelaTiposDocumento td:nth-child(2) {
-        width: 100%;         /* Agora é o Nome que empurra tudo */
+        width: 100%; /* O nome do documento empurra todo o espaço vazio */
+    }
+    
+    #tabelaTiposDocumento th:first-child,
+    #tabelaTiposDocumento td:first-child {
+        width: 1%; /* Truque mágico: força a coluna a encolher ao limite do ícone */
+        white-space: nowrap; /* Impede que o conteúdo quebre de linha */
+        padding: 0 !important; /* Zera qualquer preenchimento lateral herdado */
+        text-align: center;
     }
 
     /* --- TABELA DE SITUAÇÕES --- */
