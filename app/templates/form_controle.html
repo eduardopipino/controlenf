@@ -42,6 +42,10 @@
             <textarea id="observacoes" name="observacoes" disabled>{{ controle.observacoes if controle else '' }}</textarea>
         </div>
         <div>
+            <label for="prazo">Prazo:</label>
+            <input type="date" id="prazo" name="prazo" value="{{ controle.prazo.strftime('%Y-%m-%d') if controle and controle.prazo else '' }}" disabled>
+        </div>
+        <div>
             <label for="situacao">Situação:</label>
             <select id="situacao" name="situacao" disabled>
                 <option value="">-- Nenhuma --</option>
@@ -177,7 +181,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (isNewRecord) {
         // Habilita todos os campos para um novo registro
         $('#item_id').prop('disabled', false);
-        document.querySelectorAll('input[type="text"], textarea, select').forEach(field => {
+        // <<< ADICIONADO input[type="date"] NA LINHA ABAIXO >>>
+        document.querySelectorAll('input[type="text"], input[type="date"], textarea, select').forEach(field => {
             if(field.id !== 'item_id') field.disabled = false;
         });
         document.querySelectorAll('#documentacao-checklist input[type="checkbox"]').forEach(chk => {
@@ -220,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function() {
             $('#item_id').prop('disabled', !habilitar);
             
             // Habilita/desabilita os outros campos e checkboxes
-            const fieldsToToggle = ['referencia', 'nota_fiscal', 'carta_de_correcao', 'observacoes', 'situacao'];
+            const fieldsToToggle = ['referencia', 'nota_fiscal', 'carta_de_correcao', 'observacoes', 'prazo', 'situacao']; // <<< 'prazo' adicionado
             fieldsToToggle.forEach(id => {
                 const field = document.getElementById(id);
                 if (field) field.disabled = !habilitar;
