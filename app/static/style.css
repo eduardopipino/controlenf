@@ -2164,7 +2164,7 @@ body.theme-dark .data-card[style*="background-color"] strong {
     padding-bottom: 25px;
     border-bottom: 2px dashed var(--border-base);
 }
-.priority-section h4 {
+.priority-section > h4 {
     margin-top: 0;
     /* color: #e74c3c; */
     border-bottom: none;
