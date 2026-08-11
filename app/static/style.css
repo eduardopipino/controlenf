@@ -4216,3 +4216,27 @@ body.theme-dark .fab:focus {
     /* No escuro, usamos um branco translúcido elegante em vez da cor secundária que pode sumir */
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2) !important;
 }
+
+/* ====================================================================== */
+/* FOCO ELEGANTE PARA O COMPONENTE SELECT2                                */
+/* ====================================================================== */
+
+/* 1. Quando o Select2 ganha foco (A caixa principal fechada) */
+.select2-container--default.select2-container--focus .select2-selection--single {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 2px var(--secondary-color), inset 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    outline: none !important;
+}
+
+/* 2. Quando o campo de busca interno do Select2 ganha foco (A caixa aberta) */
+.select2-container--default .select2-search--dropdown .select2-search__field:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 2px var(--secondary-color), inset 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    outline: none !important;
+}
+
+/* 3. Ajuste de sombra para o Tema Escuro */
+body.theme-dark .select2-container--default.select2-container--focus .select2-selection--single,
+body.theme-dark .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+    box-shadow: 0 0 0 2px var(--secondary-color), inset 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
