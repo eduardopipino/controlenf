@@ -402,11 +402,12 @@ input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus,
 input[type="search"]:focus,
+input[type="date"]:focus,  /* <<< ADICIONADO AQUI >>> */
 textarea:focus,
 select:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px var(--secondary-color), inset 0 1px 3px rgba(0, 0, 0, 0.1);
-    outline: none;
+    outline: none !important; /* Adicionado o !important para forçar a remoção do contorno do navegador */
 }
 
 input[type="checkbox"] {
@@ -4120,4 +4121,58 @@ body.theme-dark .data-card.pendencia-vencida {
 .data-card.pendencia-vencida p[data-field-name="prazo"] .card-field-value {
     color: #e74c3c !important;
     font-weight: bold;
+}
+
+/* ====================================================================== */
+/* ESTILIZAÇÃO DO COMPONENTE NATIVO DE DATA (EDIÇÃO INLINE)               */
+/* ====================================================================== */
+
+/* 1. Remove a aparência feia de "HTML puro" e aplica a fonte/cor do sistema */
+td.editable-cell input[type="date"],
+.data-card .editable-card-field input[type="date"] {
+    font-family: inherit !important;
+    font-size: 0.95em !important;
+    background-color: var(--background-secondary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--primary-color) !important;
+    border-radius: 4px !important;
+    padding: 2px 6px !important;
+    outline: none !important;       /* Remove o contorno azul do navegador */
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    
+    /* Trava o tamanho para não esticar igual ao input de texto */
+    width: auto !important;
+    max-width: 140px !important; 
+    height: 32px !important;
+    line-height: 1;
+}
+
+/* 2. Ajuste fino para os cards (impede o flexbox de esticar a data) */
+.data-card .editable-card-field input[type="date"] {
+    flex-grow: 0 !important;
+    margin-left: 6px !important;
+}
+
+/* 3. Correção de contraste para o Tema Escuro */
+body.theme-dark td.editable-cell input[type="date"],
+body.theme-dark .data-card .editable-card-field input[type="date"] {
+    background-color: #000000 !important;
+    color: #f9f9f9 !important;
+    border-color: #555 !important;
+}
+
+/* 4. A mágica para o ícone de calendário: 
+   O calendário nativo do Chrome é preto. No tema escuro, ele sumiria. 
+   O filtro 'invert(1)' transforma o calendário de preto para branco! */
+body.theme-dark td.editable-cell input[type="date"]::-webkit-calendar-picker-indicator,
+body.theme-dark .data-card .editable-card-field input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.8;
+    cursor: pointer;
+}
+
+/* Efeito sutil ao passar o mouse */
+td.editable-cell input[type="date"]:hover,
+.data-card .editable-card-field input[type="date"]:hover {
+    border-color: var(--tertiary-color) !important;
 }
