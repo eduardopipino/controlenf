@@ -4241,3 +4241,57 @@ body.theme-dark .select2-container--default.select2-container--focus .select2-se
 body.theme-dark .select2-container--default .select2-search--dropdown .select2-search__field:focus {
     box-shadow: 0 0 0 2px var(--secondary-color), inset 0 1px 3px rgba(0, 0, 0, 0.4) !important;
 }
+
+/* ====================================================================== */
+/* FOCO ELEGANTE PARA MENUS, TABELAS E CABEÇALHOS                         */
+/* ====================================================================== */
+
+/* 1. Menus (Links do Menu Principal, Hamburguer, Kebab e Dropdowns) */
+#main-nav-menu > li > a:focus,
+.dropdown-item:focus,
+.hamburger-menu:focus,
+.kebab-menu-button:focus,
+.kebab-menu-dropdown a:focus {
+    outline: none !important;
+    /* Usamos 'inset' (sombra interna) para a marcação não "vazar" da barra de navegação */
+    box-shadow: inset 0 0 0 3px var(--secondary-color) !important; 
+    border-radius: 4px;
+}
+
+/* 2. Containers roláveis (A tabela inteira pegando foco pelo overflow) */
+.table-responsive-wrapper:focus,
+.table-wrapper:focus,
+.kanban-view-container:focus,
+.container:focus,
+table:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 3px var(--secondary-color) !important;
+}
+
+/* 3. Cabeçalhos das tabelas (<th>) e seus links de ordenação */
+th:focus,
+th a:focus {
+    outline: none !important;
+    box-shadow: inset 0 0 0 3px var(--secondary-color) !important;
+    border-radius: 4px;
+}
+
+/* 4. Ajuste de Contraste para o Tema Escuro (Sombra Interna) */
+body.theme-dark #main-nav-menu > li > a:focus,
+body.theme-dark .dropdown-item:focus,
+body.theme-dark .hamburger-menu:focus,
+body.theme-dark .kebab-menu-button:focus,
+body.theme-dark .kebab-menu-dropdown a:focus,
+body.theme-dark th:focus,
+body.theme-dark th a:focus {
+    box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.2) !important;
+}
+
+/* 5. Ajuste de Contraste para o Tema Escuro (Sombra Externa) */
+body.theme-dark .table-responsive-wrapper:focus,
+body.theme-dark .table-wrapper:focus,
+body.theme-dark .kanban-view-container:focus,
+body.theme-dark .container:focus,
+body.theme-dark table:focus {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2) !important;
+}
