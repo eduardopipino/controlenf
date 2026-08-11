@@ -4044,7 +4044,7 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
 /* Fundo padrão para Pílula "Sem Cor" no Tema Escuro */
 body.theme-dark #tabelaControle .situacao-dropdown:not([style*="background-color"]),
 body.theme-dark .tabela-hub .situacao-dropdown:not([style*="background-color"]) {
-    background-color: #1b232d; /* Cinza bem escuro (Slate) */
+    background-color: #3a3a3a; /* Cinza bem escuro (Slate) */
     color: #cbd5e1; /* Texto cinza claro correspondente */
 }
 
