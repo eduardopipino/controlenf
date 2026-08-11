@@ -4086,7 +4086,7 @@ body.theme-dark .tabela-hub .situacao-dropdown[style*="background-color"] {
     #tabelaSituacoes td:nth-child(2) {
         width: 100%;
     }
-    
+    ,
     /* Mantém as outras colunas (Ações, Arquiva e Cores) restritas ao tamanho do seu conteúdo */
     #tabelaSituacoes th:not(:nth-child(2)),
     #tabelaSituacoes td:not(:nth-child(2)) {
@@ -4100,10 +4100,10 @@ body.theme-dark .tabela-hub .situacao-dropdown[style*="background-color"] {
 /* DESTAQUE PARA CARDS VENCIDOS (ELEGANTE)                                */
 /* ====================================================================== */
 
-/* 1. Muda a borda inteira do card para vermelho */
+/* 1. Muda APENAS a barra espessa da esquerda para vermelho */
 .data-card.pendencia-vencida {
-    border: 2px solid #e74c3c;
-    box-shadow: 0 4px 10px rgba(231, 76, 60, 0.2);
+    border-left-color: #e74c3c !important;
+    box-shadow: 0 4px 10px rgba(231, 76, 60, 0.15); /* Sombra um pouquinho mais suave */
 }
 
 /* 2. No tema escuro, adapta a sombra do card vencido */
