@@ -4095,3 +4095,29 @@ body.theme-dark .tabela-hub .situacao-dropdown[style*="background-color"] {
         text-align: center; /* Centraliza os ícones e bolinhas de cor */
     }
 }
+
+/* ====================================================================== */
+/* DESTAQUE PARA CARDS VENCIDOS (ELEGANTE)                                */
+/* ====================================================================== */
+
+/* 1. Muda a borda inteira do card para vermelho */
+.data-card.pendencia-vencida {
+    border: 2px solid #e74c3c;
+    box-shadow: 0 4px 10px rgba(231, 76, 60, 0.2);
+}
+
+/* 2. No tema escuro, adapta a sombra do card vencido */
+body.theme-dark .data-card.pendencia-vencida {
+    box-shadow: 0 4px 10px rgba(231, 76, 60, 0.4);
+}
+
+/* 3. Pinta apenas a linha referente ao prazo de vermelho e negrito */
+.data-card.pendencia-vencida p[data-field-name="prazo"] {
+    color: #e74c3c !important;
+}
+
+.data-card.pendencia-vencida p[data-field-name="prazo"] strong,
+.data-card.pendencia-vencida p[data-field-name="prazo"] .card-field-value {
+    color: #e74c3c !important;
+    font-weight: bold;
+}

@@ -12,7 +12,7 @@
     {% endif %}
 {% endfor %}
 
-<div class="data-card" data-type="pendencia" data-id="{{ p._id }}"
+<div class="data-card {{ 'pendencia-vencida' if p.vencido else '' }}" data-type="pendencia" data-id="{{ p._id }}"
      title="{{ title_hidden.text }}"
      {% if color_coding_active and p.cor_destaque %}style="background-color: {{ p.cor_destaque }};"{% endif %}>
 
