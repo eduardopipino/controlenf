@@ -1044,10 +1044,11 @@ body.theme-dark .container-darker {
 body.theme-dark input[type="text"],
 body.theme-dark input[type="email"],
 body.theme-dark input[type="password"],
+body.theme-dark input[type="date"], /* <<< ADICIONADO AQUI >>> */
 body.theme-dark textarea,
 body.theme-dark select {
     background-color: #000000;
-    /* Opcional: ajusta a cor da borda para dar um leve contorno contra o fundo */
+    color: #f9f9f9; /* Garante que o texto fique branco */
     border-color: #333333;
 }
 
