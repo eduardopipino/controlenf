@@ -401,6 +401,7 @@ label {
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus,
+input[type="search"]:focus,
 textarea:focus,
 select:focus {
     border-color: var(--primary-color);
@@ -642,6 +643,7 @@ body.theme-dark .dropdown-item:hover {
 body.theme-dark input[type="text"]:focus,
 body.theme-dark input[type="email"]:focus,
 body.theme-dark input[type="password"]:focus,
+body.theme-dark input[type="search"]:focus,
 body.theme-dark textarea:focus,
 body.theme-dark select:focus {
     box-shadow: 0 0 0 2px var(--secondary-color), inset 0 1px 3px rgba(0, 0, 0, 0.4);
