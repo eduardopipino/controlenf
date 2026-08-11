@@ -1,5 +1,10 @@
 [
   {
+    "versao": "3.3",
+    "data": "11/08/2026",
+    "descricao": "Melhoria visual de registros com prazo vencido. Melhorias visuais nos componentes data, botão, menu, select, select2, e tabela."
+  },
+  {
     "versao": "3.2",
     "data": "10/08/2026",
     "descricao": "Nova coluna de prazo em Controle de Notas Fiscais."
