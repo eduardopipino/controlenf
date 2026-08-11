@@ -645,6 +645,7 @@ body.theme-dark input[type="text"]:focus,
 body.theme-dark input[type="email"]:focus,
 body.theme-dark input[type="password"]:focus,
 body.theme-dark input[type="search"]:focus,
+body.theme-dark input[type="date"]:focus, /* <<< ADICIONADO AQUI >>> */
 body.theme-dark textarea:focus,
 body.theme-dark select:focus {
     box-shadow: 0 0 0 2px var(--secondary-color), inset 0 1px 3px rgba(0, 0, 0, 0.4);
@@ -4175,4 +4176,43 @@ body.theme-dark .data-card .editable-card-field input[type="date"]::-webkit-cale
 td.editable-cell input[type="date"]:hover,
 .data-card .editable-card-field input[type="date"]:hover {
     border-color: var(--tertiary-color) !important;
+}
+
+/* ====================================================================== */
+/* FOCO ELEGANTE PARA BOTÕES E ÍCONES INTERATIVOS                         */
+/* ====================================================================== */
+
+/* 1. Botões Padrão (Retangulares) */
+button:focus, 
+a.button:focus {
+    outline: none !important; /* Remove o contorno nativo do navegador */
+    /* Cria um anel suave usando a cor secundária do tema, mantendo a sombra original do botão */
+    box-shadow: 0 0 0 3px var(--secondary-color), 0 2px 4px var(--shadow-base) !important; 
+}
+
+/* 2. Botões Circulares (Ícones, Lupa, Concluir, FAB, Engrenagem) */
+.btn-concluir-action:focus,
+.card-action-icon:focus,
+.card-priority-toggle:focus,
+.action-icon-link:focus,
+.btn-manage-link:focus,
+.notepad-btn:focus,
+.fab:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 3px var(--secondary-color) !important;
+    border-radius: 50%; /* Garante que o anel de foco acompanhe o formato redondo do ícone */
+}
+
+/* 3. Ajuste de Contraste para o Tema Escuro */
+body.theme-dark button:focus, 
+body.theme-dark a.button:focus,
+body.theme-dark .btn-concluir-action:focus,
+body.theme-dark .card-action-icon:focus,
+body.theme-dark .card-priority-toggle:focus,
+body.theme-dark .action-icon-link:focus,
+body.theme-dark .btn-manage-link:focus,
+body.theme-dark .notepad-btn:focus,
+body.theme-dark .fab:focus {
+    /* No escuro, usamos um branco translúcido elegante em vez da cor secundária que pode sumir */
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2) !important;
 }
