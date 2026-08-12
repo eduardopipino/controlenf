@@ -1931,7 +1931,7 @@ body.theme-dark .texto-pendente {
     width: 1%;
     
     /* FORÇA a tabela a criar um espaço vazio à direita da pílula */
-    padding-right: 10px !important; 
+    /*padding-right: 10px !important; */
 }
 
 /* ====================================================================== */
@@ -3993,7 +3993,7 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
 #tabelaControle .situacao-dropdown, 
 .tabela-hub .situacao-dropdown {
     border-radius: 20px; 
-    padding: 6px 30px 6px 15px; 
+    padding: 4px 15px 4px 10px; /* Mantemos o padding mais justinho e elegante */
     font-weight: 600;
     font-size: 0.85em;
     border: none;
@@ -4005,17 +4005,17 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
     box-sizing: border-box;
     margin: 0;
     
-    /* A SOLUÇÃO DEFINITIVA DE TAMANHO */
-    width: auto;         
-    min-width: 0;        
-    /* Mágica: Trava em 220px, mas se a tabela esmagar para menos que isso, ele obedece a tabela! */
-    max-width: min(100%, 220px); 
-    
+    /* === A MÁGICA DO TAMANHO UNIFORME === */
+    width: max-content;  /* 1. Cada pílula pede o espaço exato para o seu próprio texto... */
+    min-width: 100%;     /* 2. MAS se uma pílula vizinha for maior e alargar a coluna, ela estica para acompanhar! */
+    max-width: none;     /* 3. Sem trava de segurança */
+
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     
     text-align: center;
+    text-align-last: center; /* Garante a centralização do texto no Chrome/Edge */
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
