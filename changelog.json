@@ -1,5 +1,10 @@
 [
   {
+    "versao": "3.4",
+    "data": "13/08/2026",
+    "descricao": "Melhoria de criação e acesso de registros ao banco de dados em Controle de Notas Fiscais e Pendências."
+  },
+  {
     "versao": "3.3",
     "data": "11/08/2026",
     "descricao": "Melhoria visual de registros com prazo vencido. Melhorias visuais nos componentes data, botão, menu, select, select2, e tabela."
