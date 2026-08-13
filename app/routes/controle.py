@@ -86,11 +86,8 @@ def controle_lista(filter_mode):
     
     # --- CORREÇÃO PENDENTES REAIS E LÓGICA DE VENCIMENTO ---
     hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     for c in controles:
-        db_doc = controle_collection.find_one({'_id': c['_id']}, {'documentacao_pendente': 1})
-        if db_doc and 'documentacao_pendente' in db_doc:
-            c['documentacao_pendente'] = db_doc['documentacao_pendente']
-            
         c['vencido'] = False
         if c.get('prazo') and isinstance(c['prazo'], datetime):
             # Só marca como vencido se não estiver arquivado/concluído
