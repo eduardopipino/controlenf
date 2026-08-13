@@ -138,9 +138,6 @@ def get_situacoes_para_dropdown():
     return list(situacao_collection.find({'user_id': ObjectId(current_user.id)}, {'situacao': 1}))
 
 def get_controle_data(query_filter=None, sort_document=None):
-    """
-    Função de busca de dados de controle, com suporte a ordenação.
-    """
     if query_filter is None:
         query_filter = {}
     
@@ -148,6 +145,8 @@ def get_controle_data(query_filter=None, sort_document=None):
 
     pipeline = [
         {'$match': query_filter},
+        
+        # Faz o join com a tabela de ITENS (necessário para pegar 'descricao_item' e 'documentos_exigidos')
         {'$lookup': {
             'from': 'ITENS_INSTRUMENTO',
             'localField': 'item_id',
@@ -155,25 +154,18 @@ def get_controle_data(query_filter=None, sort_document=None):
             'as': 'item_join'
         }},
         {'$unwind': {'path': '$item_join', 'preserveNullAndEmptyArrays': True}},
-        {'$lookup': {
-            'from': 'INSTRUMENTOCONTRATUAL',
-            'localField': 'item_join.instrumento_id',
-            'foreignField': '_id',
-            'as': 'instrumento_join'
-        }},
-        {'$unwind': {'path': '$instrumento_join', 'preserveNullAndEmptyArrays': True}},
+        
         {'$addFields': {
-            # Envolvemos cada campo em um segundo $ifNull para garantir que o resultado final nunca seja nulo, e sim ""
-            'n_instrumento':  {'$ifNull': [{'$ifNull': ['$instrumento_join.n_instrumento', '$n_instrumento']}, ""]},
-            'tipo_documento': {'$ifNull': [{'$ifNull': ['$instrumento_join.tipo_documento', '$tipo_documento']}, ""]},
-            'contratada':     {'$ifNull': [{'$ifNull': ['$instrumento_join.contratada', '$contratada']}, ""]},
-            'objeto':         {'$ifNull': [{'$ifNull': ['$instrumento_join.objeto_resumido', '$objeto']}, ""]},
+            # Agora ele lê direto do documento atual, sem precisar do join!
+            'n_instrumento':  {'$ifNull': ['$n_instrumento', ""]},
+            'tipo_documento': {'$ifNull': ['$tipo_documento', ""]},
+            'contratada':     {'$ifNull': ['$contratada', ""]},
+            'objeto':         {'$ifNull': ['$objeto', ""]},
             'item_descricao': {'$ifNull': ['$item_join.descricao_item', ""]},
             
-            
-            # <<< ADICIONAMOS OS CAMPOS DA TABELA CONTROLE PARA GARANTIR QUE NÃO SEJAM NULOS >>>
             'nota_fiscal':      {'$ifNull': ['$nota_fiscal', ""]},
             'referencia':       {'$ifNull': ['$referencia', ""]},
+            # ... mantém o restante como já estava ...
             'observacoes':      {'$ifNull': ['$observacoes', ""]},
             'prazo':            {'$ifNull': ['$prazo', None]},
             'documentacao':     {'$ifNull': ['$documentacao', []]}, # Documentação deve ser uma lista vazia, não string
@@ -200,7 +192,7 @@ def get_controle_data(query_filter=None, sort_document=None):
         pipeline.append({'$sort': sort_document})
     
     # Adiciona o último estágio para limpar os campos temporários
-    pipeline.append({'$project': {'item_join': 0, 'instrumento_join': 0}})
+    pipeline.append({'$project': {'item_join': 0}})
     
     return list(controle_collection.aggregate(pipeline))
 
