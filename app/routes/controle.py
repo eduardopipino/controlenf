@@ -10,6 +10,7 @@ import re
 import io
 import csv
 from datetime import datetime
+import time
 
 # 2. Imports da nossa própria aplicação (dos modelos que criamos)
 from app.models import (controle_collection, get_situacoes_que_arquivam,
@@ -85,7 +86,6 @@ def controle_lista(filter_mode):
     controles = list(controles_raw)
     
     # --- CORREÇÃO PENDENTES REAIS E LÓGICA DE VENCIMENTO ---
-    hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     for c in controles:
         c['vencido'] = False
