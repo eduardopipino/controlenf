@@ -225,31 +225,26 @@ def get_instrumentos_para_dropdown():
     return instrumentos
 
 def get_pendencias_com_detalhes(query_filter):
-    """Busca pendências e faz o join com instrumentos para obter detalhes."""
-    
-    filtros_instrumento = {}
-    if 'instrumento_info.n_instrumento' in query_filter:
-        filtros_instrumento['instrumento_info.n_instrumento'] = query_filter.pop('instrumento_info.n_instrumento')
-    if 'instrumento_info.contratada' in query_filter:
-        filtros_instrumento['instrumento_info.contratada'] = query_filter.pop('instrumento_info.contratada')
-
+    """Busca pendências lendo os dados desnormalizados nativamente."""
     pipeline = [
         {'$match': query_filter},
-        {'$lookup': { 'from': 'INSTRUMENTOCONTRATUAL', 'localField': 'instrumento_id', 'foreignField': '_id', 'as': 'instrumento_info' }},
-        {'$unwind': {'path': '$instrumento_info', 'preserveNullAndEmptyArrays': True}},
-        {'$match': filtros_instrumento}, 
         {'$addFields': {
-            'contratada': '$instrumento_info.contratada',
-            'n_instrumento': '$instrumento_info.n_instrumento',
-            'instrumento_display': { '$concat': [ {'$ifNull': ['$instrumento_info.n_instrumento', '']}, ' / ', {'$ifNull': ['$instrumento_info.tipo_documento', '']} ] },
+            'instrumento_display': { 
+                '$concat': [ 
+                    {'$ifNull': ['$n_instrumento', '']}, 
+                    ' / ', 
+                    {'$ifNull': ['$tipo_documento', '']} 
+                ] 
+            }
         }}
     ]
     
     pendencias = list(pendencias_collection.aggregate(pipeline))
     
     for p in pendencias:
-        if not p.get('instrumento_id'):
+        if not p.get('instrumento_id') or p.get('instrumento_display') == ' / ':
             p['instrumento_display'] = ''
+            
     return pendencias
 
  

@@ -99,7 +99,7 @@ def pendencias_lista(page_mode="geral"):
             clean_key = key.replace('filter_', '').strip()
             filter_values[key] = value
             if clean_key in ['n_instrumento', 'contratada']:
-                query_filter[f'instrumento_info.{clean_key}'] = {'$regex': value, '$options': 'i'}
+                query_filter[clean_key] = {'$regex': value, '$options': 'i'}
             else:
                 query_filter[clean_key] = {'$regex': value, '$options': 'i'}
 
@@ -381,13 +381,26 @@ def nova_pendencia():
 
     if request.method == 'POST':
         instrumento_id = request.form.get('instrumento_id')
+        inst_obj = ObjectId(instrumento_id) if instrumento_id else None
+        
+        n_inst, contratada, tipo_doc = "", "", ""
+        if inst_obj:
+            inst_db = instrumentos_collection.find_one({'_id': inst_obj})
+            if inst_db:
+                n_inst = inst_db.get('n_instrumento', '')
+                contratada = inst_db.get('contratada', '')
+                tipo_doc = inst_db.get('tipo_documento', '')
+
         nova = {
             'pendencia': request.form.get('pendencia'),
             'prazo': datetime.strptime(request.form.get('prazo'), '%Y-%m-%d') if request.form.get('prazo') else None,
             'responsavel': request.form.get('responsavel'), 'situacao': request.form.get('situacao'),
             'observacoes': request.form.get('observacoes'), 'status': 'Pendente',
             'user_id': ObjectId(current_user.id), 'data_criacao': datetime.now(),
-            'instrumento_id': ObjectId(instrumento_id) if instrumento_id else None,
+            'instrumento_id': inst_obj,
+            'n_instrumento': n_inst,
+            'contratada': contratada,
+            'tipo_documento': tipo_doc,
             'prioridade': request.form.get('prioridade') == '1'
         }
         pendencias_collection.insert_one(nova)
@@ -412,12 +425,25 @@ def detalhes_pendencia(pendencia_id):
 
     if request.method == 'POST':
         instrumento_id = request.form.get('instrumento_id')
+        inst_obj = ObjectId(instrumento_id) if instrumento_id else None
+        
+        n_inst, contratada, tipo_doc = "", "", ""
+        if inst_obj:
+            inst_db = instrumentos_collection.find_one({'_id': inst_obj})
+            if inst_db:
+                n_inst = inst_db.get('n_instrumento', '')
+                contratada = inst_db.get('contratada', '')
+                tipo_doc = inst_db.get('tipo_documento', '')
+
         update_data = {
             'pendencia': request.form.get('pendencia'),
             'prazo': datetime.strptime(request.form.get('prazo'), '%Y-%m-%d') if request.form.get('prazo') else None,
             'responsavel': request.form.get('responsavel'), 'situacao': request.form.get('situacao'),
             'observacoes': request.form.get('observacoes'), 'status': request.form.get('status'),
-            'instrumento_id': ObjectId(instrumento_id) if instrumento_id else None,
+            'instrumento_id': inst_obj,
+            'n_instrumento': n_inst,              # <<< NOVO
+            'contratada': contratada,             # <<< NOVO
+            'tipo_documento': tipo_doc,           # <<< NOVO
             'prioridade': request.form.get('prioridade') == '1'
         }
         pendencias_collection.update_one({'_id': ObjectId(pendencia_id)}, {'$set': update_data})
@@ -562,6 +588,14 @@ def quick_create_inline():
     instrumento_id_str = data.get('instrumento_id')
     instrumento_id_obj = ObjectId(instrumento_id_str) if instrumento_id_str else None
 
+    n_inst, contratada, tipo_doc = "", "", ""
+    if instrumento_id_obj:
+        inst_db = instrumentos_collection.find_one({'_id': instrumento_id_obj})
+        if inst_db:
+            n_inst = inst_db.get('n_instrumento', '')
+            contratada = inst_db.get('contratada', '')
+            tipo_doc = inst_db.get('tipo_documento', '')
+
     nova_pendencia = {
         'pendencia': pendencia_texto,
         'prazo': prazo_dt,
@@ -571,7 +605,10 @@ def quick_create_inline():
         'status': 'Pendente',
         'user_id': ObjectId(current_user.id),
         'data_criacao': datetime.now(),
-        'instrumento_id': instrumento_id_obj, # <<< AGORA VINCULA AO INSTRUMENTO
+        'instrumento_id': instrumento_id_obj,
+        'n_instrumento': n_inst,              # <<< NOVO
+        'contratada': contratada,             # <<< NOVO
+        'tipo_documento': tipo_doc,           # <<< NOVO
         'prioridade': data.get('prioridade', False)
     }
 
@@ -581,3 +618,26 @@ def quick_create_inline():
     except Exception as e:
         print(f"Erro ao criar pendência inline: {e}")
         return {'status': 'error', 'message': 'Erro interno ao salvar no banco de dados.'}, 500
+
+@pendencias_bp.route('/migrar_desnormalizacao')
+@login_required
+def migrar_desnormalizacao_pendencias():
+    # Puxa apenas as pendências que possuem um instrumento vinculado
+    pendencias = pendencias_collection.find({"instrumento_id": {"$exists": True, "$ne": None}})
+    atualizadas = 0
+    
+    for p in pendencias:
+        # Busca o instrumento original para copiar os dados
+        inst = instrumentos_collection.find_one({"_id": p["instrumento_id"]})
+        if inst:
+            pendencias_collection.update_one(
+                {"_id": p["_id"]},
+                {"$set": {
+                    "n_instrumento": inst.get("n_instrumento", ""),
+                    "contratada": inst.get("contratada", ""),
+                    "tipo_documento": inst.get("tipo_documento", "")
+                }}
+            )
+            atualizadas += 1
+            
+    return f"<h1>Migração concluída com sucesso!</h1><p>{atualizadas} pendências atualizadas no banco de dados.</p>"
