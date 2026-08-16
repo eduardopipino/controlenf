@@ -75,7 +75,7 @@
                     <td data-label="Contratada" class="text-left"><span class="card-value">{{ instrumento.contratada }}</span></td>
                     <td data-label="Objeto Resumido" class="text-left"><span class="card-value">{{ instrumento.objeto_resumido }}</span></td>
                     <td data-label="Itens" class="text-left"><span class="card-value">{{ instrumento.itens_string or '' }}</span></td>
-                    <td data-label="Vigente" class="text-center"><span class="card-value">{{ 'Sim' if instrumento.vigente else 'Não' }}</span></td>
+                    <td data-label="Vigente" class="text-center"><span class="card-value">{{ '🟢' if instrumento.vigente else '🔴' }}</span></td>
                 </tr>
                 {% else %}
                 <tr>
