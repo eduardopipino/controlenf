@@ -109,7 +109,12 @@ document.addEventListener('DOMContentLoaded', function() {
         allowClear: true,
         width: '100%',
         closeOnSelect: true,
-        placeholder: 'Selecione um instrumento para vincular (opcional)'
+        placeholder: 'Selecione um instrumento para vincular (opcional)',
+        language: {
+            noResults: function() {
+                return "Nenhum resultado encontrado.";
+            }
+        }
     });
 
     $('#instrumento_id').on('select2:open', function (e) {

@@ -94,7 +94,12 @@ document.addEventListener('DOMContentLoaded', function() {
     $('#item_id').select2({
         placeholder: "Clique para selecionar ou buscar um item...",
         allowClear: true,
-        width: '100%'
+        width: '100%',
+        language: {
+            noResults: function() {
+                return "Nenhum resultado encontrado.";
+            }
+        }
     });
 
     $('#item_id').on('select2:open', function (e) {
