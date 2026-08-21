@@ -30,6 +30,19 @@ document.addEventListener('DOMContentLoaded', function() {
         return ''; 
     }
 
+    // <<< NOVA FUNÇÃO >>>
+    function autoCompletarData(valorIncompleto) {
+        let val = valorIncompleto.replace(/\s/g, '');
+        if (!val || val === '/' || val === '//') return '';
+        let parts = val.split('/');
+        let hoje = new Date();
+        let d = parts[0] && parts[0].length > 0 ? parts[0].padStart(2, '0') : '';
+        let m = parts[1] && parts[1].length > 0 ? parts[1].padStart(2, '0') : String(hoje.getMonth() + 1).padStart(2, '0');
+        let y = parts[2] && parts[2].length > 0 ? parts[2] : String(hoje.getFullYear());
+        if (y.length === 2) y = '20' + y; 
+        return `${d}/${m}/${y}`;
+    }
+
     function parseDateFromDDMMYYYY(dateString) {
         if (!dateString) return null;
         const parts = dateString.split('/');
@@ -74,8 +87,10 @@ document.addEventListener('DOMContentLoaded', function() {
             inputElement.style.height = isCard ? '60px' : Math.max(valueElement.offsetHeight, 60) + 'px';
             inputElement.style.resize = 'vertical';
         } else if (fieldName === 'prazo') {
-            inputElement.type = 'date';
-            inputElement.value = convertDateToISO(originalValue);
+            inputElement.type = 'text';
+            inputElement.style.fontFamily = 'monospace';
+            inputElement.style.letterSpacing = '1px';
+            inputElement.value = originalValue;
         } else {
             inputElement.type = 'text';
             inputElement.value = originalValue;
@@ -94,8 +109,20 @@ document.addEventListener('DOMContentLoaded', function() {
             else if (backupHTML.includes('<strong>')) container.innerHTML = backupHTML.split('</strong>')[0] + '</strong> ';
         }
         container.appendChild(inputElement);
+
+        let dateMask = null;
+        let fp = null;
+        if (fieldName === 'prazo' && typeof IMask !== 'undefined' && typeof flatpickr !== 'undefined') {
+            dateMask = IMask(inputElement, { mask: '00/00/0000', lazy: false, placeholderChar: ' ' });
+            if (originalValue) dateMask.value = originalValue;
+            fp = flatpickr(inputElement, {
+                dateFormat: "d/m/Y", allowInput: true, locale: "pt",
+                onClose: function(selectedDates, dateStr) { if (dateStr && dateMask) dateMask.value = dateStr; }
+            });
+        }
+
         inputElement.focus();
-        if (inputElement.select) inputElement.select();
+        if (inputElement.select && fieldName !== 'prazo') inputElement.select();
 
         let saveInProgress = false;
 
@@ -106,11 +133,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function salvarEdicao() {
             const newValue = inputElement.value.trim();
-            if (newValue === originalValue && fieldName !== 'prazo') return cancelarEdicao();
+            if (newValue === originalValue) return cancelarEdicao();
+
+            let valueToSend = newValue;
+            if (fieldName === 'prazo' && newValue) valueToSend = convertDateToISO(newValue);
 
             fetch(`/pendencias/update_field_inline/${pendenciaId}`, {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ field: fieldName, value: newValue })
+                body: JSON.stringify({ field: fieldName, value: valueToSend })
             })
             .then(r => r.json())
             .then(data => {
@@ -162,9 +192,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         inputElement.addEventListener('keydown', e => {
-            if (e.key === 'Enter') { if (inputElement.tagName === 'TEXTAREA' && e.shiftKey) return; e.preventDefault(); saveInProgress = true; salvarEdicao(); }
+            if (e.key === 'Enter') { 
+                if (inputElement.tagName === 'TEXTAREA' && e.shiftKey) return; 
+                e.preventDefault(); 
+                e.stopPropagation();
+                
+                if (fieldName === 'prazo') {
+                    let valCompletado = autoCompletarData(inputElement.value);
+                    if (valCompletado) {
+                        if (dateMask) dateMask.value = valCompletado;
+                        if (fp) fp.setDate(valCompletado, true, "d/m/Y");
+                        inputElement.value = valCompletado;
+                    } else {
+                        inputElement.value = '';
+                    }
+                }
+                
+                saveInProgress = true; 
+                salvarEdicao(); 
+            }
             else if (e.key === 'Escape') cancelarEdicao();
-        });
+        }, true);
         inputElement.addEventListener('blur', () => { setTimeout(() => { if (!saveInProgress && currentEditInput === inputElement) cancelarEdicao(); }, 150); });
     });
 
