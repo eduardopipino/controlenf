@@ -2,7 +2,8 @@
   {
     "versao": "3.5",
     "data": "21/08/2026",
-    "descricao": "."
+    "descricao": "Melhoria do componente de data, ajuste do ícone de vigência de instrumentos contratuais, e ajuste de retorno sem resultado do select2."
+    
   },
   {
     "versao": "3.4",
