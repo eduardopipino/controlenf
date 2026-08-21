@@ -36,11 +36,25 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!val || val === '/' || val === '//') return '';
         let parts = val.split('/');
         let hoje = new Date();
+        
         let d = parts[0] && parts[0].length > 0 ? parts[0].padStart(2, '0') : '';
         let m = parts[1] && parts[1].length > 0 ? parts[1].padStart(2, '0') : String(hoje.getMonth() + 1).padStart(2, '0');
         let y = parts[2] && parts[2].length > 0 ? parts[2] : String(hoje.getFullYear());
+        
         if (y.length === 2) y = '20' + y; 
-        return `${d}/${m}/${y}`;
+        
+        // NOVA VALIDAÇÃO MATEMÁTICA DA DATA
+        let numY = parseInt(y, 10);
+        let numM = parseInt(m, 10);
+        let numD = parseInt(d, 10);
+        let dataTeste = new Date(numY, numM - 1, numD);
+        
+        // Verifica se a data é real (Rejeita dia 32, ou 30 de fevereiro, etc)
+        if (dataTeste.getFullYear() === numY && dataTeste.getMonth() === numM - 1 && dataTeste.getDate() === numD) {
+            return `${d}/${m}/${y}`;
+        } else {
+            return 'INVALIDA';
+        }
     }
 
     function parseDateFromDDMMYYYY(dateString) {
@@ -199,6 +213,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (fieldName === 'prazo') {
                     let valCompletado = autoCompletarData(inputElement.value);
+                    
+                    // SE A DATA NÃO EXISTIR, PINTA DE VERMELHO E TRAVA!
+                    if (valCompletado === 'INVALIDA') {
+                        inputElement.style.border = '2px solid #e74c3c';
+                        return; // O "return" aqui impede o salvamento
+                    }
+
                     if (valCompletado) {
                         if (dateMask) dateMask.value = valCompletado;
                         if (fp) fp.setDate(valCompletado, true, "d/m/Y");
@@ -206,7 +227,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else {
                         inputElement.value = '';
                     }
-                    if (fp) { fp.close(); fp.destroy(); } // <<< FECHA E DESTROI O CALENDÁRIO AQUI
+                    
+                    if (fp) { fp.close(); fp.destroy(); }
                 }
                 
                 saveInProgress = true; 
