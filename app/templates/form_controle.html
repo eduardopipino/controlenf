@@ -43,7 +43,10 @@
         </div>
         <div>
             <label for="prazo">Prazo:</label>
-            <input type="date" id="prazo" name="prazo" value="{{ controle.prazo.strftime('%Y-%m-%d') if controle and controle.prazo else '' }}" disabled>
+            <!-- Campo Visual (Máscara) -->
+            <input type="text" id="prazo" value="{{ controle.prazo.strftime('%d/%m/%Y') if controle and controle.prazo else '' }}" disabled style="font-family: monospace; letter-spacing: 1px;">
+            <!-- Campo Oculto (Enviado para o Banco) -->
+            <input type="hidden" id="prazo_hidden" name="prazo" value="{{ controle.prazo.strftime('%Y-%m-%d') if controle and controle.prazo else '' }}">
         </div>
         <div>
             <label for="situacao">Situação:</label>
@@ -108,6 +111,91 @@ document.addEventListener('DOMContentLoaded', function() {
             searchInput.placeholder = 'Digite aqui para filtrar a lista...';
         }
     });
+
+    // ======================================================================
+    // 1.5 LÓGICA DA DATA INTELIGENTE (PRAZO)
+    // ======================================================================
+    function autoCompletarData(valorIncompleto) {
+        let val = valorIncompleto.replace(/\s/g, '');
+        if (!val || val === '/' || val === '//') return '';
+        let parts = val.split('/');
+        let hoje = new Date();
+        
+        let d = parts[0] && parts[0].length > 0 ? parts[0].padStart(2, '0') : '';
+        let m = parts[1] && parts[1].length > 0 ? parts[1].padStart(2, '0') : String(hoje.getMonth() + 1).padStart(2, '0');
+        let y = parts[2] && parts[2].length > 0 ? parts[2] : String(hoje.getFullYear());
+        
+        if (y.length === 2) y = '20' + y; 
+        
+        // Validação Matemática
+        let numY = parseInt(y, 10), numM = parseInt(m, 10), numD = parseInt(d, 10);
+        let dataTeste = new Date(numY, numM - 1, numD);
+        if (dataTeste.getFullYear() === numY && dataTeste.getMonth() === numM - 1 && dataTeste.getDate() === numD) {
+            return `${d}/${m}/${y}`;
+        } else return 'INVALIDA';
+    }
+
+    function converterParaISO(dataBR) {
+        if (!dataBR || dataBR === 'INVALIDA') return '';
+        const parts = dataBR.split('/');
+        if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        return '';
+    }
+
+    const prazoInput = document.getElementById('prazo');
+    const prazoHidden = document.getElementById('prazo_hidden');
+    
+    if (prazoInput && typeof IMask !== 'undefined' && typeof flatpickr !== 'undefined') {
+        const dateMask = IMask(prazoInput, { mask: '00/00/0000', lazy: false, placeholderChar: ' ' });
+        if (prazoInput.value) dateMask.value = prazoInput.value;
+        
+        const fp = flatpickr(prazoInput, {
+            dateFormat: "d/m/Y",
+            allowInput: true,
+            locale: "pt",
+            onClose: function(selectedDates, dateStr) { 
+                if (dateStr) {
+                    dateMask.value = dateStr;
+                    prazoHidden.value = converterParaISO(dateStr);
+                } else {
+                    prazoHidden.value = '';
+                }
+            }
+        });
+
+        function validarESincronizarData(fecharCalendario) {
+            let valCompletado = autoCompletarData(prazoInput.value);
+            if (valCompletado === 'INVALIDA') {
+                prazoInput.style.border = '2px solid #e74c3c';
+                return false;
+            }
+            prazoInput.style.border = '';
+            if (valCompletado) {
+                dateMask.value = valCompletado;
+                fp.setDate(valCompletado, true, "d/m/Y");
+                prazoInput.value = valCompletado;
+                prazoHidden.value = converterParaISO(valCompletado);
+            } else {
+                prazoInput.value = '';
+                prazoHidden.value = '';
+            }
+            if (fecharCalendario && fp) fp.close();
+            return true;
+        }
+
+        prazoInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                validarESincronizarData(true);
+            }
+        }, true);
+
+        // Previne erros ao clicar fora do campo
+        prazoInput.addEventListener('blur', function() {
+            validarESincronizarData(false);
+        });
+    }
 
     // ======================================================================
     // 2. DEFINIÇÃO DE VARIÁVEIS E REFERÊNCIAS GLOBAIS DO SCRIPT

@@ -1,5 +1,10 @@
 [
   {
+    "versao": "3.5",
+    "data": "21/08/2026",
+    "descricao": "."
+  },
+  {
     "versao": "3.4",
     "data": "13/08/2026",
     "descricao": "Melhoria de criação e acesso de registros no banco de dados em Controle de Notas Fiscais e Pendências."
