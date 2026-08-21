@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         inputElement.focus();
-        if (inputElement.select && fieldName !== 'prazo') inputElement.select();
+        if (inputElement.select) inputElement.select();
 
         let saveInProgress = false;
 
