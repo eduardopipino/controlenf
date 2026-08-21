@@ -15,8 +15,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Importação das bibliotecas para a data -->
+    <!-- CSS Padrão do Flatpickr -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://unpkg.com/imask"></script>
+
+    <!-- Condição para carregar o CSS Escuro caso o usuário use o tema escuro -->
+    {% if current_user.theme == 'theme-dark' %}
+        <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+    {% endif %}    <script src="https://unpkg.com/imask"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
     
