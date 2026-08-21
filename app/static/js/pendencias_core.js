@@ -206,6 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else {
                         inputElement.value = '';
                     }
+                    if (fp) { fp.close(); fp.destroy(); } // <<< FECHA E DESTROI O CALENDÁRIO AQUI
                 }
                 
                 saveInProgress = true; 
