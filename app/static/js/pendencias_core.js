@@ -74,9 +74,8 @@ document.addEventListener('DOMContentLoaded', function() {
             inputElement.style.height = isCard ? '60px' : Math.max(valueElement.offsetHeight, 60) + 'px';
             inputElement.style.resize = 'vertical';
         } else if (fieldName === 'prazo') {
-            inputElement.type = 'text';
-            inputElement.placeholder = 'DD, DD/MM ou DD/MM/AAAA';
-            inputElement.value = originalValue;
+            inputElement.type = 'date';
+            inputElement.value = convertDateToISO(originalValue);
         } else {
             inputElement.type = 'text';
             inputElement.value = originalValue;
@@ -106,24 +105,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function salvarEdicao() {
-            let newValue = inputElement.value.trim();
-
-            // --- SMART DATE PARSE (Preenchimento Automático) ---
-            if (fieldName === 'prazo' && newValue !== '') {
-                const parts = newValue.split(/\/|-/);
-                const hoje = new Date();
-                
-                let d = parts[0] ? parts[0].padStart(2, '0') : '';
-                let m = parts[1] ? parts[1].padStart(2, '0') : String(hoje.getMonth() + 1).padStart(2, '0');
-                let y = parts[2] ? parts[2] : String(hoje.getFullYear());
-                
-                if (y.length === 2) y = '20' + y; // Transforma 26 em 2026
-                
-                newValue = `${d}/${m}/${y}`;
-            }
-
-            // Se nada mudou, apenas cancela e fecha o input
-            if (newValue === originalValue) return cancelarEdicao();
+            const newValue = inputElement.value.trim();
+            if (newValue === originalValue && fieldName !== 'prazo') return cancelarEdicao();
 
             fetch(`/pendencias/update_field_inline/${pendenciaId}`, {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
