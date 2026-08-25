@@ -126,19 +126,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let dateMask = null;
         let fp = null;
+        let saveInProgress = false; 
+
         if (fieldName === 'prazo' && typeof IMask !== 'undefined' && typeof flatpickr !== 'undefined') {
             dateMask = IMask(inputElement, { mask: '00/00/0000', lazy: false, placeholderChar: ' ' });
             if (originalValue) dateMask.value = originalValue;
             fp = flatpickr(inputElement, {
                 dateFormat: "d/m/Y", allowInput: true, locale: "pt",
-                onClose: function(selectedDates, dateStr) { if (dateStr && dateMask) dateMask.value = dateStr; }
+                onChange: function(selectedDates, dateStr) { 
+                    if (dateStr && dateStr.length === 10) {
+                        dateMask.value = dateStr;
+                        inputElement.value = dateStr;
+                        saveInProgress = true; 
+                        salvarEdicao(); 
+                        setTimeout(() => { if (fp) { fp.close(); fp.destroy(); } }, 50);
+                    }
+                }
             });
         }
 
         inputElement.focus();
         if (inputElement.select) inputElement.select();
-
-        let saveInProgress = false;
 
         function cancelarEdicao() {
             container.innerHTML = backupHTML;

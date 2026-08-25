@@ -259,6 +259,8 @@ document.addEventListener('DOMContentLoaded', function() {
             container.appendChild(inputElement);
         }
 
+        let saveInProgress = false; // <<< NOVA VARIÁVEL DE CONTROLE
+
         let dateMask = null;
         let fp = null;
         if (fieldName === 'prazo' && typeof IMask !== 'undefined' && typeof flatpickr !== 'undefined') {
@@ -266,17 +268,21 @@ document.addEventListener('DOMContentLoaded', function() {
             if (originalValue) dateMask.value = originalValue;
             fp = flatpickr(inputElement, {
                 dateFormat: "d/m/Y", allowInput: true, locale: "pt",
-                onClose: function(selectedDates, dateStr) { if (dateStr && dateMask) dateMask.value = dateStr; }
+                onChange: function(selectedDates, dateStr) { 
+                    if (dateStr && dateStr.length === 10) {
+                        dateMask.value = dateStr;
+                        inputElement.value = dateStr;
+                        saveInProgress = true; 
+                        salvarEdicao(); // Salva automaticamente ao clicar na data!
+                        setTimeout(() => { if (fp) { fp.close(); fp.destroy(); } }, 50);
+                    }
+                }
             });
         }
 
         inputElement.focus();
-        if (inputElement.select && fieldName !== 'prazo') inputElement.select();
-
-        inputElement.focus();
         if (inputElement.select) inputElement.select();
 
-        // Lógica de Salvar/Cancelar
         function cancelarEdicao() {
             container.innerHTML = backupHTML;
             currentEditInput = null;
@@ -345,13 +351,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.stopPropagation();
                 if (fieldName === 'prazo') {
                     let valCompletado = autoCompletarData(inputElement.value);
-                    
-                    // SE A DATA NÃO EXISTIR, PINTA DE VERMELHO E TRAVA!
                     if (valCompletado === 'INVALIDA') {
                         inputElement.style.border = '2px solid #e74c3c';
-                        return; // O "return" aqui impede o salvamento
+                        return;
                     }
-
                     if (valCompletado) {
                         if (dateMask) dateMask.value = valCompletado;
                         if (fp) fp.setDate(valCompletado, true, "d/m/Y");
@@ -359,14 +362,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else {
                         inputElement.value = '';
                     }
-                    
                     if (fp) { fp.close(); fp.destroy(); }
                 }
+                saveInProgress = true; // Avisa o sistema que está salvando
                 salvarEdicao(); 
             }
             else if (e.key === 'Escape') cancelarEdicao();
         }, true);
-        inputElement.addEventListener('blur', () => { setTimeout(() => { if (currentEditInput === inputElement) cancelarEdicao(); }, 150); });
+        
+        inputElement.addEventListener('blur', () => { 
+            setTimeout(() => { 
+                if (fp && fp.isOpen) return; // Não cancela a edição se o calendário estiver aberto
+                if (!saveInProgress && currentEditInput === inputElement) cancelarEdicao(); 
+            }, 250); // Tempo estendido para garantir a leitura suave do clique
+        });
     });
 
     // ==========================================
