@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     if (valCompletado) {
                         if (dateMask) dateMask.value = valCompletado;
-                        if (fp) fp.setDate(valCompletado, true, "d/m/Y");
+                        if (fp) fp.setDate(valCompletado, false, "d/m/Y"); // Trocado para 'false'
                         inputElement.value = valCompletado;
                     } else {
                         inputElement.value = '';
