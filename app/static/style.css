@@ -166,16 +166,17 @@ body.theme-dark {
 	--nav-bg-color: #1c1c1c;   /* <<< Nova variável SÓ para a barra de navegação */
     --accent-color: #606060;
     --text-primary: #f9f9f9;
-    /* *** CORREÇÃO APLICADA AQUI *** */
     /* Garante que o texto dos botões seja claro no tema escuro */
     --text-secondary: #f9f9f9;
     /* Fundo geral do app, agora quase preto como solicitado */
     --background-primary: #121212;
-    /* Fundo dos containers principais (os "quadros de fora"), um cinza bem escuro */
-    --background-secondary: #222222;
-    --border-base: #555;
-    --shadow-base: rgba(0, 0, 0, 0.7);
+    /* 1. Container levemente mais escuro para dar margem de elevação aos cards */
+    --background-secondary: #1e1e1e; 
+    /* 2. Borda mais sutil e elegante */
+    --border-base: #333333;
+	--shadow-base: rgba(0, 0, 0, 0.7);
     --hover-bg: #444444;
+	/* Ajustado para a nova cor da tabela */
     --table-stripe: #2b2b2b;
     --table-hover: #3d3d3d;
     --flash-success-bg: #155724;
@@ -1008,11 +1009,11 @@ body.theme-dark button:disabled {
     opacity: 0.7;
 }
 
-/* No tema escuro, tabelas e quadros internos ficam um tom mais escuro que o container */
+/* No tema escuro, tabelas e quadros internos ficam um tom mais CLARO que o container (Elevação) */
 body.theme-dark table,
 body.theme-dark .chart-box,
 body.theme-dark .info-display-box {
-    background-color: #181818; 
+    background-color: #2a2a2a; 
 }
 
 /* Estilo para os "quadros internos" */
@@ -4294,4 +4295,59 @@ body.theme-dark .kanban-view-container:focus,
 body.theme-dark .container:focus,
 body.theme-dark table:focus {
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2) !important;
+}
+
+/* ====================================================================== */
+/* ELEVAÇÃO DE CARDS E ACORDEÕES NO TEMA ESCURO                           */
+/* ====================================================================== */
+
+/* Eleva os cards para descolarem do fundo do container */
+body.theme-dark .data-card,
+body.theme-dark .instrumento-group-section {
+    background-color: #2a2a2a;
+    border-color: #3a3a3a;
+}
+
+/* Eleva o cabeçalho do Acordeão (Hub) para não se camuflar no fundo */
+body.theme-dark .hub-accordion {
+    background-color: #2a2a2a; 
+    border-color: #3a3a3a;
+}
+
+/* Quando o Acordeão expande, o conteúdo interno fica no mesmo nível do container, criando profundidade */
+body.theme-dark .hub-accordion-content {
+    background-color: #1e1e1e;
+    border-top-color: #3a3a3a;
+}
+
+/* Força a elevação do fundo das tabelas modernas e seus envelopes no Tema Escuro */
+body.theme-dark .table-responsive-wrapper,
+body.theme-dark #tabelaControle, 
+body.theme-dark #tabelaPendencias, 
+body.theme-dark #tabelaInstrumentos, 
+body.theme-dark #tabelaTiposDocumento, 
+body.theme-dark #tabelaSituacoes, 
+body.theme-dark #tabelaItens,
+body.theme-dark .tabela-hub {
+    background-color: #2a2a2a;
+}
+
+/* ====================================================================== */
+/* MODERNIZAÇÃO DOS CABEÇALHOS DAS TABELAS NO TEMA ESCURO                 */
+/* ====================================================================== */
+body.theme-dark #tabelaControle th, 
+body.theme-dark #tabelaPendencias th, 
+body.theme-dark #tabelaInstrumentos th, 
+body.theme-dark #tabelaTiposDocumento th, 
+body.theme-dark #tabelaSituacoes th, 
+body.theme-dark #tabelaItens th,
+body.theme-dark .tabela-hub th {
+    /* 1. Usa a mesma cor de fundo da tabela elevada para criar uma superfície única */
+    background-color: #2a2a2a !important; 
+    
+    /* 2. Cria a separação visual apenas com uma linha de borda inferior elegante */
+    border-bottom: 2px solid #444444 !important; 
+    
+    /* 3. Deixa o texto num tom de cinza bem claro (SaaS Style) em vez de branco puro */
+    color: #cbd5e1 !important; 
 }
