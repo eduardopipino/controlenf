@@ -46,6 +46,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const sit = dropdown.value;
             if (sit && window.APP_DATA.colorMap[sit]) {
                 dropdown.style.backgroundColor = window.APP_DATA.colorMap[sit];
+                
+                // <<< NOVO: Sincroniza o Card no carregamento da página >>>
+                const cardCorresp = document.querySelector(`.data-card[data-id="${dropdown.dataset.id}"]`);
+                if (cardCorresp) cardCorresp.style.backgroundColor = window.APP_DATA.colorMap[sit];
             }
         });
     }
@@ -142,19 +146,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify({ 
                         controle_id: controleId, 
                         nova_situacao: sitParaSalvar,
-                        cor_temporaria: corCustomizada // <<< Envia a cor
+                        cor_temporaria: corCustomizada
                     }),
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
                         flashElement(linhaDaTabela);
+                        
+                        // <<< NOVO: Sincroniza o texto do Card invisível >>>
+                        const cardCorresp = document.querySelector(`.data-card[data-id="${controleId}"]`);
+                        if (cardCorresp) {
+                            const pSit = cardCorresp.querySelector('p[data-field-name="situacao"] .card-field-value');
+                            if (pSit) pSit.textContent = sitParaSalvar;
+                        }
+
                         if (window.APP_DATA && window.APP_DATA.colorCodingIsActive) {
-                            if (corCustomizada) {
-                                dropdown.style.backgroundColor = corCustomizada; // Pinta a temporária
-                            } else {
-                                dropdown.style.backgroundColor = window.APP_DATA.colorMap[sitParaSalvar] || '';
-                            }
+                            // <<< NOVO: Pinta a Tabela e o Card ao mesmo tempo >>>
+                            let corFinal = corCustomizada || window.APP_DATA.colorMap[sitParaSalvar] || '';
+                            dropdown.style.backgroundColor = corFinal;
+                            if (cardCorresp) cardCorresp.style.backgroundColor = corFinal;
                         }
                     } else alert('Erro ao atualizar situação.');
                 }).catch(error => console.error('Erro de rede:', error));
@@ -499,10 +510,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.status === 'success') {
                         const situacaoField = activeCard.querySelector('p[data-field-name="situacao"] .card-field-value');
                         if (situacaoField) situacaoField.textContent = sitParaSalvar;
-                        if (window.APP_DATA && window.APP_DATA.colorCodingIsActive) activeCard.style.backgroundColor = window.APP_DATA.colorMap[sitParaSalvar] || '';
+                        
+                        // <<< NOVO: Sincroniza a seleção da Tabela invisível >>>
+                        const selectCorresp = document.querySelector(`select.situacao-dropdown[data-id="${activeCard.dataset.id}"]`);
+                        if (selectCorresp) selectCorresp.value = sitParaSalvar;
+
+                        if (window.APP_DATA && window.APP_DATA.colorCodingIsActive) {
+                            let corFinal = window.APP_DATA.colorMap[sitParaSalvar] || '';
+                            activeCard.style.backgroundColor = corFinal;
+                            if (selectCorresp) selectCorresp.style.backgroundColor = corFinal;
+                        }
                         
                         if (window.APP_DATA && window.APP_DATA.arquivadores.includes(sitParaSalvar)) {
                             activeCard.style.opacity = '0'; setTimeout(() => activeCard.remove(), 400);
+                            if (selectCorresp) {
+                                const row = selectCorresp.closest('tr');
+                                if (row) { row.style.opacity = '0'; setTimeout(() => row.remove(), 400); }
+                            }
                         }
                     }
                 });
@@ -522,8 +546,19 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (data.status === 'success') {
                             const situacaoField = activeCard.querySelector('p[data-field-name="situacao"] .card-field-value');
                             if (situacaoField) situacaoField.textContent = novaSituacao;
+                            
+                            // <<< NOVO: Insere a opção customizada no Select da Tabela e pinta >>>
+                            const selectCorresp = document.querySelector(`select.situacao-dropdown[data-id="${activeCard.dataset.id}"]`);
+                            if (selectCorresp) {
+                                if (!Array.from(selectCorresp.options).some(opt => opt.value === novaSituacao)) {
+                                    selectCorresp.add(new Option(novaSituacao, novaSituacao, true, true), selectCorresp.options.length - 1);
+                                }
+                                selectCorresp.value = novaSituacao;
+                            }
+
                             if (window.APP_DATA && window.APP_DATA.colorCodingIsActive) {
-                                activeCard.style.backgroundColor = novaCor; // Pinta com a cor do modal
+                                activeCard.style.backgroundColor = novaCor; 
+                                if (selectCorresp) selectCorresp.style.backgroundColor = novaCor;
                             }
                         }
                     });
