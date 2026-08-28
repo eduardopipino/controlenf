@@ -39,17 +39,23 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentEditInput = null;
 
     // ==========================================
-    // 0. PINTURA INICIAL DAS PÍLULAS DE SITUAÇÃO
+    // 0. PINTURA INICIAL DAS PÍLULAS DE SITUAÇÃO E CARDS
     // ==========================================
     if (window.APP_DATA && window.APP_DATA.colorCodingIsActive) {
         document.querySelectorAll('.situacao-dropdown').forEach(dropdown => {
             const sit = dropdown.value;
-            if (sit && window.APP_DATA.colorMap[sit]) {
-                dropdown.style.backgroundColor = window.APP_DATA.colorMap[sit];
+            if (sit) {
+                // 1. Garante a pintura do Select se for uma situação oficial do sistema
+                if (window.APP_DATA.colorMap[sit]) {
+                    dropdown.style.backgroundColor = window.APP_DATA.colorMap[sit];
+                }
                 
-                // <<< NOVO: Sincroniza o Card no carregamento da página >>>
+                // 2. A MÁGICA: O Select já pode ter recebido a cor temporária direto do servidor.
+                // Nós apenas copiamos a cor final do Select e colamos no Card correspondente!
                 const cardCorresp = document.querySelector(`.data-card[data-id="${dropdown.dataset.id}"]`);
-                if (cardCorresp) cardCorresp.style.backgroundColor = window.APP_DATA.colorMap[sit];
+                if (cardCorresp) {
+                    cardCorresp.style.backgroundColor = dropdown.style.backgroundColor;
+                }
             }
         });
     }
@@ -511,7 +517,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const situacaoField = activeCard.querySelector('p[data-field-name="situacao"] .card-field-value');
                         if (situacaoField) situacaoField.textContent = sitParaSalvar;
                         
-                        // <<< NOVO: Sincroniza a seleção da Tabela invisível >>>
+                        // Sincroniza a seleção da Tabela invisível
                         const selectCorresp = document.querySelector(`select.situacao-dropdown[data-id="${activeCard.dataset.id}"]`);
                         if (selectCorresp) selectCorresp.value = sitParaSalvar;
 
@@ -547,7 +553,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             const situacaoField = activeCard.querySelector('p[data-field-name="situacao"] .card-field-value');
                             if (situacaoField) situacaoField.textContent = novaSituacao;
                             
-                            // <<< NOVO: Insere a opção customizada no Select da Tabela e pinta >>>
+                            // Insere a opção customizada no Select da Tabela e pinta
                             const selectCorresp = document.querySelector(`select.situacao-dropdown[data-id="${activeCard.dataset.id}"]`);
                             if (selectCorresp) {
                                 if (!Array.from(selectCorresp.options).some(opt => opt.value === novaSituacao)) {
