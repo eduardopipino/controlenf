@@ -508,6 +508,33 @@ document.addEventListener('DOMContentLoaded', function() {
         const menuItem = e.target.closest('.context-menu-item');
         if (menuItem && activeCard) {
             let novaSitRaw = menuItem.dataset.situacao;
+
+            // <<< NOVA FUNÇÃO: Mágica para mover o card para a coluna certa >>>
+            function moverCardKanban(card, novaSit) {
+                if (window.APP_DATA && window.APP_DATA.viewMode === 'kanban') {
+                    // Tenta achar a coluna com o nome exato
+                    let targetCol = document.querySelector(`.kanban-column[data-situacao="${novaSit}"]`);
+                    
+                    // Se não achar (for temporária) e não for a opção "Sem Situação", manda para "Outras"
+                    if (!targetCol && novaSit !== "") {
+                        targetCol = document.querySelector('.kanban-column[data-situacao="*custom*"]');
+                    }
+                    
+                    const currentCol = card.closest('.kanban-column');
+                    
+                    // Se a coluna destino existir e for diferente da atual, move animadamente
+                    if (targetCol && currentCol !== targetCol) {
+                        const cardsContainer = targetCol.querySelector('.kanban-cards');
+                        if (cardsContainer) {
+                            card.style.opacity = '0'; // Esconde na coluna atual
+                            setTimeout(() => {
+                                cardsContainer.appendChild(card); // Move no HTML
+                                card.style.opacity = '1'; // Mostra na coluna nova
+                            }, 300);
+                        }
+                    }
+                }
+            }
             
             function performSetSituacao(sitParaSalvar) {
                 fetch(`/controle/set_situacao/${activeCard.dataset.id}`, {
@@ -533,6 +560,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                 const row = selectCorresp.closest('tr');
                                 if (row) { row.style.opacity = '0'; setTimeout(() => row.remove(), 400); }
                             }
+                        } else {
+                            // <<< CHAMA A FUNÇÃO DE MOVER >>>
+                            moverCardKanban(activeCard, sitParaSalvar); 
                         }
                     }
                 });
@@ -566,6 +596,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                 activeCard.style.backgroundColor = novaCor; 
                                 if (selectCorresp) selectCorresp.style.backgroundColor = novaCor;
                             }
+                            
+                            // <<< CHAMA A FUNÇÃO DE MOVER (Enviará para a aba "Outras") >>>
+                            moverCardKanban(activeCard, novaSituacao); 
                         }
                     });
                 });
