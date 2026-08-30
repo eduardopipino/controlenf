@@ -140,6 +140,11 @@
     {% if view_mode == 'kanban' %}
     <div class="kanban-view-container hide-on-mobile">
         <div class="kanban-board">
+            
+            <!-- 1. Cria uma lista apenas com os nomes das situações oficiais do banco -->
+            {% set official_sits = situacoes_kanban | map(attribute='situacao') | list %}
+            
+            <!-- 2. Renderiza as colunas oficiais -->
             {% for sit in situacoes_kanban %}
                 <div class="kanban-column" data-situacao="{{ sit.situacao }}">
                     <div class="kanban-column-header">{{ sit.situacao }}</div>
@@ -152,6 +157,20 @@
                     </div>
                 </div>
             {% endfor %}
+            
+            <!-- 3. NOVA COLUNA: OUTRAS (Captura qualquer situação temporária que não esteja na lista oficial) -->
+            <div class="kanban-column" data-situacao="*custom*">
+                <div class="kanban-column-header">Temporárias</div>
+                <div class="kanban-cards">
+                    {% for controle in controles %}
+                        {% if controle.situacao and controle.situacao not in official_sits %}
+                            {% include 'partials/_controle_card.html' %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 4. Coluna Sem Situação -->
             <div class="kanban-column" data-situacao="">
                 <div class="kanban-column-header">Sem Situação</div>
                 <div class="kanban-cards">
@@ -162,6 +181,7 @@
                     {% endfor %}
                 </div>
             </div>
+            
         </div>
     </div>
     {% endif %}

@@ -575,24 +575,80 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Lógica Drag and Drop para o Kanban
+    // ==========================================
+    // 5. LÓGICA DRAG AND DROP PARA O KANBAN
+    // ==========================================
     document.querySelectorAll('.kanban-cards').forEach(column => {
         if (typeof Sortable !== 'undefined') {
             new Sortable(column, {
-                group: 'kanban', animation: 150,
+                group: 'kanban', 
+                animation: 150,
                 onEnd: function (evt) {
+                    // Se o usuário apenas reordenou o card dentro da MESMA coluna, não fazemos nada
+                    if (evt.from === evt.to) return; 
+
                     const card = evt.item;
-                    const novaSit = evt.to.parentElement.dataset.situacao || "";
-                    fetch(`/controle/set_situacao/${card.dataset.id}`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ situacao: novaSit })
-                    }).then(r => r.json()).then(d => {
-                        if (d.status === 'success') {
-                            const p = card.querySelector('p[data-field-name="situacao"] .card-field-value');
-                            if (p) p.textContent = novaSit;
-                            if (window.APP_DATA.colorCodingIsActive) card.style.backgroundColor = window.APP_DATA.colorMap[novaSit] || '';
-                            if (window.APP_DATA.arquivadores.includes(novaSit)) card.remove();
-                        } else location.reload();
-                    });
+                    const novaSitRaw = evt.to.parentElement.dataset.situacao || "";
+                    
+                    // Função centralizada para salvar e pintar em qualquer visão
+                    function salvarKanban(sitParaSalvar, corCustom = null) {
+                        fetch(`/controle/set_situacao/${card.dataset.id}`, {
+                            method: 'POST', 
+                            headers: { 'Content-Type': 'application/json' }, 
+                            body: JSON.stringify({ situacao: sitParaSalvar, cor_temporaria: corCustom })
+                        }).then(r => r.json()).then(d => {
+                            if (d.status === 'success') {
+                                // 1. Atualiza o texto no próprio Card
+                                const p = card.querySelector('p[data-field-name="situacao"] .card-field-value');
+                                if (p) p.textContent = sitParaSalvar;
+                                
+                                // 2. Atualiza o select invisível na Tabela (Sincronismo)
+                                const selectCorresp = document.querySelector(`select.situacao-dropdown[data-id="${card.dataset.id}"]`);
+                                if (selectCorresp) {
+                                    // Se for uma nova cor temporária, adiciona a option no select
+                                    if (corCustom && !Array.from(selectCorresp.options).some(opt => opt.value === sitParaSalvar)) {
+                                        selectCorresp.add(new Option(sitParaSalvar, sitParaSalvar, true, true), selectCorresp.options.length - 1);
+                                    }
+                                    selectCorresp.value = sitParaSalvar;
+                                }
+
+                                // 3. Atualiza as Cores simultaneamente
+                                if (window.APP_DATA && window.APP_DATA.colorCodingIsActive) {
+                                    let corFinal = corCustom || window.APP_DATA.colorMap[sitParaSalvar] || '';
+                                    card.style.backgroundColor = corFinal;
+                                    if (selectCorresp) selectCorresp.style.backgroundColor = corFinal;
+                                }
+
+                                // 4. Verifica se deve ser escondido (Arquivado)
+                                if (window.APP_DATA && window.APP_DATA.arquivadores.includes(sitParaSalvar)) {
+                                    card.style.opacity = '0'; setTimeout(() => card.remove(), 400);
+                                    if (selectCorresp) {
+                                        const row = selectCorresp.closest('tr');
+                                        if (row) { row.style.opacity = '0'; setTimeout(() => row.remove(), 400); }
+                                    }
+                                }
+                            } else {
+                                location.reload();
+                            }
+                        }).catch(() => location.reload());
+                    }
+
+                    // Se foi arrastado para a coluna "Outras" (*custom*)
+                    if (novaSitRaw === '*custom*') {
+                        showCustomPrompt("Digite a nova situação para este registro:").then(promptValue => {
+                            // Se o usuário clicar em Cancelar ou deixar em branco
+                            if (!promptValue || !promptValue.nome || promptValue.nome.trim() === '') {
+                                // A MÁGICA DE UX: Reverte o movimento do card animadamente de volta pra coluna original
+                                evt.from.appendChild(card);
+                                return;
+                            }
+                            // Se preencheu, salva a nova situação temporária
+                            salvarKanban(promptValue.nome.trim(), promptValue.cor);
+                        });
+                    } else {
+                        // Se foi arrastado para uma coluna permanente normal
+                        salvarKanban(novaSitRaw);
+                    }
                 }
             });
         }
