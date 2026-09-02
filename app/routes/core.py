@@ -310,3 +310,7 @@ def save_quick_note():
     )
     return {'status': 'success'}
 
+@core_bp.route('/utilitarios/extenso')
+@login_required
+def utilitarios_extenso():
+    return render_template('utilitarios_extenso.html')

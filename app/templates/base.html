@@ -95,7 +95,15 @@
                         </div>
                     </li>
 
-                    <li class="nav-item nav-item-right"><a href="{{ url_for('core.configuracoes') }}" class="nav-link">Configurações</a></li>
+                    <li class="nav-item dropdown nav-item-right">
+                        <a href="#" class="nav-link dropbtn">Utilitários</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('core.utilitarios_extenso') }}">Número por extenso</a></li>
+                        </ul>
+                    </li>
+                    
+                    <li class="nav-item"><a href="{{ url_for('core.configuracoes') }}" class="nav-link">Configurações</a></li>
+
                     <li class="nav-item dropdown">
                         <a href="#" class="nav-link dropbtn">Temas</a>
                         <ul class="dropdown-menu">

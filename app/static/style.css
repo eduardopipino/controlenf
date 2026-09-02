@@ -4352,3 +4352,69 @@ body.theme-dark .tabela-hub th {
     /* 3. Deixa o texto num tom de cinza bem claro (SaaS Style) em vez de branco puro */
     color: #cbd5e1 !important; 
 }
+
+/* ====================================================================== */
+/* ESTILOS PARA O UTILITÁRIO DE NÚMERO POR EXTENSO                        */
+/* ====================================================================== */
+
+.extenso-container {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.extenso-group {
+    text-align: left;
+    margin-bottom: 25px;
+}
+
+.extenso-label {
+    font-size: 1.1em;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.extenso-input {
+    font-size: 1.6em !important; /* !important garante que sobrescreva o padrão de inputs */
+    height: 60px !important;
+    font-weight: bold;
+    text-align: center;
+    letter-spacing: 1px;
+}
+
+.extenso-resultado {
+    padding: 25px 15px;
+    background-color: var(--background-primary);
+    border: 2px dashed var(--primary-color);
+    border-radius: 8px;
+    min-height: 120px;
+    font-size: 1.4em;
+    line-height: 1.5;
+    color: var(--tertiary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.extenso-resultado-vazio {
+    opacity: 0.5;
+    font-style: italic;
+}
+
+.extenso-toolbar {
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.extenso-btn-copiar {
+    font-size: 1.1em !important;
+    padding: 0 30px !important;
+}
+
+.extenso-btn-limpar {
+    font-size: 1.1em !important;
+    height: var(--element-height);
+    border-radius: 5px;
+    cursor: pointer;
+}
