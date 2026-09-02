@@ -3,7 +3,11 @@
 {% block content %}
     
     <div class="page-header-sticky">
-        <h2>Pendências - {% if page_mode == 'concluidas' %}Concluídas{% elif page_mode == 'diversas' %}Diversas{% elif page_mode == 'por_instrumento' %}Por Instrumento Contratual{% else %}Todas{% endif %}</h2>
+        <h2>Pendências
+            {% if page_mode == 'concluidas' %} - Concluídas
+            {% elif page_mode == 'diversas' %} - Diversas
+            {% elif page_mode == 'por_instrumento' %} - Por Instrumento Contratual
+            {% endif %}</h2>
 
         <div class="button-toolbar desktop-actions">
             <div class="toolbar-group-left">
