@@ -227,7 +227,8 @@ def pendencias_lista(page_mode="geral"):
         opcoes_campos_cards = [opt for opt in opcoes_campos_cards if opt[0] not in campos_a_remover] # Filtra a lista já filtrada
         card_fields_visiveis = [field for field in card_fields_visiveis if field not in campos_a_remover]
 
-    view_mode = getattr(current_user, 'view_mode_pendencias', 'table')
+    # Prioriza a leitura rápida da URL para UX instantânea; faz fallback para o BD
+    view_mode = request.args.get('view', getattr(current_user, 'view_mode_pendencias', 'table'))
     
     # --- NOVAS VARIÁVEIS PARA O TEMPLATE ---
     color_map = get_color_map_for_user()

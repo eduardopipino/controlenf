@@ -12,24 +12,17 @@ document.addEventListener('DOMContentLoaded', function() {
             const endpoint = button.dataset.endpoint;
 
             if (endpoint) {
+                // 1. Redireciona o usuário IMEDIATAMENTE (Corta a lentidão pela metade)
+                const url = new URL(window.location.href);
+                url.searchParams.set('view', selectedView);
+                window.location.href = url.toString();
+
+                // 2. Avisa o servidor em "segundo plano" (Fire-and-forget) sem travar a tela
                 fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ view_mode: selectedView })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        // NOVO: Garante a troca visual forçando o parâmetro 'view' na URL
-                        const url = new URL(window.location.href);
-                        url.searchParams.set('view', selectedView);
-                        window.location.href = url.toString();
-                    }
-                    else {
-                        alert('Erro ao salvar a preferência de visualização.');
-                    }
-                })
-                .catch(error => console.error('Erro ao salvar preferência:', error));
+                }).catch(error => console.error('Erro em background:', error));
             }
         });
     }

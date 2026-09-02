@@ -126,7 +126,8 @@ def controle_lista(filter_mode):
     for sit in situacoes_para_filtro:
         sit['_id'] = str(sit['_id'])
 
-    view_mode = getattr(current_user, 'view_mode_controle', 'table')
+    # Prioriza a leitura rápida da URL para UX instantânea; faz fallback para o BD
+    view_mode = request.args.get('view', getattr(current_user, 'view_mode_controle', 'table'))
     card_fields_visiveis = getattr(current_user, 'card_fields_controle', [field[0] for field in TODAS_AS_COLUNAS_CARDS[:4]])
     opcoes_campos_cards_controle = [field for field in TODAS_AS_COLUNAS_CARDS if field[0] != 'referencia']
 
