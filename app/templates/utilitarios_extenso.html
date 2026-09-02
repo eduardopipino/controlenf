@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header-sticky">
+    <h2>Utilitários - Número por Extenso</h2>
+</div>
+
+<!-- Container com código limpo usando as novas classes -->
+<div class="inner-container extenso-container">
+    
+    <div class="extenso-group">
+        <label for="inputMoeda" class="extenso-label">Digite o valor financeiro (R$):</label>
+        <input type="text" id="inputMoeda" class="extenso-input" placeholder="Ex: 1.234,56" autocomplete="off">
+    </div>
+
+    <div class="extenso-group">
+        <label class="extenso-label">Valor por Extenso Oficial:</label>
+        <div id="resultadoExtenso" class="extenso-resultado">
+            <span class="extenso-resultado-vazio">aguardando valor...</span>
+        </div>
+    </div>
+
+    <div class="button-toolbar extenso-toolbar">
+        <button id="btnCopiar" class="button extenso-btn-copiar" disabled>Copiar texto</button>
+        <button id="btnLimpar" class="btn-cancel-modal extenso-btn-limpar">Limpar</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const inputMoeda = document.getElementById('inputMoeda');
+    const resultadoExtenso = document.getElementById('resultadoExtenso');
+    const btnCopiar = document.getElementById('btnCopiar');
+    const btnLimpar = document.getElementById('btnLimpar');
+
+    const currencyMask = IMask(inputMoeda, {
+        mask: 'num',
+        blocks: {
+            num: {
+                mask: Number,
+                scale: 2,
+                thousandsSeparator: '.',
+                padFractionalZeros: true,
+                normalizeZeros: true,
+                radix: ',',
+                mapToRadix: ['.'],
+                max: 99999999999999.99
+            }
+        }
+    });
+
+    function extensoBRL(valor) {
+        if (!valor || valor === '0,00') return '';
+
+        const unidades = ["", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove"];
+        const dezenas = ["", "dez", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa"];
+        const especiais = ["dez", "onze", "doze", "treze", "quatorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove"];
+        const centenas = ["", "cento", "duzentos", "trezentos", "quatrocentos", "quinhentos", "seiscentos", "setecentos", "oitocentos", "novecentos"];
+
+        function converteBloco(n) {
+            if (n === 0) return "";
+            if (n === 100) return "cem";
+            let c = Math.floor(n / 100);
+            let d = Math.floor((n % 100) / 10);
+            let u = n % 10;
+            let res = [];
+            
+            if (c > 0) res.push(centenas[c]);
+            if (d === 1) {
+                res.push(especiais[u]);
+            } else {
+                if (d > 1) res.push(dezenas[d]);
+                if (u > 0) res.push(unidades[u]);
+            }
+            return res.join(" e ");
+        }
+
+        let numStr = valor.replace(/\./g, '');
+        let partes = numStr.split(',');
+        let reais = parseInt(partes[0] || '0', 10);
+        let centavosStr = (partes[1] || '0').padEnd(2, '0').substring(0, 2);
+        let centavos = parseInt(centavosStr, 10);
+        
+        if (reais === 0 && centavos === 0) return '';
+
+        let extensoFinal = [];
+
+        if (reais > 0) {
+            let blocos = [];
+            let rStr = reais.toString();
+            while (rStr.length > 0) {
+                blocos.push(parseInt(rStr.slice(-3), 10));
+                rStr = rStr.slice(0, -3);
+            }
+
+            const grandezasP = ["", "mil", "milhões", "bilhões", "trilhões"];
+            const grandezasS = ["", "mil", "milhão", "bilhão", "trilhão"];
+            let partesReais = [];
+
+            for (let i = 0; i < blocos.length; i++) {
+                let n = blocos[i];
+                if (n === 0) continue;
+
+                let blocoExtenso = converteBloco(n);
+                
+                if (i === 1 && n === 1) {
+                    blocoExtenso = "mil";
+                } else if (i > 0) {
+                    blocoExtenso += " " + (n === 1 ? grandezasS[i] : grandezasP[i]);
+                }
+
+                partesReais.unshift({ valor: n, texto: blocoExtenso });
+            }
+
+            let stringReais = "";
+            for (let i = 0; i < partesReais.length; i++) {
+                if (i === 0) {
+                    stringReais += partesReais[i].texto;
+                } else {
+                    let atual = partesReais[i].valor;
+                    if (atual <= 100 || atual % 100 === 0) {
+                        stringReais += " e " + partesReais[i].texto;
+                    } else {
+                        stringReais += " " + partesReais[i].texto;
+                    }
+                }
+            }
+
+            let moedaStr = reais === 1 ? "real" : "reais";
+            
+            if (blocos.length > 1 && blocos[0] === 0) {
+                let todasOutrasZeradas = blocos.slice(0, -1).every(b => b === 0);
+                if (todasOutrasZeradas) moedaStr = "de reais";
+            }
+
+            extensoFinal.push(`${stringReais} ${moedaStr}`.trim());
+        }
+
+        if (centavos > 0) {
+            let centavosStr = converteBloco(centavos);
+            let moedaCentavosStr = centavos === 1 ? "centavo" : "centavos";
+            extensoFinal.push(`${centavosStr} ${moedaCentavosStr}`);
+        }
+
+        return extensoFinal.join(" e ").toLowerCase();
+    }
+
+    inputMoeda.addEventListener('input', function() {
+        const valDigitado = currencyMask.unmaskedValue;
+        const formattedVal = currencyMask.value;
+        
+        if (valDigitado === '' || valDigitado === '0') {
+            resultadoExtenso.innerHTML = '<span class="extenso-resultado-vazio">aguardando valor...</span>';
+            btnCopiar.disabled = true;
+            return;
+        }
+
+        const texto = extensoBRL(formattedVal);
+        resultadoExtenso.innerHTML = `<strong>${texto}</strong>`;
+        btnCopiar.disabled = false;
+    });
+
+    inputMoeda.addEventListener('blur', function() {
+        if (currencyMask.unmaskedValue !== '') {
+            inputMoeda.value = currencyMask.value; 
+            currencyMask.updateValue();
+            inputMoeda.dispatchEvent(new Event('input'));
+        }
+    });
+
+    btnCopiar.addEventListener('click', function() {
+        const textoParaCopiar = resultadoExtenso.innerText; 
+        navigator.clipboard.writeText(textoParaCopiar).then(() => {
+            const originalText = btnCopiar.textContent;
+            btnCopiar.textContent = "✔ copiado!";
+            btnCopiar.style.backgroundColor = "#27ae60";
+            btnCopiar.style.color = "#ffffff";
+            
+            setTimeout(() => {
+                btnCopiar.textContent = originalText;
+                btnCopiar.style.backgroundColor = "";
+                btnCopiar.style.color = "";
+            }, 2000);
+        });
+    });
+
+    btnLimpar.addEventListener('click', function() {
+        currencyMask.value = '';
+        inputMoeda.dispatchEvent(new Event('input'));
+        inputMoeda.focus();
+    });
+
+    setTimeout(() => inputMoeda.focus(), 100);
+});
+</script>
+{% endblock %}
