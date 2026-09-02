@@ -44,7 +44,7 @@
         <div>
             <label for="prazo">Prazo:</label>
             <!-- Campo Visual (Máscara) -->
-            <input type="text" id="prazo" value="{{ controle.prazo.strftime('%d/%m/%Y') if controle and controle.prazo else '' }}" disabled style="font-family: monospace; letter-spacing: 1px;">
+            <input type="text" id="prazo" value="{{ controle.prazo.strftime('%d/%m/%Y') if controle and controle.prazo else '' }}" disabled>
             <!-- Campo Oculto (Enviado para o Banco) -->
             <input type="hidden" id="prazo_hidden" name="prazo" value="{{ controle.prazo.strftime('%Y-%m-%d') if controle and controle.prazo else '' }}">
         </div>

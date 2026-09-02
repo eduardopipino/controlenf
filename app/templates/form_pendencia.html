@@ -48,7 +48,7 @@
         </div>
         <div>
             <label for="prazo">Prazo:</label>
-            <input type="text" id="prazo" value="{{ pendencia.prazo.strftime('%d/%m/%Y') if pendencia.prazo else '' }}" disabled style="font-family: monospace; letter-spacing: 1px;">
+            <input type="text" id="prazo" value="{{ pendencia.prazo.strftime('%d/%m/%Y') if pendencia.prazo else '' }}" disabled>
             <input type="hidden" id="prazo_hidden" name="prazo" value="{{ pendencia.prazo.strftime('%Y-%m-%d') if pendencia.prazo else '' }}">
         </div>
         <div>

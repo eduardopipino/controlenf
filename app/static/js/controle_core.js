@@ -251,8 +251,6 @@ document.addEventListener('DOMContentLoaded', function() {
             inputElement.value = originalValue;
         } else if (fieldName === 'prazo') {
             inputElement.type = 'text';
-            inputElement.style.fontFamily = 'monospace';
-            inputElement.style.letterSpacing = '1px';
             inputElement.value = originalValue;
         } else {
             inputElement.type = 'text';
