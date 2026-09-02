@@ -1,5 +1,11 @@
 [
   {
+    "versao": "3.6",
+    "data": "02/09/2026",
+    "descricao": "Implantação de novo utilitário 'Número por extenso', otimização da alternância de tabelas/cards/kanban, ajustes no tema escuro, ajuste na movimentação de cards do kanban, e ajustes de fontes."
+    
+  },
+  {
     "versao": "3.5",
     "data": "21/08/2026",
     "descricao": "Melhoria do componente de data, ajuste do ícone de vigência de instrumentos contratuais, e ajuste de retorno sem resultado do select2."
