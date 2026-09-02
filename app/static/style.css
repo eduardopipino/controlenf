@@ -3071,13 +3071,13 @@ body.theme-dark #buscaRapidaInput {
 /* Altera o tamanho da fonte apenas do texto "fantasma" de instrução */
 input[type="search"]::placeholder,
 input[type="text"]::placeholder {
-    font-size: 14px !important; /* Diminua este valor até ficar do seu agrado (ex: 13px, 0.9em) */
+    font-size: 12px !important; /* Diminua este valor até ficar do seu agrado (ex: 13px, 0.9em) */
     opacity: 0.8; /* Opcional: deixa o texto um pouquinho mais suave */
 }
 
 /* Se você também quiser diminuir o tamanho da letra quando você de fato DIGITA na caixa: */
 input[type="search"] {
-    font-size: 14px !important;
+    font-size: 12px !important;
     min-width: 320px; /* Aumente para 350px se ainda achar pequeno */
     transition: all 0.3s ease; /* Dá um efeito suave caso a tela redimensione */
 }
