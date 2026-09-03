@@ -4375,7 +4375,8 @@ body.theme-dark .tabela-hub th {
 }
 
 .extenso-input {
-    font-size: 1.6em !important; /* !important garante que sobrescreva o padrão de inputs */
+    width: 100% !important;
+    font-size: 1.6em !important; 
     height: 60px !important;
     font-weight: bold;
     text-align: center;
