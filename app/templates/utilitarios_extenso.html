@@ -5,7 +5,6 @@
     <h2>Utilitários - Número por Extenso</h2>
 </div>
 
-<!-- Container com código limpo usando as novas classes -->
 <div class="inner-container extenso-container">
     
     <div class="extenso-group">
@@ -21,7 +20,10 @@
     </div>
 
     <div class="button-toolbar extenso-toolbar">
-        <button id="btnCopiar" class="button extenso-btn-copiar" disabled>Copiar texto</button>
+        <!-- Nossos dois botões de copiar! Diferenciei as cores para melhor UX -->
+        <button id="btnCopiarTexto" class="button extenso-btn-copiar" disabled>Copiar só texto</button>
+        <button id="btnCopiarTudo" class="button extenso-btn-copiar" style="background-color: var(--tertiary-color);" disabled>Copiar Valor + Texto</button>
+        
         <button id="btnLimpar" class="btn-cancel-modal extenso-btn-limpar">Limpar</button>
     </div>
 </div>
@@ -32,7 +34,10 @@
 document.addEventListener('DOMContentLoaded', function() {
     const inputMoeda = document.getElementById('inputMoeda');
     const resultadoExtenso = document.getElementById('resultadoExtenso');
-    const btnCopiar = document.getElementById('btnCopiar');
+    
+    // Nossos novos botões mapeados
+    const btnCopiarTexto = document.getElementById('btnCopiarTexto');
+    const btnCopiarTudo = document.getElementById('btnCopiarTudo');
     const btnLimpar = document.getElementById('btnLimpar');
 
     const currencyMask = IMask(inputMoeda, {
@@ -153,13 +158,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (valDigitado === '' || valDigitado === '0') {
             resultadoExtenso.innerHTML = '<span class="extenso-resultado-vazio">aguardando valor...</span>';
-            btnCopiar.disabled = true;
+            btnCopiarTexto.disabled = true;
+            btnCopiarTudo.disabled = true;
             return;
         }
 
         const texto = extensoBRL(formattedVal);
         resultadoExtenso.innerHTML = `<strong>${texto}</strong>`;
-        btnCopiar.disabled = false;
+        
+        // Libera ambos os botões para clique
+        btnCopiarTexto.disabled = false;
+        btnCopiarTudo.disabled = false;
     });
 
     inputMoeda.addEventListener('blur', function() {
@@ -170,20 +179,40 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    btnCopiar.addEventListener('click', function() {
+    // Função central para dar o efeito de "✔ copiado!" independentemente do botão clicado
+    function animarBotaoCopiado(botaoClicado) {
+        const textoOriginal = botaoClicado.textContent;
+        const corOriginal = botaoClicado.style.backgroundColor;
+        
+        botaoClicado.textContent = "✔ copiado!";
+        botaoClicado.style.backgroundColor = "#27ae60"; // Fica verde
+        botaoClicado.style.color = "#ffffff";
+        
+        setTimeout(() => {
+            botaoClicado.textContent = textoOriginal;
+            botaoClicado.style.backgroundColor = corOriginal;
+            botaoClicado.style.color = "";
+        }, 2000);
+    }
+
+    // BOTÃO 1: Copia APENAS o texto (ex: "mil duzentos e trinta e quatro reais")
+    btnCopiarTexto.addEventListener('click', function() {
         const textoParaCopiar = resultadoExtenso.innerText; 
-        navigator.clipboard.writeText(textoParaCopiar).then(() => {
-            const originalText = btnCopiar.textContent;
-            btnCopiar.textContent = "✔ copiado!";
-            btnCopiar.style.backgroundColor = "#27ae60";
-            btnCopiar.style.color = "#ffffff";
-            
-            setTimeout(() => {
-                btnCopiar.textContent = originalText;
-                btnCopiar.style.backgroundColor = "";
-                btnCopiar.style.color = "";
-            }, 2000);
-        });
+        navigator.clipboard.writeText(textoParaCopiar).then(() => animarBotaoCopiado(btnCopiarTexto));
+    });
+
+    // BOTÃO 2: Copia NÚMERO + TEXTO (ex: "1.234,00 (mil duzentos e trinta e quatro reais)")
+    btnCopiarTudo.addEventListener('click', function() {
+        // Se a pessoa esqueceu de sair do campo e tem "1,2", o blur automático salva ela
+        inputMoeda.dispatchEvent(new Event('blur')); 
+        
+        const textoExtenso = resultadoExtenso.innerText;
+        const valorNumerico = currencyMask.value; // ex: 1.234,00
+        
+        // Opcional: Se quiser que ele adicione o R$, mude para: `R$ ${valorNumerico} (${textoExtenso})`
+        const textoParaCopiar = `${valorNumerico} (${textoExtenso})`; 
+
+        navigator.clipboard.writeText(textoParaCopiar).then(() => animarBotaoCopiado(btnCopiarTudo));
     });
 
     btnLimpar.addEventListener('click', function() {
