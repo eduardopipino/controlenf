@@ -252,7 +252,22 @@ document.addEventListener('DOMContentLoaded', function() {
         inputMoeda.focus();
     });
 
+    btnLimpar.addEventListener('click', function() {
+        currencyMask.value = '';
+        inputMoeda.dispatchEvent(new Event('input'));
+        inputMoeda.focus();
+    });
+
+    // NOVO: Atalho global da tecla ESC para limpar o campo
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            e.preventDefault(); // Evita que o ESC feche outras coisas do navegador sem querer
+            btnLimpar.click();  // Simula o clique no botão Limpar
+        }
+    });
+
     setTimeout(() => inputMoeda.focus(), 100);
 });
+
 </script>
 {% endblock %}
