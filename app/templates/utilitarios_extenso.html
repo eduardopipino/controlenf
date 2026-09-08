@@ -165,7 +165,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             let moedaStr = reais === 1 ? "real" : "reais";
             
-            if (blocos.length > 1 && blocos[0] === 0) {
+            // A MÁGICA: Mudar de "> 1" para "> 2" garante que o "de reais" só aplique para Milhões, Bilhões, etc.
+            if (blocos.length > 2 && blocos[0] === 0) {
                 let todasOutrasZeradas = blocos.slice(0, -1).every(b => b === 0);
                 if (todasOutrasZeradas) moedaStr = "de reais";
             }
