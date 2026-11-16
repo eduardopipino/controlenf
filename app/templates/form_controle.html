@@ -7,7 +7,12 @@
     <form id="formControle" method="POST">
         <input type="hidden" name="origem" value="{{ origem or '' }}">
         <div>
-            <label for="item_id">Item do Instrumento Contratual: *</label>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                <label for="item_id" style="margin-bottom: 0;">Item do Instrumento Contratual: *</label>
+                {% if novo %}
+                <button type="button" id="btnAbrirModalItemRapido" class="button" style="padding: 2px 8px; font-size: 0.85em; cursor: pointer;">+ Novo Instrumento/Item</button>
+                {% endif %}
+            </div>
             <select id="item_id" name="item_id" required>
                 <option></option> 
             </select>
@@ -84,6 +89,69 @@
     <form id="formExcluirControle" method="POST" action="{{ url_for('controle.excluir_controle', controle_id=controle._id) }}" style="display: none;">
         <input type="hidden" name="origem" value="{{ origem or '' }}">
     </form>
+    {% endif %}
+
+    {% if novo %}
+    <div id="modalItemRapido" class="modal-overlay">
+        <div class="modal-content" style="max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto;">
+            <h3>Novo Instrumento e Item de Faturamento</h3>
+            <form id="formItemRapido">
+                <fieldset style="border: 1px solid var(--border-color, #ccc); border-radius: 4px; padding: 12px; margin-bottom: 12px;">
+                    <legend style="font-weight: bold; font-size: 0.9em;">Dados do Instrumento Contratual</legend>
+                    <div>
+                        <label for="modal_tipo_documento">Tipo de Documento: *</label>
+                        <input type="text" id="modal_tipo_documento" name="tipo_documento" placeholder="Ex: Contrato, Termo de Parceria" required>
+                    </div>
+                    <div>
+                        <label for="modal_n_instrumento">Nº do Instrumento: *</label>
+                        <input type="text" id="modal_n_instrumento" name="n_instrumento" placeholder="Ex: 01/2026" required>
+                    </div>
+                    <div>
+                        <label for="modal_contratada">Contratada/Fornecedora: *</label>
+                        <input type="text" id="modal_contratada" name="contratada" placeholder="Ex: Empresa ABC Ltda" required>
+                    </div>
+                    <div>
+                        <label for="modal_objeto_resumido">Objeto Resumido: *</label>
+                        <input type="text" id="modal_objeto_resumido" name="objeto_resumido" placeholder="Ex: Prestação de serviços de TI" required>
+                    </div>
+                </fieldset>
+
+                <fieldset style="border: 1px solid var(--border-color, #ccc); border-radius: 4px; padding: 12px; margin-bottom: 12px;">
+                    <legend style="font-weight: bold; font-size: 0.9em;">Item de Faturamento</legend>
+                    <div>
+                        <label for="modal_descricao_item">Descrição do Item: *</label>
+                        <input type="text" id="modal_descricao_item" name="descricao_item" placeholder="Ex: Manutenção mensal preventiva" required>
+                    </div>
+                    <div>
+                        <label for="modal_tipo_frequencia">Tipo/Frequência: *</label>
+                        <input type="text" id="modal_tipo_frequencia" name="tipo_frequencia" placeholder="Ex: Mensal, Avulso" required>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <label>Documentos Exigidos para este Item:</label>
+                        <div id="modal-documentos-checklist" style="max-height: 120px; overflow-y: auto; border: 1px solid var(--border-color, #ccc); padding: 8px; border-radius: 4px;">
+                            {% for doc in todos_os_docs %}
+                                <div>
+                                    <label style="font-weight: normal; font-size: 0.9em; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                        <input type="checkbox" name="modal_documentos_exigidos" value="{{ doc.nome }}">
+                                        {{ doc.nome }}
+                                    </label>
+                                </div>
+                            {% else %}
+                                <p><small>Nenhum tipo de documento cadastrado no sistema.</small></p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </fieldset>
+
+                <div id="modalItemRapidoMsg" style="color: #e74c3c; margin-bottom: 10px; font-size: 0.9em; display: none;"></div>
+
+                <div class="button-toolbar" style="margin-top: 15px; justify-content: flex-end; display: flex; gap: 8px;">
+                    <button type="button" class="btn-cancel-modal" id="btnFecharModalItemRapido">Cancelar</button>
+                    <button type="submit" id="btnSalvarItemRapido">Salvar e Selecionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
     {% endif %}
 
 {% endblock %}
@@ -382,6 +450,103 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Excluir Permanentemente'
             );
         });
+    }
+
+    // ======================================================================
+    // 6. MODAL DE CADASTRO RÁPIDO DE INSTRUMENTO E ITEM (AJAX)
+    // ======================================================================
+    const modalItemRapido = document.getElementById('modalItemRapido');
+    const btnAbrirModalItemRapido = document.getElementById('btnAbrirModalItemRapido');
+    const btnFecharModalItemRapido = document.getElementById('btnFecharModalItemRapido');
+    const formItemRapido = document.getElementById('formItemRapido');
+    const modalMsg = document.getElementById('modalItemRapidoMsg');
+
+    if (modalItemRapido && btnAbrirModalItemRapido) {
+        const fecharModalItem = () => {
+            modalItemRapido.classList.remove('active');
+            if (formItemRapido) formItemRapido.reset();
+            if (modalMsg) {
+                modalMsg.style.display = 'none';
+                modalMsg.textContent = '';
+            }
+        };
+
+        btnAbrirModalItemRapido.addEventListener('click', () => {
+            modalItemRapido.classList.add('active');
+            const primeiroInput = modalItemRapido.querySelector('input:not([type="hidden"])');
+            if (primeiroInput) primeiroInput.focus();
+        });
+
+        if (btnFecharModalItemRapido) {
+            btnFecharModalItemRapido.addEventListener('click', fecharModalItem);
+        }
+
+        modalItemRapido.addEventListener('click', (e) => {
+            if (e.target === modalItemRapido) fecharModalItem();
+        });
+
+        if (formItemRapido) {
+            formItemRapido.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                if (modalMsg) {
+                    modalMsg.style.display = 'none';
+                    modalMsg.textContent = '';
+                }
+
+                const docsExigidos = Array.from(
+                    modalItemRapido.querySelectorAll('input[name="modal_documentos_exigidos"]:checked')
+                ).map(cb => cb.value);
+
+                const payload = {
+                    tipo_documento: document.getElementById('modal_tipo_documento').value.trim(),
+                    n_instrumento: document.getElementById('modal_n_instrumento').value.trim(),
+                    contratada: document.getElementById('modal_contratada').value.trim(),
+                    objeto_resumido: document.getElementById('modal_objeto_resumido').value.trim(),
+                    descricao_item: document.getElementById('modal_descricao_item').value.trim(),
+                    tipo_frequencia: document.getElementById('modal_tipo_frequencia').value.trim(),
+                    documentos_exigidos: docsExigidos
+                };
+
+                const btnSalvar = document.getElementById('btnSalvarItemRapido');
+                btnSalvar.disabled = true;
+                btnSalvar.textContent = 'Salvando...';
+
+                try {
+                    const response = await fetch("{{ url_for('instrumentos.quick_create_instrumento_item') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok || !data.success) {
+                        throw new Error(data.message || 'Erro ao salvar novo instrumento/item.');
+                    }
+
+                    const itemCriado = data.item;
+                    itensData.push(itemCriado);
+
+                    const labelFormatado = `${itemCriado.tipo_documento} Nº ${itemCriado.n_instrumento} - ${itemCriado.contratada} - ${itemCriado.objeto_resumido} (Item: ${itemCriado.descricao_item} - ${itemCriado.tipo_frequencia})`;
+                    const newOption = new Option(labelFormatado, itemCriado._id, true, true);
+                    $('#item_id').append(newOption).trigger('change');
+                    fillDetails(itemCriado._id);
+
+                    fecharModalItem();
+                } catch (err) {
+                    if (modalMsg) {
+                        modalMsg.textContent = err.message;
+                        modalMsg.style.display = 'block';
+                    }
+                } finally {
+                    btnSalvar.disabled = false;
+                    btnSalvar.textContent = 'Salvar e Selecionar';
+                }
+            });
+        }
     }
 });
 </script>

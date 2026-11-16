@@ -17,7 +17,8 @@ from app.models import (controle_collection, get_situacoes_que_arquivam,
                         get_controle_data, get_situacoes_para_dropdown,
                         prepare_chart_data, get_color_map_for_user,
                         get_itens_para_dropdown_js, itens_collection,
-                        instrumentos_collection, TODAS_AS_COLUNAS_CONTROLE, TODAS_AS_COLUNAS_CARDS)
+                        instrumentos_collection, documentacao_tipos_collection,
+                        TODAS_AS_COLUNAS_CONTROLE, TODAS_AS_COLUNAS_CARDS)
 
 EDITABLE_FIELDS = ['referencia', 'nota_fiscal', 'carta_de_correcao', 'observacoes', 'prazo']
 
@@ -162,6 +163,7 @@ def novo_controle():
 
     itens_for_js = get_itens_para_dropdown_js(somente_vigentes=True)
     situacoes = sorted(get_situacoes_para_dropdown(), key=lambda x: x.get('situacao', '').lower())
+    todos_os_docs = list(documentacao_tipos_collection.find({'user_id': ObjectId(current_user.id)}))
 
     if request.method == 'POST':
         item_id_str = request.form.get('item_id')
@@ -170,14 +172,12 @@ def novo_controle():
         if not all([item_id_str, referencia]):
             flash('Os campos "Item do Instrumento" e "Referência" são obrigatórios.', 'error')
             # Passa a origem de volta para o formulário em caso de erro
-            return render_template('form_controle.html', controle=request.form, itens_for_js=json.dumps(itens_for_js), situacoes=situacoes, novo=True, origem=origem)
+            return render_template('form_controle.html', controle=request.form, itens_for_js=json.dumps(itens_for_js), situacoes=situacoes, todos_os_docs=todos_os_docs, novo=True, origem=origem)
 
         item_selecionado = itens_collection.find_one({'_id': ObjectId(item_id_str), 'user_id': ObjectId(current_user.id)})
         if not item_selecionado:
             flash("Item selecionado inválido.", "error")
-            return render_template('form_controle.html', controle=request.form, itens_for_js=json.dumps(itens_for_js), situacoes=situacoes, novo=True, origem=origem)
-
-        instrumento_pai = instrumentos_collection.find_one({'_id': item_selecionado['instrumento_id']})
+            return render_template('form_controle.html', controle=request.form, itens_for_js=json.dumps(itens_for_js), situacoes=situacoes, todos_os_docs=todos_os_docs, novo=True, origem=origem)
 
         instrumento_pai = instrumentos_collection.find_one({'_id': item_selecionado['instrumento_id']})
 
@@ -216,7 +216,7 @@ def novo_controle():
         return redirect(url_for('controle.controle_lista', filter_mode='todas'))
         
     # Envia a origem para o HTML ao carregar a página pela primeira vez
-    return render_template('form_controle.html', controle={}, itens_for_js=json.dumps(itens_for_js), situacoes=situacoes, novo=True, origem=origem)
+    return render_template('form_controle.html', controle={}, itens_for_js=json.dumps(itens_for_js), situacoes=situacoes, todos_os_docs=todos_os_docs, novo=True, origem=origem)
 
 
 @controle_bp.route('/novo_recorrente', methods=['POST'])

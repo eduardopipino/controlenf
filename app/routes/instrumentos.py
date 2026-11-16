@@ -3,7 +3,7 @@
 # de Instrumentos Contratuais e seus Itens de faturamento.
 
 # 1. Imports de bibliotecas de terceiros
-from flask import Blueprint, render_template, request, flash, redirect, url_for
+from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
 from flask_login import login_required, current_user
 from bson.objectid import ObjectId
 
@@ -227,3 +227,71 @@ def excluir_item_instrumento(item_id):
     itens_collection.delete_one({'_id': ObjectId(item_id)})
     flash('Item excluído com sucesso.', 'success')
     return redirect(url_for('instrumentos.gerenciar_instrumento', instrumento_id=str(item['instrumento_id'])))
+
+
+@instrumentos_bp.route('/api/quick_create_instrumento_item', methods=['POST'])
+@login_required
+def quick_create_instrumento_item():
+    data = request.get_json() or {}
+
+    tipo_documento = data.get('tipo_documento', '').strip()
+    n_instrumento = data.get('n_instrumento', '').strip()
+    contratada = data.get('contratada', '').strip()
+    objeto_resumido = data.get('objeto_resumido', '').strip()
+    descricao_item = data.get('descricao_item', '').strip()
+    tipo_frequencia = data.get('tipo_frequencia', '').strip()
+    documentos_exigidos = data.get('documentos_exigidos', [])
+
+    if not all([tipo_documento, n_instrumento, contratada, objeto_resumido, descricao_item, tipo_frequencia]):
+        return jsonify({
+            'success': False, 
+            'message': 'Todos os campos obrigatórios do instrumento e do item devem ser preenchidos.'
+        }), 400
+
+    user_id_obj = ObjectId(current_user.id)
+
+    # Reutiliza o instrumento caso já exista para o mesmo usuário e identificação
+    instrumento = instrumentos_collection.find_one({
+        'n_instrumento': n_instrumento,
+        'tipo_documento': tipo_documento,
+        'user_id': user_id_obj
+    })
+
+    if not instrumento:
+        novo_instrumento = {
+            'n_instrumento': n_instrumento,
+            'tipo_documento': tipo_documento,
+            'contratada': contratada,
+            'objeto_resumido': objeto_resumido,
+            'vigente': True,
+            'user_id': user_id_obj
+        }
+        res_inst = instrumentos_collection.insert_one(novo_instrumento)
+        instrumento_id = res_inst.inserted_id
+    else:
+        instrumento_id = instrumento['_id']
+        contratada = instrumento.get('contratada', contratada)
+        objeto_resumido = instrumento.get('objeto_resumido', objeto_resumido)
+
+    novo_item = {
+        'instrumento_id': instrumento_id,
+        'descricao_item': descricao_item,
+        'tipo_frequencia': tipo_frequencia,
+        'documentos_exigidos': documentos_exigidos,
+        'user_id': user_id_obj
+    }
+    res_item = itens_collection.insert_one(novo_item)
+
+    return jsonify({
+        'success': True,
+        'item': {
+            '_id': str(res_item.inserted_id),
+            'n_instrumento': n_instrumento,
+            'tipo_documento': tipo_documento,
+            'contratada': contratada,
+            'objeto_resumido': objeto_resumido,
+            'descricao_item': descricao_item,
+            'tipo_frequencia': tipo_frequencia,
+            'documentos_exigidos': documentos_exigidos
+        }
+    }), 201
