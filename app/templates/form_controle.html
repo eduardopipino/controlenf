@@ -94,25 +94,25 @@
     {% if novo %}
     <div id="modalItemRapido" class="modal-overlay">
         <div class="modal-content" style="max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto;">
-            <h3>Novo Instrumento e Item de Faturamento</h3>
+            <h3>Novo Instrumento Contratual e Item de Faturamento</h3>
             <form id="formItemRapido">
                 <fieldset style="border: 1px solid var(--border-color, #ccc); border-radius: 4px; padding: 12px; margin-bottom: 12px;">
                     <legend style="font-weight: bold; font-size: 0.9em;">Dados do Instrumento Contratual</legend>
                     <div>
                         <label for="modal_tipo_documento">Tipo de Documento: *</label>
-                        <input type="text" id="modal_tipo_documento" name="tipo_documento" placeholder="Ex: Contrato, Termo de Parceria" required>
+                        <input type="text" id="modal_tipo_documento" name="tipo_documento" placeholder="Ex: CONTRATO, ARP, EMPENHO" required>
                     </div>
                     <div>
-                        <label for="modal_n_instrumento">Nº do Instrumento: *</label>
+                        <label for="modal_n_instrumento">Nº do Instrumento Contratual: *</label>
                         <input type="text" id="modal_n_instrumento" name="n_instrumento" placeholder="Ex: 01/2026" required>
                     </div>
                     <div>
                         <label for="modal_contratada">Contratada/Fornecedora: *</label>
-                        <input type="text" id="modal_contratada" name="contratada" placeholder="Ex: Empresa ABC Ltda" required>
+                        <input type="text" id="modal_contratada" name="contratada" placeholder="Ex: EMPRESA ABC" required>
                     </div>
                     <div>
                         <label for="modal_objeto_resumido">Objeto Resumido: *</label>
-                        <input type="text" id="modal_objeto_resumido" name="objeto_resumido" placeholder="Ex: Prestação de serviços de TI" required>
+                        <input type="text" id="modal_objeto_resumido" name="objeto_resumido" placeholder="Ex: FORNECIMENTO DE EQUIPAMENTOS" required>
                     </div>
                 </fieldset>
 
@@ -120,14 +120,14 @@
                     <legend style="font-weight: bold; font-size: 0.9em;">Item de Faturamento</legend>
                     <div>
                         <label for="modal_descricao_item">Descrição do Item: *</label>
-                        <input type="text" id="modal_descricao_item" name="descricao_item" placeholder="Ex: Manutenção mensal preventiva" required>
+                        <input type="text" id="modal_descricao_item" name="descricao_item" placeholder="Ex: LOCAÇÃO, HORAS TÉCNICAS" required>
                     </div>
                     <div>
                         <label for="modal_tipo_frequencia">Tipo/Frequência: *</label>
-                        <input type="text" id="modal_tipo_frequencia" name="tipo_frequencia" placeholder="Ex: Mensal, Avulso" required>
+                        <input type="text" id="modal_tipo_frequencia" name="tipo_frequencia" placeholder="Ex: MENSAL, BIMESTRAL, ÚNICO" required>
                     </div>
                     <div style="margin-top: 8px;">
-                        <label>Documentos Exigidos para este Item:</label>
+                        <label>Documentos exigidos para este Item:</label>
                         <div id="modal-documentos-checklist" style="max-height: 120px; overflow-y: auto; border: 1px solid var(--border-color, #ccc); padding: 8px; border-radius: 4px;">
                             {% for doc in todos_os_docs %}
                                 <div>
