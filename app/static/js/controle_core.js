@@ -607,7 +607,88 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // ==========================================
-    // 5. LÓGICA DRAG AND DROP PARA O KANBAN
+    // 5. ADIÇÃO RÁPIDA (INLINE & CARDS)
+    // ==========================================
+    const btnShowQuickAddTable = document.getElementById('btnShowQuickAddTable');
+    const formAdicaoRapidaTabela = document.getElementById('formAdicaoRapidaTabela');
+    const rowBtnAddTable = document.getElementById('row-btn-add-inline-top');
+    const rowFormAddTable = document.getElementById('inline-create-template');
+    const btnCancelQuickAddTable = document.getElementById('btnCancelQuickAddTable');
+    const quickItemTabela = document.getElementById('quickItemTabela');
+
+    const btnShowQuickAddCard = document.getElementById('btnShowQuickAddCard');
+    const formAdicaoRapidaCardContainer = document.getElementById('formAdicaoRapidaCardContainer');
+    const formAdicaoRapidaCard = document.getElementById('formAdicaoRapidaCard');
+    const btnCancelQuickAddCard = document.getElementById('btnCancelQuickAddCard');
+    const quickItemCard = document.getElementById('quickItemCard');
+
+    if (window.APP_DATA && window.APP_DATA.itensDropdown && Array.isArray(window.APP_DATA.itensDropdown)) {
+        const optionsHtml = window.APP_DATA.itensDropdown.map(i => `<option value="${i._id}">${i.n_instrumento} - ${i.contratada} -${i.descricao_item}</option>`).join('');
+        if (quickItemTabela) quickItemTabela.innerHTML += optionsHtml;
+        if (quickItemCard) quickItemCard.innerHTML += optionsHtml;
+    }
+
+    if (btnShowQuickAddTable) {
+        btnShowQuickAddTable.addEventListener('click', () => {
+            rowBtnAddTable.style.display = 'none';
+            rowFormAddTable.style.display = 'table-row';
+            document.getElementById('quickReferenciaTabela').focus();
+        });
+    }
+    if (btnCancelQuickAddTable) {
+        btnCancelQuickAddTable.addEventListener('click', () => {
+            rowFormAddTable.style.display = 'none';
+            rowBtnAddTable.style.display = 'table-row';
+            formAdicaoRapidaTabela.reset();
+        });
+    }
+
+    if (btnShowQuickAddCard) {
+        btnShowQuickAddCard.addEventListener('click', () => {
+            btnShowQuickAddCard.style.display = 'none';
+            formAdicaoRapidaCardContainer.style.display = 'block';
+            document.getElementById('quickReferenciaCard').focus();
+        });
+    }
+    if (btnCancelQuickAddCard) {
+        btnCancelQuickAddCard.addEventListener('click', () => {
+            formAdicaoRapidaCardContainer.style.display = 'none';
+            btnShowQuickAddCard.style.display = 'flex';
+            formAdicaoRapidaCard.reset();
+        });
+    }
+
+    function submitQuickAddControle(itemId, referencia) {
+        if (!itemId || !referencia) return;
+        fetch('/controle/item/criar_controle_rapido', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ item_id: itemId, referencia: referencia })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') window.location.reload();
+            else alert(data.message || 'Erro ao criar registro.');
+        })
+        .catch(err => alert('Erro de rede.'));
+    }
+
+    if (formAdicaoRapidaTabela) {
+        formAdicaoRapidaTabela.addEventListener('submit', (e) => {
+            e.preventDefault();
+            submitQuickAddControle(quickItemTabela.value, document.getElementById('quickReferenciaTabela').value);
+        });
+    }
+
+    if (formAdicaoRapidaCard) {
+        formAdicaoRapidaCard.addEventListener('submit', (e) => {
+            e.preventDefault();
+            submitQuickAddControle(quickItemCard.value, document.getElementById('quickReferenciaCard').value);
+        });
+    }
+
+    // ==========================================
+    // 6. LÓGICA DRAG AND DROP PARA O KANBAN
     // ==========================================
     document.querySelectorAll('.kanban-cards').forEach(column => {
         if (typeof Sortable !== 'undefined') {
