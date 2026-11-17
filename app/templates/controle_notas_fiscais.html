@@ -146,10 +146,14 @@
             {% endfor %}
         {% else %}
             <div class="card-grid">
-                <div id="btnShowQuickAddCard" class="card-quick-add-trigger" style="margin-bottom: 20px;">
+                {% for controle in controles %}
+                    {% include 'partials/_controle_card.html' %}
+                {% endfor %}
+                
+                <div id="btnShowQuickAddCard" class="card-quick-add-trigger">
                     <span class="quick-add-text">+ Adição Rápida</span>
                 </div>
-                <div id="formAdicaoRapidaCardContainer" class="data-card card-quick-add-form" style="display: none; margin-bottom: 20px;">
+                <div id="formAdicaoRapidaCardContainer" class="data-card card-quick-add-form" style="display: none;">
                     <h4 style="margin-bottom: 15px; color: var(--tertiary-color);">Novo Registro</h4>
                     <form id="formAdicaoRapidaCard">
                         <select id="quickItemCard" class="quick-field-select-card" required>
@@ -171,10 +175,6 @@
                         </div>
                     </form>
                 </div>
-                
-                {% for controle in controles %}
-                    {% include 'partials/_controle_card.html' %}
-                {% endfor %}
             </div>
         {% endif %}
     </div>
