@@ -658,12 +658,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function submitQuickAddControle(itemId, referencia) {
+    function submitQuickAddControle(itemId, referencia, nf = '', obs = '', prazo = '', situacao = '') {
         if (!itemId || !referencia) return;
         fetch('/controle/item/criar_controle_rapido', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ item_id: itemId, referencia: referencia })
+            body: JSON.stringify({ 
+                item_id: itemId, 
+                referencia: referencia,
+                nota_fiscal: nf,
+                observacoes: obs,
+                prazo: prazo,
+                situacao: situacao
+            })
         })
         .then(r => r.json())
         .then(data => {
@@ -683,7 +690,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (formAdicaoRapidaCard) {
         formAdicaoRapidaCard.addEventListener('submit', (e) => {
             e.preventDefault();
-            submitQuickAddControle(quickItemCard.value, document.getElementById('quickReferenciaCard').value);
+            submitQuickAddControle(
+                quickItemCard.value, 
+                document.getElementById('quickReferenciaCard').value,
+                document.getElementById('quickNfCard').value,
+                document.getElementById('quickObsCard').value,
+                document.getElementById('quickPrazoCard').value,
+                document.getElementById('quickSituacaoCard').value
+            );
         });
     }
 

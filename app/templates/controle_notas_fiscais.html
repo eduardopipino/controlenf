@@ -145,25 +145,33 @@
                 <p>Nenhum registro encontrado.</p>
             {% endfor %}
         {% else %}
-            <div class="card-quick-add-container-top-mobile">
-                <div id="btnShowQuickAddCard" class="card-quick-add-trigger">
+            <div class="card-grid">
+                <div id="btnShowQuickAddCard" class="card-quick-add-trigger" style="margin-bottom: 20px;">
                     <span class="quick-add-text">+ Adição Rápida</span>
                 </div>
-                <div id="formAdicaoRapidaCardContainer" class="data-card card-quick-add-form" style="display: none;">
+                <div id="formAdicaoRapidaCardContainer" class="data-card card-quick-add-form" style="display: none; margin-bottom: 20px;">
                     <h4 style="margin-bottom: 15px; color: var(--tertiary-color);">Novo Registro</h4>
                     <form id="formAdicaoRapidaCard">
                         <select id="quickItemCard" class="quick-field-select-card" required>
                             <option value="">Selecione o Item...</option>
                         </select>
                         <input type="text" id="quickReferenciaCard" class="quick-field-input quick-field" placeholder="Referência (ex: 07/2026)" required>
+                        <input type="text" id="quickNfCard" class="quick-field-input quick-field" placeholder="Documento Fiscal (opcional)">
+                        <textarea id="quickObsCard" class="quick-field-area quick-field" placeholder="Observações (opcional)"></textarea>
+                        <input type="date" id="quickPrazoCard" class="quick-field-input quick-field" style="margin-bottom: 8px;">
+                        <select id="quickSituacaoCard" class="quick-field-select-card">
+                            <option value="">Situação (opcional)...</option>
+                            {% for sit in situacoes_para_filtro %}
+                                <option value="{{ sit.situacao }}">{{ sit.situacao }}</option>
+                            {% endfor %}
+                        </select>
                         <div class="quick-form-actions">
                             <button type="button" id="btnCancelQuickAddCard" class="btn-quick-cancel">Cancelar</button>
                             <button type="submit" class="btn-quick-save">Salvar</button>
                         </div>
                     </form>
                 </div>
-            </div>
-            <div class="card-grid" style="margin-top: 20px;">
+                
                 {% for controle in controles %}
                     {% include 'partials/_controle_card.html' %}
                 {% endfor %}

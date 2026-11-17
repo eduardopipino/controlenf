@@ -454,6 +454,17 @@ def criar_controle_rapido():
     data = request.get_json()
     item_id_str = data.get('item_id')
     referencia = data.get('referencia', '').strip()
+    nota_fiscal = data.get('nota_fiscal', '').strip()
+    observacoes = data.get('observacoes', 'Gerado via criação rápida.').strip()
+    situacao = data.get('situacao', '').strip()
+    prazo_str = data.get('prazo', '').strip()
+    
+    prazo_dt = None
+    if prazo_str:
+        try:
+            prazo_dt = datetime.strptime(prazo_str, '%Y-%m-%d')
+        except ValueError:
+            pass # Se a data for inválida silenciosamente deixa como nula na criação rápida
 
     if not all([item_id_str, referencia]):
         return {'status': 'error', 'message': 'Item ID e Referência são obrigatórios.'}, 400
@@ -476,9 +487,9 @@ def criar_controle_rapido():
         novo_registro_controle = {
             'item_id': item_id_obj, 'n_instrumento': instrumento_pai['n_instrumento'],
             'tipo_documento': instrumento_pai['tipo_documento'], 'contratada': instrumento_pai['contratada'],
-            'objeto': instrumento_pai['objeto_resumido'], 'referencia': referencia, 'nota_fiscal': '',
-            'carta_de_correcao': '', 'documentacao': [], 'observacoes': 'Gerado via criação rápida.',
-            'situacao': '', 'data_criacao': datetime.now(), 'user_id': user_id_obj
+            'objeto': instrumento_pai['objeto_resumido'], 'referencia': referencia, 'nota_fiscal': nota_fiscal,
+            'carta_de_correcao': '', 'documentacao': [], 'observacoes': observacoes,
+            'prazo': prazo_dt, 'situacao': situacao, 'data_criacao': datetime.now(), 'user_id': user_id_obj
         }
         
         controle_collection.insert_one(novo_registro_controle)
