@@ -10,7 +10,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                 <label for="item_id" style="margin-bottom: 0;">Item do Instrumento Contratual: *</label>
                 {% if novo %}
-                <button type="button" id="btnAbrirModalItemRapido" class="button" style="padding: 2px 8px; font-size: 0.85em; cursor: pointer;">+ Novo Instrumento/Item</button>
+                <button type="button" id="btnAbrirModalItemRapido" class="button" style="padding: 2px 8px; font-size: 0.85em; cursor: pointer;">+ Novo Instrumento Contratual/Item</button>
                 {% endif %}
             </div>
             <select id="item_id" name="item_id" required>
@@ -524,7 +524,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const data = await response.json();
 
                     if (!response.ok || !data.success) {
-                        throw new Error(data.message || 'Erro ao salvar novo instrumento/item.');
+                        throw new Error(data.message || 'Erro ao salvar novo instrumento contratual/item.');
                     }
 
                     const itemCriado = data.item;
