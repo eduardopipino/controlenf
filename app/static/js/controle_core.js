@@ -659,7 +659,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btnShowQuickAddCard) {
         btnShowQuickAddCard.addEventListener('click', () => {
             btnShowQuickAddCard.style.display = 'none';
-            formAdicaoRapidaCardContainer.style.display = 'block';
+            formAdicaoRapidaCardContainer.style.display = 'flex';
             document.getElementById('quickReferenciaCard').focus();
         });
     }
