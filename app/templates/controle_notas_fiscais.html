@@ -75,6 +75,9 @@
     </p>
 
     <div class="table-responsive-wrapper {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
+        <div id="btnShowQuickAddTable" class="card-quick-add-trigger hide-on-desktop" style="margin-bottom: 20px;">
+            <span class="quick-add-text">+ Adição Rápida</span>
+        </div>
         <table id="tabelaControle" class="tabela-controle-shared responsive-card-table {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
             <thead>
                 <tr>
@@ -100,10 +103,10 @@
             <tbody>
                 <tr id="row-btn-add-inline-top" class="hide-on-mobile">
                     <td colspan="{{ colunas_visiveis|length + 2 }}" class="td-no-padding">
-                        <button type="button" id="btnShowQuickAddTable" class="btn-dashed-add" style="border-radius: 0; border-left: none; border-right: none; border-top: none;">+ Adição Rápida</button>
+                        <button type="button" id="btnShowQuickAddTableDesktop" class="btn-dashed-add" style="border-radius: 0; border-left: none; border-right: none; border-top: none;">+ Adição Rápida</button>
                     </td>
                 </tr>
-                <tr id="inline-create-template" style="display: none;" class="hide-on-mobile">
+                <tr id="inline-create-template" style="display: none;">
                     <td colspan="{{ colunas_visiveis|length + 2 }}" class="td-no-padding" style="padding: 10px !important;">
                         <form id="formAdicaoRapidaTabela" class="quick-form-actions" style="display: flex; gap: 10px; width: 100%; align-items: center; margin: 0;">
                             <select id="quickItemTabela" class="inline-add-field" style="flex: 2;" required>

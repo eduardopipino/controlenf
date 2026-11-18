@@ -609,7 +609,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // ==========================================
     // 5. ADIÇÃO RÁPIDA (INLINE & CARDS)
     // ==========================================
-    const btnShowQuickAddTable = document.getElementById('btnShowQuickAddTable');
+    const btnShowQuickAddTableMobile = document.getElementById('btnShowQuickAddTable');
+    const btnShowQuickAddTableDesktop = document.getElementById('btnShowQuickAddTableDesktop');
     const formAdicaoRapidaTabela = document.getElementById('formAdicaoRapidaTabela');
     const rowBtnAddTable = document.getElementById('row-btn-add-inline-top');
     const rowFormAddTable = document.getElementById('inline-create-template');
@@ -628,17 +629,29 @@ document.addEventListener('DOMContentLoaded', function() {
         if (quickItemCard) quickItemCard.innerHTML += optionsHtml;
     }
 
-    if (btnShowQuickAddTable) {
-        btnShowQuickAddTable.addEventListener('click', () => {
-            rowBtnAddTable.style.display = 'none';
-            rowFormAddTable.style.display = 'table-row';
-            document.getElementById('quickReferenciaTabela').focus();
-        });
+    function showQuickAddTable() {
+        if (btnShowQuickAddTableMobile) btnShowQuickAddTableMobile.style.display = 'none';
+        if (rowBtnAddTable) rowBtnAddTable.style.display = 'none';
+        rowFormAddTable.style.display = 'table-row';
+        
+        // No modo mobile, a linha de formulário precisa se comportar como um bloco
+        if (window.innerWidth <= 768) {
+             rowFormAddTable.style.display = 'block';
+        }
+        
+        document.getElementById('quickReferenciaTabela').focus();
     }
+
+    if (btnShowQuickAddTableMobile) btnShowQuickAddTableMobile.addEventListener('click', showQuickAddTable);
+    if (btnShowQuickAddTableDesktop) btnShowQuickAddTableDesktop.addEventListener('click', showQuickAddTable);
     if (btnCancelQuickAddTable) {
         btnCancelQuickAddTable.addEventListener('click', () => {
             rowFormAddTable.style.display = 'none';
-            rowBtnAddTable.style.display = 'table-row';
+            if (window.innerWidth <= 768) {
+                if (btnShowQuickAddTableMobile) btnShowQuickAddTableMobile.style.display = 'flex';
+            } else {
+                if (rowBtnAddTable) rowBtnAddTable.style.display = 'table-row';
+            }
             formAdicaoRapidaTabela.reset();
         });
     }
