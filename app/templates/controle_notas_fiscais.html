@@ -75,9 +75,35 @@
     </p>
 
     <div class="table-responsive-wrapper {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
-        <div id="btnShowQuickAddTable" class="card-quick-add-trigger hide-on-desktop" style="margin-bottom: 20px;">
+        
+        <!-- Botões de Gatilho (Desktop e Mobile) -->
+        <button type="button" id="btnShowQuickAddTableDesktop" class="btn-dashed-add hide-on-mobile" style="margin-bottom: 15px; border-radius: 8px;">+ Adição Rápida</button>
+        
+        <div id="btnShowQuickAddTableMobile" class="card-quick-add-trigger hide-on-desktop" style="margin-bottom: 20px;">
             <span class="quick-add-text">+ Adição Rápida</span>
         </div>
+
+        <!-- O Formulário Universal para a Tabela (Renderiza em linha no desktop e em bloco no mobile) -->
+        <div id="inline-create-template" style="display: none; padding: 15px; background: var(--background-secondary); border: 1px solid var(--border-base); border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 5px var(--shadow-base);">
+            <h4 style="margin-bottom: 15px; color: var(--tertiary-color);" class="hide-on-desktop">Novo Registro</h4>
+            <form id="formAdicaoRapidaTabela" class="quick-form-actions" style="display: flex; gap: 10px; width: 100%; align-items: center; margin: 0; flex-wrap: wrap;">
+                <select id="quickItemTabela" class="inline-add-field" style="flex: 2; min-width: 200px;" required>
+                    <option value="">Selecione o Item do Instrumento...</option>
+                </select>
+                <input type="text" id="quickReferenciaTabela" class="inline-add-field" style="flex: 1; min-width: 150px;" placeholder="Referência (ex: 07/2026)" required>
+                <input type="text" id="quickNfTabela" class="inline-add-field" style="flex: 1; min-width: 150px;" placeholder="Documento Fiscal (opcional)">
+                <input type="date" id="quickPrazoTabela" class="inline-add-field" style="flex: 1; min-width: 130px;">
+                <select id="quickSituacaoTabela" class="inline-add-field" style="flex: 1; min-width: 150px;">
+                    <option value="">Situação (opcional)...</option>
+                    {% for sit in situacoes_para_filtro %}
+                        <option value="{{ sit.situacao }}">{{ sit.situacao }}</option>
+                    {% endfor %}
+                </select>
+                <button type="button" class="btn-inline-action cancel" id="btnCancelQuickAddTable" style="width: auto; padding: 0 15px; height: 38px;">Cancelar</button>
+                <button type="submit" class="btn-inline-action save" style="width: auto; padding: 0 15px; height: 38px; margin-bottom: 0;">Salvar</button>
+            </form>
+        </div>
+
         <table id="tabelaControle" class="tabela-controle-shared responsive-card-table {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
             <thead>
                 <tr>
@@ -101,23 +127,6 @@
                 </tr>
             </thead>
             <tbody>
-                <tr id="row-btn-add-inline-top" class="hide-on-mobile">
-                    <td colspan="{{ colunas_visiveis|length + 2 }}" class="td-no-padding">
-                        <button type="button" id="btnShowQuickAddTableDesktop" class="btn-dashed-add" style="border-radius: 0; border-left: none; border-right: none; border-top: none;">+ Adição Rápida</button>
-                    </td>
-                </tr>
-                <tr id="inline-create-template" style="display: none;" class="hide-on-mobile">
-                    <td colspan="{{ colunas_visiveis|length + 2 }}" class="td-no-padding" style="padding: 10px !important;">
-                        <form id="formAdicaoRapidaTabela" class="quick-form-actions" style="display: flex; gap: 10px; width: 100%; align-items: center; margin: 0;">
-                            <select id="quickItemTabela" class="inline-add-field" style="flex: 2;" required>
-                                <option value="">Selecione o Item do Instrumento...</option>
-                            </select>
-                            <input type="text" id="quickReferenciaTabela" class="inline-add-field" style="flex: 1;" placeholder="Referência (ex: 07/2026)" required>
-                            <button type="submit" class="btn-inline-action save" style="width: auto; padding: 0 15px; height: 38px;">Salvar</button>
-                            <button type="button" class="btn-inline-action cancel" id="btnCancelQuickAddTable" style="width: auto; padding: 0 15px; height: 38px;">Cancelar</button>
-                        </form>
-                    </td>
-                </tr>
                 {% for controle in controles %}
                     {% include 'partials/_controle_table_row.html' %}
                 {% else %}

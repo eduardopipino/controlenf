@@ -609,10 +609,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // ==========================================
     // 5. ADIÇÃO RÁPIDA (INLINE & CARDS)
     // ==========================================
-    const btnShowQuickAddTableMobile = document.getElementById('btnShowQuickAddTable');
+    const btnShowQuickAddTableMobile = document.getElementById('btnShowQuickAddTableMobile');
     const btnShowQuickAddTableDesktop = document.getElementById('btnShowQuickAddTableDesktop');
     const formAdicaoRapidaTabela = document.getElementById('formAdicaoRapidaTabela');
-    const rowBtnAddTable = document.getElementById('row-btn-add-inline-top');
     const rowFormAddTable = document.getElementById('inline-create-template');
     const btnCancelQuickAddTable = document.getElementById('btnCancelQuickAddTable');
     const quickItemTabela = document.getElementById('quickItemTabela');
