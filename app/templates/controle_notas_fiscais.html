@@ -75,35 +75,6 @@
     </p>
 
     <div class="table-responsive-wrapper {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
-        
-        <!-- Botões de Gatilho (Desktop e Mobile) -->
-        <button type="button" id="btnShowQuickAddTableDesktop" class="btn-dashed-add hide-on-mobile" style="margin-bottom: 15px; border-radius: 8px;">+ Adição Rápida</button>
-        
-        <div id="btnShowQuickAddTableMobile" class="card-quick-add-trigger hide-on-desktop" style="margin-bottom: 20px;">
-            <span class="quick-add-text">+ Adição Rápida</span>
-        </div>
-
-        <!-- O Formulário Universal para a Tabela (Renderiza em linha no desktop e em bloco no mobile) -->
-        <div id="inline-create-template" style="display: none; padding: 15px; background: var(--background-secondary); border: 1px solid var(--border-base); border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 5px var(--shadow-base);">
-            <h4 style="margin-bottom: 15px; color: var(--tertiary-color);" class="hide-on-desktop">Novo Registro</h4>
-            <form id="formAdicaoRapidaTabela" class="quick-form-actions" style="display: flex; gap: 10px; width: 100%; align-items: center; margin: 0; flex-wrap: wrap;">
-                <select id="quickItemTabela" class="inline-add-field" style="flex: 2; min-width: 200px;" required>
-                    <option value="">Selecione o Item do Instrumento...</option>
-                </select>
-                <input type="text" id="quickReferenciaTabela" class="inline-add-field" style="flex: 1; min-width: 150px;" placeholder="Referência (ex: 07/2026)" required>
-                <input type="text" id="quickNfTabela" class="inline-add-field" style="flex: 1; min-width: 150px;" placeholder="Documento Fiscal (opcional)">
-                <input type="date" id="quickPrazoTabela" class="inline-add-field" style="flex: 1; min-width: 130px;">
-                <select id="quickSituacaoTabela" class="inline-add-field" style="flex: 1; min-width: 150px;">
-                    <option value="">Situação (opcional)...</option>
-                    {% for sit in situacoes_para_filtro %}
-                        <option value="{{ sit.situacao }}">{{ sit.situacao }}</option>
-                    {% endfor %}
-                </select>
-                <button type="button" class="btn-inline-action cancel" id="btnCancelQuickAddTable" style="width: auto; padding: 0 15px; height: 38px;">Cancelar</button>
-                <button type="submit" class="btn-inline-action save" style="width: auto; padding: 0 15px; height: 38px; margin-bottom: 0;">Salvar</button>
-            </form>
-        </div>
-
         <table id="tabelaControle" class="tabela-controle-shared responsive-card-table {{ 'hide-on-desktop' if view_mode != 'table' else '' }}">
             <thead>
                 <tr>
@@ -127,6 +98,58 @@
                 </tr>
             </thead>
             <tbody>
+                <tr id="row-btn-add-inline-top" class="hide-on-mobile">
+                    <td colspan="{{ colunas_visiveis|length + 2 }}" class="td-no-padding">
+                        <button type="button" id="btnShowQuickAddTableDesktop" class="btn-dashed-add" style="border-radius: 0; border-left: none; border-right: none; border-top: none;">+ Adição Rápida</button>
+                    </td>
+                </tr>
+                <tr id="inline-create-template" style="display: none;" class="hide-on-mobile">
+                    <td class="text-center" style="vertical-align: middle;">
+                        <button type="button" class="btn-concluir-action save" id="btnSaveQuickAddTable" title="Salvar" style="border-color: #27ae60; color: #27ae60; margin: 0 auto 5px auto;">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                        </button>
+                        <button type="button" class="btn-concluir-action cancel" id="btnCancelQuickAddTable" title="Cancelar" style="border-color: #e74c3c; color: #e74c3c; margin: 0 auto;">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                        </button>
+                    </td>
+                    {% set ns = namespace(item_rendered=false) %}
+                    {% for col_id, col_nome in todas_as_colunas %}
+                        {% if col_id in colunas_visiveis %}
+                            <td class="editable-cell" style="vertical-align: top; padding: 8px 4px;">
+                                {% if col_id in ['tipo_documento', 'n_instrumento', 'contratada', 'objeto', 'item_descricao'] %}
+                                    {% if not ns.item_rendered %}
+                                        <select id="quickItemTabela" class="inline-add-field" style="width: 100%; min-width: 150px;">
+                                            <option value="">Selecione...</option>
+                                        </select>
+                                        {% set ns.item_rendered = true %}
+                                    {% else %}
+                                        <input type="text" class="inline-add-field" disabled placeholder="Automático" style="background-color: var(--disabled-bg-color); opacity: 0.6;">
+                                    {% endif %}
+                                {% elif col_id == 'referencia' %}
+                                    <input type="text" id="quickReferenciaTabela" class="inline-add-field" placeholder="Ex: 07/2026">
+                                {% elif col_id == 'nota_fiscal' %}
+                                    <input type="text" id="quickNfTabela" class="inline-add-field" placeholder="NF">
+                                {% elif col_id == 'carta_de_correcao' %}
+                                    <input type="text" id="quickCcTabela" class="inline-add-field" placeholder="CC">
+                                {% elif col_id == 'documentacao' %}
+                                    <input type="text" class="inline-add-field" disabled placeholder="Pós-salvamento" style="background-color: var(--disabled-bg-color); opacity: 0.6;">
+                                {% elif col_id == 'observacoes' %}
+                                    <textarea id="quickObsTabela" class="inline-add-field" placeholder="Obs..."></textarea>
+                                {% elif col_id == 'prazo' %}
+                                    <input type="date" id="quickPrazoTabela" class="inline-add-field">
+                                {% elif col_id == 'situacao' %}
+                                    <select id="quickSituacaoTabela" class="inline-add-field" style="width: 100%; min-width: 120px;">
+                                        <option value="">Nenhuma...</option>
+                                        {% for sit in situacoes_para_filtro %}
+                                            <option value="{{ sit.situacao }}">{{ sit.situacao }}</option>
+                                        {% endfor %}
+                                    </select>
+                                {% endif %}
+                            </td>
+                        {% endif %}
+                    {% endfor %}
+                    <td class="hide-on-desktop"></td>
+                </tr>
                 {% for controle in controles %}
                     {% include 'partials/_controle_table_row.html' %}
                 {% else %}
@@ -136,6 +159,36 @@
                 {% endfor %}
             </tbody>
         </table>
+        
+        <!-- Adição Rápida Mobile (Fora da tag table para não ser afetado pelo CSS da tabela) -->
+        <div class="hide-on-desktop" style="margin-top: 20px;">
+            <div id="btnShowQuickAddTableMobile" class="card-quick-add-trigger">
+                <span class="quick-add-text">+ Adição Rápida</span>
+            </div>
+            <div id="formAdicaoRapidaMobileContainer" class="data-card card-quick-add-form" style="display: none;">
+                <h4 style="margin-bottom: 15px; color: var(--tertiary-color);">Novo Registro</h4>
+                <form id="formAdicaoRapidaMobile">
+                    <select id="quickItemMobile" class="quick-field-select-card" required>
+                        <option value="">Selecione o Item...</option>
+                    </select>
+                    <input type="text" id="quickReferenciaMobile" class="quick-field-input quick-field" placeholder="Referência (ex: 07/2026)" required>
+                    <input type="text" id="quickNfMobile" class="quick-field-input quick-field" placeholder="Documento Fiscal (opcional)">
+                    <textarea id="quickObsMobile" class="quick-field-area quick-field" placeholder="Observações (opcional)"></textarea>
+                    <input type="date" id="quickPrazoMobile" class="quick-field-input quick-field" style="margin-bottom: 8px;">
+                    <select id="quickSituacaoMobile" class="quick-field-select-card">
+                        <option value="">Situação (opcional)...</option>
+                        {% for sit in situacoes_para_filtro %}
+                            <option value="{{ sit.situacao }}">{{ sit.situacao }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="quick-form-actions">
+                        <button type="button" id="btnCancelQuickAddMobile" class="btn-quick-cancel">Cancelar</button>
+                        <button type="submit" class="btn-quick-save">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </div>
 
     {% if view_mode == 'cards' %}

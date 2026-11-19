@@ -607,61 +607,120 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // ==========================================
-    // 5. ADIÇÃO RÁPIDA (INLINE & CARDS)
+    // 5. ADIÇÃO RÁPIDA (INLINE, MOBILE & CARDS)
     // ==========================================
-    const btnShowQuickAddTableMobile = document.getElementById('btnShowQuickAddTableMobile');
+    // Elementos Modo Tabela (Desktop)
     const btnShowQuickAddTableDesktop = document.getElementById('btnShowQuickAddTableDesktop');
-    const formAdicaoRapidaTabela = document.getElementById('formAdicaoRapidaTabela');
+    const rowBtnAddTableTop = document.getElementById('row-btn-add-inline-top');
     const rowFormAddTable = document.getElementById('inline-create-template');
     const btnCancelQuickAddTable = document.getElementById('btnCancelQuickAddTable');
+    const btnSaveQuickAddTable = document.getElementById('btnSaveQuickAddTable');
     const quickItemTabela = document.getElementById('quickItemTabela');
 
+    // Elementos Modo Tabela (Mobile Card)
+    const btnShowQuickAddTableMobile = document.getElementById('btnShowQuickAddTableMobile');
+    const formAdicaoRapidaMobileContainer = document.getElementById('formAdicaoRapidaMobileContainer');
+    const formAdicaoRapidaMobile = document.getElementById('formAdicaoRapidaMobile');
+    const btnCancelQuickAddMobile = document.getElementById('btnCancelQuickAddMobile');
+    const quickItemMobile = document.getElementById('quickItemMobile');
+
+    // Elementos Modo Cards Puro
     const btnShowQuickAddCard = document.getElementById('btnShowQuickAddCard');
     const formAdicaoRapidaCardContainer = document.getElementById('formAdicaoRapidaCardContainer');
     const formAdicaoRapidaCard = document.getElementById('formAdicaoRapidaCard');
     const btnCancelQuickAddCard = document.getElementById('btnCancelQuickAddCard');
     const quickItemCard = document.getElementById('quickItemCard');
 
+    // Preenche todos os Selects de Itens
     if (window.APP_DATA && window.APP_DATA.itensDropdown && Array.isArray(window.APP_DATA.itensDropdown)) {
         const optionsHtml = window.APP_DATA.itensDropdown.map(i => `<option value="${i._id}">${i.n_instrumento} - ${i.contratada} -${i.descricao_item}</option>`).join('');
         if (quickItemTabela) quickItemTabela.innerHTML += optionsHtml;
+        if (quickItemMobile) quickItemMobile.innerHTML += optionsHtml;
         if (quickItemCard) quickItemCard.innerHTML += optionsHtml;
     }
 
-    function showQuickAddTable() {
-        if (btnShowQuickAddTableMobile) btnShowQuickAddTableMobile.style.display = 'none';
-        if (rowBtnAddTable) rowBtnAddTable.style.display = 'none';
-        rowFormAddTable.style.display = 'table-row';
-        
-        // No modo mobile, a linha de formulário precisa se comportar como um bloco
-        if (window.innerWidth <= 768) {
-             rowFormAddTable.style.display = 'block';
-        }
-        
-        document.getElementById('quickReferenciaTabela').focus();
-    }
-
-    if (btnShowQuickAddTableMobile) btnShowQuickAddTableMobile.addEventListener('click', showQuickAddTable);
-    if (btnShowQuickAddTableDesktop) btnShowQuickAddTableDesktop.addEventListener('click', showQuickAddTable);
-    if (btnCancelQuickAddTable) {
-        btnCancelQuickAddTable.addEventListener('click', () => {
-            rowFormAddTable.style.display = 'none';
-            if (window.innerWidth <= 768) {
-                if (btnShowQuickAddTableMobile) btnShowQuickAddTableMobile.style.display = 'flex';
-            } else {
-                if (rowBtnAddTable) rowBtnAddTable.style.display = 'table-row';
-            }
-            formAdicaoRapidaTabela.reset();
+    // --- Lógica Tabela Desktop ---
+    if (btnShowQuickAddTableDesktop) {
+        btnShowQuickAddTableDesktop.addEventListener('click', () => {
+            rowBtnAddTableTop.style.display = 'none';
+            rowFormAddTable.style.display = 'table-row';
+            const refInput = document.getElementById('quickReferenciaTabela');
+            if (refInput) refInput.focus();
         });
     }
 
+    if (btnCancelQuickAddTable) {
+        btnCancelQuickAddTable.addEventListener('click', () => {
+            rowFormAddTable.style.display = 'none';
+            rowBtnAddTableTop.style.display = 'table-row';
+            // Limpa os campos da tabela manualmente, pois não é um form
+            rowFormAddTable.querySelectorAll('input, select, textarea').forEach(el => el.value = '');
+        });
+    }
+
+    if (btnSaveQuickAddTable) {
+        btnSaveQuickAddTable.addEventListener('click', () => {
+            const itemId = quickItemTabela ? quickItemTabela.value : '';
+            const referencia = document.getElementById('quickReferenciaTabela') ? document.getElementById('quickReferenciaTabela').value : '';
+            
+            if (!itemId || !referencia) {
+                alert('Os campos "Item" e "Referência" são obrigatórios.');
+                return;
+            }
+
+            submitQuickAddControle(
+                itemId, 
+                referencia,
+                document.getElementById('quickNfTabela') ? document.getElementById('quickNfTabela').value : '',
+                document.getElementById('quickObsTabela') ? document.getElementById('quickObsTabela').value : '',
+                document.getElementById('quickPrazoTabela') ? document.getElementById('quickPrazoTabela').value : '',
+                document.getElementById('quickSituacaoTabela') ? document.getElementById('quickSituacaoTabela').value : ''
+            );
+        });
+    }
+
+    // --- Lógica Tabela Mobile ---
+    if (btnShowQuickAddTableMobile) {
+        btnShowQuickAddTableMobile.addEventListener('click', () => {
+            btnShowQuickAddTableMobile.style.display = 'none';
+            formAdicaoRapidaMobileContainer.style.display = 'flex';
+            formAdicaoRapidaMobileContainer.style.flexDirection = 'column';
+            document.getElementById('quickReferenciaMobile').focus();
+        });
+    }
+    
+    if (btnCancelQuickAddMobile) {
+        btnCancelQuickAddMobile.addEventListener('click', () => {
+            formAdicaoRapidaMobileContainer.style.display = 'none';
+            btnShowQuickAddTableMobile.style.display = 'flex';
+            formAdicaoRapidaMobile.reset();
+        });
+    }
+    
+    if (formAdicaoRapidaMobile) {
+        formAdicaoRapidaMobile.addEventListener('submit', (e) => {
+            e.preventDefault();
+            submitQuickAddControle(
+                quickItemMobile.value, 
+                document.getElementById('quickReferenciaMobile').value,
+                document.getElementById('quickNfMobile').value,
+                document.getElementById('quickObsMobile').value,
+                document.getElementById('quickPrazoMobile').value,
+                document.getElementById('quickSituacaoMobile').value
+            );
+        });
+    }
+
+    // --- Lógica Cards Puro ---
     if (btnShowQuickAddCard) {
         btnShowQuickAddCard.addEventListener('click', () => {
             btnShowQuickAddCard.style.display = 'none';
             formAdicaoRapidaCardContainer.style.display = 'flex';
+            formAdicaoRapidaCardContainer.style.flexDirection = 'column'; 
             document.getElementById('quickReferenciaCard').focus();
         });
     }
+    
     if (btnCancelQuickAddCard) {
         btnCancelQuickAddCard.addEventListener('click', () => {
             formAdicaoRapidaCardContainer.style.display = 'none';
@@ -670,6 +729,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    if (formAdicaoRapidaCard) {
+        formAdicaoRapidaCard.addEventListener('submit', (e) => {
+            e.preventDefault();
+            submitQuickAddControle(
+                quickItemCard.value, 
+                document.getElementById('quickReferenciaCard').value,
+                document.getElementById('quickNfCard').value,
+                document.getElementById('quickObsCard').value,
+                document.getElementById('quickPrazoCard').value,
+                document.getElementById('quickSituacaoCard').value
+            );
+        });
+    }
+
+    // --- Função de Envio AJAX Universal ---
     function submitQuickAddControle(itemId, referencia, nf = '', obs = '', prazo = '', situacao = '') {
         if (!itemId || !referencia) return;
         fetch('/controle/item/criar_controle_rapido', {
@@ -690,27 +764,6 @@ document.addEventListener('DOMContentLoaded', function() {
             else alert(data.message || 'Erro ao criar registro.');
         })
         .catch(err => alert('Erro de rede.'));
-    }
-
-    if (formAdicaoRapidaTabela) {
-        formAdicaoRapidaTabela.addEventListener('submit', (e) => {
-            e.preventDefault();
-            submitQuickAddControle(quickItemTabela.value, document.getElementById('quickReferenciaTabela').value);
-        });
-    }
-
-    if (formAdicaoRapidaCard) {
-        formAdicaoRapidaCard.addEventListener('submit', (e) => {
-            e.preventDefault();
-            submitQuickAddControle(
-                quickItemCard.value, 
-                document.getElementById('quickReferenciaCard').value,
-                document.getElementById('quickNfCard').value,
-                document.getElementById('quickObsCard').value,
-                document.getElementById('quickPrazoCard').value,
-                document.getElementById('quickSituacaoCard').value
-            );
-        });
     }
 
     // ==========================================
