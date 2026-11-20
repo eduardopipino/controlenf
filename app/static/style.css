@@ -1646,6 +1646,10 @@ td .card-value {
         margin-bottom: 0 !important;
     }
 
+    /* não exibe adição rápida da tabela no modo mobile */
+    tr:has(#btnSaveQuickAddTable) {
+        display: none !important;
+    }
     
 }
 
@@ -4419,3 +4423,4 @@ body.theme-dark .tabela-hub th {
     border-radius: 5px;
     cursor: pointer;
 }
+
