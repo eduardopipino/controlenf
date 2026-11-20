@@ -104,13 +104,16 @@
                     </td>
                 </tr>
                 <tr id="inline-create-template" style="display: none;" class="hide-on-mobile">
-                    <td class="text-center" style="vertical-align: middle;">
-                        <button type="button" class="btn-concluir-action save" id="btnSaveQuickAddTable" title="Salvar" style="border-color: #27ae60; color: #27ae60; margin: 0 auto 5px auto;">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                        </button>
-                        <button type="button" class="btn-concluir-action cancel" id="btnCancelQuickAddTable" title="Cancelar" style="border-color: #e74c3c; color: #e74c3c; margin: 0 auto;">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-                        </button>
+                    <td class="td-center-compact">
+                        <button type="button"
+                                id="btnSaveQuickAddTable"
+                                class="btn-save-inline btn-inline-action save"
+                                title="Salvar">✔</button>
+
+                        <button type="button"
+                                id="btnCancelQuickAddTable"
+                                class="btn-cancel-inline btn-inline-action cancel"
+                                title="Cancelar">✖</button>
                     </td>
                     {% set ns = namespace(item_rendered=false) %}
                     {% for col_id, col_nome in todas_as_colunas %}
@@ -157,6 +160,17 @@
                     <td colspan="{{ colunas_visiveis|length + 2 }}">Nenhum registro de controle encontrado.</td>
                 </tr>
                 {% endfor %}
+                <tr id="row-btn-add-inline-bottom" class="hide-on-mobile">
+                    <td colspan="{{ colunas_visiveis|length + 1 }}"
+                        class="td-no-padding">
+                        <button type="button"
+                                id="btnShowQuickAddTableBottom"
+                                class="btn-dashed-add bottom-flat">
+                            + Adição Rápida
+                        </button>
+                    </td>
+                    <td></td>
+                </tr>
             </tbody>
         </table>
         

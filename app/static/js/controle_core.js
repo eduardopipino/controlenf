@@ -611,7 +611,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // ==========================================
     // Elementos Modo Tabela (Desktop)
     const btnShowQuickAddTableDesktop = document.getElementById('btnShowQuickAddTableDesktop');
+    const btnShowQuickAddTableBottom = document.getElementById('btnShowQuickAddTableBottom');
     const rowBtnAddTableTop = document.getElementById('row-btn-add-inline-top');
+    const rowBtnAddTableBottom = document.getElementById('row-btn-add-inline-bottom');
     const rowFormAddTable = document.getElementById('inline-create-template');
     const btnCancelQuickAddTable = document.getElementById('btnCancelQuickAddTable');
     const btnSaveQuickAddTable = document.getElementById('btnSaveQuickAddTable');
@@ -640,30 +642,92 @@ document.addEventListener('DOMContentLoaded', function() {
         if (quickItemCard) quickItemCard.innerHTML += optionsHtml;
     }
 
-    // Garantir o estado inicial correto da adição rápida da tabela.
-    if (rowBtnAddTableTop) rowBtnAddTableTop.style.display = 'table-row';
-    if (rowFormAddTable) rowFormAddTable.style.display = 'none';
-    if (btnShowQuickAddTableMobile) btnShowQuickAddTableMobile.style.display = 'flex';
-    if (formAdicaoRapidaMobileContainer) formAdicaoRapidaMobileContainer.style.display = 'none';
+    // Estado inicial da adição rápida da tabela desktop.
+    if (rowBtnAddTableTop) {
+        rowBtnAddTableTop.style.display = 'table-row';
+    }
 
-    // --- Lógica Tabela Desktop ---
+    if (rowBtnAddTableBottom) {
+        rowBtnAddTableBottom.style.display = 'table-row';
+    }
+
+    if (rowFormAddTable) {
+        rowFormAddTable.style.display = 'none';
+    }
+
+    // Abre o mesmo formulário na posição escolhida.
+    function openQuickAddTable(isTop) {
+        if (!rowFormAddTable || !rowBtnAddTableTop || !rowBtnAddTableBottom) {
+            return;
+        }
+
+        if (isTop) {
+            rowBtnAddTableTop.after(rowFormAddTable);
+            rowBtnAddTableTop.style.display = 'none';
+            rowBtnAddTableBottom.style.display = 'table-row';
+        } else {
+            rowBtnAddTableBottom.before(rowFormAddTable);
+            rowBtnAddTableBottom.style.display = 'none';
+            rowBtnAddTableTop.style.display = 'table-row';
+        }
+
+        rowFormAddTable.style.display = 'table-row';
+
+        document.getElementById('quickReferenciaTabela')?.focus();
+    }
+
+    // Botão superior.
     if (btnShowQuickAddTableDesktop) {
         btnShowQuickAddTableDesktop.addEventListener('click', () => {
-            if (!rowBtnAddTableTop || !rowFormAddTable) return;
-            rowBtnAddTableTop.style.display = 'none';
-            rowFormAddTable.style.display = 'table-row';
-            document.getElementById('quickReferenciaTabela')?.focus();
+            openQuickAddTable(true);
         });
     }
 
+    // Botão inferior.
+    if (btnShowQuickAddTableBottom) {
+        btnShowQuickAddTableBottom.addEventListener('click', () => {
+            openQuickAddTable(false);
+        });
+    }
+
+    // Cancelamento.
     if (btnCancelQuickAddTable) {
         btnCancelQuickAddTable.addEventListener('click', () => {
             rowFormAddTable.style.display = 'none';
+
+            rowFormAddTable.querySelectorAll('input, select, textarea')
+                .forEach(el => {
+                    el.value = '';
+                    if (el.tagName === 'SELECT') {
+                        el.selectedIndex = 0;
+                    }
+                });
+
             rowBtnAddTableTop.style.display = 'table-row';
-            rowFormAddTable.querySelectorAll('input, select, textarea').forEach(el => {
-                el.value = '';
-                if (el.tagName === 'SELECT') el.selectedIndex = 0;
-            });
+            rowBtnAddTableBottom.style.display = 'table-row';
+        });
+    }
+
+    if (rowFormAddTable) {
+        rowFormAddTable.addEventListener('keydown', (e) => {
+            if (!['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
+                return;
+            }
+
+            if (e.key === 'Enter') {
+                if (e.target.tagName === 'TEXTAREA' && e.shiftKey) {
+                    return;
+                }
+
+                e.preventDefault();
+
+                if (btnSaveQuickAddTable && !btnSaveQuickAddTable.disabled) {
+                    btnSaveQuickAddTable.click();
+                }
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                btnCancelQuickAddTable?.click();
+            }
         });
     }
 
@@ -797,24 +861,45 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (origem === 'table') {
                 const tabela = document.getElementById('tabelaControle');
-                const linhaAcionamento = document.getElementById('row-btn-add-inline-top');
-                const linhaSemResultados = document.getElementById('tabela-backend-sem-resultados');
 
-                if (!tabela || !linhaAcionamento || !data.row_html) {
+                const linhaAcionamentoInferior =
+                    document.getElementById('row-btn-add-inline-bottom');
+
+                const linhaSemResultados =
+                    document.getElementById('tabela-backend-sem-resultados');
+
+                if (!tabela || !linhaAcionamentoInferior || !data.row_html) {
                     throw new Error('Não foi possível atualizar a tabela com o novo registro.');
                 }
 
                 linhaSemResultados?.remove();
-                linhaAcionamento.insertAdjacentHTML('afterend', data.row_html);
+
+                // Insere o registro imediatamente antes do botão inferior.
+                linhaAcionamentoInferior.insertAdjacentHTML(
+                    'beforebegin',
+                    data.row_html
+                );
 
                 if (rowFormAddTable) {
-                    rowFormAddTable.querySelectorAll('input, select, textarea').forEach(el => {
-                        el.value = '';
-                        if (el.tagName === 'SELECT') el.selectedIndex = 0;
-                    });
+                    rowFormAddTable.querySelectorAll('input, select, textarea')
+                        .forEach(el => {
+                            el.value = '';
+
+                            if (el.tagName === 'SELECT') {
+                                el.selectedIndex = 0;
+                            }
+                        });
+
                     rowFormAddTable.style.display = 'none';
                 }
-                if (rowBtnAddTableTop) rowBtnAddTableTop.style.display = 'table-row';
+
+                if (rowBtnAddTableTop) {
+                    rowBtnAddTableTop.style.display = 'table-row';
+                }
+
+                if (rowBtnAddTableBottom) {
+                    rowBtnAddTableBottom.style.display = 'table-row';
+                }
 
                 if (formAdicaoRapidaMobile) formAdicaoRapidaMobile.reset();
                 if (formAdicaoRapidaMobileContainer) formAdicaoRapidaMobileContainer.style.display = 'none';
