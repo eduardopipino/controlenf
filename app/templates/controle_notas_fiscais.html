@@ -160,8 +160,9 @@
             </tbody>
         </table>
         
-        <!-- Adição Rápida Mobile (Fora da tag table para não ser afetado pelo CSS da tabela) -->
-        <div class="hide-on-desktop" style="margin-top: 20px;">
+        <!-- Adição Rápida Mobile: deve iniciar mostrando somente o card de acionamento -->
+        {% if view_mode == 'table' %}
+        <div class="hide-on-desktop" id="quickAddMobileTableContainer" style="margin-top: 20px;">
             <div id="btnShowQuickAddTableMobile" class="card-quick-add-trigger">
                 <span class="quick-add-text">+ Adição Rápida</span>
             </div>
@@ -173,6 +174,7 @@
                     </select>
                     <input type="text" id="quickReferenciaMobile" class="quick-field-input quick-field" placeholder="Referência (ex: 07/2026)" required>
                     <input type="text" id="quickNfMobile" class="quick-field-input quick-field" placeholder="Documento Fiscal (opcional)">
+                    <input type="text" id="quickCcMobile" class="quick-field-input quick-field" placeholder="Carta de Correção (opcional)">
                     <textarea id="quickObsMobile" class="quick-field-area quick-field" placeholder="Observações (opcional)"></textarea>
                     <input type="date" id="quickPrazoMobile" class="quick-field-input quick-field" style="margin-bottom: 8px;">
                     <select id="quickSituacaoMobile" class="quick-field-select-card">
@@ -188,6 +190,7 @@
                 </form>
             </div>
         </div>
+        {% endif %}
 
     </div>
 

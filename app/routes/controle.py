@@ -455,6 +455,7 @@ def criar_controle_rapido():
     item_id_str = data.get('item_id')
     referencia = data.get('referencia', '').strip()
     nota_fiscal = data.get('nota_fiscal', '').strip()
+    carta_de_correcao = data.get('carta_de_correcao', '').strip()
     observacoes = data.get('observacoes', 'Gerado via criação rápida.').strip()
     situacao = data.get('situacao', '').strip()
     prazo_str = data.get('prazo', '').strip()
@@ -488,16 +489,37 @@ def criar_controle_rapido():
             'item_id': item_id_obj, 'n_instrumento': instrumento_pai['n_instrumento'],
             'tipo_documento': instrumento_pai['tipo_documento'], 'contratada': instrumento_pai['contratada'],
             'objeto': instrumento_pai['objeto_resumido'], 'referencia': referencia, 'nota_fiscal': nota_fiscal,
-            'carta_de_correcao': '', 'documentacao': [], 'observacoes': observacoes,
+            'carta_de_correcao': data.get('carta_de_correcao', '').strip(), 'documentacao': [], 'observacoes': observacoes,
             'prazo': prazo_dt, 'situacao': situacao, 'data_criacao': datetime.now(), 'user_id': user_id_obj
         }
-        
-        controle_collection.insert_one(novo_registro_controle)
-        
+
+        resultado_insert = controle_collection.insert_one(novo_registro_controle)
+        controle_criado = controle_collection.find_one({
+            '_id': resultado_insert.inserted_id,
+            'user_id': user_id_obj
+        })
+
+        situacoes_para_renderizar = sorted(
+            get_situacoes_para_dropdown(),
+            key=lambda x: x.get('situacao', '').lower()
+        )
+
+        row_html = render_template(
+            'partials/_controle_table_row.html',
+            controle=controle_criado,
+            todas_as_colunas=TODAS_AS_COLUNAS_CONTROLE,
+            colunas_visiveis=current_user.colunas_visiveis,
+            situacoes_para_filtro=situacoes_para_renderizar,
+            color_map=get_color_map_for_user(),
+            color_coding_active=getattr(current_user, 'color_coding_controle', False)
+        )
+
         flash('Novo registro de controle criado com sucesso!', 'success')
         return {
-            'status': 'success', 'message': 'Registro criado!',
-            'redirect_url': url_for('controle.controle_lista', filter_mode='todas')
+            'status': 'success',
+            'message': 'Registro criado!',
+            'registro_id': str(resultado_insert.inserted_id),
+            'row_html': row_html
         }
 
     except Exception as e:

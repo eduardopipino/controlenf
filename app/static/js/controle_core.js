@@ -623,6 +623,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const formAdicaoRapidaMobile = document.getElementById('formAdicaoRapidaMobile');
     const btnCancelQuickAddMobile = document.getElementById('btnCancelQuickAddMobile');
     const quickItemMobile = document.getElementById('quickItemMobile');
+    const quickCcMobile = document.getElementById('quickCcMobile');
 
     // Elementos Modo Cards Puro
     const btnShowQuickAddCard = document.getElementById('btnShowQuickAddCard');
@@ -633,19 +634,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Preenche todos os Selects de Itens
     if (window.APP_DATA && window.APP_DATA.itensDropdown && Array.isArray(window.APP_DATA.itensDropdown)) {
-        const optionsHtml = window.APP_DATA.itensDropdown.map(i => `<option value="${i._id}">${i.n_instrumento} - ${i.contratada} -${i.descricao_item}</option>`).join('');
+        const optionsHtml = window.APP_DATA.itensDropdown.map(i => `<option value="${i._id}">${i.n_instrumento} - ${i.contratada} - ${i.descricao_item}</option>`).join('');
         if (quickItemTabela) quickItemTabela.innerHTML += optionsHtml;
         if (quickItemMobile) quickItemMobile.innerHTML += optionsHtml;
         if (quickItemCard) quickItemCard.innerHTML += optionsHtml;
     }
 
+    // Garantir o estado inicial correto da adição rápida da tabela.
+    if (rowBtnAddTableTop) rowBtnAddTableTop.style.display = 'table-row';
+    if (rowFormAddTable) rowFormAddTable.style.display = 'none';
+    if (btnShowQuickAddTableMobile) btnShowQuickAddTableMobile.style.display = 'flex';
+    if (formAdicaoRapidaMobileContainer) formAdicaoRapidaMobileContainer.style.display = 'none';
+
     // --- Lógica Tabela Desktop ---
     if (btnShowQuickAddTableDesktop) {
         btnShowQuickAddTableDesktop.addEventListener('click', () => {
+            if (!rowBtnAddTableTop || !rowFormAddTable) return;
             rowBtnAddTableTop.style.display = 'none';
             rowFormAddTable.style.display = 'table-row';
-            const refInput = document.getElementById('quickReferenciaTabela');
-            if (refInput) refInput.focus();
+            document.getElementById('quickReferenciaTabela')?.focus();
         });
     }
 
@@ -653,8 +660,10 @@ document.addEventListener('DOMContentLoaded', function() {
         btnCancelQuickAddTable.addEventListener('click', () => {
             rowFormAddTable.style.display = 'none';
             rowBtnAddTableTop.style.display = 'table-row';
-            // Limpa os campos da tabela manualmente, pois não é um form
-            rowFormAddTable.querySelectorAll('input, select, textarea').forEach(el => el.value = '');
+            rowFormAddTable.querySelectorAll('input, select, textarea').forEach(el => {
+                el.value = '';
+                if (el.tagName === 'SELECT') el.selectedIndex = 0;
+            });
         });
     }
 
@@ -669,12 +678,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             submitQuickAddControle(
-                itemId, 
+                itemId,
                 referencia,
-                document.getElementById('quickNfTabela') ? document.getElementById('quickNfTabela').value : '',
-                document.getElementById('quickObsTabela') ? document.getElementById('quickObsTabela').value : '',
-                document.getElementById('quickPrazoTabela') ? document.getElementById('quickPrazoTabela').value : '',
-                document.getElementById('quickSituacaoTabela') ? document.getElementById('quickSituacaoTabela').value : ''
+                document.getElementById('quickNfTabela')?.value || '',
+                document.getElementById('quickCcTabela')?.value || '',
+                document.getElementById('quickObsTabela')?.value || '',
+                document.getElementById('quickPrazoTabela')?.value || '',
+                document.getElementById('quickSituacaoTabela')?.value || '',
+                'table'
             );
         });
     }
@@ -682,10 +693,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Lógica Tabela Mobile ---
     if (btnShowQuickAddTableMobile) {
         btnShowQuickAddTableMobile.addEventListener('click', () => {
+            if (!formAdicaoRapidaMobileContainer) return;
             btnShowQuickAddTableMobile.style.display = 'none';
             formAdicaoRapidaMobileContainer.style.display = 'flex';
             formAdicaoRapidaMobileContainer.style.flexDirection = 'column';
-            document.getElementById('quickReferenciaMobile').focus();
+            document.getElementById('quickReferenciaMobile')?.focus();
         });
     }
     
@@ -701,12 +713,14 @@ document.addEventListener('DOMContentLoaded', function() {
         formAdicaoRapidaMobile.addEventListener('submit', (e) => {
             e.preventDefault();
             submitQuickAddControle(
-                quickItemMobile.value, 
+                quickItemMobile.value,
                 document.getElementById('quickReferenciaMobile').value,
                 document.getElementById('quickNfMobile').value,
+                quickCcMobile?.value || '',
                 document.getElementById('quickObsMobile').value,
                 document.getElementById('quickPrazoMobile').value,
-                document.getElementById('quickSituacaoMobile').value
+                document.getElementById('quickSituacaoMobile').value,
+                'table'
             );
         });
     }
@@ -733,37 +747,90 @@ document.addEventListener('DOMContentLoaded', function() {
         formAdicaoRapidaCard.addEventListener('submit', (e) => {
             e.preventDefault();
             submitQuickAddControle(
-                quickItemCard.value, 
+                quickItemCard.value,
                 document.getElementById('quickReferenciaCard').value,
                 document.getElementById('quickNfCard').value,
+                '',
                 document.getElementById('quickObsCard').value,
                 document.getElementById('quickPrazoCard').value,
-                document.getElementById('quickSituacaoCard').value
+                document.getElementById('quickSituacaoCard').value,
+                'cards'
             );
         });
     }
 
     // --- Função de Envio AJAX Universal ---
-    function submitQuickAddControle(itemId, referencia, nf = '', obs = '', prazo = '', situacao = '') {
-        if (!itemId || !referencia) return;
+    function submitQuickAddControle(itemId, referencia, nf = '', cc = '', obs = '', prazo = '', situacao = '', origem = 'cards') {
+        if (!itemId || !referencia) {
+            alert('Selecione o item e informe a referência.');
+            return;
+        }
+
+        const botoesSalvar = origem === 'table'
+            ? [btnSaveQuickAddTable, formAdicaoRapidaMobile?.querySelector('button[type="submit"]')]
+            : [formAdicaoRapidaCard?.querySelector('button[type="submit"]')];
+
+        botoesSalvar.filter(Boolean).forEach(btn => {
+            btn.disabled = true;
+        });
+
         fetch('/controle/item/criar_controle_rapido', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                item_id: itemId, 
+            body: JSON.stringify({
+                item_id: itemId,
                 referencia: referencia,
                 nota_fiscal: nf,
+                carta_de_correcao: cc,
                 observacoes: obs,
                 prazo: prazo,
                 situacao: situacao
             })
         })
-        .then(r => r.json())
-        .then(data => {
-            if (data.status === 'success') window.location.reload();
-            else alert(data.message || 'Erro ao criar registro.');
+        .then(async response => {
+            const data = await response.json();
+            if (!response.ok || data.status !== 'success') {
+                throw new Error(data.message || 'Erro ao criar registro.');
+            }
+            return data;
         })
-        .catch(err => alert('Erro de rede.'));
+        .then(data => {
+            if (origem === 'table') {
+                const tabela = document.getElementById('tabelaControle');
+                const linhaAcionamento = document.getElementById('row-btn-add-inline-top');
+                const linhaSemResultados = document.getElementById('tabela-backend-sem-resultados');
+
+                if (!tabela || !linhaAcionamento || !data.row_html) {
+                    throw new Error('Não foi possível atualizar a tabela com o novo registro.');
+                }
+
+                linhaSemResultados?.remove();
+                linhaAcionamento.insertAdjacentHTML('afterend', data.row_html);
+
+                if (rowFormAddTable) {
+                    rowFormAddTable.querySelectorAll('input, select, textarea').forEach(el => {
+                        el.value = '';
+                        if (el.tagName === 'SELECT') el.selectedIndex = 0;
+                    });
+                    rowFormAddTable.style.display = 'none';
+                }
+                if (rowBtnAddTableTop) rowBtnAddTableTop.style.display = 'table-row';
+
+                if (formAdicaoRapidaMobile) formAdicaoRapidaMobile.reset();
+                if (formAdicaoRapidaMobileContainer) formAdicaoRapidaMobileContainer.style.display = 'none';
+                if (btnShowQuickAddTableMobile) btnShowQuickAddTableMobile.style.display = 'flex';
+            } else {
+                window.location.reload();
+            }
+        })
+        .catch(err => {
+            alert(err.message || 'Erro de rede ao salvar.');
+        })
+        .finally(() => {
+            botoesSalvar.filter(Boolean).forEach(btn => {
+                btn.disabled = false;
+            });
+        });
     }
 
     // ==========================================
