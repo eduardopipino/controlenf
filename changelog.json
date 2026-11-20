@@ -1,5 +1,11 @@
 [
   {
+    "versao": "3.7",
+    "data": "20/11/2026",
+    "descricao": "Implantação de adição rápida em Controle de Notas Fiscais. Implantação de novo instrumento contratual / item em modal no formulário de novo controle de nota fiscal."
+    
+  },
+  {
     "versao": "3.6",
     "data": "02/09/2026",
     "descricao": "Implantação de novo utilitário 'Número por extenso', otimização da alternância de tabelas/cards/kanban, ajustes no tema escuro, ajuste na movimentação de cards do kanban, e ajustes de fontes."

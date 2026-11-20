@@ -126,18 +126,18 @@
                                         </select>
                                         {% set ns.item_rendered = true %}
                                     {% else %}
-                                        <input type="text" class="inline-add-field" disabled placeholder="Automático" style="background-color: var(--disabled-bg-color); opacity: 0.6;">
+                                        <input type="text" class="inline-add-field" disabled placeholder="Não aplicável" style="background-color: var(--disabled-bg-color); opacity: 0.6;">
                                     {% endif %}
                                 {% elif col_id == 'referencia' %}
                                     <input type="text" id="quickReferenciaTabela" class="inline-add-field" placeholder="Ex: 07/2026">
                                 {% elif col_id == 'nota_fiscal' %}
-                                    <input type="text" id="quickNfTabela" class="inline-add-field" placeholder="NF">
+                                    <input type="text" id="quickNfTabela" class="inline-add-field">
                                 {% elif col_id == 'carta_de_correcao' %}
-                                    <input type="text" id="quickCcTabela" class="inline-add-field" placeholder="CC">
+                                    <input type="text" id="quickCcTabela" class="inline-add-field">
                                 {% elif col_id == 'documentacao' %}
-                                    <input type="text" class="inline-add-field" disabled placeholder="Pós-salvamento" style="background-color: var(--disabled-bg-color); opacity: 0.6;">
+                                    <input type="text" class="inline-add-field" disabled placeholder="Disponível após salvar" style="background-color: var(--disabled-bg-color); opacity: 0.6;">
                                 {% elif col_id == 'observacoes' %}
-                                    <textarea id="quickObsTabela" class="inline-add-field" placeholder="Obs..."></textarea>
+                                    <textarea id="quickObsTabela" class="inline-add-field"></textarea>
                                 {% elif col_id == 'prazo' %}
                                     <input type="date" id="quickPrazoTabela" class="inline-add-field">
                                 {% elif col_id == 'situacao' %}
