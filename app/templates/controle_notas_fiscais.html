@@ -509,7 +509,40 @@ document.addEventListener('DOMContentLoaded', function() {
         'alt+b': () => document.getElementById('buscaRapidaInput')?.focus(),
         'alt+n': 'btnNovo',
         'alt+r': 'btnNovoRecorrente',
-        'alt+x': () => document.getElementById('novoDocumentoExtra')?.focus()
+        'alt+x': () => document.getElementById('novoDocumentoExtra')?.focus(),
+        'alt+a': () => {
+            const formularioTabela = document.getElementById('inline-create-template');
+
+            // Se o formulário já estiver aberto, apenas direciona o foco.
+            if (formularioTabela &&
+                window.getComputedStyle(formularioTabela).display !== 'none') {
+                document.getElementById('quickReferenciaTabela')?.focus();
+                return;
+            }
+
+            const btnTabelaSuperior =
+                document.getElementById('btnShowQuickAddTableDesktop');
+
+            const btnTabelaInferior =
+                document.getElementById('btnShowQuickAddTableBottom');
+
+            const btnCard =
+                document.getElementById('btnShowQuickAddCard');
+
+            // Prioriza a adição rápida da tabela desktop.
+            if (btnTabelaSuperior &&
+                window.getComputedStyle(btnTabelaSuperior.closest('tr')).display !== 'none') {
+                btnTabelaSuperior.click();
+            }
+            else if (btnTabelaInferior &&
+                window.getComputedStyle(btnTabelaInferior.closest('tr')).display !== 'none') {
+                btnTabelaInferior.click();
+            }
+            // Se não estiver na tabela, utiliza a adição rápida dos cards.
+            else if (btnCard) {
+                btnCard.click();
+            }
+        }
     };
 
     // --- IDENTIFICAR POR CORES ---
