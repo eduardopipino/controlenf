@@ -109,10 +109,10 @@ body.theme-light {
     --modal-h3-border: var(--border-base);
 }
 
-/* --- Tema Azul (Mantém o padrão) --- */
+/* --- Tema Azul (Mantém o padrão) --- 
 body.theme-blue {
-    /* As variáveis padrão do :root já definem o tema azul */
-}
+    /* As variáveis padrão do :root já definem o tema azul 
+}*/
 
 /* --- Tema Verde --- */
 body.theme-green {
@@ -2257,8 +2257,8 @@ body.theme-dark .card-priority-toggle.active {
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
     background-color: var(--background-secondary); /* Cor de fundo padrão */
     color: var(--text-primary); /* Cor de texto padrão */
-    /* Garante que o input não quebre a linha da tabela */
-    vertical-align: middle;
+    /* Garante que o input não quebre a linha da tabela 
+    vertical-align: middle; */
     display: block; /* Para textarea ocupar a largura */
     width: calc(100% - 2px); /* Tenta compensar a borda explicitamente */
     box-sizing: border-box; /* evitar alteração da largura */
@@ -3639,7 +3639,7 @@ tr#inline-create-template { background-color: var(--table-stripe); }
     border: 1px solid var(--primary-color);
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
     background-color: var(--background-secondary); color: var(--text-primary);
-    vertical-align: middle; display: block; width: calc(100% - 2px);
+    /* vertical-align: middle; display: block; width: calc(100% - 2px); */
     box-sizing: border-box; white-space: normal; line-height: 1;
 }
 
@@ -3968,7 +3968,7 @@ body.theme-dark .tabela-pendencias-shared td.editable-cell::after { background-c
 #tabelaInstrumentos tr:last-child td, 
 #tabelaTiposDocumento tr:last-child td, 
 #tabelaSituacoes tr:last-child td, 
-##tabelaItens tr:last-child td, 
+#tabelaItens tr:last-child td, 
 .tabela-hub tr:last-child td {
     border-bottom: none;
 }
@@ -4095,7 +4095,7 @@ body.theme-dark .tabela-hub .situacao-dropdown[style*="background-color"] {
     #tabelaSituacoes td:nth-child(2) {
         width: 100%;
     }
-    ,
+    
     /* Mantém as outras colunas (Ações, Arquiva e Cores) restritas ao tamanho do seu conteúdo */
     #tabelaSituacoes th:not(:nth-child(2)),
     #tabelaSituacoes td:not(:nth-child(2)) {
