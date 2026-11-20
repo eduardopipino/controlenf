@@ -4103,6 +4103,10 @@ body.theme-dark .tabela-hub .situacao-dropdown[style*="background-color"] {
         white-space: nowrap;
         text-align: center; /* Centraliza os ícones e bolinhas de cor */
     }
+
+    #tabelaControle tbody > tr#row-btn-add-inline-top {
+        display: table-row;
+    }
 }
 
 /* ====================================================================== */
